@@ -55,7 +55,9 @@
 |USING_SOFT_SPI|使用 soft-spi 功能|
 |U_SOFT_SPI_BUS_CS_VALID|spi-cs 引脚仅在使用时有效|
 |U_SOFT_SPI_DEBUG|使用 spi-debug 检测参数功能|
+
 可选配置
+
 |配置|描述|
 |:---|:---|
 |mr_hw_interrupt_disable()|rtos 临界段关闭中断|
