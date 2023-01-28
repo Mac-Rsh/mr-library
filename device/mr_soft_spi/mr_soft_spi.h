@@ -53,7 +53,7 @@ typedef mr_base_t                     mr_err_t;
 
 struct mr_soft_spi_msg
 {
-  mr_uint8_t read_write;                         /* SOFT_SPI_WR/ SOFT_SPI_RD/ SOFT_SPI_RDWR/ SOFT_SPI_WR_THEN_RD */
+  mr_uint8_t read_write;                          /* SPI_WR/ SPI_RD/ SPI_RDWR/ SPI_WR_THEN_RD */
   mr_uint8_t *send_buffer;
   mr_size_t send_size;
   mr_uint8_t *recv_buffer;
