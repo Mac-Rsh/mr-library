@@ -86,6 +86,10 @@ struct mr_soft_spi_bus spi_bus;
 /* 适配 spi 总线接口 */
 void set_clk(mr_uint8_t level)
 {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 82a8986bea92f9e9a81c7b96ab835bf8ee9a111f
   GPIO_WriteBit(GPIOA,GPIO_Pin_0,level);
 }
 
@@ -116,8 +120,13 @@ void set_cs(mr_uint8_t level)
 }
 
 /* 配置 spi 设备 */
+<<<<<<< HEAD
 spi_device.mode = SPI_MODE_0;       //SPI MODE 0
 spi_device.cs_active = LEVEL_LOW;   //CS 引脚低电平有效
+=======
+spi_device.mode = SPI_MODE_0;       // SPI MODE 0
+spi_device.cs_active = LEVEL_LOW;   // CS 引脚低电平有效
+>>>>>>> 82a8986bea92f9e9a81c7b96ab835bf8ee9a111f
 spi_device.set_cs = set_cs;
 
 /* -------------------- 使用 -------------------- */
@@ -144,11 +153,19 @@ int main(void)
     
     /* 创建 spi 消息 */
     struct mr_soft_spi_msg spi_msg;
+<<<<<<< HEAD
     spi_msg.send_buffer = buffer;   //发送数据地址
     spi_msg.send_size = 10;         //发送数据数量
     spi_msg.recv_buffer = MR_NULL;  //读取数据地址
     spi_msg.recv_size = 0;          //读取数据数量
     spi_msg.read_write = SPI_WR;    //只读模式
+=======
+    spi_msg.send_buffer = buffer;   // 发送数据地址
+    spi_msg.send_size = 10;         // 发送数据数量
+    spi_msg.recv_buffer = MR_NULL;  // 读取数据地址
+    spi_msg.recv_size = 0;          // 读取数据数量
+    spi_msg.read_write = SPI_WR;    // 只写模式
+>>>>>>> 82a8986bea92f9e9a81c7b96ab835bf8ee9a111f
     
     /* 发送消息 */
     mr_soft_spi_transfer(&spi_device,spi_msg);
