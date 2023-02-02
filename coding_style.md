@@ -72,13 +72,38 @@ C 语言头文件为了避免多次重复包含，需要定义一个符号。这
 |局部变量，函数参数，宏参数，结构体成员，联合体成员|全小写，并下划线分割|`aaa_bbb`| `int temp_arg;`|
 |全局变量|全小写，以'g'开头，并下划线分割|`g_aaa_bbb` | `int g_arg;`|
 |宏，枚举值|全大写，并下划线分割|`AAA_BBB` | `NAME_MAX`|
-
+|指针|在上面的基础上结尾加 `_p`|`aaa_bbb_p`| `char *name_p;`|
 
  - typedef 修饰后的类型请在结尾加上"_t"，如：
 ```
-typedef struct mr_object *mr_object_t;
+typedef struct mr_object mr_object_t;
 
 ```
+
+ - typedef 修饰的`指针`类型请在结尾加上"_pt"，如：
+```
+typedef struct mr_object *mr_object_pt;
+
+```
+
+ - 可使用 `MR_TYPEDEF` 自动按格式定义完成 typedef 和 指针 typedef，如：
+```
+struct mr_obj
+{
+  char       name[MR_NAME_MAX];                          
+  mr_uint8_t type;                                       
+  mr_flag_t  flag;                                       
+
+  mr_list_t  list;                                       
+};
+MR_TYPEDEF(struct mr_obj, mr_obj);
+
+/* 宏展开 */
+typedef struct mr_obj mr_obj_t;
+typedef struct mr_obj *mr_obj_pt
+
+```
+
  - 与内核有关同时对外暴露的函数: `mr_function_name` 命名方式，如：
 ```
 void mr_kernel_init(void);
@@ -117,19 +142,14 @@ mr_kernel_init(); /* 你的英文注释 */
 如：
 ```
 /**
- * @brief    The function will initialize a object.
- *  * @note     For the object, its memory space is allocated by the compiler during compiling,
- *           and shall placed on the read-write data segment or on the uninitialized data segment.
- *           The object will add it to object system.
- *  * @see      mr_object_get_information()
- *  * @param    object is a pointer to the object to initialize. 
- *  * @param    type mr_object_class_type enum the type.
- *  * @param    name is a pointer to the name that given to the object.
- *  * @return   Return the operation status. When the return value is MR_EOK, the initialization is successful.
- *           If the return value is any other values, it represents the initialization failed.
- *  * @warning  Null.
+ * @brief    The function will get object information.
+ * @note     The function get object information from static obj_container.
+ * @see      Null.
+ * @param    type is a enumeration of object types.
+ * @return   Return the object information function got by the function.
+ * @warning  Null.
  */
-mr_err_t mr_object_init(struct mr_object *object, enum mr_object_class_type type,const char *name)
+mr_obj_info_pt mr_obj_get_info(enum mr_obj_class_type type)
 {
    ... 
 }
