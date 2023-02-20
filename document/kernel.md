@@ -32,18 +32,21 @@ struct mr_object
 
 ### **基础类型：**
  - **整型：**
+
  **`mr_int8_t` 8位整数类型**
 
  **`mr_int16_t` 16位整数类型**
  
  **`mr_int32_t` 32位整数类型**
  - **无符号整型：**
+
  **`mr_uint8_t` 8位无符号整数类型**
 
  **`mr_uint16_t` 16位无符号整数类型**
  
  **`mr_uint32_t` 32位无符号整数类型**
  - **浮点**
+
  **`mr_float` 单精度浮点类型**
 
  **`mr_double` 双精度浮点类型**
@@ -68,20 +71,25 @@ struct mr_object
 
 ### **基础宏：**
  - **空：**
+
 `MR_NULL`
  - **布尔：**
+
 `MR_TRUE`
 
 `MR_FALSE`
  - **级别：**
+
 `MR_HIGH`
 
 `MR_LOW`
  - **操作锁：**
+
 `MR_LOCK`
 
 `MR_UNLOCK`
  - **使能：**
+
 `MR_ENABLE`
 
 `MR_DISABLE`
