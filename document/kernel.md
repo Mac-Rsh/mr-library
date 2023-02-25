@@ -7,6 +7,7 @@
 在 `mr-library` 框架中，容器由 `名称`、`类型`、`链表` 组成。`名称` 用于对容器进行介绍和检索，也可用于为对象添加前缀名。`类型` 则是对容器的定义，不同类别的对象经过分类后被注册到对应的容器中。`链表`  是容器的链接方式，对象则是通过链表放入容器中。
 
 ```
+/* 容器结构体 */
 struct mr_container
 {
   char                   *name;
@@ -15,10 +16,24 @@ struct mr_container
 };
 ```
 
+#### **寻找容器**
+
+```
+mr_container_t mr_container_find(enum mr_container_type type);
+```
+
+|参数|描述|
+|:--|:--|
+|type|容器的类型，只能是 mr_container_type 中的类型|
+|**返回**|— —|
+|容器句柄|寻找成功|
+|MR_NULL|寻找失败|
+
 ## **对象**
 在 `mr-library` 框架中，容器由 `名称`、`状态`、`链表` 组成。`名称` 是对象名，也是容器查找等操作所依托的基础。`状态` 则保存有该对象的状态，主动操作或错误调用等情况发生时，状态也会随之改变。`链表` 则是对象的链接方式，当对象被注册到容器后，该对象将被加入到对应容器的链表中。
 
 ```
+/* 对象结构体 */
 struct mr_object
 {
   char            *name;
@@ -26,6 +41,110 @@ struct mr_object
   struct mr_list  list;
 };
 ```
+
+#### **从容器中寻找对象**
+
+```
+mr_object_t mr_object_find(char *name, enum mr_container_type type);
+```
+
+|参数|描述|
+|:--|:--|
+|name|对象名称|
+|type|对象注册的容器类型，只能是 mr_container_type 中的类型|
+|**返回**|— —|
+|对象句柄|寻找成功|
+|MR_NULL|寻找失败|
+
+#### **初始化对象**
+
+```
+void mr_object_init(mr_object_t object, const char *name);
+```
+
+|参数|描述|
+|:--|:--|
+|object|对象句柄|
+|name|对象名称|
+
+#### **创建动态对象**
+
+```
+mr_object_t mr_object_create(char *name);
+```
+
+|参数|描述|
+|:--|:--|
+|name|对象名称|
+|**返回**|— —|
+|对象句柄|创建成功|
+|MR_NULL|创建失败|
+
+#### **注册对象到容器**
+
+```
+mr_err_t mr_object_register(mr_object_t object, enum mr_container_type type);
+```
+
+|参数|描述|
+|:--|:--|
+|object|对象句柄|
+|type|对象注册的容器类型，只能是 mr_container_type 中的类型|
+|**返回**|— —|
+|MR_ERR_OK|注册成功|
+|Other|注册失败，返回错误码|
+
+#### **将对象从容器中注销**
+
+```
+mr_err_t mr_object_unregister(mr_object_t object);
+```
+
+|参数|描述|
+|:--|:--|
+|object|对象句柄|
+|**返回**|— —|
+|MR_ERR_OK|注销成功|
+|Other|注销失败，返回错误码|
+
+#### **删除对象**
+
+```
+mr_err_t mr_object_delete(mr_object_t object);
+```
+
+|参数|描述|
+|:--|:--|
+|object|对象句柄|
+|**返回**|— —|
+|MR_ERR_OK|删除成功|
+|Other|删除失败，返回错误码|
+
+#### **将对象移动到指定容器**
+
+```
+mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dest_type);
+```
+
+|参数|描述|
+|:--|:--|
+|object|对象句柄|
+|type|对象要移动到的容器类型，只能是 mr_container_type 中的类型|
+|**返回**|— —|
+|MR_ERR_OK|删除成功|
+|Other|删除失败，返回错误码|
+
+#### **重命名对象**
+
+```
+void mr_object_rename(mr_object_t object, char *new_name);
+```
+
+|参数|描述|
+|:--|:--|
+|object|对象句柄|
+|name|重命名名称|
+
 
 ## **类型**
 所有的类型命都以 `mr` 开头然后是 `类型` 最后以 `_t` 结尾。
