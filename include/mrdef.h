@@ -53,13 +53,34 @@ typedef mr_base_t mr_off_t;                   /**< Type for offset */
 #define MR_ERR_OK                   0                         /**< There is no error */
 #define MR_ERR_GENERIC              1                         /**< A generic error happens */
 #define MR_ERR_OVERFLOW             2                         /**< Overflow */
-#define MR_ERR_NOMEM                3                         /**< No memory */
+#define MR_ERR_NO_MEMORY            3                         /**< No memory */
 #define MR_ERR_IO                   4                         /**< IO error */
 #define MR_ERR_INVALID              5                         /**< Invalid argument */
 #define MR_ERR_TIMEOUT              6                         /**< Timed out */
 #define MR_ERR_BUSY                 7                         /**< Busy */
 #define MR_ERR_NOT_FOUND            8                         /**< Not found */
 #define MR_ERR_UNSUPPORTED          9                         /**< Unsupported feature */
+
+/* mr-library basic open flag definitions */
+#define MR_OPEN_CLOSED              0x0000                    /**< Closed */
+#define MR_OPEN_RDONLY              0x1000                    /**< Read only */
+#define MR_OPEN_WRONLY              0x2000                    /**< Write only */
+#define MR_OPEN_RDWR                0x3000                    /**< Read and Write */
+#define MR_OPEN_NONBLOCKING_RD      0x4000                    /**< Non-blocking Read */
+#define MR_OPEN_NONBLOCKING_WR      0x8000                    /**< Non-blocking Write */
+#define MR_OPEN_ACTIVE              0x0100                    /**< Active */
+#define _MR_OPEN_FLAG_MASK          0xf000
+
+/* mr-library basic command definitions */
+#define MR_CMD_NULL                 0x0000                    /**< Null command */
+#define MR_CMD_CONFIG               0x1000                    /**< Configure command */
+#define MR_CMD_SET_RX_CALLBACK      0x2000                    /**< Set rx callback command */
+#define MR_CMD_SET_TX_CALLBACK      0x3000                    /**< Set tx callback command */
+#define MR_CMD_ATTACH               0x4000                    /**< Attach command */
+#define MR_CMD_DETACH               0x5000
+#define MR_CMD_TRANSFER             0x6000                    /**< Transfer command */
+#define _MR_CMD_MASK                0xf000                    /**< Mask for getting command */
+
 
 
 /* Compiler Related Definitions */
@@ -188,7 +209,7 @@ enum mr_device_type
     MR_DEVICE_TYPE_SPI,
     MR_DEVICE_TYPE_I2C_BUS,
     MR_DEVICE_TYPE_I2C,
-    MR_DEVICE_TYPE_UART,
+    MR_DEVICE_TYPE_SERIAL,
     MR_DEVICE_TYPE_ADC,
     MR_DEVICE_TYPE_DAC,
 
@@ -206,11 +227,11 @@ enum mr_device_type
 typedef struct mr_device *mr_device_t;
 struct mr_device_ops
 {
-    mr_err_t (*open)(mr_device_t this);
-    mr_err_t (*close)(mr_device_t this);
-    mr_err_t (*ioctl)(mr_device_t this, int cmd, void *args);
-    mr_size_t (*read)(mr_device_t this, mr_off_t pos, void *buffer, mr_size_t count);
-    mr_size_t (*write)(mr_device_t this, mr_off_t pos, const void *buffer, mr_size_t count);
+    mr_err_t (*open)(mr_device_t device);
+    mr_err_t (*close)(mr_device_t device);
+    mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
+    mr_size_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count);
+    mr_size_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count);
 };
 
 struct mr_device
@@ -224,6 +245,8 @@ struct mr_device
     mr_uint16_t open_flag;
     mr_uint8_t ref_count;
     void *data;
+
+    const struct mr_device_ops *ops;
 };
 
 #endif
