@@ -22,9 +22,7 @@ static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 
 mr_container_t mr_container_find(enum mr_container_type type)
 {
-    /* Check if the kernel has this container type */
-    if (type >= _MR_CONTAINER_TYPE_MASK)
-        return MR_NULL;
+    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
     return &mr_kernel_container[type];
 }
@@ -33,19 +31,15 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
 {
     mr_list_t list = MR_NULL;
     mr_container_t container = MR_NULL;
+    mr_object_t object = MR_NULL;
 
     /* Get corresponding container */
     container = mr_container_find(type);
-    if (container == MR_NULL)
-        return MR_NULL;
 
     /* Walk through the container looking for objects */
     for (list = (container->list).next; list != &(container->list); list = list->next)
     {
-        mr_object_t object;
         object = mr_container_of(list, struct mr_object, list);
-        if (object == MR_NULL)
-            continue;
         if (mr_strncmp(object->name, name, MR_NAME_MAX) == 0)
             return object;
     }
@@ -53,56 +47,25 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
     return MR_NULL;
 }
 
-void mr_object_init(mr_object_t object, const char *name)
-{
-    /* Set the object list to its initial state */
-    mr_list_init(&(object->list));
-
-    /* Copy the specified name to the object name */
-    mr_strncpy(object->name, name, MR_NAME_MAX);
-
-    /* Set the object type to initialized */
-    object->type = MR_OBJECT_TYPE_NULL;
-    object->type |= MR_OBJECT_TYPE_STATIC;
-}
-
-mr_object_t mr_object_create(const char *name)
-{
-    mr_object_t object = MR_NULL;
-
-    /* Allocate memory for the object */
-    object = (mr_object_t) mr_malloc(sizeof(struct mr_object));
-    if (object == MR_NULL)
-        return MR_NULL;
-
-    /* Initialize the memory */
-    mr_memset(object, 0x0, sizeof(struct mr_object));
-
-    /* Set the object list to its initial state */
-    mr_list_init(&(object->list));
-
-    /* Copy the specified name to the object name */
-    mr_strncpy(object->name, name, MR_NAME_MAX);
-
-    return object;
-}
-
-mr_err_t mr_object_add_to_container(mr_object_t object, enum mr_container_type container_type)
+mr_err_t mr_object_add_to_container(mr_object_t object, const char *name, enum mr_container_type container_type)
 {
     mr_container_t container = MR_NULL;
+
+    MR_ASSERT(object != MR_NULL);
 
     /* Check if the object is already registered */
     if (object->type & MR_OBJECT_TYPE_REGISTER)
         return -MR_ERR_BUSY;
 
+    /* Check if the object already exists in the container */
+    if (mr_object_find(name, container_type) != MR_NULL)
+        return -MR_ERR_GENERIC;
+
+    /* Copy the specified name to the object name */
+    mr_strncpy(object->name, name, MR_NAME_MAX);
+
     /* Find the container for the specified type */
     container = mr_container_find(container_type);
-    if (container == MR_NULL)
-        return -MR_ERR_NOT_FOUND;
-
-    /* Check if the object already exists in the container */
-    if (mr_object_find(object->name, container_type) != MR_NULL)
-        return -MR_ERR_GENERIC;
 
     /* Insert the object into the container's list */
     mr_list_insert_after(&(container->list), &(object->list));
@@ -115,6 +78,8 @@ mr_err_t mr_object_remove_from_container(mr_object_t object)
 {
     mr_err_t error_code = MR_ERR_OK;
 
+    MR_ASSERT(object != MR_NULL);
+
     /* Check if the object is registered */
     if ((object->type & MR_OBJECT_TYPE_REGISTER) == 0)
         return -MR_ERR_GENERIC;
@@ -126,9 +91,11 @@ mr_err_t mr_object_remove_from_container(mr_object_t object)
     return error_code;
 }
 
-mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dest_type)
+mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dst_type)
 {
     mr_err_t error_code = MR_ERR_OK;
+
+    MR_ASSERT(object != MR_NULL);
 
     /* Remove the object from its current container */
     error_code = mr_object_remove_from_container(object);
@@ -136,32 +103,31 @@ mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dest_type)
         return error_code;
 
     /* Add the object to the new container */
-    error_code = mr_object_add_to_container(object, dest_type);
+    error_code = mr_object_add_to_container(object, object->name, dst_type);
 
     return error_code;
 }
 
 void mr_object_rename(mr_object_t object, char *name)
 {
-    mr_strncpy(object->name, name, MR_NAME_MAX);
-}
+    MR_ASSERT(object != MR_NULL);
 
-mr_bool_t mr_object_is_static(mr_object_t object)
-{
-    if (object->type & MR_OBJECT_TYPE_STATIC)
-        return MR_TRUE;
-    else
-        return MR_FALSE;
+    mr_strncpy(object->name, name, MR_NAME_MAX);
 }
 
 void mr_mutex_init(mr_mutex_t mutex)
 {
+    MR_ASSERT(mutex != MR_NULL);
+
     mutex->owner = MR_NULL;
     mutex->lock = MR_UNLOCK;
 }
 
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 {
+    MR_ASSERT(mutex != MR_NULL);
+    MR_ASSERT(owner != MR_NULL);
+
     mr_hw_interrupt_disable();
 
     if (mutex->owner != owner)
@@ -184,6 +150,9 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
 {
+    MR_ASSERT(mutex != MR_NULL);
+    MR_ASSERT(owner != MR_NULL);
+
     mr_hw_interrupt_disable();
 
     if (mutex->owner == owner)
@@ -200,6 +169,9 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
 
 void mr_ringbuffer_init(mr_ringbuffer_t ringbuffer, mr_uint8_t *pool, mr_size_t pool_size)
 {
+    MR_ASSERT(ringbuffer != MR_NULL);
+    MR_ASSERT(pool != MR_NULL);
+
     ringbuffer->read_mirror = ringbuffer->read_index = 0;
     ringbuffer->write_mirror = ringbuffer->write_index = 0;
 
@@ -209,6 +181,8 @@ void mr_ringbuffer_init(mr_ringbuffer_t ringbuffer, mr_uint8_t *pool, mr_size_t 
 
 MR_INLINE enum mr_ringbuffer_state mr_ringbuffer_get_state(mr_ringbuffer_t ringbuffer)
 {
+    MR_ASSERT(ringbuffer != MR_NULL);
+
     if (ringbuffer->read_index == ringbuffer->write_index)
     {
         if (ringbuffer->read_mirror == ringbuffer->write_mirror)
@@ -223,6 +197,8 @@ MR_INLINE enum mr_ringbuffer_state mr_ringbuffer_get_state(mr_ringbuffer_t ringb
 mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t ringbuffer)
 {
     mr_size_t wi, ri;
+
+    MR_ASSERT(ringbuffer != MR_NULL);
 
     switch (mr_ringbuffer_get_state(ringbuffer))
     {
@@ -243,12 +219,38 @@ mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t ringbuffer)
 
 MR_INLINE mr_size_t mr_ringbuffer_space_length(mr_ringbuffer_t ringbuffer)
 {
+    MR_ASSERT(ringbuffer != MR_NULL);
+
     return (ringbuffer->buffer_size - mr_ringbuffer_get_data_length(ringbuffer));
+}
+
+mr_size_t mr_ringbuffer_write_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t data)
+{
+    /* Whether there is enough space */
+    if (!mr_ringbuffer_space_length(ringbuffer))
+        return 0;
+
+    ringbuffer->buffer[ringbuffer->write_index] = data;
+
+    /* flip mirror */
+    if (ringbuffer->write_index == ringbuffer->buffer_size - 1)
+    {
+        ringbuffer->write_mirror = ~ringbuffer->write_mirror;
+        ringbuffer->write_index = 0;
+    } else
+    {
+        ringbuffer->write_index++;
+    }
+
+    return 1;
 }
 
 mr_size_t mr_ringbuffer_write(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buffer, mr_size_t length)
 {
     mr_size_t space_length;
+
+    MR_ASSERT(ringbuffer != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
 
     space_length = mr_ringbuffer_space_length(ringbuffer);
     if (space_length == 0)
@@ -278,9 +280,42 @@ mr_size_t mr_ringbuffer_write(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buff
     }
 }
 
+mr_size_t mr_ringbuffer_write_byte_force(mr_ringbuffer_t ringbuffer, mr_uint8_t data)
+{
+    enum mr_ringbuffer_state old_state;
+
+    MR_ASSERT(ringbuffer != MR_NULL);
+
+    old_state = mr_ringbuffer_get_state(ringbuffer);
+
+    ringbuffer->buffer[ringbuffer->write_index] = data;
+
+    /* flip mirror */
+    if (ringbuffer->write_index == ringbuffer->buffer_size - 1)
+    {
+        ringbuffer->write_mirror = ~ringbuffer->write_mirror;
+        ringbuffer->write_index = 0;
+        if (old_state == MR_RINGBUFFER_FULL)
+        {
+            ringbuffer->read_mirror = ~ringbuffer->read_mirror;
+            ringbuffer->read_index = ringbuffer->write_index;
+        }
+    } else
+    {
+        ringbuffer->write_index++;
+        if (old_state == MR_RINGBUFFER_FULL)
+            ringbuffer->read_index = ringbuffer->write_index;
+    }
+
+    return 1;
+}
+
 mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buffer, mr_size_t length)
 {
     mr_size_t space_length;
+
+    MR_ASSERT(ringbuffer != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
 
     space_length = mr_ringbuffer_space_length(ringbuffer);
     if (space_length == 0)
@@ -324,9 +359,36 @@ mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t ringbuffer, const mr_uint8_t
     }
 }
 
+mr_size_t mr_ringbuffer_read_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t *data)
+{
+    MR_ASSERT(ringbuffer != MR_NULL);
+    MR_ASSERT(data != MR_NULL);
+
+    /* ringbuffer is empty */
+    if (!mr_ringbuffer_get_data_length(ringbuffer))
+        return 0;
+
+    /* put byte */
+    *data = ringbuffer->buffer[ringbuffer->read_index];
+
+    if (ringbuffer->read_index == ringbuffer->buffer_size - 1)
+    {
+        ringbuffer->read_mirror = ~ringbuffer->read_mirror;
+        ringbuffer->read_index = 0;
+    } else
+    {
+        ringbuffer->read_index++;
+    }
+
+    return 1;
+}
+
 mr_size_t mr_ringbuffer_read(mr_ringbuffer_t ringbuffer, mr_uint8_t *buffer, mr_size_t length)
 {
     mr_size_t count;
+
+    MR_ASSERT(ringbuffer != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
 
     count = mr_ringbuffer_get_data_length(ringbuffer);
     if (count == 0)
@@ -356,72 +418,3 @@ mr_size_t mr_ringbuffer_read(mr_ringbuffer_t ringbuffer, mr_uint8_t *buffer, mr_
     return length;
 }
 
-mr_size_t mr_ringbuffer_write_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t data)
-{
-    /* Whether there is enough space */
-    if (!mr_ringbuffer_space_length(ringbuffer))
-        return 0;
-
-    ringbuffer->buffer[ringbuffer->write_index] = data;
-
-    /* flip mirror */
-    if (ringbuffer->write_index == ringbuffer->buffer_size - 1)
-    {
-        ringbuffer->write_mirror = ~ringbuffer->write_mirror;
-        ringbuffer->write_index = 0;
-    } else
-    {
-        ringbuffer->write_index++;
-    }
-
-    return 1;
-}
-
-mr_size_t mr_ringbuffer_write_byte_force(mr_ringbuffer_t ringbuffer, mr_uint8_t data)
-{
-    enum mr_ringbuffer_state old_state;
-
-    old_state = mr_ringbuffer_get_state(ringbuffer);
-
-    ringbuffer->buffer[ringbuffer->write_index] = data;
-
-    /* flip mirror */
-    if (ringbuffer->write_index == ringbuffer->buffer_size - 1)
-    {
-        ringbuffer->write_mirror = ~ringbuffer->write_mirror;
-        ringbuffer->write_index = 0;
-        if (old_state == MR_RINGBUFFER_FULL)
-        {
-            ringbuffer->read_mirror = ~ringbuffer->read_mirror;
-            ringbuffer->read_index = ringbuffer->write_index;
-        }
-    } else
-    {
-        ringbuffer->write_index++;
-        if (old_state == MR_RINGBUFFER_FULL)
-            ringbuffer->read_index = ringbuffer->write_index;
-    }
-
-    return 1;
-}
-
-mr_size_t mr_ringbuffer_read_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t *data)
-{
-    /* ringbuffer is empty */
-    if (!mr_ringbuffer_get_data_length(ringbuffer))
-        return 0;
-
-    /* put byte */
-    *data = ringbuffer->buffer[ringbuffer->read_index];
-
-    if (ringbuffer->read_index == ringbuffer->buffer_size - 1)
-    {
-        ringbuffer->read_mirror = ~ringbuffer->read_mirror;
-        ringbuffer->read_index = 0;
-    } else
-    {
-        ringbuffer->read_index++;
-    }
-
-    return 1;
-}
