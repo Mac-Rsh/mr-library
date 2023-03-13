@@ -66,9 +66,7 @@ typedef mr_base_t mr_off_t;                   /**< Type for offset */
 #define MR_OPEN_RDONLY              0x1000                    /**< Read only */
 #define MR_OPEN_WRONLY              0x2000                    /**< Write only */
 #define MR_OPEN_RDWR                0x3000                    /**< Read and Write */
-#define MR_OPEN_NONBLOCKING_RD      0x4000                    /**< Non-blocking Read */
-#define MR_OPEN_NONBLOCKING_WR      0x8000                    /**< Non-blocking Write */
-#define MR_OPEN_ACTIVE              0x0100                    /**< Active */
+#define MR_OPEN_ACTIVE              0x8000                    /**< Active */
 #define _MR_OPEN_FLAG_MASK          0xf000
 
 /* mr-library basic command definitions */
@@ -80,8 +78,6 @@ typedef mr_base_t mr_off_t;                   /**< Type for offset */
 #define MR_CMD_DETACH               0x5000
 #define MR_CMD_TRANSFER             0x6000                    /**< Transfer command */
 #define _MR_CMD_MASK                0xf000                    /**< Mask for getting command */
-
-
 
 /* Compiler Related Definitions */
 #if defined(__ARMCC_VERSION)
@@ -238,8 +234,8 @@ struct mr_device
 {
     struct mr_object object;
 
-    mr_err_t (*rx_callback)(mr_device_t this, void *args);
-    mr_err_t (*tx_callback)(mr_device_t this, void *args);
+    mr_err_t (*rx_callback)(mr_device_t device, void *args);
+    mr_err_t (*tx_callback)(mr_device_t device, void *args);
     enum mr_device_type type;
     mr_uint16_t support_flag;
     mr_uint16_t open_flag;
