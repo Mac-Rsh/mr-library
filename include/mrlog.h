@@ -2,8 +2,8 @@
 // Created by 10632 on 2023/3/13.
 //
 
-#ifndef DESIGN_MR_LIBRARY_INCLUDE_MRLOG_H_
-#define DESIGN_MR_LIBRARY_INCLUDE_MRLOG_H_
+#ifndef _MR_LOG_H_
+#define _MR_LOG_H_
 
 #include <mrdef.h>
 
@@ -52,4 +52,4 @@ MR_INLINE void mr_assert_handler()
 #define MR_LOG_E(string, error) do{}while(0)
 #define MR_LOG_W(string) do{}while(0)
 
-#endif //DESIGN_MR_LIBRARY_INCLUDE_MRLOG_H_
+#endif
