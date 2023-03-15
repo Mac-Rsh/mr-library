@@ -90,6 +90,18 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 			break;
 		}
 
+		case MR_CMD_SET_RX_CALLBACK:
+		{
+			device->rx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
+			break;
+		}
+
+		case MR_CMD_SET_TX_CALLBACK:
+		{
+			device->tx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
+			break;
+		}
+
 		default: ret = - MR_ERR_UNSUPPORTED;
 	}
 
