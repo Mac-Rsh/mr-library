@@ -16,6 +16,7 @@ MR_INLINE void mr_assert_handler()
     do{                         \
         if (!(EX))              \
         {                       \
+          printf("ASSERT: [%s]- [%d]\r\n", __FUNCTION__ , __LINE__);                      \
           mr_assert_handler();  \
         }                       \
     }while(0)
@@ -49,7 +50,7 @@ MR_INLINE void mr_assert_handler()
 //    }
 
 #define MR_LOG_D(string) do{}while(0)
-#define MR_LOG_E(string, error) do{}while(0)
+#define MR_LOG_E(string) do{}while(0)
 #define MR_LOG_W(string) do{}while(0)
 
 #endif
