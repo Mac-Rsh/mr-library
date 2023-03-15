@@ -280,7 +280,7 @@ mr_size_t mr_ringbuffer_write(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buff
 	}
 }
 
-mr_size_t mr_ringbuffer_write_byte_force(mr_ringbuffer_t ringbuffer, mr_uint8_t data)
+mr_size_t mr_ringbuffer_write_data_force(mr_ringbuffer_t ringbuffer, mr_uint8_t data)
 {
 	enum mr_ringbuffer_state old_state;
 
@@ -359,7 +359,7 @@ mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t ringbuffer, const mr_uint8_t
 	}
 }
 
-mr_size_t mr_ringbuffer_read_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t *data)
+mr_size_t mr_ringbuffer_read_data(mr_ringbuffer_t ringbuffer, mr_uint8_t *data)
 {
 	MR_ASSERT(ringbuffer != MR_NULL);
 	MR_ASSERT(data != MR_NULL);
