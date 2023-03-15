@@ -158,8 +158,7 @@ struct mr_container
 typedef struct mr_container *mr_container_t;
 
 #define MR_OBJECT_TYPE_NULL         0x00
-#define MR_OBJECT_TYPE_REGISTER     0x40
-#define MR_OBJECT_TYPE_STATIC       0x80
+#define MR_OBJECT_TYPE_REGISTER     0x10
 
 struct mr_object
 {
