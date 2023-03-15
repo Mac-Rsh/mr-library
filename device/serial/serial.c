@@ -10,6 +10,8 @@
 
 #include "serial.h"
 
+#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+
 static mr_err_t mr_serial_open(mr_device_t device)
 {
 	mr_serial_t serial = (mr_serial_t)device;
@@ -19,6 +21,7 @@ static mr_err_t mr_serial_open(mr_device_t device)
 	/* Allocation the fifo memory */
 	if (serial->fifo_bufsz != 0)
 	{
+		/* Rx-fifo */
 		fifo = (struct mr_serial_fifo *)mr_malloc(sizeof(struct mr_serial_fifo *) + serial->fifo_bufsz);
 		if (fifo == MR_NULL)
 			return - MR_ERR_NO_MEMORY;
@@ -27,6 +30,7 @@ static mr_err_t mr_serial_open(mr_device_t device)
 		serial->fifo_rx = fifo;
 		fifo = MR_NULL;
 
+		/* Tx-fifo */
 		fifo = (struct mr_serial_fifo *)mr_malloc(sizeof(struct mr_serial_fifo *) + serial->fifo_bufsz);
 		if (fifo == MR_NULL)
 			return - MR_ERR_NO_MEMORY;
@@ -51,12 +55,12 @@ static mr_err_t mr_serial_close(mr_device_t device)
 	/* Release the fifo memory */
 	if (serial->fifo_bufsz != 0)
 	{
-		//TODO 检测写FIFO是否输出完毕，为输出完毕则在此输出，然后再关闭串口设备
-
+		/* Rx-fifo */
 		fifo = (struct mr_serial_fifo *)serial->fifo_rx;
 		mr_free(fifo);
 		serial->fifo_rx = MR_NULL;
 
+		/* Tx-fifo */
 		fifo = (struct mr_serial_fifo *)serial->fifo_tx;
 		mr_free(fifo);
 		serial->fifo_tx = MR_NULL;
@@ -96,16 +100,16 @@ static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, 
 {
 	mr_serial_t serial = (mr_serial_t)device;
 	struct mr_serial_fifo *fifo = MR_NULL;
-	mr_size_t length;
+	mr_size_t length = 0;
 
 	fifo = (struct mr_serial_fifo *)serial->fifo_rx;
 
 	do
 	{
-		length = mr_ringbuffer_get_data_length(&fifo->ringbuffer);
+		length += mr_ringbuffer_read(&fifo->ringbuffer, (mr_uint8_t *)&buffer[length], size - length);
 	} while (length < size);
 
-	return mr_ringbuffer_read(&fifo->ringbuffer, buffer, size);
+	return length;
 }
 
 static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
@@ -116,9 +120,11 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 
 	fifo = (struct mr_serial_fifo *)serial->fifo_tx;
 
+	serial->ops->start_tx(serial);
+
 	do
 	{
-		length += mr_ringbuffer_write(&fifo->ringbuffer, &buffer[length], size - length);
+		length += mr_ringbuffer_write(&fifo->ringbuffer, (mr_uint8_t *)&buffer[length], size - length);
 	} while (length < size);
 
 	return length;
@@ -126,19 +132,34 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 
 static mr_err_t _hw_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
-	MR_LOG_D("Serial configure error: -MR_ERR_IO");
+	MR_LOG_E("Serial configure error: -MR_ERR_IO");
+	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static void _hw_serial_write_byte(mr_serial_t serial, mr_uint8_t data)
+static void _hw_serial_write_data(mr_serial_t serial, mr_uint8_t data)
 {
-	MR_LOG_D("Serial write error: -MR_ERR_IO");
+	MR_LOG_E("Serial write error: -MR_ERR_IO");
+	MR_ASSERT(0);
 }
 
-static int _hw_serial_read_byte(mr_serial_t serial)
+static mr_uint8_t _hw_serial_read_data(mr_serial_t serial)
 {
-	MR_LOG_D("Serial read error: -MR_ERR_IO");
-	return - 1;
+	MR_LOG_E("Serial read error: -MR_ERR_IO");
+	MR_ASSERT(0);
+	return 0;
+}
+
+static void _hw_serial_start_tx(mr_serial_t serial)
+{
+	MR_LOG_E("Serial start-tx error: -MR_ERR_IO");
+	MR_ASSERT(0);
+}
+
+static void _hw_serial_stop_tx(mr_serial_t serial)
+{
+	MR_LOG_E("Serial stop-tx error: -MR_ERR_IO");
+	MR_ASSERT(0);
 }
 
 mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
@@ -164,14 +185,16 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 
 	/* Initialize the serial fields */
 	serial->config.baud_rate = 0;
-	serial->fifo_bufsz = MR_SERIAL_FIFO_BUFSZ;
+	serial->fifo_bufsz = MR_SERIAL_FIFO_SIZE;
 	serial->fifo_rx = MR_NULL;
 	serial->fifo_tx = MR_NULL;
 
 	/* Set serial operations as protect functions if ops is null */
 	ops->configure = ops->configure ? ops->configure : _hw_serial_configure;
-	ops->write_byte = ops->write_byte ? ops->write_byte : _hw_serial_write_byte;
-	ops->read_byte = ops->read_byte ? ops->read_byte : _hw_serial_read_byte;
+	ops->write_data = ops->write_data ? ops->write_data : _hw_serial_write_data;
+	ops->read_data = ops->read_data ? ops->read_data : _hw_serial_read_data;
+	ops->start_tx = ops->start_tx ? ops->start_tx : _hw_serial_start_tx;
+	ops->stop_tx = ops->stop_tx ? ops->stop_tx : _hw_serial_stop_tx;
 	serial->ops = ops;
 
 	return MR_ERR_OK;
@@ -183,24 +206,54 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 	{
 		case MR_SERIAL_EVENT_RX_INT:
 		{
-			struct mr_serial_fifo *fifo = (struct mr_serial_fifo *)serial->fifo_rx;
+			struct mr_serial_fifo *fifo = MR_NULL;
 			mr_uint8_t data;
 
+			fifo = (struct mr_serial_fifo *)serial->fifo_rx;
+
 			/* Read data into the ring buffer */
-			data = serial->ops->read_byte(serial);
-			mr_ringbuffer_write_byte_force(&fifo->ringbuffer, data);
+			data = serial->ops->read_data(serial);
+			mr_ringbuffer_write_data_force(&fifo->ringbuffer, data);
 
 			/* Invoke the rx-callback function */
 			if (serial->device.rx_callback != MR_NULL)
 			{
-				mr_size_t rx_length = 0;
+				mr_size_t length;
 
-				rx_length = mr_ringbuffer_get_data_length(&fifo->ringbuffer);
-				serial->device.rx_callback(&serial->device, &rx_length);
+				length = mr_ringbuffer_get_data_length(&fifo->ringbuffer);
+				serial->device.rx_callback(&serial->device, &length);
 			}
+			break;
+		}
+
+		case MR_SERIAL_EVENT_TX_INT:
+		{
+			struct mr_serial_fifo *fifo = MR_NULL;
+			mr_size_t length;
+			mr_uint8_t data;
+
+			fifo = (struct mr_serial_fifo *)serial->fifo_tx;
+
+			length = mr_ringbuffer_get_data_length(&fifo->ringbuffer);
+			if (length == 0)
+			{
+				serial->ops->stop_tx(serial);
+
+				/* Invoke the tx-callback function */
+				if (serial->device.tx_callback != MR_NULL)
+				{
+					serial->device.rx_callback(&serial->device, &length);
+				}
+				break;
+			}
+
+			mr_ringbuffer_read_data(&fifo->ringbuffer, &data);
+			serial->ops->write_data(serial, data);
 			break;
 		}
 
 		default:break;
 	}
 }
+
+#endif

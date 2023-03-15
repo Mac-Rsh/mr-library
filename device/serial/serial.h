@@ -13,6 +13,8 @@
 
 #include <mrlib.h>
 
+#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+
 #define MR_SERIAL_DATA_BITS_8           8
 #define MR_SERIAL_DATA_BITS_9           9
 
@@ -33,11 +35,13 @@
 #define MR_SERIAL_FLOW_CONTROL_NONE     0
 #define MR_SERIAL_FLOW_CONTROL_CTSRTS   1
 
-#define MR_SERIAL_FIFO_BUFSZ            32
-
-#define MR_SERIAL_FIFO_MIN_SIZE         MR_SERIAL_FIFO_MIN
+#define MR_SERIAL_FIFO_SIZE_MIN        32
+#if MR_SERIAL_FIFO_SIZE < MR_SERIAL_FIFO_SIZE_MIN
+#define MR_SERIAL_FIFO_SIZE         	MR_SERIAL_FIFO_SIZE_MIN
+#endif
 
 #define MR_SERIAL_EVENT_RX_INT          0x1000
+#define MR_SERIAL_EVENT_TX_INT            0x2000
 #define _MR_SERIAL_EVENT_MASK           0xf000
 
 /* Default config for mr_serial_configure structure */
@@ -54,44 +58,48 @@
 
 struct mr_serial_config
 {
-    mr_uint32_t baud_rate;
+	mr_uint32_t baud_rate;
 
-    mr_uint16_t data_bits: 4;
-    mr_uint16_t stop_bits: 2;
-    mr_uint16_t parity: 2;
-    mr_uint16_t bit_order: 1;
-    mr_uint16_t invert: 1;
-    mr_uint16_t flow_control: 1;
-    mr_uint16_t reserved: 5;
+	mr_uint16_t data_bits: 4;
+	mr_uint16_t stop_bits: 2;
+	mr_uint16_t parity: 2;
+	mr_uint16_t bit_order: 1;
+	mr_uint16_t invert: 1;
+	mr_uint16_t flow_control: 1;
+	mr_uint16_t reserved: 5;
 };
 
 struct mr_serial_fifo
 {
-    struct mr_ringbuffer ringbuffer;
-    mr_uint8_t pool[];
+	struct mr_ringbuffer ringbuffer;
+	mr_uint8_t pool[];
 };
 
 typedef struct mr_serial *mr_serial_t;
 struct mr_serial_ops
 {
-    mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
-    void (*write_byte)(mr_serial_t serial, mr_uint8_t data);
-    int (*read_byte)(mr_serial_t serial);
+	mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
+	void (*write_data)(mr_serial_t serial, mr_uint8_t data);
+	mr_uint8_t (*read_data)(mr_serial_t serial);
+	void (*start_tx)(mr_serial_t serial);
+	void (*stop_tx)(mr_serial_t serial);
 };
 
 struct mr_serial
 {
-    struct mr_device device;
+	struct mr_device device;
 
-    struct mr_serial_config config;
-    mr_size_t fifo_bufsz;
-    void *fifo_rx;
-    void *fifo_tx;
+	struct mr_serial_config config;
+	mr_size_t fifo_bufsz;
+	void *fifo_rx;
+	void *fifo_tx;
 
-    const struct mr_serial_ops *ops;
+	const struct mr_serial_ops *ops;
 };
 
 mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data);
 void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event);
+
+#endif
 
 #endif
