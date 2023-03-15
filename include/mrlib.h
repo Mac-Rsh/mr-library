@@ -31,10 +31,10 @@ void mr_ringbuffer_init(mr_ringbuffer_t ringbuffer, mr_uint8_t *pool, mr_size_t 
 mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t ringbuffer);
 mr_size_t mr_ringbuffer_write_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t data);
 mr_size_t mr_ringbuffer_write(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buffer, mr_size_t length);
-mr_size_t mr_ringbuffer_write_byte_force(mr_ringbuffer_t ringbuffer, mr_uint8_t data);
+mr_size_t mr_ringbuffer_write_data_force(mr_ringbuffer_t ringbuffer, mr_uint8_t data);
 mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buffer, mr_size_t length);
 mr_size_t mr_ringbuffer_read(mr_ringbuffer_t ringbuffer, mr_uint8_t *buffer, mr_size_t length);
-mr_size_t mr_ringbuffer_read_byte(mr_ringbuffer_t ringbuffer, mr_uint8_t *data);
+mr_size_t mr_ringbuffer_read_data(mr_ringbuffer_t ringbuffer, mr_uint8_t *data);
 
 mr_device_t mr_device_find(const char *name);
 mr_err_t mr_device_add_to_container(mr_device_t device,
