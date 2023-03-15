@@ -46,7 +46,7 @@ mr_err_t mr_device_add_to_container(mr_device_t device,
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
-mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buf, mr_size_t size);
-mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buf, mr_size_t size);
+mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 
 #endif
