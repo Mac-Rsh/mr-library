@@ -79,8 +79,8 @@ typedef struct mr_serial *mr_serial_t;
 struct mr_serial_ops
 {
 	mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
-	void (*write_data)(mr_serial_t serial, mr_uint8_t data);
-	mr_uint8_t (*read_data)(mr_serial_t serial);
+	void (*write)(mr_serial_t serial, mr_uint8_t data);
+	mr_uint8_t (*read)(mr_serial_t serial);
 	void (*start_tx)(mr_serial_t serial);
 	void (*stop_tx)(mr_serial_t serial);
 };
