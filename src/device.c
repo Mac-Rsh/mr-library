@@ -115,7 +115,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 	return device->ops->ioctl(device, cmd, args);
 }
 
-mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
 {
 	MR_ASSERT(device != MR_NULL);
 
@@ -127,10 +127,10 @@ mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size
 	if (device->ops->read == MR_NULL)
 		return 0;
 
-	return device->ops->read(device, pos, buffer, size);
+	return device->ops->read(device, pos, buffer, count);
 }
 
-mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
 {
 	MR_ASSERT(device != MR_NULL);
 
@@ -142,5 +142,5 @@ mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, 
 	if (device->ops->write == MR_NULL)
 		return 0;
 
-	return device->ops->write(device, pos, buffer, size);
+	return device->ops->write(device, pos, buffer, count);
 }

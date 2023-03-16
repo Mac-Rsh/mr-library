@@ -24,6 +24,12 @@
 #define mr_memset                   memset
 #define mr_memcpy                   memcpy
 
+#define mr_enter_critical()            do{}while(0)
+#define mr_exit_critical()            do{}while(0)
+
+
+
+
 /* mr-library version information */
 #define MR_LIBRARY_VERSION          "0.0.1"
 
@@ -189,11 +195,13 @@ enum mr_ringbuffer_state
 struct mr_ringbuffer
 {
 	mr_uint8_t *buffer;
-	mr_uint16_t read_mirror: 1;
-	mr_uint16_t read_index: 15;
-	mr_uint16_t write_mirror: 1;
-	mr_uint16_t write_index: 15;
-	mr_uint16_t bufsz;
+
+	mr_uint32_t read_mirror: 1;
+	mr_uint32_t read_index: 31;
+	mr_uint32_t write_mirror: 1;
+	mr_uint32_t write_index: 31;
+
+	mr_uint32_t size;
 };
 typedef struct mr_ringbuffer *mr_ringbuffer_t;
 
@@ -226,8 +234,8 @@ struct mr_device_ops
 	mr_err_t (*open)(mr_device_t device);
 	mr_err_t (*close)(mr_device_t device);
 	mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-	mr_size_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-	mr_size_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+	mr_size_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count);
+	mr_size_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count);
 };
 
 struct mr_device
