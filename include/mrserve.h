@@ -21,6 +21,9 @@ do{                              \
 do{                              \
 }while(0)
 
+#define mr_enter_critical()            do{}while(0)
+#define mr_exit_critical()            do{}while(0)
+
 #define mr_container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 
