@@ -24,12 +24,6 @@
 #define mr_memset                   memset
 #define mr_memcpy                   memcpy
 
-#define mr_enter_critical()            do{}while(0)
-#define mr_exit_critical()            do{}while(0)
-
-
-
-
 /* mr-library version information */
 #define MR_LIBRARY_VERSION          "0.0.1"
 
