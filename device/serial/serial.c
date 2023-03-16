@@ -108,7 +108,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 	return ret;
 }
 
-static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
 {
 	mr_serial_t serial = (mr_serial_t)device;
 	struct mr_serial_fifo *fifo = MR_NULL;
@@ -118,13 +118,14 @@ static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, 
 
 	do
 	{
-		length += mr_ringbuffer_read(&fifo->ringbuffer, (mr_uint8_t *)&buffer[length], size - length);
-	} while (length < size);
+		/* Read if the ringbuffer has data */
+		length += mr_ringbuffer_read(&fifo->ringbuffer, (mr_uint8_t *)&buffer[length], count - length);
+	} while (length < count);
 
 	return length;
 }
 
-static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
 {
 	mr_serial_t serial = (mr_serial_t)device;
 	struct mr_serial_fifo *fifo = MR_NULL;
@@ -132,12 +133,14 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 
 	fifo = (struct mr_serial_fifo *)serial->fifo_tx;
 
-	serial->ops->start_tx(serial);
-
 	do
 	{
-		length += mr_ringbuffer_write(&fifo->ringbuffer, (mr_uint8_t *)&buffer[length], size - length);
-	} while (length < size);
+		/* Write if the ringbuffer has space */
+		length += mr_ringbuffer_write(&fifo->ringbuffer, (mr_uint8_t *)&buffer[length], count - length);
+
+		/* Start send */
+		serial->ops->start_tx(serial);
+	} while (length < count);
 
 	return length;
 }
@@ -225,7 +228,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 
 			/* Read data into the ring buffer */
 			data = serial->ops->read_data(serial);
-			mr_ringbuffer_write_data_force(&fifo->ringbuffer, data);
+			mr_ringbuffer_write_force(&fifo->ringbuffer, &data, 1);
 
 			/* Invoke the rx-callback function */
 			if (serial->device.rx_callback != MR_NULL)
@@ -259,7 +262,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 				break;
 			}
 
-			mr_ringbuffer_read_data(&fifo->ringbuffer, &data);
+			mr_ringbuffer_read(&fifo->ringbuffer, &data, 1);
 			serial->ops->write_data(serial, data);
 			break;
 		}

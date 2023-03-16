@@ -41,7 +41,7 @@
 #endif
 
 #define MR_SERIAL_EVENT_RX_INT          0x1000
-#define MR_SERIAL_EVENT_TX_INT            0x2000
+#define MR_SERIAL_EVENT_TX_INT          0x2000
 #define _MR_SERIAL_EVENT_MASK           0xf000
 
 /* Default config for mr_serial_configure structure */
