@@ -38,19 +38,14 @@ MR_INLINE void mr_assert_handler()
 //    string                      \
 //    )
 //
-//#define MR_LOG_E(string, error) \
-//    if (error != MR_ERR_OK)     \
-//    {                           \
-//        printf("[ ERROR ] [ %s ][ %d ][ %s ] { %s }{ %d }\r\n", \
-//        __FILE__,                 \
-//        __LINE__,                 \
-//        __FUNCTION__,             \
-//        string,                    \
-//        error);   \
-//    }
+#define MR_LOG_E(string) \
+    do{                  \
+           printf(string);              \
+                         \
+    }while(0)
 
 #define MR_LOG_D(string) do{}while(0)
-#define MR_LOG_E(string) do{}while(0)
+//#define MR_LOG_E(string) do{}while(0)
 #define MR_LOG_W(string) do{}while(0)
 
 #endif

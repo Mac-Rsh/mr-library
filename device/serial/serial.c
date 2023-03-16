@@ -8,7 +8,7 @@
  * 2023-03-09     MacRsh       first version
  */
 
-#include "serial.h"
+#include <device/serial/serial.h>
 
 #if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
 
@@ -152,13 +152,13 @@ static mr_err_t _hw_serial_configure(mr_serial_t serial, struct mr_serial_config
 	return - MR_ERR_IO;
 }
 
-static void _hw_serial_write_data(mr_serial_t serial, mr_uint8_t data)
+static void _hw_serial_write(mr_serial_t serial, mr_uint8_t data)
 {
 	MR_LOG_E("Serial write error: -MR_ERR_IO");
 	MR_ASSERT(0);
 }
 
-static mr_uint8_t _hw_serial_read_data(mr_serial_t serial)
+static mr_uint8_t _hw_serial_read(mr_serial_t serial)
 {
 	MR_LOG_E("Serial read error: -MR_ERR_IO");
 	MR_ASSERT(0);
@@ -193,8 +193,7 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the serial device to the container */
-	ret =
-		mr_device_add_to_container(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add_to_container(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -206,8 +205,8 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 
 	/* Set serial operations as protect functions if ops is null */
 	ops->configure = ops->configure ? ops->configure : _hw_serial_configure;
-	ops->write_data = ops->write_data ? ops->write_data : _hw_serial_write_data;
-	ops->read_data = ops->read_data ? ops->read_data : _hw_serial_read_data;
+	ops->write = ops->write ? ops->write : _hw_serial_write;
+	ops->read = ops->read ? ops->read : _hw_serial_read;
 	ops->start_tx = ops->start_tx ? ops->start_tx : _hw_serial_start_tx;
 	ops->stop_tx = ops->stop_tx ? ops->stop_tx : _hw_serial_stop_tx;
 	serial->ops = ops;
@@ -227,7 +226,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 			fifo = (struct mr_serial_fifo *)serial->fifo_rx;
 
 			/* Read data into the ring buffer */
-			data = serial->ops->read_data(serial);
+			data = serial->ops->read(serial);
 			mr_ringbuffer_write_force(&fifo->ringbuffer, &data, 1);
 
 			/* Invoke the rx-callback function */
@@ -263,7 +262,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 			}
 
 			mr_ringbuffer_read(&fifo->ringbuffer, &data, 1);
-			serial->ops->write_data(serial, data);
+			serial->ops->write(serial, data);
 			break;
 		}
 

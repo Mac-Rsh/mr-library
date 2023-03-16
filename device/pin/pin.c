@@ -93,8 +93,7 @@ mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pi
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the pin device to the container */
-	ret =
-		mr_device_add_to_container(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add_to_container(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
