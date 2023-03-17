@@ -193,8 +193,7 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the serial device to the container */
-	ret =
-		mr_device_add_to_container(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add_to_container(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
