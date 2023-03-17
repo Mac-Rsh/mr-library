@@ -12,12 +12,16 @@
 
 static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 	{
-		{.type = MR_CONTAINER_TYPE_MISC,
+		{
+			.type = MR_CONTAINER_TYPE_MISC,
 			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_MISC].list,
-					 &mr_kernel_container[MR_CONTAINER_TYPE_MISC].list}},
-		{.type = MR_CONTAINER_TYPE_DEVICE,
+					 &mr_kernel_container[MR_CONTAINER_TYPE_MISC].list}
+		},
+		{
+			.type = MR_CONTAINER_TYPE_DEVICE,
 			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list,
-					 &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}},
+					 &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
+		},
 	};
 
 mr_container_t mr_container_find(enum mr_container_type type)
