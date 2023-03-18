@@ -136,6 +136,11 @@ typedef enum mr_level
 	MR_LOW = 0, MR_HIGH = 1
 } mr_level_t;
 
+typedef enum mr_state
+{
+	MR_DISABLE = 0, MR_ENABLE = 1
+} mr_state_t;
+
 struct mr_list
 {
 	struct mr_list *next;                                     /**< point to next node. */
