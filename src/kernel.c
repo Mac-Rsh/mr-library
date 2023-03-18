@@ -60,6 +60,7 @@ mr_err_t mr_object_add_to_container(mr_object_t object, const char *name, enum m
 	mr_container_t container = MR_NULL;
 
 	MR_ASSERT(object != MR_NULL);
+	MR_ASSERT(name != MR_NULL);
 
 	/* Check if the object is already registered */
 	if (object->type & MR_OBJECT_TYPE_REGISTER)
@@ -144,7 +145,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 	MR_ASSERT(mutex != MR_NULL);
 	MR_ASSERT(owner != MR_NULL);
 
-	mr_enter_critical();
+	mr_hw_interrupt_disable();
 
 	if (mutex->owner != owner)
 	{
@@ -159,7 +160,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 	}
 	mutex->lock = MR_LOCK;
 
-	mr_exit_critical();
+	mr_hw_interrupt_enable();
 
 	return MR_ERR_OK;
 }
@@ -169,18 +170,18 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
 	MR_ASSERT(mutex != MR_NULL);
 	MR_ASSERT(owner != MR_NULL);
 
-	mr_enter_critical();
+	mr_hw_interrupt_disable();
 
 	if (mutex->owner == owner)
 	{
 		mutex->lock = MR_UNLOCK;
 
-		mr_exit_critical();
+		mr_hw_interrupt_enable();
 
 		return MR_ERR_OK;
 	}
 
-	mr_exit_critical();
+	mr_hw_interrupt_enable();
 
 	return - MR_ERR_GENERIC;
 }

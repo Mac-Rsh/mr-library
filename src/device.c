@@ -31,6 +31,7 @@ mr_err_t mr_device_add_to_container(mr_device_t device,
 	static struct mr_device_ops null_ops = {MR_NULL};
 
 	MR_ASSERT(device != MR_NULL);
+	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the object to the container */
 	ret = mr_object_add_to_container(&device->object, name, MR_CONTAINER_TYPE_DEVICE);
@@ -54,6 +55,7 @@ mr_err_t mr_device_add_to_container(mr_device_t device,
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 {
 	MR_ASSERT(device != MR_NULL);
+	MR_ASSERT(flags != MR_NULL);
 
 	/* Check if the specified open flags are supported by the device */
 	if (flags != (flags & device->support_flag))
@@ -118,6 +120,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
 {
 	MR_ASSERT(device != MR_NULL);
+	MR_ASSERT(buffer != MR_NULL);
 
 	/* Check if the device is closed or unsupported */
 	if ((device->ref_count == 0) || ! (device->open_flag & MR_OPEN_RDONLY))
@@ -133,6 +136,7 @@ mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size
 mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
 {
 	MR_ASSERT(device != MR_NULL);
+	MR_ASSERT(buffer != MR_NULL);
 
 	/* Check if the device is closed or unsupported */
 	if ((device->ref_count == 0) || ! (device->open_flag & MR_OPEN_WRONLY))
