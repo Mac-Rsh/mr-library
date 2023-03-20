@@ -116,11 +116,11 @@ static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, 
 
 	fifo = (struct mr_serial_fifo *)serial->fifo_rx;
 
-	do
+	while (length < count)
 	{
 		/* Read if the ringbuffer has data */
 		length += mr_ringbuffer_read(&fifo->ringbuffer, &((mr_uint8_t *)buffer)[length], count - length);
-	} while (length < count);
+	}
 
 	return length;
 }
@@ -133,14 +133,14 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 
 	fifo = (struct mr_serial_fifo *)serial->fifo_tx;
 
-	do
+	while (length < count)
 	{
 		/* Write if the ringbuffer has space */
 		length += mr_ringbuffer_write(&fifo->ringbuffer, &((mr_uint8_t *)buffer)[length], count - length);
 
 		/* Start send */
 		serial->ops->start_tx(serial);
-	} while (length < count);
+	}
 
 	return length;
 }
