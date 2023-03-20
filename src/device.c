@@ -106,10 +106,6 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 {
 	MR_ASSERT(device != MR_NULL);
 
-	/* Check if the device is closed */
-	if (device->ref_count == 0)
-		return - MR_ERR_UNSUPPORTED;
-
 	/* Call the device-ioctl function, if provided */
 	if (device->ops->ioctl == MR_NULL)
 		return - MR_ERR_UNSUPPORTED;
