@@ -61,14 +61,16 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 	if (flags != (flags & device->support_flag))
 		return - MR_ERR_UNSUPPORTED;
 
+	/* Update the device open-flag and refer-count */
+	device->open_flag |= (flags & _MR_OPEN_FLAG_MASK);
+	device->ref_count ++;
+
 	/* Check if the device is already closed */
 	if ((device->open_flag & MR_OPEN_ACTIVE))
 		return MR_ERR_OK;
 
-	/* Update the device open-flag and refer-count */
-	device->open_flag = (flags & _MR_OPEN_FLAG_MASK);
+	/* Set the device status to active */
 	device->open_flag |= MR_OPEN_ACTIVE;
-	device->ref_count ++;
 
 	/* Call the device-open function, if provided */
 	if (device->ops->open == MR_NULL)
