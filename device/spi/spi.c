@@ -33,7 +33,7 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 		/* If the configuration is different, the spi-bus is reconfigured */
 		if (spi_device->config.baud_rate != spi_device->bus->config.baud_rate
 			|| spi_device->config.data_bits != spi_device->bus->config.data_bits
-			|| spi_device->config.master_slave != spi_device->bus->config.master_slave
+			|| spi_device->config.host_slave != spi_device->bus->config.host_slave
 			|| spi_device->config.mode != spi_device->bus->config.mode
 			|| spi_device->config.bit_order != spi_device->bus->config.bit_order)
 		{
@@ -109,8 +109,8 @@ static mr_err_t mr_spi_device_close(mr_device_t device)
 
 static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 {
-	mr_err_t ret = MR_ERR_OK;
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
+	mr_err_t ret = MR_ERR_OK;
 
 	switch (cmd & _MR_CMD_MASK)
 	{
@@ -148,8 +148,8 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
 static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
 {
-	mr_err_t ret = MR_ERR_OK;
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
+	mr_err_t ret = MR_ERR_OK;
 	mr_size_t recv_count = count;
 
 	/* Take spi-bus */
@@ -206,8 +206,8 @@ static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buff
 
 static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
 {
-	mr_err_t ret = MR_ERR_OK;
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
+	mr_err_t ret = MR_ERR_OK;
 	mr_size_t send_count = count;
 
 	/* Take spi-bus */

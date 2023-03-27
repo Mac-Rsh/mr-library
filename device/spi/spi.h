@@ -15,11 +15,7 @@
 
 #if (MR_DEVICE_SPI == MR_CONF_ENABLE)
 
-#define MR_SPI_DATA_BITS_8                   0
-#define MR_SPI_DATA_BITS_16                  1
-#define MR_SPI_DATA_BITS_32                  2
-
-#define MR_SPI_MASTER                        0
+#define MR_SPI_HOST                          0
 #define MR_SPI_SLAVE                         1
 
 #define MR_SPI_MODE_0                        0
@@ -27,20 +23,23 @@
 #define MR_SPI_MODE_2                        2
 #define MR_SPI_MODE_3                        3
 
+#define MR_SPI_DATA_BITS_8                   0
+#define MR_SPI_DATA_BITS_16                  1
+#define MR_SPI_DATA_BITS_32                  2
+
 #define MR_SPI_BIT_ORDER_MSB                 0
 #define MR_SPI_BIT_ORDER_LSB                 1
 
 #define MR_SPI_CS_ACTIVE_LOW                 0
 #define MR_SPI_CS_ACTIVE_HIGH                1
 
-
 /* Default config for mr_spi_config structure */
 #define MR_SPI_CONFIG_DEFAULT                \
 {                                            \
     .baud_rate = 3000000,                    \
-    .data_bits = MR_SPI_DATA_BITS_8,         \
-    .master_slave = MR_SPI_MASTER,           \
-    .mode = MR_SPI_MODE_0,                   \
+	.host_slave = MR_SPI_HOST,               \
+	.mode = MR_SPI_MODE_0,                   \
+	.data_bits = MR_SPI_DATA_BITS_8,         \
     .bit_order = MR_SPI_BIT_ORDER_MSB,       \
     .cs_active = MR_SPI_CS_ACTIVE_LOW,       \
 }
@@ -49,9 +48,9 @@ struct mr_spi_config
 {
 	mr_uint32_t baud_rate;
 
-	mr_uint8_t data_bits: 2;
-	mr_uint8_t master_slave: 1;
+	mr_uint8_t host_slave: 1;
 	mr_uint8_t mode: 2;
+	mr_uint8_t data_bits: 2;
 	mr_uint8_t bit_order: 1;
 	mr_uint8_t cs_active: 1;
 };
