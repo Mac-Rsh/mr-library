@@ -14,8 +14,8 @@
 
 static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
-	mr_err_t ret = MR_ERR_OK;
 	mr_pin_t pin = (mr_pin_t)device;
+	mr_err_t ret = MR_ERR_OK;
 
 	switch (cmd & _MR_CMD_MASK)
 	{
@@ -92,7 +92,7 @@ mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pi
 	MR_ASSERT(pin != MR_NULL);
 	MR_ASSERT(ops != MR_NULL);
 
-	/* Add the pin device to the container */
+	/* Add the pin-device to the container */
 	ret = mr_device_add_to_container(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
