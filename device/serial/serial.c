@@ -74,8 +74,8 @@ static mr_err_t mr_serial_close(mr_device_t device)
 
 static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 {
-	mr_err_t ret = MR_ERR_OK;
 	mr_serial_t serial = (mr_serial_t)device;
+	mr_err_t ret = MR_ERR_OK;
 
 	switch (cmd & _MR_CMD_MASK)
 	{
@@ -192,7 +192,7 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 	MR_ASSERT(serial != MR_NULL);
 	MR_ASSERT(ops != MR_NULL);
 
-	/* Add the serial device to the container */
+	/* Add the serial-device to the container */
 	ret = mr_device_add_to_container(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
