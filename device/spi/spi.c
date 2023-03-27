@@ -8,7 +8,7 @@
  * 2023-03-18     MacRsh       first version
  */
 
-#include "spi.h"
+#include <device/spi/spi.h>
 
 #if (MR_DEVICE_SPI == MR_CONF_ENABLE)
 
