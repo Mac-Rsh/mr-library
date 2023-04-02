@@ -264,20 +264,20 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 
 static mr_err_t _hw_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
 {
-	MR_LOG_E("Spi configure error: -MR_ERR_IO");
+	MR_LOG_E("Spi configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static void _hw_spi_cs_set(mr_spi_bus_t spi_bus, void *cs_data, mr_state_t state)
 {
-	MR_LOG_E("Spi cs-set error: -MR_ERR_IO");
+	MR_LOG_E("Spi cs-set error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static mr_uint32_t _hw_spi_transmit(mr_spi_bus_t spi_bus, mr_uint32_t send_data)
 {
-	MR_LOG_E("Spi transmit error: -MR_ERR_IO");
+	MR_LOG_E("Spi transmit error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }

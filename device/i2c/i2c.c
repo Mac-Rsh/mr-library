@@ -211,32 +211,32 @@ static mr_size_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const voi
 
 static mr_err_t _hw_i2c_configure(mr_i2c_bus_t i2c_bus, struct mr_i2c_config *config)
 {
-	MR_LOG_E("I2c configure error: -MR_ERR_IO");
+	MR_LOG_E("I2c configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static void _hw_i2c_start(mr_i2c_bus_t i2c_bus)
 {
-	MR_LOG_E("I2c start error: -MR_ERR_IO");
+	MR_LOG_E("I2c start error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static void _hw_i2c_stop(mr_i2c_bus_t i2c_bus)
 {
-	MR_LOG_E("I2c stop error: -MR_ERR_IO");
+	MR_LOG_E("I2c stop error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static void _hw_i2c_write(mr_i2c_bus_t i2c_bus, mr_uint8_t data)
 {
-	MR_LOG_E("I2c write error: -MR_ERR_IO");
+	MR_LOG_E("I2c write error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static mr_uint8_t _hw_i2c_read(mr_i2c_bus_t i2c_bus, mr_state_t ack_state)
 {
-	MR_LOG_E("I2c read error: -MR_ERR_IO");
+	MR_LOG_E("I2c read error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }

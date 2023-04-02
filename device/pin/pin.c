@@ -59,20 +59,20 @@ static mr_size_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buff
 
 static mr_err_t _hw_pin_configure(mr_pin_t pin, mr_uint16_t number, mr_uint16_t mode)
 {
-	MR_LOG_E("Pin configure error: -MR_ERR_IO");
+	MR_LOG_E("Pin configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static void _hw_pin_write(mr_pin_t pin, mr_uint16_t number, mr_uint8_t value)
 {
-	MR_LOG_E("Pin write error: -MR_ERR_IO");
+	MR_LOG_E("Pin write error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static mr_uint8_t _hw_pin_read(mr_pin_t pin, mr_uint16_t number)
 {
-	MR_LOG_E("Pin read error: -MR_ERR_IO");
+	MR_LOG_E("Pin read error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }

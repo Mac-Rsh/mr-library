@@ -8,7 +8,7 @@
  * 2023-03-27     MacRsh       first version
  */
 
-#include "adc.h"
+#include <device/adc/adc.h>
 
 #if (MR_DEVICE_ADC == MR_CONF_ENABLE)
 
@@ -67,21 +67,21 @@ static mr_size_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_
 
 static mr_err_t _hw_adc_configure(mr_adc_t adc, mr_state_t state)
 {
-	MR_LOG_E("Adc configure error: -MR_ERR_IO");
+	MR_LOG_E("Adc configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static mr_err_t _hw_adc_channel_configure(mr_adc_t adc, mr_uint16_t channel, mr_state_t state)
 {
-	MR_LOG_E("Adc channel-configure error: -MR_ERR_IO");
+	MR_LOG_E("Adc channel-configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static mr_uint16_t _hw_adc_read(mr_adc_t adc, mr_uint16_t channel)
 {
-	MR_LOG_E("Adc read error: -MR_ERR_IO");
+	MR_LOG_E("Adc read error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }

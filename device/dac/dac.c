@@ -67,21 +67,21 @@ static mr_size_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buff
 
 static mr_err_t _hw_dac_configure(mr_dac_t dac, mr_state_t state)
 {
-	MR_LOG_E("Dac configure error: -MR_ERR_IO");
+	MR_LOG_E("Dac configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static mr_err_t _hw_dac_channel_configure(mr_dac_t dac, mr_uint16_t channel, mr_state_t state)
 {
-	MR_LOG_E("Dac channel-configure error: -MR_ERR_IO");
+	MR_LOG_E("Dac channel-configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static void _hw_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint16_t value)
 {
-	MR_LOG_E("Dac write error: -MR_ERR_IO");
+	MR_LOG_E("Dac write error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 

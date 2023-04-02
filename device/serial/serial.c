@@ -92,13 +92,15 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 
 		case MR_CMD_SET_RX_CALLBACK:
 		{
-			device->rx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
+			if (args)
+				device->rx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
 			break;
 		}
 
 		case MR_CMD_SET_TX_CALLBACK:
 		{
-			device->tx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
+			if (args)
+				device->tx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
 			break;
 		}
 
@@ -147,33 +149,33 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 
 static mr_err_t _hw_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
-	MR_LOG_E("Serial configure error: -MR_ERR_IO");
+	MR_LOG_E("Serial configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
 static void _hw_serial_write(mr_serial_t serial, mr_uint8_t data)
 {
-	MR_LOG_E("Serial write error: -MR_ERR_IO");
+	MR_LOG_E("Serial write error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static mr_uint8_t _hw_serial_read(mr_serial_t serial)
 {
-	MR_LOG_E("Serial read error: -MR_ERR_IO");
+	MR_LOG_E("Serial read error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }
 
 static void _hw_serial_start_tx(mr_serial_t serial)
 {
-	MR_LOG_E("Serial start-tx error: -MR_ERR_IO");
+	MR_LOG_E("Serial start-tx error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
 static void _hw_serial_stop_tx(mr_serial_t serial)
 {
-	MR_LOG_E("Serial stop-tx error: -MR_ERR_IO");
+	MR_LOG_E("Serial stop-tx error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
