@@ -76,8 +76,9 @@ typedef mr_base_t mr_off_t;                   /**< Type for offset */
 #define MR_CMD_SET_RX_CALLBACK      0x2000                    /**< Set rx callback command */
 #define MR_CMD_SET_TX_CALLBACK      0x3000                    /**< Set tx callback command */
 #define MR_CMD_ATTACH               0x4000                    /**< Attach command */
-#define MR_CMD_DETACH               0x5000
-#define MR_CMD_TRANSFER             0x6000                    /**< Transfer command */
+#define MR_CMD_TRANSFER             0x5000                    /**< Transfer command */
+#define MR_CMD_REBOOT                0x6000                      /**< Reboot command */
+#define MR_CMD_STOP                    0x7000                      /**< Stop command */
 #define _MR_CMD_MASK                0xf000                    /**< Mask for getting command */
 
 /* Compiler Related Definitions */
