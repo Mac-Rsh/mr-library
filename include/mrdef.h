@@ -47,6 +47,21 @@ typedef unsigned int mr_ubase_t;              /**< Nbit unsigned CPU related cs_
 typedef mr_base_t mr_err_t;                   /**< Type for error number */
 typedef mr_base_t mr_off_t;                   /**< Type for offset */
 
+typedef enum mr_bool
+{
+	MR_FALSE = 0, MR_TRUE = 1
+} mr_bool_t;
+
+typedef enum mr_level
+{
+	MR_LOW = 0, MR_HIGH = 1
+} mr_level_t;
+
+typedef enum mr_state
+{
+	MR_DISABLE = 0, MR_ENABLE = 1
+} mr_state_t;
+
 #define MR_NULL                     0
 
 /* mr-library error code definitions */
@@ -77,8 +92,8 @@ typedef mr_base_t mr_off_t;                   /**< Type for offset */
 #define MR_CMD_SET_TX_CALLBACK      0x3000                    /**< Set tx callback command */
 #define MR_CMD_ATTACH               0x4000                    /**< Attach command */
 #define MR_CMD_TRANSFER             0x5000                    /**< Transfer command */
-#define MR_CMD_REBOOT                0x6000                      /**< Reboot command */
-#define MR_CMD_STOP                    0x7000                      /**< Stop command */
+#define MR_CMD_REBOOT               0x6000                    /**< Reboot command */
+#define MR_CMD_STOP                 0x7000                    /**< Stop command */
 #define _MR_CMD_MASK                0xf000                    /**< Mask for getting command */
 
 /* Compiler Related Definitions */
@@ -127,21 +142,9 @@ typedef mr_base_t mr_off_t;                   /**< Type for offset */
 #define MR_INLINE                   static inline
 #endif
 
-typedef enum mr_bool
-{
-	MR_FALSE = 0, MR_TRUE = 1
-} mr_bool_t;
-
-typedef enum mr_level
-{
-	MR_LOW = 0, MR_HIGH = 1
-} mr_level_t;
-
-typedef enum mr_state
-{
-	MR_DISABLE = 0, MR_ENABLE = 1
-} mr_state_t;
-
+/**
+ *  List
+ */
 struct mr_list
 {
 	struct mr_list *next;                                     /**< point to next node. */
@@ -149,10 +152,14 @@ struct mr_list
 };
 typedef struct mr_list *mr_list_t;
 
+/**
+ *  Container
+ */
 enum mr_container_type
 {
 	MR_CONTAINER_TYPE_MISC,
 	MR_CONTAINER_TYPE_DEVICE,
+	MR_CONTAINER_TYPE_EVENT,
 	_MR_CONTAINER_TYPE_MASK,
 };
 
@@ -163,17 +170,23 @@ struct mr_container
 };
 typedef struct mr_container *mr_container_t;
 
+/**
+ *  Object
+ */
 #define MR_OBJECT_TYPE_NULL         0x00
 #define MR_OBJECT_TYPE_REGISTER     0x10
 
 struct mr_object
 {
-	char name[MR_NAME_MAX];
+	char name[MR_NAME_MAX + 1];
 	mr_uint8_t type;
 	struct mr_list list;
 };
 typedef struct mr_object *mr_object_t;
 
+/**
+ *  Mutex
+ */
 struct mr_mutex
 {
 	enum
@@ -185,6 +198,9 @@ struct mr_mutex
 };
 typedef struct mr_mutex *mr_mutex_t;
 
+/**
+ *  Ringbuffer
+ */
 enum mr_ringbuffer_state
 {
 	MR_RINGBUFFER_EMPTY,
@@ -205,6 +221,9 @@ struct mr_ringbuffer
 };
 typedef struct mr_ringbuffer *mr_ringbuffer_t;
 
+/**
+ *  Device
+ */
 enum mr_device_type
 {
 	MR_DEVICE_TYPE_NULL,
@@ -251,6 +270,31 @@ struct mr_device
 	void *data;
 
 	const struct mr_device_ops *ops;
+};
+
+/**
+ *  Event-manager
+ */
+struct mr_event_manager
+{
+	struct mr_object object;
+
+	struct mr_list list;
+	struct mr_ringbuffer queue;
+};
+typedef struct mr_event_manager *mr_event_manager_t;
+
+/**
+ *  Event
+ */
+typedef struct mr_event *mr_event_t;
+struct mr_event
+{
+	struct mr_list list;
+
+	mr_uint16_t value;
+	mr_err_t (*callback)(mr_event_t event, void *args);
+	void *args;
 };
 
 #endif

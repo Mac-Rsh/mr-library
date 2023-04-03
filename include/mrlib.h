@@ -15,18 +15,30 @@
 #include <mrserve.h>
 #include <mrlog.h>
 
+/**
+ *  Export container functions
+ */
 mr_container_t mr_container_find(enum mr_container_type type);
 
+/**
+ *  Export object functions
+ */
 mr_object_t mr_object_find(const char *name, enum mr_container_type type);
 mr_err_t mr_object_add_to_container(mr_object_t object, const char *name, enum mr_container_type container_type);
 mr_err_t mr_object_remove_from_container(mr_object_t object);
 mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dest_type);
 void mr_object_rename(mr_object_t object, char *name);
 
+/**
+ *  Export mutex functions
+ */
 void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
 
+/**
+ *  Export ringbuffer functions
+ */
 void mr_ringbuffer_init(mr_ringbuffer_t rb, mr_uint8_t *pool, mr_size_t pool_size);
 void mr_ringbuffer_reset(mr_ringbuffer_t rb);
 mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t rb);
@@ -34,6 +46,9 @@ mr_size_t mr_ringbuffer_read(mr_ringbuffer_t ringbuffer, mr_uint8_t *buffer, mr_
 mr_size_t mr_ringbuffer_write(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buffer, mr_size_t count);
 mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_size_t count);
 
+/**
+ *  Export device functions
+ */
 mr_device_t mr_device_find(const char *name);
 mr_err_t mr_device_add_to_container(mr_device_t device,
 									const char *name,
@@ -46,5 +61,32 @@ mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count);
 mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count);
+
+/**
+ *  Export event-manager functions
+ */
+mr_event_manager_t mr_event_manager_find(const char *name);
+mr_err_t mr_event_manager_add_to_container(mr_event_manager_t event_manager,
+										   const char *name,
+										   mr_uint8_t *queue_pool,
+										   mr_size_t queue_pool_size);
+mr_err_t mr_event_manager_remove_from_container(mr_event_manager_t event_manager);
+mr_err_t mr_event_manager_notify(mr_event_manager_t event_manager, mr_uint16_t value);
+mr_err_t mr_event_manager_process(mr_event_manager_t event_manager);
+
+/**
+ *  Export event functions
+ */
+mr_event_t mr_event_find(mr_event_manager_t event_manager, mr_uint16_t event_value);
+mr_err_t mr_event_add_to_manager(mr_event_manager_t event_manager,
+								 mr_event_t event,
+								 mr_uint16_t value,
+								 mr_err_t (*callback)(mr_event_t event, void *args), void *args);
+mr_err_t mr_event_remove_from_manager(mr_event_t event);
+mr_err_t mr_event_create_to_manager(mr_event_manager_t event_manager,
+									mr_uint16_t value,
+									mr_err_t (*callback)(mr_event_t event, void *args),
+									void *args);
+mr_err_t mr_event_delete_from_manager(mr_event_t event);
 
 #endif
