@@ -52,4 +52,18 @@ MR_INLINE void mr_list_remove(mr_list_t node)
 	node->next = node->prev = node;
 }
 
+MR_INLINE mr_size_t mr_list_get_length(mr_list_t list)
+{
+	mr_size_t length = 0;
+	mr_list_t temp_list = list;
+
+	while (temp_list->next != list)
+	{
+		temp_list = temp_list->next;
+		length ++;
+	}
+
+	return length;
+}
+
 #endif
