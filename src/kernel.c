@@ -22,6 +22,11 @@ static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list,
 					 &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
 		},
+		{
+			.type = MR_CONTAINER_TYPE_EVENT,
+			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_EVENT].list,
+					 &mr_kernel_container[MR_CONTAINER_TYPE_EVENT].list}
+		},
 	};
 
 mr_container_t mr_container_find(enum mr_container_type type)
@@ -40,17 +45,20 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
 	/* Get corresponding container */
 	container = mr_container_find(type);
 
-	mr_enter_critical();
+	mr_hw_interrupt_disable();
 
 	/* Walk through the container looking for objects */
 	for (list = (container->list).next; list != &(container->list); list = list->next)
 	{
 		object = mr_container_of(list, struct mr_object, list);
 		if (mr_strncmp(object->name, name, MR_NAME_MAX) == 0)
+		{
+			mr_hw_interrupt_enable();
 			return object;
+		}
 	}
 
-	mr_exit_critical();
+	mr_hw_interrupt_enable();
 
 	return MR_NULL;
 }
@@ -76,36 +84,32 @@ mr_err_t mr_object_add_to_container(mr_object_t object, const char *name, enum m
 	/* Find the container for the specified type */
 	container = mr_container_find(container_type);
 
-	mr_enter_critical();
+	mr_hw_interrupt_disable();
 
 	/* Insert the object into the container's list */
 	mr_list_insert_after(&(container->list), &(object->list));
 	object->type |= MR_OBJECT_TYPE_REGISTER;
 
-	mr_exit_critical();
-
+	mr_hw_interrupt_enable();
 	return MR_ERR_OK;
 }
 
 mr_err_t mr_object_remove_from_container(mr_object_t object)
 {
-	mr_err_t ret = MR_ERR_OK;
-
 	MR_ASSERT(object != MR_NULL);
 
 	/* Check if the object is registered */
 	if ((object->type & MR_OBJECT_TYPE_REGISTER) == 0)
 		return - MR_ERR_GENERIC;
 
-	mr_enter_critical();
+	mr_hw_interrupt_disable();
 
 	/* Remove the object from the container's list */
 	mr_list_remove(&(object->list));
 	object->type &= ~ MR_OBJECT_TYPE_REGISTER;
 
-	mr_exit_critical();
-
-	return ret;
+	mr_hw_interrupt_enable();
+	return MR_ERR_OK;
 }
 
 mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dst_type)
@@ -152,7 +156,6 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 		if (mutex->lock == MR_LOCK)
 		{
 			mr_hw_interrupt_enable();
-
 			return - MR_ERR_BUSY;
 		}
 
@@ -161,7 +164,6 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 	mutex->lock = MR_LOCK;
 
 	mr_hw_interrupt_enable();
-
 	return MR_ERR_OK;
 }
 
@@ -177,11 +179,9 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
 		mutex->lock = MR_UNLOCK;
 
 		mr_hw_interrupt_enable();
-
 		return MR_ERR_OK;
 	}
 
 	mr_hw_interrupt_enable();
-
 	return - MR_ERR_GENERIC;
 }
