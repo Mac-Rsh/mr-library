@@ -50,8 +50,7 @@ mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t rb)
 		{
 			mr_hw_interrupt_enable();
 			return 0;
-		}
-		else
+		} else
 		{
 			mr_hw_interrupt_enable();
 			return rb->size;
@@ -62,8 +61,7 @@ mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t rb)
 	{
 		mr_hw_interrupt_enable();
 		return rb->write_index - rb->read_index;
-	}
-	else
+	} else
 	{
 		mr_hw_interrupt_enable();
 		return rb->size - rb->read_index + rb->write_index;
@@ -207,6 +205,3 @@ mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t rb, const mr_uint8_t *buffer
 	mr_hw_interrupt_enable();
 	return count;
 }
-
-
-

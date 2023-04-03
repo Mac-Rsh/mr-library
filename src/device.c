@@ -49,7 +49,7 @@ mr_err_t mr_device_add_to_container(mr_device_t device,
 	/* Set operations as null-ops if ops is null */
 	device->ops = (ops == MR_NULL) ? &null_ops : ops;
 
-	return ret;
+	return MR_ERR_OK;
 }
 
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
