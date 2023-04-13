@@ -137,64 +137,64 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
 	return ret;
 }
 
-static mr_size_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
+static mr_size_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_timer_t timer = (mr_timer_t)device;
-	mr_uint32_t cut = 0, period = 0, timeout = 0;
+	mr_uint32_t *time = (mr_uint32_t *)buffer;
+	mr_uint32_t cut = 0;
+
+	if (size != sizeof(mr_uint32_t))
+		return 0;
 
 	cut = timer->ops->get_count(timer);
-
 	if (timer->information.cut_mode == _MR_TIMER_CUT_MODE_DOWN)
 		cut = timer->timeout / (1000000 / timer->config.freq) - cut;
 
-	timeout = timer->overflow * timer->timeout + cut * (1000000 / timer->config.freq);
-	*(mr_uint32_t *)buffer = timeout;
+	*time = timer->overflow * timer->timeout + cut * (1000000 / timer->config.freq);
 
-	return 1;
+	return size;
 }
 
-static mr_size_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
+static mr_size_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_timer_t timer = (mr_timer_t)device;
+	mr_uint32_t *timeout = (mr_uint32_t *)buffer;
 	mr_uint32_t period_reload = 0;
+
+	if (size != sizeof(mr_uint32_t))
+		return 0;
 
 	if (timer->config.freq == 0)
 		return 0;
 
 	timer->ops->stop(timer);
-
-	period_reload = mr_timer_timeout_calculate(timer, *(mr_uint32_t *)buffer);
-
+	period_reload = mr_timer_timeout_calculate(timer, *timeout);
 	if (timer->cycles != 0)
 		timer->ops->start(timer, period_reload);
 
-	return 1;
+	return size;
 }
 
-static mr_err_t _hw_timer_configure(mr_timer_t timer, struct mr_timer_config *config)
+static mr_err_t _err_io_timer_configure(mr_timer_t timer, struct mr_timer_config *config)
 {
-	MR_LOG_E("Timer configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static mr_err_t _hw_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
+static mr_err_t _err_io_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
 {
-	MR_LOG_E("Timer start error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static mr_err_t _hw_timer_stop(mr_timer_t timer)
+static mr_err_t _err_io_timer_stop(mr_timer_t timer)
 {
-	MR_LOG_E("Timer stop error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static mr_uint32_t _hw_timer_get_count(mr_timer_t timer)
+static mr_uint32_t _err_io_timer_get_count(mr_timer_t timer)
 {
-	MR_LOG_E("Timer get-count error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }
@@ -235,10 +235,10 @@ mr_err_t mr_hw_timer_add_to_container(mr_timer_t timer,
 	timer->timeout = 0;
 
 	/* Set timer operations as protect functions if ops is null */
-	ops->configure = ops->configure ? ops->configure : _hw_timer_configure;
-	ops->start = ops->start ? ops->start : _hw_timer_start;
-	ops->stop = ops->stop ? ops->stop : _hw_timer_stop;
-	ops->get_count = ops->get_count ? ops->get_count : _hw_timer_get_count;
+	ops->configure = ops->configure ? ops->configure : _err_io_timer_configure;
+	ops->start = ops->start ? ops->start : _err_io_timer_start;
+	ops->stop = ops->stop ? ops->stop : _err_io_timer_stop;
+	ops->get_count = ops->get_count ? ops->get_count : _err_io_timer_get_count;
 	timer->ops = ops;
 
 	return MR_ERR_OK;

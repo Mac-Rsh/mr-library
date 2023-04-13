@@ -68,14 +68,14 @@ mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t rb)
 	}
 }
 
-mr_size_t mr_ringbuffer_read(mr_ringbuffer_t rb, mr_uint8_t *buffer, mr_size_t count)
+mr_size_t mr_ringbuffer_read(mr_ringbuffer_t rb, mr_uint8_t *buffer, mr_size_t size)
 {
-	mr_size_t length;
+	mr_size_t length = 0;
 
 	MR_ASSERT(rb != MR_NULL);
 	MR_ASSERT(buffer != MR_NULL);
 
-	if (count == 0)
+	if (size == 0)
 		return 0;
 
 	/* Get the number of bytes that can be read */
@@ -86,39 +86,39 @@ mr_size_t mr_ringbuffer_read(mr_ringbuffer_t rb, mr_uint8_t *buffer, mr_size_t c
 		return 0;
 
 	/* Adjust the number of bytes to read if it exceeds the available data */
-	if (count > length)
-		count = length;
+	if (size > length)
+		size = length;
 
 	mr_hw_interrupt_disable();
 
 	/* Copy the data from the ringbuffer to the buffer */
-	if ((rb->size - rb->read_index) > count)
+	if ((rb->size - rb->read_index) > size)
 	{
-		mr_memcpy(buffer, &rb->buffer[rb->read_index], count);
-		rb->read_index += count;
+		mr_memcpy(buffer, &rb->buffer[rb->read_index], size);
+		rb->read_index += size;
 
 		mr_hw_interrupt_enable();
-		return count;
+		return size;
 	}
 
 	mr_memcpy(buffer, &rb->buffer[rb->read_index], rb->size - rb->read_index);
-	mr_memcpy(&buffer[rb->size - rb->read_index], &rb->buffer[0], count - (rb->size - rb->read_index));
+	mr_memcpy(&buffer[rb->size - rb->read_index], &rb->buffer[0], size - (rb->size - rb->read_index));
 
 	rb->read_mirror = ~ rb->read_mirror;
-	rb->read_index = count - (rb->size - rb->read_index);
+	rb->read_index = size - (rb->size - rb->read_index);
 
 	mr_hw_interrupt_enable();
-	return count;
+	return size;
 }
 
-mr_size_t mr_ringbuffer_write(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_size_t count)
+mr_size_t mr_ringbuffer_write(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_size_t size)
 {
-	mr_size_t length;
+	mr_size_t length = 0;
 
 	MR_ASSERT(rb != MR_NULL);
 	MR_ASSERT(buffer != MR_NULL);
 
-	if (count == 0)
+	if (size == 0)
 		return 0;
 
 	/* Calculate the number of bytes that can be written */
@@ -129,72 +129,72 @@ mr_size_t mr_ringbuffer_write(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_s
 		return 0;
 
 	/* Adjust the number of bytes to write if it exceeds the available data */
-	if (count > length)
-		count = length;
+	if (size > length)
+		size = length;
 
 	mr_hw_interrupt_disable();
 
 	/* Copy the data from the buffer to the ringbuffer */
-	if ((rb->size - rb->write_index) > count)
+	if ((rb->size - rb->write_index) > size)
 	{
-		mr_memcpy(&rb->buffer[rb->write_index], buffer, count);
-		rb->write_index += count;
+		mr_memcpy(&rb->buffer[rb->write_index], buffer, size);
+		rb->write_index += size;
 
 		mr_hw_interrupt_enable();
-		return count;
+		return size;
 	}
 
 	mr_memcpy(&rb->buffer[rb->write_index], buffer, rb->size - rb->write_index);
-	mr_memcpy(&rb->buffer[0], &buffer[rb->size - rb->write_index], count - (rb->size - rb->write_index));
+	mr_memcpy(&rb->buffer[0], &buffer[rb->size - rb->write_index], size - (rb->size - rb->write_index));
 
 	rb->write_mirror = ~ rb->write_mirror;
-	rb->write_index = count - (rb->size - rb->write_index);
+	rb->write_index = size - (rb->size - rb->write_index);
 
 	mr_hw_interrupt_enable();
-	return count;
+	return size;
 }
 
-mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_size_t count)
+mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_size_t size)
 {
-	mr_size_t length;
+	mr_size_t length = 0;
 
 	MR_ASSERT(rb != MR_NULL);
 	MR_ASSERT(buffer != MR_NULL);
 
-	if (count == 0)
+	if (size == 0)
 		return 0;
 
 	/* Calculate the number of bytes that can be written */
 	length = rb->size - mr_ringbuffer_get_data_length(rb);
 
 	/* If the data exceeds the buffer length, the front data is discarded */
-	if (count > rb->size)
+	if (size > rb->size)
 	{
-		buffer = &buffer[count - rb->size];
-		count = rb->size;
+		buffer = &buffer[size - rb->size];
+		size = rb->size;
 	}
 
 	mr_hw_interrupt_disable();
 
 	/* Copy the data from the buffer to the ringbuffer */
-	if ((rb->size - rb->write_index) > count)
+	if ((rb->size - rb->write_index) > size)
 	{
-		mr_memcpy(&rb->buffer[rb->write_index], buffer, count);
-		rb->write_index += count;
-		if (count > length)
+		mr_memcpy(&rb->buffer[rb->write_index], buffer, size);
+		rb->write_index += size;
+		if (size > length)
 			rb->read_index = rb->write_index;
 
 		mr_hw_interrupt_enable();
-		return count;
+		return size;
 	}
 
 	mr_memcpy(&rb->buffer[rb->write_index], buffer, rb->size - rb->write_index);
-	mr_memcpy(&rb->buffer[0], &buffer[rb->size - rb->write_index], count - (rb->size - rb->write_index));
+	mr_memcpy(&rb->buffer[0], &buffer[rb->size - rb->write_index], size - (rb->size - rb->write_index));
 
 	rb->write_mirror = ~ rb->write_mirror;
-	rb->write_index = count - (rb->size - rb->write_index);
+	rb->write_index = size - (rb->size - rb->write_index);
 
-	if (count > length)
+	if (size > length)
 	{
 		if (rb->write_index <= rb->read_index)
 			rb->read_mirror = ~ rb->read_mirror;
@@ -203,5 +203,5 @@ mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t rb, const mr_uint8_t *buffer
 	}
 
 	mr_hw_interrupt_enable();
-	return count;
+	return size;
 }

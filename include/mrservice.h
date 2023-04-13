@@ -27,7 +27,10 @@ do{                              \
 #define mr_container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 
-#define mr_array_get_length(array)   sizeof(array)/sizeof(array[0])
+#define mr_array_get_length(array)    sizeof(array)/sizeof(array[0])
+
+#define mr_max(a, b)    ((a) > (b)) ? a:b
+#define mr_min(a, b)    ((a) < (b)) ? a:b
 
 MR_INLINE void mr_list_init(mr_list_t list)
 {

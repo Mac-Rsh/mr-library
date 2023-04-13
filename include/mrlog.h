@@ -9,7 +9,10 @@
 
 MR_INLINE void mr_assert_handler()
 {
+	while (1)
+	{
 
+	}
 }
 
 #define MR_ASSERT(EX)           \

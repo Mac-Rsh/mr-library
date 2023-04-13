@@ -4,7 +4,6 @@
 //<---------------------------- Hardware -------------------------------------->
 //<<< Please include bsp head file >>>
 
-
 //<<< Please give your bsp a name >>>
 #define BSP_NAME                          "CH32V303RBT6"
 
@@ -34,8 +33,5 @@
 #define BSP_SPI_2
 #define BSP_SPI_3
 #define BSP_SPI_4
-
-
-
 
 #endif
