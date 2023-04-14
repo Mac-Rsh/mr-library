@@ -10,6 +10,13 @@
 
 #include <mrlib.h>
 
+/**
+ * This function find the device.
+ *
+ * @param name The name of the device.
+ *
+ * @return a handle to the find device, or MR_NULL if not find.
+ */
 mr_device_t mr_device_find(const char *name)
 {
 	mr_device_t device = MR_NULL;
@@ -20,6 +27,18 @@ mr_device_t mr_device_find(const char *name)
 	return device;
 }
 
+/**
+ * This function add device to the container.
+ *
+ * @param device The device to be added.
+ * @param name The name of the device.
+ * @param type The flag of the device.
+ * @param support_flag The open flags supported by the device.
+ * @param ops The operations of the device.
+ * @param data The data of the device.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
 mr_err_t mr_device_add_to_container(mr_device_t device,
 									const char *name,
 									enum mr_device_type type,
@@ -52,6 +71,14 @@ mr_err_t mr_device_add_to_container(mr_device_t device,
 	return MR_ERR_OK;
 }
 
+/**
+ * This function open the device.
+ *
+ * @param device The device to be opened.
+ * @param flags The open flags of the device.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 {
 	MR_ASSERT(device != MR_NULL);
@@ -79,6 +106,13 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 	return device->ops->open(device);
 }
 
+/**
+ * This function close the device.
+ *
+ * @param device The device to be closed.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
 mr_err_t mr_device_close(mr_device_t device)
 {
 	MR_ASSERT(device != MR_NULL);
@@ -104,6 +138,15 @@ mr_err_t mr_device_close(mr_device_t device)
 	return device->ops->close(device);
 }
 
+/**
+ * This function control the device.
+ *
+ * @param device The device to be control.
+ * @param cmd The operation command of the device.
+ * @param args The argument of command.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 {
 	MR_ASSERT(device != MR_NULL);
@@ -115,7 +158,17 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 	return device->ops->ioctl(device, cmd, args);
 }
 
-mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
+/**
+ * This function read the device.
+ *
+ * @param device The device to be read.
+ * @param pos The read position.
+ * @param buffer The data buffer to be read to device.
+ * @param size The size of read.
+ *
+ * @return The size of the actual read on success, otherwise return 0.
+ */
+mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	MR_ASSERT(device != MR_NULL);
 	MR_ASSERT(buffer != MR_NULL);
@@ -128,10 +181,20 @@ mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size
 	if (device->ops->read == MR_NULL)
 		return 0;
 
-	return device->ops->read(device, pos, buffer, count);
+	return device->ops->read(device, pos, buffer, size);
 }
 
-mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
+/**
+ * This function write the device.
+ *
+ * @param device The device to be written.
+ * @param pos The write position.
+ * @param buffer The data buffer to be written to device.
+ * @param size The size of write.
+ *
+ * @return The size of the actual write on success, otherwise return 0.
+ */
+mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	MR_ASSERT(device != MR_NULL);
 	MR_ASSERT(buffer != MR_NULL);
@@ -144,5 +207,5 @@ mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, 
 	if (device->ops->write == MR_NULL)
 		return 0;
 
-	return device->ops->write(device, pos, buffer, count);
+	return device->ops->write(device, pos, buffer, size);
 }
