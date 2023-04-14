@@ -26,24 +26,24 @@ MR_INLINE mr_err_t mr_pin_init(mr_device_t pin, mr_uint16_t number, mr_uint16_t 
 
 MR_INLINE mr_level_t mr_pin_read(mr_device_t pin, mr_uint16_t number)
 {
-	mr_level_t level = MR_LOW;
+	mr_uint8_t level = MR_LOW;
 
-	mr_device_read(pin, number, &level, 1);
+	mr_device_read(pin, number, &level, sizeof(level));
 	return level;
 }
 
 MR_INLINE void mr_pin_write(mr_device_t pin, mr_uint16_t number, mr_level_t level)
 {
-	mr_device_write(pin, number, &level, 1);
+	mr_device_write(pin, number, &level, sizeof(level));
 }
 
 MR_INLINE void mr_pin_toggle(mr_device_t pin, mr_uint16_t number)
 {
-	mr_level_t level = MR_LOW;
+	mr_uint8_t level = MR_LOW;
 
-	mr_device_read(pin, number, &level, 1);
+	mr_device_read(pin, number, &level, sizeof(level));
 	level = ! level;
-	mr_device_write(pin, number, &level, 1);
+	mr_device_write(pin, number, &level, sizeof(level));
 }
 
 #endif
@@ -63,7 +63,7 @@ MR_INLINE mr_uint8_t mr_serial_read(mr_device_t serial)
 {
 	mr_uint8_t data = 0;
 
-	mr_device_read(serial, - 1, &data, 1);
+	mr_device_read(serial, - 1, &data, sizeof(data));
 	return data;
 }
 
@@ -74,7 +74,7 @@ MR_INLINE mr_size_t mr_serial_read_buffer(mr_device_t serial, mr_uint8_t *buffer
 
 MR_INLINE void mr_serial_write(mr_device_t serial, mr_uint8_t data)
 {
-	mr_device_write(serial, - 1, &data, 1);
+	mr_device_write(serial, - 1, &data, sizeof(data));
 }
 
 MR_INLINE mr_size_t mr_serial_write_buffer(mr_device_t serial, mr_uint8_t *buffer, mr_size_t count)
@@ -111,7 +111,7 @@ MR_INLINE mr_uint8_t mr_spi_read(mr_device_t spi_device)
 {
 	mr_uint8_t data = 0;
 
-	mr_device_read(spi_device, - 1, &data, 1);
+	mr_device_read(spi_device, - 1, &data, sizeof(data));
 	return data;
 }
 
@@ -122,7 +122,7 @@ MR_INLINE mr_size_t mr_spi_read_buffer(mr_device_t spi_device, mr_uint8_t *buffe
 
 MR_INLINE void mr_spi_write(mr_device_t spi_device, mr_uint8_t data)
 {
-	mr_device_write(spi_device, - 1, &data, 1);
+	mr_device_write(spi_device, - 1, &data, sizeof(data));
 }
 
 MR_INLINE mr_size_t mr_spi_write_buffer(mr_device_t spi_device, mr_uint8_t *buffer, mr_size_t count)
@@ -134,8 +134,8 @@ MR_INLINE mr_uint8_t mr_spi_write_then_read(mr_device_t spi_device, mr_uint8_t s
 {
 	mr_uint8_t data = 0;
 
-	mr_device_write(spi_device, - 1, &send_data, 1);
-	mr_device_read(spi_device, - 1, &data, 1);
+	mr_device_write(spi_device, - 1, &send_data, sizeof(data));
+	mr_device_read(spi_device, - 1, &data, sizeof(data));
 	return data;
 }
 
@@ -156,7 +156,7 @@ MR_INLINE mr_uint16_t mr_adc_read(mr_device_t adc, mr_uint16_t channel)
 {
 	mr_uint16_t data = 0;
 
-	mr_device_read(adc, - 1, &data, 1);
+	mr_device_read(adc, - 1, &data, sizeof(data));
 	return data;
 }
 
@@ -175,7 +175,7 @@ MR_INLINE mr_err_t mr_dac_init(mr_device_t dac, mr_uint16_t channel)
 
 MR_INLINE void mr_dac_write(mr_device_t dac, mr_uint16_t channel, mr_uint16_t value)
 {
-	mr_device_write(dac, - 1, &value, 1);
+	mr_device_write(dac, - 1, &value, sizeof(value));
 }
 
 #endif
@@ -195,13 +195,13 @@ MR_INLINE mr_uint32_t mr_timer_read(mr_device_t timer)
 {
 	mr_uint32_t data = 0;
 
-	mr_device_read(timer, - 1, &data, 1);
+	mr_device_read(timer, - 1, &data, sizeof(data));
 	return data;
 }
 
 MR_INLINE void mr_timer_write(mr_device_t timer, mr_uint32_t timeout)
 {
-	mr_device_write(timer, - 1, &timeout, 1);
+	mr_device_write(timer, - 1, &timeout, sizeof(timeout));
 }
 
 MR_INLINE mr_err_t mr_timer_reboot(mr_device_t timer)
