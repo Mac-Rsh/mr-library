@@ -24,9 +24,9 @@
 /* Default config for mr_i2c_config structure */
 #define MR_I2C_CONFIG_DEFAULT                \
 {                                            \
-    .baud_rate = 3000000,                    \
-    .host_slave = MR_I2C_HOST,               \
-    .address_mode = MR_I2C_ADDRESS_MODE_7    \
+    3000000,                    			 \
+    MR_I2C_HOST,               			     \
+    MR_I2C_ADDRESS_MODE_7   			 	 \
 }
 
 struct mr_i2c_config

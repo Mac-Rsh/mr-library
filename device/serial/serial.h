@@ -47,13 +47,13 @@
 /* Default config for mr_serial_config structure */
 #define MR_SERIAL_CONFIG_DEFAULT                    \
 {                                                   \
-    .baud_rate = 115200,                            \
-    .data_bits = MR_SERIAL_DATA_BITS_8,             \
-    .stop_bits = MR_SERIAL_STOP_BITS_1,             \
-    .parity = MR_SERIAL_PARITY_NONE,                \
-    .bit_order = MR_SERIAL_BIT_ORDER_LSB,           \
-    .invert = MR_SERIAL_NRZ_NORMAL,                 \
-    .flow_control = MR_SERIAL_FLOW_CONTROL_NONE     \
+    115200,                            				\
+    MR_SERIAL_DATA_BITS_8,             				\
+    MR_SERIAL_STOP_BITS_1,             				\
+    MR_SERIAL_PARITY_NONE,                			\
+    MR_SERIAL_BIT_ORDER_LSB,           				\
+    MR_SERIAL_NRZ_NORMAL,                 			\
+    MR_SERIAL_FLOW_CONTROL_NONE     				\
 }
 
 struct mr_serial_config

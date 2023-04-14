@@ -35,44 +35,45 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 	return ret;
 }
 
-static mr_size_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
+static mr_size_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_pin_t pin = (mr_pin_t)device;
+	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 
-	if (count == 0)
+	if (size != sizeof(mr_uint8_t))
 		return 0;
 
-	*(mr_uint16_t *)buffer = pin->ops->read(pin, (mr_uint16_t)pos);
-	return 1;
+	*recv_buffer = pin->ops->read(pin, (mr_uint16_t)pos);
+
+	return size;
 }
 
-static mr_size_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
+static mr_size_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_pin_t pin = (mr_pin_t)device;
+	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 
-	if (count == 0)
+	if (size != sizeof(mr_uint8_t))
 		return 0;
 
-	pin->ops->write(pin, (mr_uint16_t)pos, *(mr_uint8_t *)buffer);
-	return 1;
+	pin->ops->write(pin, (mr_uint16_t)pos, *send_buffer);
+
+	return size;
 }
 
-static mr_err_t _hw_pin_configure(mr_pin_t pin, mr_uint16_t number, mr_uint16_t mode)
+static mr_err_t _err_io_pin_configure(mr_pin_t pin, mr_uint16_t number, mr_uint16_t mode)
 {
-	MR_LOG_E("Pin configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static void _hw_pin_write(mr_pin_t pin, mr_uint16_t number, mr_uint8_t value)
+static void _err_io_pin_write(mr_pin_t pin, mr_uint16_t number, mr_uint8_t value)
 {
-	MR_LOG_E("Pin write error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
-static mr_uint8_t _hw_pin_read(mr_pin_t pin, mr_uint16_t number)
+static mr_uint8_t _err_io_pin_read(mr_pin_t pin, mr_uint16_t number)
 {
-	MR_LOG_E("Pin read error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }
@@ -98,9 +99,9 @@ mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pi
 		return ret;
 
 	/* Set pin operations as protect functions if ops is null */
-	ops->configure = ops->configure ? ops->configure : _hw_pin_configure;
-	ops->write = ops->write ? ops->write : _hw_pin_write;
-	ops->read = ops->read ? ops->read : _hw_pin_read;
+	ops->configure = ops->configure ? ops->configure : _err_io_pin_configure;
+	ops->write = ops->write ? ops->write : _err_io_pin_write;
+	ops->read = ops->read ? ops->read : _err_io_pin_read;
 	pin->ops = ops;
 
 	return MR_ERR_OK;

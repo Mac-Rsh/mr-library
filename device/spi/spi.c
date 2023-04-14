@@ -146,11 +146,11 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 	return ret;
 }
 
-static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
+static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
 	mr_err_t ret = MR_ERR_OK;
-	mr_size_t recv_count = count;
+	mr_size_t recv_size = size;
 
 	/* Take spi-bus */
 	ret = mr_take_spi_bus(spi_device);
@@ -163,7 +163,7 @@ static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buff
 		{
 			mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 
-			while (recv_count --)
+			while (recv_size --)
 			{
 				*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
 				recv_buffer ++;
@@ -175,7 +175,7 @@ static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buff
 		{
 			mr_uint16_t *recv_buffer = (mr_uint16_t *)buffer;
 
-			while (recv_count --)
+			while (recv_size --)
 			{
 				*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
 				recv_buffer ++;
@@ -187,7 +187,7 @@ static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buff
 		{
 			mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
 
-			while (recv_count --)
+			while (recv_size --)
 			{
 				*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
 				recv_buffer ++;
@@ -201,14 +201,14 @@ static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buff
 	/* Release spi-bus */
 	mr_release_spi_bus(spi_device);
 
-	return count;
+	return size;
 }
 
-static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t count)
+static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
 	mr_err_t ret = MR_ERR_OK;
-	mr_size_t send_count = count;
+	mr_size_t send_size = size;
 
 	/* Take spi-bus */
 	ret = mr_take_spi_bus(spi_device);
@@ -221,7 +221,7 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 		{
 			mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 
-			while (send_count --)
+			while (send_size --)
 			{
 				spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
 				send_buffer ++;
@@ -233,7 +233,7 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 		{
 			mr_uint16_t *send_buffer = (mr_uint16_t *)buffer;
 
-			while (send_count --)
+			while (send_size --)
 			{
 				spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
 				send_buffer ++;
@@ -245,7 +245,7 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 		{
 			mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
 
-			while (send_count --)
+			while (send_size --)
 			{
 				spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
 				send_buffer ++;
@@ -259,25 +259,22 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 	/* Release spi-bus */
 	mr_release_spi_bus(spi_device);
 
-	return count;
+	return size;
 }
 
-static mr_err_t _hw_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
+static mr_err_t _err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
 {
-	MR_LOG_E("Spi configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static void _hw_spi_cs_set(mr_spi_bus_t spi_bus, void *cs_data, mr_state_t state)
+static void _err_io_spi_cs_set(mr_spi_bus_t spi_bus, void *cs_data, mr_state_t state)
 {
-	MR_LOG_E("Spi cs-set error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 }
 
-static mr_uint32_t _hw_spi_transmit(mr_spi_bus_t spi_bus, mr_uint32_t send_data)
+static mr_uint32_t _err_io_spi_transmit(mr_spi_bus_t spi_bus, mr_uint32_t send_data)
 {
-	MR_LOG_E("Spi transmit error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }
@@ -308,9 +305,9 @@ mr_err_t mr_hw_spi_bus_add_to_container(mr_spi_bus_t spi_bus, const char *name, 
 	mr_mutex_init(&spi_bus->lock);
 
 	/* Set spi-bus operations as protect functions if ops is null */
-	ops->configure = ops->configure ? ops->configure : _hw_spi_configure;
-	ops->cs_set = ops->cs_set ? ops->cs_set : _hw_spi_cs_set;
-	ops->transmit = ops->transmit ? ops->transmit : _hw_spi_transmit;
+	ops->configure = ops->configure ? ops->configure : _err_io_spi_configure;
+	ops->cs_set = ops->cs_set ? ops->cs_set : _err_io_spi_cs_set;
+	ops->transmit = ops->transmit ? ops->transmit : _err_io_spi_transmit;
 	spi_bus->ops = ops;
 
 	return MR_ERR_OK;

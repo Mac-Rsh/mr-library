@@ -49,39 +49,38 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 	return ret;
 }
 
-static mr_size_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t count)
+static mr_size_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_adc_t adc = (mr_adc_t)device;
-	mr_uint16_t *recv_buffer = MR_NULL;
-	mr_size_t recv_count = count;
+	mr_uint16_t *recv_buffer = (mr_uint16_t *)buffer;
+	mr_size_t recv_size = size;
 
-	recv_buffer = (mr_uint16_t *)buffer;
-	while (recv_count --)
+	if (size < sizeof(mr_uint16_t))
+		return 0;
+
+	while (recv_size -= sizeof(mr_uint16_t))
 	{
 		*recv_buffer = adc->ops->read(adc, (mr_uint16_t)pos);
 		recv_buffer ++;
 	}
 
-	return count;
+	return size;
 }
 
-static mr_err_t _hw_adc_configure(mr_adc_t adc, mr_state_t state)
+static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_state_t state)
 {
-	MR_LOG_E("Adc configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static mr_err_t _hw_adc_channel_configure(mr_adc_t adc, mr_uint16_t channel, mr_state_t state)
+static mr_err_t _err_io_adc_channel_configure(mr_adc_t adc, mr_uint16_t channel, mr_state_t state)
 {
-	MR_LOG_E("Adc channel-configure error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
 }
 
-static mr_uint16_t _hw_adc_read(mr_adc_t adc, mr_uint16_t channel)
+static mr_uint16_t _err_io_adc_read(mr_adc_t adc, mr_uint16_t channel)
 {
-	MR_LOG_E("Adc read error: -MR_ERR_IO\r\n");
 	MR_ASSERT(0);
 	return 0;
 }
@@ -107,9 +106,9 @@ mr_err_t mr_hw_adc_add_to_container(mr_adc_t adc, const char *name, struct mr_ad
 		return ret;
 
 	/* Set adc operations as protect functions if ops is null */
-	ops->configure = ops->configure ? ops->configure : _hw_adc_configure;
-	ops->channel_configure = ops->channel_configure ? ops->channel_configure : _hw_adc_channel_configure;
-	ops->read = ops->read ? ops->read : _hw_adc_read;
+	ops->configure = ops->configure ? ops->configure : _err_io_adc_configure;
+	ops->channel_configure = ops->channel_configure ? ops->channel_configure : _err_io_adc_channel_configure;
+	ops->read = ops->read ? ops->read : _err_io_adc_read;
 	adc->ops = ops;
 
 	return MR_ERR_OK;

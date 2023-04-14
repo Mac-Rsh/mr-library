@@ -36,12 +36,12 @@
 /* Default config for mr_spi_config structure */
 #define MR_SPI_CONFIG_DEFAULT                \
 {                                            \
-    .baud_rate = 3000000,                    \
-    .host_slave = MR_SPI_HOST,               \
-    .mode = MR_SPI_MODE_0,                   \
-    .data_bits = MR_SPI_DATA_BITS_8,         \
-    .bit_order = MR_SPI_BIT_ORDER_MSB,       \
-    .cs_active = MR_SPI_CS_ACTIVE_LOW,       \
+    3000000,                   		 		 \
+    MR_SPI_HOST,               				 \
+    MR_SPI_MODE_0,                   		 \
+    MR_SPI_DATA_BITS_8,         			 \
+    MR_SPI_BIT_ORDER_MSB,      			 	 \
+    MR_SPI_CS_ACTIVE_LOW,       			 \
 }
 
 struct mr_spi_config
