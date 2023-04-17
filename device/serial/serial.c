@@ -194,7 +194,7 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 
 	/* Initialize the serial fields */
 	serial->config.baud_rate = 0;
-	serial->fifo_bufsz = MR_SERIAL_FIFO_SIZE;
+	serial->fifo_bufsz = MR_SERIAL_BUFSZ;
 	serial->fifo_rx = MR_NULL;
 	serial->fifo_tx = MR_NULL;
 

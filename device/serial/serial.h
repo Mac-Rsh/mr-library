@@ -35,9 +35,9 @@
 #define MR_SERIAL_FLOW_CONTROL_NONE                 0
 #define MR_SERIAL_FLOW_CONTROL_CTSRTS               1
 
-#define MR_SERIAL_FIFO_SIZE_MIN                     32
-#if MR_SERIAL_FIFO_SIZE < MR_SERIAL_FIFO_SIZE_MIN
-#define MR_SERIAL_FIFO_SIZE         	MR_SERIAL_FIFO_SIZE_MIN
+#define MR_SERIAL_BUFSZ_MIN                     	32
+#if MR_SERIAL_BUFSZ < MR_SERIAL_BUFSZ_MIN
+#define MR_SERIAL_BUFSZ         	MR_SERIAL_BUFSZ_MIN
 #endif
 
 #define MR_SERIAL_EVENT_RX_INT                      0x1000

@@ -175,7 +175,7 @@ static mr_size_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buff
 static mr_size_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;;
+	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 	mr_err_t ret = MR_ERR_OK;
 	mr_size_t send_size = size;
 
