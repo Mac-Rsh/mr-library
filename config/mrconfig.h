@@ -3,11 +3,25 @@
 
 #include <board.h>
 
+//<<< CONFIG SWITCH >>>
 #define MR_CONF_DISABLE                 0
 #define MR_CONF_ENABLE                  1
 
+//<<< LOG LEVEL >>>
+#define MR_LOG_LEVEL_ASSERT				0
+#define MR_LOG_LEVEL_ERROR				1
+#define MR_LOG_LEVEL_WARNING			2
+#define MR_LOG_LEVEL_INFO				3
+#define MR_LOG_LEVEL_DEBUG				4
+
 //<---------------------------- Kernel -------------------------------------->
 #define MR_NAME_MAX                     12
+
+//<<< LOG >>>
+#define MR_LOG_OUTPUT					MR_CONF_ENABLE
+#define MR_LOG_BUFSZ					128
+#define MR_LOG_ASSERT					MR_CONF_ENABLE
+#define MR_LOG_LEVEL					MR_LOG_LEVEL_DEBUG
 
 //<---------------------------- Device -------------------------------------->
 //<<< GPIO >>>
@@ -15,7 +29,7 @@
 
 //<<< SERIAL >>>
 #define MR_DEVICE_SERIAL                MR_CONF_ENABLE
-#define MR_SERIAL_FIFO_SIZE             64
+#define MR_SERIAL_BUFSZ                 64
 
 //<<< SPI >>>
 #define MR_DEVICE_SPI                   MR_CONF_ENABLE
