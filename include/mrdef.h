@@ -11,13 +11,14 @@
 #ifndef _MR_DEF_H_
 #define _MR_DEF_H_
 
-#include "mrconfig.h"
+#include <mrconfig.h>
 
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-#include "malloc.h"
-#include "string.h"
+#include <malloc.h>
+#include <string.h>
 
 #define mr_malloc                  malloc
 #define mr_free                    free
@@ -26,41 +27,6 @@
 #define mr_memset                  memset
 #define mr_memcpy                  memcpy
 #define mr_printf                  printf
-
-/* mr-library version information */
-#define MR_LIBRARY_VERSION         "0.0.2"
-
-#define MR_NULL                    0
-
-/* mr-library error code definitions */
-#define MR_ERR_OK                  0                           /**< There is no error */
-#define MR_ERR_GENERIC             1                           /**< A generic error happens */
-#define MR_ERR_NO_MEMORY           2                           /**< No memory */
-#define MR_ERR_IO                  3                           /**< IO error */
-#define MR_ERR_TIMEOUT             4                           /**< Timed out */
-#define MR_ERR_BUSY                5                           /**< Busy */
-#define MR_ERR_NOT_FOUND           6                           /**< Not found */
-#define MR_ERR_UNSUPPORTED         7                           /**< Unsupported feature */
-
-/* mr-library basic open flag definitions */
-#define MR_OPEN_CLOSED             0x0000                      /**< Closed */
-#define MR_OPEN_RDONLY             0x1000                      /**< Read only */
-#define MR_OPEN_WRONLY             0x2000                      /**< Write only */
-#define MR_OPEN_RDWR               0x3000                      /**< Read and write */
-#define MR_OPEN_NONBLOCKING        0x4000                      /**< Non-blocking */
-#define MR_OPEN_ACTIVE             0x8000                      /**< Active */
-#define _MR_OPEN_FLAG_MASK         0xf000                      /**< Mask for getting open flag */
-
-/* mr-library basic command definitions */
-#define MR_CMD_NULL                0x0000                      /**< Null command */
-#define MR_CMD_CONFIG              0x1000                      /**< Configure command */
-#define MR_CMD_SET_RX_CALLBACK     0x2000                      /**< Set rx callback command */
-#define MR_CMD_SET_TX_CALLBACK     0x3000                      /**< Set tx callback command */
-#define MR_CMD_ATTACH              0x4000                      /**< Attach command */
-#define MR_CMD_TRANSFER            0x5000                      /**< Transfer command */
-#define MR_CMD_REBOOT              0x6000                      /**< Reboot command */
-#define MR_CMD_STOP                0x7000                      /**< Stop command */
-#define _MR_CMD_MASK               0xf000                      /**< Mask for getting command */
 
 /* Compiler Related Definitions */
 #if defined(__ARMCC_VERSION)
@@ -108,6 +74,41 @@
 #define MR_INLINE                   static inline
 #endif
 
+/* mr-library version information */
+#define MR_LIBRARY_VERSION         "0.0.2"
+
+#define MR_NULL                    0
+
+/* mr-library error code definitions */
+#define MR_ERR_OK                  0                           /**< There is no error */
+#define MR_ERR_GENERIC             1                           /**< A generic error happens */
+#define MR_ERR_NO_MEMORY           2                           /**< No memory */
+#define MR_ERR_IO                  3                           /**< IO error */
+#define MR_ERR_TIMEOUT             4                           /**< Timed out */
+#define MR_ERR_BUSY                5                           /**< Busy */
+#define MR_ERR_NOT_FOUND           6                           /**< Not found */
+#define MR_ERR_UNSUPPORTED         7                           /**< Unsupported feature */
+
+/* mr-library basic open flag definitions */
+#define MR_OPEN_CLOSED             0x0000                      /**< Closed */
+#define MR_OPEN_RDONLY             0x1000                      /**< Read only */
+#define MR_OPEN_WRONLY             0x2000                      /**< Write only */
+#define MR_OPEN_RDWR               0x3000                      /**< Read and write */
+#define MR_OPEN_NONBLOCKING        0x4000                      /**< Non-blocking */
+#define MR_OPEN_ACTIVE             0x8000                      /**< Active */
+#define _MR_OPEN_FLAG_MASK         0xf000                      /**< Mask for getting open flag */
+
+/* mr-library basic command definitions */
+#define MR_CMD_NULL                0x0000                      /**< Null command */
+#define MR_CMD_CONFIG              0x1000                      /**< Configure command */
+#define MR_CMD_SET_RX_CALLBACK     0x2000                      /**< Set rx callback command */
+#define MR_CMD_SET_TX_CALLBACK     0x3000                      /**< Set tx callback command */
+#define MR_CMD_ATTACH              0x4000                      /**< Attach command */
+#define MR_CMD_TRANSFER            0x5000                      /**< Transfer command */
+#define MR_CMD_REBOOT              0x6000                      /**< Reboot command */
+#define MR_CMD_STOP                0x7000                      /**< Stop command */
+#define _MR_CMD_MASK               0xf000                      /**< Mask for getting command */
+
 /* mr-library basic data_p flag definitions */
 typedef signed char mr_int8_t;                                 /**< Type for 8bit integer */
 typedef signed short mr_int16_t;                               /**< Type for 16bit integer */
@@ -115,8 +116,8 @@ typedef signed int mr_int32_t;                                 /**< Type for 32b
 typedef unsigned char mr_uint8_t;                              /**< Type for 8bit unsigned integer */
 typedef unsigned short mr_uint16_t;                            /**< Type for 16bit unsigned integer */
 typedef unsigned int mr_uint32_t;                              /**< Type for 32bit unsigned integer */
-typedef float mr_float;                                        /**< Type for single-precision floating point */
-typedef double mr_double;                                      /**< Type for double-precision floating point */
+typedef float mr_float_t;                                      /**< Type for single-precision floating point */
+typedef double mr_double_t;                                    /**< Type for double-precision floating point */
 
 typedef signed long long mr_int64_t;                           /**< Type for 64bit integer */
 typedef unsigned long long mr_uint64_t;                        /**< Type for 64bit unsigned integer */
