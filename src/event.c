@@ -82,7 +82,7 @@ mr_err_t mr_event_manager_notify(mr_event_manager_t manager, mr_uint32_t value)
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_event_manager_process(mr_event_manager_t manager)
+mr_err_t mr_event_manager_handler(mr_event_manager_t manager)
 {
 	mr_avl_t node = MR_NULL;
 	mr_event_t event = MR_NULL;

@@ -89,7 +89,7 @@ mr_err_t mr_event_manager_add_to_container(mr_event_manager_t manager,
 										   mr_size_t pool_size);
 mr_err_t mr_event_manager_remove_from_container(mr_event_manager_t manager);
 mr_err_t mr_event_manager_notify(mr_event_manager_t manager, mr_uint32_t value);
-mr_err_t mr_event_manager_process(mr_event_manager_t manager);
+mr_err_t mr_event_manager_handler(mr_event_manager_t manager);
 
 mr_event_t mr_event_find(mr_event_manager_t manager, mr_uint32_t value);
 mr_err_t mr_event_add_to_manager(mr_event_manager_t manager,
@@ -108,11 +108,11 @@ mr_err_t mr_event_delete_from_manager(mr_event_manager_t manager, mr_event_t eve
  */
 mr_fsm_manager_t mr_fsm_manager_find(const char *name);
 mr_err_t mr_fsm_manager_add_to_container(mr_fsm_manager_t manager, const char *name, mr_uint32_t state);
-mr_err_t mr_fsm_manager_transfer_state(mr_fsm_manager_t manager, mr_uint32_t state);
-mr_err_t mr_fsm_manager_process(mr_fsm_manager_t manager);
 mr_err_t mr_fsm_create_to_manager(mr_fsm_manager_t manager,
 								  mr_uint32_t state,
 								  mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
 								  void *args);
+mr_err_t mr_fsm_manager_transfer_state(mr_fsm_manager_t manager, mr_uint32_t state);
+mr_err_t mr_fsm_manager_handler(mr_fsm_manager_t manager);
 
 #endif

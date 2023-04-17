@@ -45,6 +45,17 @@ mr_err_t mr_fsm_manager_add_to_container(mr_fsm_manager_t manager, const char *n
 	return MR_ERR_OK;
 }
 
+mr_err_t mr_fsm_create_to_manager(mr_fsm_manager_t manager,
+								  mr_uint32_t state,
+								  mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
+								  void *args)
+{
+	MR_ASSERT(manager != MR_NULL);
+	MR_ASSERT(callback != MR_NULL);
+
+	return mr_event_create_to_manager(&manager->manager, state, callback, args);
+}
+
 mr_err_t mr_fsm_manager_transfer_state(mr_fsm_manager_t manager, mr_uint32_t state)
 {
 	MR_ASSERT(manager != MR_NULL);
@@ -59,7 +70,7 @@ mr_err_t mr_fsm_manager_transfer_state(mr_fsm_manager_t manager, mr_uint32_t sta
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_fsm_manager_process(mr_fsm_manager_t manager)
+mr_err_t mr_fsm_manager_handler(mr_fsm_manager_t manager)
 {
 	mr_err_t ret = MR_ERR_OK;
 
@@ -69,17 +80,6 @@ mr_err_t mr_fsm_manager_process(mr_fsm_manager_t manager)
 	if (ret != MR_ERR_OK)
 		return ret;
 
-	return mr_event_manager_process(&manager->manager);
-}
-
-mr_err_t mr_fsm_create_to_manager(mr_fsm_manager_t manager,
-								  mr_uint32_t state,
-								  mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
-								  void *args)
-{
-	MR_ASSERT(manager != MR_NULL);
-	MR_ASSERT(callback != MR_NULL);
-
-	return mr_event_create_to_manager(&manager->manager, state, callback, args);
+	return mr_event_manager_handler(&manager->manager);
 }
 
