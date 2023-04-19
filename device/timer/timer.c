@@ -208,11 +208,11 @@ mr_err_t mr_hw_timer_add_to_container(mr_timer_t timer,
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_timer_open,
-			.close = mr_timer_close,
-			.ioctl = mr_timer_ioctl,
-			.read = mr_timer_read,
-			.write = mr_timer_write,
+			mr_timer_open,
+			mr_timer_close,
+			mr_timer_ioctl,
+			mr_timer_read,
+			mr_timer_write,
 		};
 
 	MR_ASSERT(timer != MR_NULL);

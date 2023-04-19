@@ -239,11 +239,11 @@ mr_err_t mr_hw_i2c_bus_add_to_container(mr_i2c_bus_t i2c_bus, const char *name, 
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_i2c_bus_open,
-			.close = mr_i2c_bus_close,
-			.ioctl = MR_NULL,
-			.read = MR_NULL,
-			.write = MR_NULL,
+			mr_i2c_bus_open,
+			mr_i2c_bus_close,
+			MR_NULL,
+			MR_NULL,
+			MR_NULL,
 		};
 
 	MR_ASSERT(i2c_bus != MR_NULL);

@@ -284,11 +284,11 @@ mr_err_t mr_hw_spi_bus_add_to_container(mr_spi_bus_t spi_bus, const char *name, 
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_spi_bus_open,
-			.close = mr_spi_bus_close,
-			.ioctl = MR_NULL,
-			.read = MR_NULL,
-			.write = MR_NULL,
+			mr_spi_bus_open,
+			mr_spi_bus_close,
+			MR_NULL,
+			MR_NULL,
+			MR_NULL,
 		};
 
 	MR_ASSERT(spi_bus != MR_NULL);

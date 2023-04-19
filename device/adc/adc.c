@@ -90,11 +90,11 @@ mr_err_t mr_hw_adc_add_to_container(mr_adc_t adc, const char *name, struct mr_ad
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_adc_open,
-			.close = mr_adc_close,
-			.ioctl = mr_adc_ioctl,
-			.read = mr_adc_read,
-			.write = MR_NULL,
+			mr_adc_open,
+			mr_adc_close,
+			mr_adc_ioctl,
+			mr_adc_read,
+			MR_NULL,
 		};
 
 	MR_ASSERT(adc != MR_NULL);

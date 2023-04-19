@@ -177,11 +177,11 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_serial_open,
-			.close = mr_serial_close,
-			.ioctl = mr_serial_ioctl,
-			.read = mr_serial_read,
-			.write = mr_serial_write,
+			mr_serial_open,
+			mr_serial_close,
+			mr_serial_ioctl,
+			mr_serial_read,
+			mr_serial_write,
 		};
 
 	MR_ASSERT(serial != MR_NULL);

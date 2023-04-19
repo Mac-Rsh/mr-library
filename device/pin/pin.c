@@ -83,11 +83,11 @@ mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pi
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = MR_NULL,
-			.close = MR_NULL,
-			.ioctl = mr_pin_ioctl,
-			.read = mr_pin_read,
-			.write = mr_pin_write,
+			MR_NULL,
+			MR_NULL,
+			mr_pin_ioctl,
+			mr_pin_read,
+			mr_pin_write,
 		};
 
 	MR_ASSERT(pin != MR_NULL);

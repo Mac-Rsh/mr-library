@@ -89,11 +89,11 @@ mr_err_t mr_hw_dac_add_to_container(mr_dac_t dac, const char *name, struct mr_da
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_dac_open,
-			.close = mr_dac_close,
-			.ioctl = mr_dac_ioctl,
-			.read = MR_NULL,
-			.write = mr_dac_write,
+			mr_dac_open,
+			mr_dac_close,
+			mr_dac_ioctl,
+			MR_NULL,
+			mr_dac_write,
 		};
 
 	MR_ASSERT(dac != MR_NULL);
