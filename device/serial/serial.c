@@ -26,7 +26,7 @@ static mr_err_t mr_serial_open(mr_device_t device)
 		if (fifo == MR_NULL)
 			return - MR_ERR_NO_MEMORY;
 
-		mr_ringbuffer_init(&fifo->ringbuffer, fifo->pool, serial->fifo_bufsz);
+		mr_fifo_init(&fifo->fifo, fifo->pool, serial->fifo_bufsz);
 		serial->fifo_rx = fifo;
 		fifo = MR_NULL;
 
@@ -35,7 +35,7 @@ static mr_err_t mr_serial_open(mr_device_t device)
 		if (fifo == MR_NULL)
 			return - MR_ERR_NO_MEMORY;
 
-		mr_ringbuffer_init(&fifo->ringbuffer, fifo->pool, serial->fifo_bufsz);
+		mr_fifo_init(&fifo->fifo, fifo->pool, serial->fifo_bufsz);
 		serial->fifo_tx = fifo;
 		fifo = MR_NULL;
 	}
@@ -119,8 +119,8 @@ static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, 
 
 	while (recv_size < size)
 	{
-		/* Read if the ringbuffer has data */
-		recv_size += mr_ringbuffer_read(&fifo->ringbuffer, recv_buffer + recv_size, size - recv_size);
+		/* Read if the fifo has data */
+		recv_size += mr_fifo_read(&fifo->fifo, recv_buffer + recv_size, size - recv_size);
 	}
 
 	return size;
@@ -135,8 +135,8 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 
 	while (send_size < size)
 	{
-		/* Write if the ringbuffer has space */
-		send_size += mr_ringbuffer_write(&fifo->ringbuffer, send_buffer + send_size, size - send_size);
+		/* Write if the fifo has space */
+		send_size += mr_fifo_write(&fifo->fifo, send_buffer + send_size, size - send_size);
 
 		/* Start send */
 		serial->ops->start_tx(serial);
@@ -215,21 +215,21 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 	{
 		case MR_SERIAL_EVENT_RX_INT:
 		{
-			struct mr_serial_fifo *fifo = MR_NULL;
+			struct mr_serial_fifo *fifo_rx = MR_NULL;
 			mr_uint8_t data;
 
-			fifo = (struct mr_serial_fifo *)serial->fifo_rx;
+			fifo_rx = (struct mr_serial_fifo *)serial->fifo_rx;
 
 			/* Read data into the ring buffer */
 			data = serial->ops->read(serial);
-			mr_ringbuffer_write_force(&fifo->ringbuffer, &data, 1);
+			mr_fifo_write_force(&fifo_rx->fifo, &data, 1);
 
 			/* Invoke the rx-callback function */
 			if (serial->device.rx_callback != MR_NULL)
 			{
 				mr_size_t length;
 
-				length = mr_ringbuffer_get_data_length(&fifo->ringbuffer);
+				length = mr_fifo_get_data_length(&fifo_rx->fifo);
 				serial->device.rx_callback(&serial->device, &length);
 			}
 			break;
@@ -237,13 +237,13 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 
 		case MR_SERIAL_EVENT_TX_INT:
 		{
-			struct mr_serial_fifo *fifo = MR_NULL;
+			struct mr_serial_fifo *fifo_tx = MR_NULL;
 			mr_size_t length;
 			mr_uint8_t data;
 
-			fifo = (struct mr_serial_fifo *)serial->fifo_tx;
+			fifo_tx = (struct mr_serial_fifo *)serial->fifo_tx;
 
-			length = mr_ringbuffer_get_data_length(&fifo->ringbuffer);
+			length = mr_fifo_get_data_length(&fifo_tx->fifo);
 			if (length == 0)
 			{
 				serial->ops->stop_tx(serial);
@@ -256,7 +256,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 				break;
 			}
 
-			mr_ringbuffer_read(&fifo->ringbuffer, &data, 1);
+			mr_fifo_read(&fifo_tx->fifo, &data, 1);
 			serial->ops->write(serial, data);
 			break;
 		}

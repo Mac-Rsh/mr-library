@@ -42,7 +42,7 @@ mr_err_t mr_event_manager_add_to_container(mr_event_manager_t manager,
 	/* Initialize the private fields */
 	manager->type = type;
 	manager->avl = MR_NULL;
-	mr_ringbuffer_init(&manager->queue, pool, pool_size);
+	mr_fifo_init(&manager->queue, pool, pool_size);
 
 	return MR_ERR_OK;
 }
@@ -64,7 +64,7 @@ mr_err_t mr_event_manager_remove_from_container(mr_event_manager_t manager)
 
 	/* Reset the private fields */
 	manager->avl = MR_NULL;
-	mr_ringbuffer_reset(&manager->queue);
+	mr_fifo_reset(&manager->queue);
 
 	return MR_ERR_OK;
 }
@@ -75,7 +75,7 @@ mr_err_t mr_event_manager_notify(mr_event_manager_t manager, mr_uint32_t value)
 
 	MR_ASSERT(manager != MR_NULL);
 
-	send_size = mr_ringbuffer_write(&manager->queue, (mr_uint8_t *)&value, sizeof(value));
+	send_size = mr_fifo_write(&manager->queue, (mr_uint8_t *)&value, sizeof(value));
 	if (send_size != sizeof(value))
 		return - MR_ERR_BUSY;
 
@@ -90,9 +90,9 @@ mr_err_t mr_event_manager_handler(mr_event_manager_t manager)
 
 	MR_ASSERT(manager != MR_NULL);
 
-	while (mr_ringbuffer_get_data_length(&manager->queue) >= sizeof(value))
+	while (mr_fifo_get_data_length(&manager->queue) >= sizeof(value))
 	{
-		mr_ringbuffer_read(&manager->queue, (mr_uint8_t *)&value, sizeof(value));
+		mr_fifo_read(&manager->queue, (mr_uint8_t *)&value, sizeof(value));
 
 		node = mr_avl_find(manager->avl, value);
 		if (node == MR_NULL)

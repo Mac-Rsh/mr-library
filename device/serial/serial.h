@@ -71,7 +71,7 @@ struct mr_serial_config
 
 struct mr_serial_fifo
 {
-	struct mr_ringbuffer ringbuffer;
+	struct mr_fifo fifo;
 	mr_uint8_t pool[];
 };
 

@@ -32,14 +32,14 @@ mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
 
 /**
- *  Export ringbuffer functions
+ *  Export fifo functions
  */
-void mr_ringbuffer_init(mr_ringbuffer_t rb, mr_uint8_t *pool, mr_size_t pool_size);
-void mr_ringbuffer_reset(mr_ringbuffer_t rb);
-mr_size_t mr_ringbuffer_get_data_length(mr_ringbuffer_t rb);
-mr_size_t mr_ringbuffer_read(mr_ringbuffer_t ringbuffer, mr_uint8_t *buffer, mr_size_t size);
-mr_size_t mr_ringbuffer_write(mr_ringbuffer_t ringbuffer, const mr_uint8_t *buffer, mr_size_t size);
-mr_size_t mr_ringbuffer_write_force(mr_ringbuffer_t rb, const mr_uint8_t *buffer, mr_size_t size);
+void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size);
+void mr_fifo_reset(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_data_length(mr_fifo_t fifo);
+mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size);
+mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
+mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
 
 /**
  *  Export container functions

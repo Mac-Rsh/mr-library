@@ -177,16 +177,16 @@ struct mr_avl
 typedef struct mr_avl *mr_avl_t;                               /**< Type for avl-tree */
 
 /**
- *  Ringbuffer
+ *  Fifo
  */
-enum mr_ringbuffer_state
+enum mr_fifo_state
 {
-	MR_RINGBUFFER_EMPTY,                                       /**< Empty ringbuffer state */
-	MR_RINGBUFFER_FULL,                                        /**< Full ringbuffer state */
-	MR_RINGBUFFER_HALF_FULL,                                   /**< Half-full ringbuffer state */
+	MR_FIFO_EMPTY,                                       	   /**< Empty fifo state */
+	MR_FIFO_FULL,                                        	   /**< Full fifo state */
+	MR_FIFO_HALF_FULL,                                   	   /**< Half-full fifo state */
 };
 
-struct mr_ringbuffer
+struct mr_fifo
 {
 	mr_uint8_t *buffer;                                        /**< Buffer pool */
 
@@ -197,7 +197,7 @@ struct mr_ringbuffer
 
 	mr_uint16_t size;                                          /**< Buffer pool size */
 };
-typedef struct mr_ringbuffer *mr_ringbuffer_t;                 /**< Type for ringbuffer */
+typedef struct mr_fifo *mr_fifo_t;                 			   /**< Type for fifo */
 
 /**
  *  Container
@@ -302,7 +302,7 @@ struct mr_event_manager
 	struct mr_object object;                                   /**< Event-manager object */
 
 	enum mr_event_manager_type type;                           /**< Event-manager type */
-	struct mr_ringbuffer queue;                                /**< Event queue */
+	struct mr_fifo queue;                                /**< Event queue */
 	mr_avl_t avl;                                              /**< Event-manager list */
 };
 typedef struct mr_event_manager *mr_event_manager_t;           /**< Type for event-manager */
