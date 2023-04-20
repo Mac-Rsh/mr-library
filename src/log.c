@@ -12,11 +12,11 @@
 
 static char *log_level_name[] =
 	{
-		"LOG_A",
-		"LOG_E",
-		"LOG_W",
-		"LOG_I",
-		"LOG_D",
+		"LOG-A",
+		"LOG-E",
+		"LOG-W",
+		"LOG-I",
+		"LOG-D",
 	};
 
 static mr_size_t _mr_log_output(const char *fmt, va_list args)
@@ -158,7 +158,6 @@ static mr_size_t _mr_log_output(const char *fmt, va_list args)
 					break;
 				}
 
-#if (MR_PRINTF_FLOAT == MR_CONF_ENABLE)
 				case 'f':
 				{
 					d_value = va_arg(args, double);
@@ -200,7 +199,6 @@ static mr_size_t _mr_log_output(const char *fmt, va_list args)
 					}
 					break;
 				}
-#endif
 			}
 
 			fmt ++;
