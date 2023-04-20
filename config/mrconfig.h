@@ -25,25 +25,25 @@
 
 //<---------------------------- Device -------------------------------------->
 //<<< GPIO >>>
-#define MR_DEVICE_PIN                   MR_CONF_ENABLE
+#define MR_DEVICE_PIN                   MR_CONF_DISABLE
 
 //<<< SERIAL >>>
-#define MR_DEVICE_SERIAL                MR_CONF_ENABLE
+#define MR_DEVICE_SERIAL                MR_CONF_DISABLE
 #define MR_SERIAL_BUFSZ                 64
 
 //<<< SPI >>>
-#define MR_DEVICE_SPI                   MR_CONF_ENABLE
+#define MR_DEVICE_SPI                   MR_CONF_DISABLE
 
 //<<< I2C >>>
-#define MR_DEVICE_I2C                   MR_CONF_ENABLE
+#define MR_DEVICE_I2C                   MR_CONF_DISABLE
 
 //<<< ADC >>>
-#define MR_DEVICE_ADC                   MR_CONF_ENABLE
+#define MR_DEVICE_ADC                   MR_CONF_DISABLE
 
 //<<< DAC >>>
-#define MR_DEVICE_DAC                   MR_CONF_ENABLE
+#define MR_DEVICE_DAC                   MR_CONF_DISABLE
 
 //<<< TIMER >>>
-#define MR_DEVICE_TIMER                 MR_CONF_ENABLE
+#define MR_DEVICE_TIMER                 MR_CONF_DISABLE
 
 #endif
