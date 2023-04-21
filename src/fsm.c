@@ -23,7 +23,7 @@ mr_fsm_manager_t mr_fsm_manager_find(const char *name)
 	return (mr_fsm_manager_t)event_manager;
 }
 
-mr_err_t mr_fsm_manager_add_to_container(mr_fsm_manager_t manager, const char *name, mr_uint32_t state)
+mr_err_t mr_fsm_manager_add(mr_fsm_manager_t manager, const char *name, mr_uint32_t state)
 {
 	mr_err_t ret = MR_ERR_OK;
 
@@ -31,11 +31,11 @@ mr_err_t mr_fsm_manager_add_to_container(mr_fsm_manager_t manager, const char *n
 	MR_ASSERT(name != MR_NULL);
 
 	/* Add the manager to the container */
-	ret = mr_event_manager_add_to_container(&manager->manager,
-											name,
-											MR_EVENT_MANAGER_TYPE_FSM,
-											manager->pool,
-											sizeof(manager->pool));
+	ret = mr_event_manager_add(&manager->manager,
+							   name,
+							   MR_EVENT_MANAGER_TYPE_FSM,
+							   manager->pool,
+							   sizeof(manager->pool));
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -45,15 +45,15 @@ mr_err_t mr_fsm_manager_add_to_container(mr_fsm_manager_t manager, const char *n
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_fsm_create_to_manager(mr_fsm_manager_t manager,
-								  mr_uint32_t state,
-								  mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
-								  void *args)
+mr_err_t mr_fsm_create(mr_fsm_manager_t manager,
+					   mr_uint32_t state,
+					   mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
+					   void *args)
 {
 	MR_ASSERT(manager != MR_NULL);
 	MR_ASSERT(callback != MR_NULL);
 
-	return mr_event_create_to_manager(&manager->manager, state, callback, args);
+	return mr_event_create(&manager->manager, state, callback, args);
 }
 
 mr_err_t mr_fsm_manager_transfer_state(mr_fsm_manager_t manager, mr_uint32_t state)

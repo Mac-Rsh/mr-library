@@ -22,11 +22,11 @@ mr_event_manager_t mr_event_manager_find(const char *name)
 	return manager;
 }
 
-mr_err_t mr_event_manager_add_to_container(mr_event_manager_t manager,
-										   const char *name,
-										   enum mr_event_manager_type type,
-										   mr_uint8_t *pool,
-										   mr_size_t pool_size)
+mr_err_t mr_event_manager_add(mr_event_manager_t manager,
+							  const char *name,
+							  enum mr_event_manager_type type,
+							  mr_uint8_t *pool,
+							  mr_size_t pool_size)
 {
 	mr_err_t ret = MR_ERR_OK;
 
@@ -35,7 +35,7 @@ mr_err_t mr_event_manager_add_to_container(mr_event_manager_t manager,
 	MR_ASSERT(pool_size >= sizeof(mr_uint32_t));
 
 	/* Add the object to the container */
-	ret = mr_object_add_to_container(&manager->object, name, MR_CONTAINER_TYPE_EVENT);
+	ret = mr_object_add(&manager->object, name, MR_CONTAINER_TYPE_EVENT);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -47,7 +47,7 @@ mr_err_t mr_event_manager_add_to_container(mr_event_manager_t manager,
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_event_manager_remove_from_container(mr_event_manager_t manager)
+mr_err_t mr_event_manager_remove(mr_event_manager_t manager)
 {
 	mr_err_t ret = MR_ERR_OK;
 
@@ -58,7 +58,7 @@ mr_err_t mr_event_manager_remove_from_container(mr_event_manager_t manager)
 		return - MR_ERR_BUSY;
 
 	/* Remove the object from the container */
-	ret = mr_object_remove_from_container(&manager->object);
+	ret = mr_object_remove(&manager->object);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -90,7 +90,7 @@ mr_err_t mr_event_manager_handler(mr_event_manager_t manager)
 
 	MR_ASSERT(manager != MR_NULL);
 
-	while (mr_fifo_get_data_length(&manager->queue) >= sizeof(value))
+	while (mr_fifo_get_length(&manager->queue) >= sizeof(value))
 	{
 		mr_fifo_read(&manager->queue, (mr_uint8_t *)&value, sizeof(value));
 
@@ -112,10 +112,10 @@ mr_event_t mr_event_find(mr_event_manager_t manager, mr_uint32_t value)
 	return (mr_event_t)mr_avl_find(manager->avl, value);
 }
 
-mr_err_t mr_event_add_to_manager(mr_event_manager_t manager,
-								 mr_event_t event,
-								 mr_uint32_t value,
-								 mr_err_t (*callback)(mr_event_manager_t event_manager, void *args), void *args)
+mr_err_t mr_event_add(mr_event_manager_t manager,
+					  mr_event_t event,
+					  mr_uint32_t value,
+					  mr_err_t (*callback)(mr_event_manager_t event_manager, void *args), void *args)
 {
 	MR_ASSERT(manager != MR_NULL);
 	MR_ASSERT(event != MR_NULL);
@@ -141,7 +141,7 @@ mr_err_t mr_event_add_to_manager(mr_event_manager_t manager,
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_event_remove_from_manager(mr_event_manager_t manager, mr_event_t event)
+mr_err_t mr_event_remove(mr_event_manager_t manager, mr_event_t event)
 {
 	MR_ASSERT(event != MR_NULL);
 
@@ -157,10 +157,10 @@ mr_err_t mr_event_remove_from_manager(mr_event_manager_t manager, mr_event_t eve
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_event_create_to_manager(mr_event_manager_t manager,
-									mr_uint32_t value,
-									mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
-									void *args)
+mr_err_t mr_event_create(mr_event_manager_t manager,
+						 mr_uint32_t value,
+						 mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
+						 void *args)
 {
 	mr_event_t event = MR_NULL;
 
@@ -175,15 +175,15 @@ mr_err_t mr_event_create_to_manager(mr_event_manager_t manager,
 	if (event == MR_NULL)
 		return - MR_ERR_NO_MEMORY;
 
-	return mr_event_add_to_manager(manager, event, value, callback, args);
+	return mr_event_add(manager, event, value, callback, args);
 }
 
-mr_err_t mr_event_delete_from_manager(mr_event_manager_t manager, mr_event_t event)
+mr_err_t mr_event_delete(mr_event_manager_t manager, mr_event_t event)
 {
 	MR_ASSERT(event != MR_NULL);
 
 	/* Remove the event from the manager's list */
-	mr_event_remove_from_manager(manager, event);
+	mr_event_remove(manager, event);
 
 	mr_free(event);
 
