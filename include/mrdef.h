@@ -302,12 +302,11 @@ struct mr_event_manager
 	struct mr_object object;                                   /**< Event-manager object */
 
 	enum mr_event_manager_type type;                           /**< Event-manager type */
-	struct mr_fifo queue;                                /**< Event queue */
+	struct mr_fifo queue;                                      /**< Event queue */
 	mr_avl_t avl;                                              /**< Event-manager list */
 };
 typedef struct mr_event_manager *mr_event_manager_t;           /**< Type for event-manager */
 
-typedef struct mr_event *mr_event_t;                           /**< Type for event */
 struct mr_event
 {
 	struct mr_avl avl;                                         /**< Avl-tree and event value */
@@ -316,6 +315,7 @@ struct mr_event
 						 void *args);
 	void *args;                                                /**< Callback function argument */
 };
+typedef struct mr_event *mr_event_t;                           /**< Type for event */
 
 /**
  *  Finite state machine(FSM)
