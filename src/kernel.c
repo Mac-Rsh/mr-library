@@ -90,7 +90,7 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_add_to_container(mr_object_t object, const char *name, enum mr_container_type container_type)
+mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type container_type)
 {
 	mr_container_t container = MR_NULL;
 
@@ -131,7 +131,7 @@ mr_err_t mr_object_add_to_container(mr_object_t object, const char *name, enum m
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_remove_from_container(mr_object_t object)
+mr_err_t mr_object_remove(mr_object_t object)
 {
 	MR_ASSERT(object != MR_NULL);
 
@@ -167,12 +167,12 @@ mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dst_type)
 	MR_ASSERT(object != MR_NULL);
 
 	/* Remove the object from its current container */
-	ret = mr_object_remove_from_container(object);
+	ret = mr_object_remove(object);
 	if (ret != MR_ERR_OK)
 		return ret;
 
 	/* Add the object to the new container */
-	ret = mr_object_add_to_container(object, object->name, dst_type);
+	ret = mr_object_add(object, object->name, dst_type);
 
 	return ret;
 }
