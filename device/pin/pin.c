@@ -78,7 +78,7 @@ static mr_uint8_t _err_io_pin_read(mr_pin_t pin, mr_uint16_t number)
 	return 0;
 }
 
-mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data)
+mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -94,7 +94,7 @@ mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pi
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the pin-device to the container */
-	ret = mr_device_add_to_container(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 

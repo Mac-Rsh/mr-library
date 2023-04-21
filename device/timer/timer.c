@@ -199,11 +199,11 @@ static mr_uint32_t _err_io_timer_get_count(mr_timer_t timer)
 	return 0;
 }
 
-mr_err_t mr_hw_timer_add_to_container(mr_timer_t timer,
-									  const char *name,
-									  struct mr_timer_ops *ops,
-									  struct mr_timer_information *information,
-									  void *data)
+mr_err_t mr_hw_timer_add(mr_timer_t timer,
+						 const char *name,
+						 struct mr_timer_ops *ops,
+						 struct mr_timer_information *information,
+						 void *data)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -222,7 +222,7 @@ mr_err_t mr_hw_timer_add_to_container(mr_timer_t timer,
 	MR_ASSERT(information->max_cut != 0);
 
 	/* Add the timer-device to the container */
-	ret = mr_device_add_to_container(&timer->device, name, MR_DEVICE_TYPE_TIMER, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&timer->device, name, MR_DEVICE_TYPE_TIMER, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 

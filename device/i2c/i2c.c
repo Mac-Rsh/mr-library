@@ -234,7 +234,7 @@ static mr_uint8_t _err_io_i2c_read(mr_i2c_bus_t i2c_bus, mr_state_t ack_state)
 	return 0;
 }
 
-mr_err_t mr_hw_i2c_bus_add_to_container(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bus_ops *ops, void *data)
+mr_err_t mr_hw_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bus_ops *ops, void *data)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -250,7 +250,7 @@ mr_err_t mr_hw_i2c_bus_add_to_container(mr_i2c_bus_t i2c_bus, const char *name, 
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the i2c-bus to the container */
-	ret = mr_device_add_to_container(&i2c_bus->device, name, MR_DEVICE_TYPE_I2C_BUS, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&i2c_bus->device, name, MR_DEVICE_TYPE_I2C_BUS, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -270,10 +270,10 @@ mr_err_t mr_hw_i2c_bus_add_to_container(mr_i2c_bus_t i2c_bus, const char *name, 
 	return MR_ERR_OK;
 }
 
-mr_err_t mr_hw_i2c_device_add_to_container(mr_i2c_device_t i2c_device,
-										   const char *name,
-										   mr_uint16_t support_flag,
-										   mr_uint8_t address)
+mr_err_t mr_hw_i2c_device_add(mr_i2c_device_t i2c_device,
+							  const char *name,
+							  mr_uint16_t support_flag,
+							  mr_uint8_t address)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -289,7 +289,7 @@ mr_err_t mr_hw_i2c_device_add_to_container(mr_i2c_device_t i2c_device,
 	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the i2c-device to the container */
-	ret = mr_device_add_to_container(&i2c_device->device, name, MR_DEVICE_TYPE_I2C, support_flag, &device_ops, MR_NULL);
+	ret = mr_device_add(&i2c_device->device, name, MR_DEVICE_TYPE_I2C, support_flag, &device_ops, MR_NULL);
 	if (ret != MR_ERR_OK)
 		return ret;
 

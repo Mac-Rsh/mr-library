@@ -39,12 +39,12 @@ mr_device_t mr_device_find(const char *name)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_device_add_to_container(mr_device_t device,
-									const char *name,
-									enum mr_device_type type,
-									mr_uint16_t support_flag,
-									const struct mr_device_ops *ops,
-									void *data)
+mr_err_t mr_device_add(mr_device_t device,
+					   const char *name,
+					   enum mr_device_type type,
+					   mr_uint16_t support_flag,
+					   const struct mr_device_ops *ops,
+					   void *data)
 {
 	mr_err_t ret = MR_ERR_OK;
 	static struct mr_device_ops null_ops = {MR_NULL};
@@ -53,7 +53,7 @@ mr_err_t mr_device_add_to_container(mr_device_t device,
 	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the object to the container */
-	ret = mr_object_add_to_container(&device->object, name, MR_CONTAINER_TYPE_DEVICE);
+	ret = mr_object_add(&device->object, name, MR_CONTAINER_TYPE_DEVICE);
 	if (ret != MR_ERR_OK)
 		return ret;
 

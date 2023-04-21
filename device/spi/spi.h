@@ -83,11 +83,11 @@ struct mr_spi_bus
 	const struct mr_spi_bus_ops *ops;
 };
 
-mr_err_t mr_hw_spi_bus_add_to_container(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data);
-mr_err_t mr_hw_spi_device_add_to_container(mr_spi_device_t spi_device,
-										   const char *name,
-										   mr_uint16_t support_flag,
-										   void *cs_data);
+mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data);
+mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
+							  const char *name,
+							  mr_uint16_t support_flag,
+							  void *cs_data);
 
 #endif
 

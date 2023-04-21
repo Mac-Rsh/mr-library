@@ -36,7 +36,7 @@ struct mr_dac
 	const struct mr_dac_ops *ops;
 };
 
-mr_err_t mr_hw_dac_add_to_container(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data);
+mr_err_t mr_hw_dac_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data);
 
 #endif
 

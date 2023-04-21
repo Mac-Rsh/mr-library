@@ -388,7 +388,7 @@ mr_err_t mr_hw_uart_init(void)
 
 	while (count --)
 	{
-		ret = mr_hw_serial_add_to_container(&hw_serial[count], ch32_uart[count].name, &ops, &ch32_uart[count]);
+		ret = mr_hw_serial_add(&hw_serial[count], ch32_uart[count].name, &ops, &ch32_uart[count]);
 		MR_ASSERT(ret == MR_ERR_OK);
 	}
 

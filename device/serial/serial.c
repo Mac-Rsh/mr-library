@@ -172,7 +172,7 @@ static void _err_io_serial_stop_tx(mr_serial_t serial)
 	MR_ASSERT(0);
 }
 
-mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
+mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -188,7 +188,7 @@ mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, str
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the serial-device to the container */
-	ret = mr_device_add_to_container(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -229,7 +229,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 			{
 				mr_size_t length;
 
-				length = mr_fifo_get_data_length(&fifo_rx->fifo);
+				length = mr_fifo_get_length(&fifo_rx->fifo);
 				serial->device.rx_callback(&serial->device, &length);
 			}
 			break;
@@ -243,7 +243,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
 
 			fifo_tx = (struct mr_serial_fifo *)serial->fifo_tx;
 
-			length = mr_fifo_get_data_length(&fifo_tx->fifo);
+			length = mr_fifo_get_length(&fifo_tx->fifo);
 			if (length == 0)
 			{
 				serial->ops->stop_tx(serial);

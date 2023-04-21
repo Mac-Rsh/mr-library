@@ -85,7 +85,7 @@ static mr_uint16_t _err_io_adc_read(mr_adc_t adc, mr_uint16_t channel)
 	return 0;
 }
 
-mr_err_t mr_hw_adc_add_to_container(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, void *data)
+mr_err_t mr_hw_adc_add(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, void *data)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -101,7 +101,7 @@ mr_err_t mr_hw_adc_add_to_container(mr_adc_t adc, const char *name, struct mr_ad
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the adc-device to the container */
-	ret = mr_device_add_to_container(&adc->device, name, MR_DEVICE_TYPE_ADC, MR_OPEN_RDONLY, &device_ops, data);
+	ret = mr_device_add(&adc->device, name, MR_DEVICE_TYPE_ADC, MR_OPEN_RDONLY, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 

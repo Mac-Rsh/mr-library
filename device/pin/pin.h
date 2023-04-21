@@ -42,7 +42,7 @@ struct mr_pin
 	const struct mr_pin_ops *ops;
 };
 
-mr_err_t mr_hw_pin_add_to_container(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data);
+mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data);
 
 #endif
 

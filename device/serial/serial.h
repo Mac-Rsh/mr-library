@@ -97,7 +97,7 @@ struct mr_serial
 	const struct mr_serial_ops *ops;
 };
 
-mr_err_t mr_hw_serial_add_to_container(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data);
+mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data);
 void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event);
 
 #endif
