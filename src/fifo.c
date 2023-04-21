@@ -41,7 +41,7 @@ void mr_fifo_reset(mr_fifo_t fifo)
 	mr_hw_interrupt_enable();
 }
 
-mr_size_t mr_fifo_get_data_length(mr_fifo_t fifo)
+mr_size_t mr_fifo_get_length(mr_fifo_t fifo)
 {
 	/* Disable interrupt */
 	mr_hw_interrupt_disable();
@@ -90,7 +90,7 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 		return 0;
 
 	/* Get the number of bytes that can be read */
-	length = mr_fifo_get_data_length(fifo);
+	length = mr_fifo_get_length(fifo);
 
 	/* If there is no data to read, return 0 */
 	if (length == 0)
@@ -137,7 +137,7 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size
 		return 0;
 
 	/* Calculate the number of bytes that can be written */
-	length = fifo->size - mr_fifo_get_data_length(fifo);
+	length = fifo->size - mr_fifo_get_length(fifo);
 
 	/* If there is no space to write, return 0 */
 	if (length == 0)
@@ -185,7 +185,7 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_
 		return 0;
 
 	/* Calculate the number of bytes that can be written */
-	length = fifo->size - mr_fifo_get_data_length(fifo);
+	length = fifo->size - mr_fifo_get_length(fifo);
 
 	/* If the data exceeds the buffer length, the front data is discarded */
 	if (size > fifo->size)
