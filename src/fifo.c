@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-16     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #include <mrlib.h>
@@ -43,6 +43,8 @@ void mr_fifo_reset(mr_fifo_t fifo)
 
 mr_size_t mr_fifo_get_length(mr_fifo_t fifo)
 {
+	MR_ASSERT(fifo != MR_NULL);
+
 	/* Disable interrupt */
 	mr_hw_interrupt_disable();
 

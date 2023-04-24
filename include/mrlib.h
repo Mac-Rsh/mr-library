@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-08     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _MR_LIB_H_
@@ -79,40 +79,25 @@ mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size
 mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 
 /**
- *  Export event functions
+ *  Export manager functions
  */
-mr_event_manager_t mr_event_manager_find(const char *name);
-mr_err_t mr_event_manager_add(mr_event_manager_t manager,
-							  const char *name,
-							  enum mr_event_manager_type type,
-							  mr_uint8_t *pool,
-							  mr_size_t pool_size);
-mr_err_t mr_event_manager_remove(mr_event_manager_t manager);
-mr_err_t mr_event_manager_notify(mr_event_manager_t manager, mr_uint32_t value);
-mr_err_t mr_event_manager_handler(mr_event_manager_t manager);
-
-mr_event_t mr_event_find(mr_event_manager_t manager, mr_uint32_t value);
-mr_err_t mr_event_add(mr_event_manager_t manager,
-					  mr_event_t event,
-					  mr_uint32_t value,
-					  mr_err_t (*callback)(mr_event_manager_t event_manager, void *args), void *args);
-mr_err_t mr_event_remove(mr_event_manager_t manager, mr_event_t event);
-mr_err_t mr_event_create(mr_event_manager_t manager,
-						 mr_uint32_t value,
-						 mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
-						 void *args);
-mr_err_t mr_event_delete(mr_event_manager_t manager, mr_event_t event);
+mr_manager_t mr_manager_find(const char *name);
+mr_err_t mr_manager_add(mr_manager_t manager,
+						const char *name,
+						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err),
+						enum mr_manager_type type);
+mr_err_t mr_manager_remove(mr_manager_t manager);
+mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t agent_id);
+void mr_manager_handler(mr_manager_t manager);
 
 /**
- *  Export finite state machine(FSM) functions
+ *  Export agent functions
  */
-mr_fsm_manager_t mr_fsm_manager_find(const char *name);
-mr_err_t mr_fsm_manager_add(mr_fsm_manager_t manager, const char *name, mr_uint32_t state);
-mr_err_t mr_fsm_create(mr_fsm_manager_t manager,
-					   mr_uint32_t state,
-					   mr_err_t (*callback)(mr_event_manager_t event_manager, void *args),
-					   void *args);
-mr_err_t mr_fsm_manager_transfer_state(mr_fsm_manager_t manager, mr_uint32_t state);
-mr_err_t mr_fsm_manager_handler(mr_fsm_manager_t manager);
+mr_agent_t mr_agent_find(mr_uint32_t agent_id, mr_manager_t manager);
+mr_err_t mr_agent_create(mr_uint32_t agent_id,
+						 mr_err_t (*callback)(mr_manager_t manager, void *args),
+						 void *args,
+						 mr_manager_t agent_manager);
+mr_err_t mr_agent_delete(mr_uint32_t agent_id, mr_manager_t agent_manager);
 
 #endif
