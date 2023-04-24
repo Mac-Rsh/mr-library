@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-27     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #include <device/adc/adc.h>

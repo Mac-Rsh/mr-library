@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-08     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _MR_SERVE_H_
@@ -17,6 +17,8 @@
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 
 #define mr_array_get_length(array)    sizeof(array)/sizeof(array[0])
+
+#define mr_align_down(size, align)    (size & (~(align - 1)))
 
 #define mr_max(a, b)    ((a) > (b)) ? a:b
 #define mr_min(a, b)    ((a) < (b)) ? a:b

@@ -1,17 +1,17 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-09     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #include <mrlib.h>
 
 /**
- * This function find the device.
+ * @brief This function find the device.
  *
  * @param name The name of the device.
  *
@@ -19,16 +19,14 @@
  */
 mr_device_t mr_device_find(const char *name)
 {
-	mr_device_t device = MR_NULL;
+	MR_ASSERT(name != MR_NULL);
 
-	/* Find the device object from the device container */
-	device = (mr_device_t)mr_object_find(name, MR_CONTAINER_TYPE_DEVICE);
-
-	return device;
+	/* Find the device object from the device-container */
+	return (mr_device_t)mr_object_find(name, MR_CONTAINER_TYPE_DEVICE);
 }
 
 /**
- * This function add device to the container.
+ * @brief This function add device to the container.
  *
  * @param device The device to be added.
  * @param name The name of the device.
@@ -50,7 +48,7 @@ mr_err_t mr_device_add(mr_device_t device,
 	static struct mr_device_ops null_ops = {MR_NULL};
 
 	MR_ASSERT(device != MR_NULL);
-	MR_ASSERT(support_flag != MR_NULL);
+	MR_ASSERT(name != MR_NULL);
 
 	/* Add the object to the container */
 	ret = mr_object_add(&device->object, name, MR_CONTAINER_TYPE_DEVICE);
@@ -58,8 +56,8 @@ mr_err_t mr_device_add(mr_device_t device,
 		return ret;
 
 	/* Initialize the private fields */
-	device->rx_callback = MR_NULL;
-	device->tx_callback = MR_NULL;
+	device->rx_cb = MR_NULL;
+	device->tx_cb = MR_NULL;
 	device->type = type;
 	device->support_flag = support_flag;
 	device->open_flag = MR_NULL;
@@ -72,7 +70,7 @@ mr_err_t mr_device_add(mr_device_t device,
 }
 
 /**
- * This function open the device.
+ * @brief This function open the device.
  *
  * @param device The device to be opened.
  * @param flags The open flags of the device.
@@ -82,7 +80,6 @@ mr_err_t mr_device_add(mr_device_t device,
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 {
 	MR_ASSERT(device != MR_NULL);
-	MR_ASSERT(flags != MR_NULL);
 
 	/* Check if the specified open flags are supported by the device */
 	if (flags != (flags & device->support_flag))
@@ -107,7 +104,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 }
 
 /**
- * This function close the device.
+ * @brief This function close the device.
  *
  * @param device The device to be closed.
  *
@@ -139,7 +136,7 @@ mr_err_t mr_device_close(mr_device_t device)
 }
 
 /**
- * This function control the device.
+ * @brief This function control the device.
  *
  * @param device The device to be control.
  * @param cmd The operation command of the device.
@@ -159,7 +156,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 }
 
 /**
- * This function read the device.
+ * @brief This function read the device.
  *
  * @param device The device to be read.
  * @param pos The read position.
@@ -185,7 +182,7 @@ mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size
 }
 
 /**
- * This function write the device.
+ * @brief This function write the device.
  *
  * @param device The device to be written.
  * @param pos The write position.

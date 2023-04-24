@@ -1,18 +1,18 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-04-13     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #include <mrlib.h>
 
 static mr_int8_t mr_avl_get_height(mr_avl_t node)
 {
-	if (node == NULL)
+	if (node == MR_NULL)
 		return - 1;
 
 	return node->height;
@@ -20,7 +20,7 @@ static mr_int8_t mr_avl_get_height(mr_avl_t node)
 
 static mr_int8_t mr_avl_get_balance(mr_avl_t node)
 {
-	if (node == NULL)
+	if (node == MR_NULL)
 		return 0;
 
 	return mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child);

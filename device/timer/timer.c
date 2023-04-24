@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-29     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #include <device/timer/timer.h>
@@ -113,7 +113,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
 		case MR_CMD_SET_RX_CALLBACK:
 		{
 			if (args)
-				device->rx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
+				device->rx_cb = (mr_err_t (*)(mr_device_t device, void *args))args;
 			break;
 		}
 
@@ -265,9 +265,9 @@ void mr_hw_timer_isr(mr_timer_t timer, mr_uint16_t event)
 				if (timer->config.mode == MR_TIMER_MODE_ONE_SHOT)
 					timer->ops->stop(timer);
 
-				/* Invoke the rx-callback function */
-				if (timer->device.rx_callback != MR_NULL)
-					timer->device.rx_callback(&timer->device, MR_NULL);
+				/* Invoke the rx-cb function */
+				if (timer->device.rx_cb != MR_NULL)
+					timer->device.rx_cb(&timer->device, MR_NULL);
 			}
 		}
 

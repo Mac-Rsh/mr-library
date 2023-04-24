@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-09     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _SERIAL_H_
@@ -91,8 +91,8 @@ struct mr_serial
 
 	struct mr_serial_config config;
 	mr_size_t fifo_bufsz;
-	void *fifo_rx;
-	void *fifo_tx;
+	void *rx_fifo;
+	void *tx_fifo;
 
 	const struct mr_serial_ops *ops;
 };

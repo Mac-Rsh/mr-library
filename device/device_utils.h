@@ -214,9 +214,9 @@ MR_INLINE mr_err_t mr_timer_stop(mr_device_t timer)
 	return mr_device_ioctl(timer, MR_CMD_STOP, MR_NULL);
 }
 
-MR_INLINE mr_err_t mr_timer_set_rx_callback(mr_device_t timer, mr_err_t (*rx_callback)(mr_device_t device, void *args))
+MR_INLINE mr_err_t mr_timer_set_rx_callback(mr_device_t timer, mr_err_t (*rx_cb)(mr_device_t device, void *args))
 {
-	return mr_device_ioctl(timer, MR_CMD_SET_RX_CALLBACK, (void *)rx_callback);
+	return mr_device_ioctl(timer, MR_CMD_SET_RX_CALLBACK, (void *)rx_cb);
 }
 
 #endif
