@@ -114,12 +114,9 @@ mr_err_t mr_device_close(mr_device_t device)
 {
 	MR_ASSERT(device != MR_NULL);
 
-	/* If the reference count is zero, the device has already been closed */
-	if (device->ref_count == 0)
-	{
-		device->open_flag = MR_OPEN_CLOSED;
+	/* Check if the device is already closed */
+	if (device->open_flag == MR_OPEN_CLOSED)
 		return MR_ERR_OK;
-	}
 
 	/* Decrement the reference count */
 	device->ref_count --;
@@ -127,6 +124,11 @@ mr_err_t mr_device_close(mr_device_t device)
 	/* If the reference count is still non-zero, return without closing the device */
 	if (device->ref_count != 0)
 		return MR_ERR_OK;
+
+	/* Set the device status to closed */
+	device->open_flag = MR_OPEN_CLOSED;
+	device->rx_cb = MR_NULL;
+	device->tx_cb = MR_NULL;
 
 	/* Call the device-close function, if provided */
 	if (device->ops->close == MR_NULL)
