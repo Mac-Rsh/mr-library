@@ -23,8 +23,10 @@ mr_manager_t mr_manager_find(const char *name)
 
 mr_err_t mr_manager_add(mr_manager_t manager,
 						const char *name,
-						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err),
-						enum mr_manager_type type)
+						enum mr_manager_type type,
+						mr_uint8_t *pool,
+						mr_size_t pool_size,
+						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err))
 {
 	mr_err_t ret = MR_ERR_OK;
 
@@ -41,7 +43,8 @@ mr_err_t mr_manager_add(mr_manager_t manager,
 	manager->ref_count = 0;
 	manager->avl = MR_NULL;
 	manager->err_cb = err_cb;
-	mr_fifo_init(&manager->queue, manager->pool, mr_align_down(sizeof(manager->pool), 4));
+	mr_fifo_init(&manager->queue, pool, mr_align_down(pool_size, 4));
+	MR_LOG_D(LOG_TAG, "Manager %s added, type %d, queue size %d\r\n", name, type, mr_align_down(pool_size, 4));
 
 	return MR_ERR_OK;
 }
@@ -90,6 +93,7 @@ void mr_manager_handler(mr_manager_t manager)
 	mr_avl_t node = MR_NULL;
 	mr_agent_t agent = MR_NULL;
 	mr_uint32_t agent_id = 0;
+	mr_uint32_t fsm_agent_id = 0;
 
 	MR_ASSERT(manager != MR_NULL);
 
@@ -105,6 +109,7 @@ void mr_manager_handler(mr_manager_t manager)
 		}
 
 		agent = mr_struct_of(node, struct mr_agent, avl);
+		fsm_agent_id = agent->avl.value;
 
 		/* Increase the reference count */
 		manager->ref_count ++;
@@ -119,6 +124,12 @@ void mr_manager_handler(mr_manager_t manager)
 			if (manager->err_cb != MR_NULL)
 				manager->err_cb(manager, agent_id, ret);
 		}
+	}
+
+	if (manager->type == MR_MANAGER_TYPE_FSM)
+	{
+		mr_manager_notify(manager, fsm_agent_id);
+		MR_LOG_D(LOG_TAG, "FSM now state %d\r\n", fsm_agent_id);
 	}
 }
 
