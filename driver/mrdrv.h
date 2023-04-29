@@ -14,7 +14,11 @@
 #include <mrconfig.h>
 
 #if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
-#include <drv_serial.h>
+#include <drv_uart.h>
+#endif
+
+#if (MR_DEVICE_PIN == MR_CONF_ENABLE)
+#include <drv_gpio.h>
 #endif
 
 #endif
