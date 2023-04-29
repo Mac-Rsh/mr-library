@@ -17,8 +17,6 @@
 //<---------------------------- Kernel -------------------------------------->
 #define MR_NAME_MAX                     12
 
-#define MR_MANAGER_QUEUE_BUFSZ          16
-
 //<<< LOG >>>
 #define MR_LOG_OUTPUT					MR_CONF_ENABLE
 #define MR_LOG_BUFSZ					128
