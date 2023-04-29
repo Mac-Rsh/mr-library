@@ -12,6 +12,9 @@
 
 #if (MR_DEVICE_ADC == MR_CONF_ENABLE)
 
+#undef LOG_TAG
+#define LOG_TAG "adc"
+
 static mr_err_t mr_adc_open(mr_device_t device)
 {
 	mr_adc_t adc = (mr_adc_t)device;
@@ -31,15 +34,24 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 	mr_adc_t adc = (mr_adc_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CMD_MASK1)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CMD_SET:
 		{
-			if (args)
-				ret = adc->ops->channel_configure(adc,
-												  ((struct mr_adc_config *)args)->channel,
-												  ((struct mr_adc_config *)args)->state);
+			switch (cmd & _MR_CMD_MASK2)
+			{
+				case MR_CMD_CONFIG:
+				{
+					if (args)
+						ret = adc->ops->channel_configure(adc,
+														  ((struct mr_adc_config *)args)->channel,
+														  ((struct mr_adc_config *)args)->state);
 
+					break;
+				}
+
+				default: ret = - MR_ERR_UNSUPPORTED;
+			}
 			break;
 		}
 
@@ -55,8 +67,11 @@ static mr_size_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_
 	mr_uint16_t *recv_buffer = (mr_uint16_t *)buffer;
 	mr_size_t recv_size = size;
 
-	if (size < sizeof(mr_uint16_t))
+	if (size != sizeof(mr_uint16_t))
+	{
+		MR_LOG_D(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
 		return 0;
+	}
 
 	while (recv_size -= sizeof(mr_uint16_t))
 	{

@@ -10,6 +10,9 @@
 
 #include <mrlib.h>
 
+#undef LOG_TAG
+#define LOG_TAG "device"
+
 /**
  * @brief This function find the device.
  *
@@ -66,6 +69,8 @@ mr_err_t mr_device_add(mr_device_t device,
 	/* Set operations as null-ops if ops is null */
 	device->ops = (ops == MR_NULL) ? &null_ops : ops;
 
+	MR_LOG_D("Add device %s", device->object.name);
+
 	return MR_ERR_OK;
 }
 
@@ -83,11 +88,16 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 
 	/* Check if the specified open flags are supported by the device */
 	if (flags != (flags & device->support_flag))
+	{
+		MR_LOG_E("Open device %s, unsupported flags %d", device->object.name, flags);
 		return - MR_ERR_UNSUPPORTED;
+	}
 
 	/* Update the device open-flag and refer-count */
 	device->open_flag |= (flags & _MR_OPEN_FLAG_MASK);
 	device->ref_count ++;
+
+	MR_LOG_D("Open device %s, ref count %d", device->object.name, device->ref_count);
 
 	/* Check if the device is already closed */
 	if ((device->open_flag & MR_OPEN_ACTIVE))
@@ -116,10 +126,15 @@ mr_err_t mr_device_close(mr_device_t device)
 
 	/* Check if the device is already closed */
 	if (device->open_flag == MR_OPEN_CLOSED)
+	{
+		MR_LOG_E("Close device %s, already closed", device->object.name);
 		return MR_ERR_OK;
+	}
 
 	/* Decrement the reference count */
 	device->ref_count --;
+
+	MR_LOG_D("Close device %s, ref count %d", device->object.name, device->ref_count);
 
 	/* If the reference count is still non-zero, return without closing the device */
 	if (device->ref_count != 0)
@@ -152,7 +167,10 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 
 	/* Call the device-ioctl function, if provided */
 	if (device->ops->ioctl == MR_NULL)
+	{
+		MR_LOG_D("Device %s ioctl function is null ", device->object.name);
 		return - MR_ERR_UNSUPPORTED;
+	}
 
 	return device->ops->ioctl(device, cmd, args);
 }
@@ -165,7 +183,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
  * @param buffer The data buffer to be read to device.
  * @param size The size of read.
  *
- * @return The size of the actual read on success, otherwise return 0.
+ * @return The size of the actual read on success, otherwise an error code.
  */
 mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
@@ -174,11 +192,17 @@ mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size
 
 	/* Check if the device is closed or unsupported */
 	if ((device->ref_count == 0) || ! (device->open_flag & MR_OPEN_RDONLY))
+	{
+		MR_LOG_D("Device %s unsupported read", device->object.name);
 		return 0;
+	}
 
 	/* Call the device-read function, if provided */
 	if (device->ops->read == MR_NULL)
+	{
+		MR_LOG_D("Device %s read function is null", device->object.name);
 		return 0;
+	}
 
 	return device->ops->read(device, pos, buffer, size);
 }
@@ -200,11 +224,17 @@ mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, 
 
 	/* Check if the device is closed or unsupported */
 	if ((device->ref_count == 0) || ! (device->open_flag & MR_OPEN_WRONLY))
+	{
+		MR_LOG_D("Device %s unsupported write", device->object.name);
 		return 0;
+	}
 
 	/* Call the device-write function, if provided */
 	if (device->ops->write == MR_NULL)
+	{
+		MR_LOG_D("Device %s write function is null", device->object.name);
 		return 0;
+	}
 
 	return device->ops->write(device, pos, buffer, size);
 }

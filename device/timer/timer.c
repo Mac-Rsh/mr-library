@@ -12,6 +12,9 @@
 
 #if (MR_DEVICE_TIMER == MR_CONF_ENABLE)
 
+#undef LOG_TAG
+#define LOG_TAG "timer"
+
 static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t timeout)
 {
 	mr_uint32_t count = 0, timer_period = 0, reload = 0;
@@ -95,39 +98,42 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
 	mr_timer_t timer = (mr_timer_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CMD_MASK1)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CMD_SET:
 		{
-			if (args)
+			switch (cmd & _MR_CMD_MASK2)
 			{
-				if (timer->config.freq > timer->information.max_freq)
-					return - MR_ERR_GENERIC;
-				ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
-				if (ret == MR_ERR_OK)
-					timer->config = *(struct mr_timer_config *)args;
+				case MR_CMD_CONFIG:
+				{
+					if (args)
+					{
+						/* Check the frequency */
+						if (((struct mr_timer_config *)args)->freq > timer->information.max_freq)
+							return - MR_ERR_GENERIC;
+						ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
+						if (ret == MR_ERR_OK)
+							timer->config = *(struct mr_timer_config *)args;
+					}
+					break;
+				}
+
+				case MR_CMD_RX_CB:
+				{
+					device->rx_cb = args;
+					break;
+				}
+
+				case MR_CMD_REBOOT:
+				{
+					timer->overflow = 0;
+					timer->cycles = timer->reload;
+					timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
+					break;
+				}
+
+				default: ret = - MR_ERR_UNSUPPORTED;
 			}
-			break;
-		}
-
-		case MR_CMD_SET_RX_CALLBACK:
-		{
-			if (args)
-				device->rx_cb = (mr_err_t (*)(mr_device_t device, void *args))args;
-			break;
-		}
-
-		case MR_CMD_REBOOT:
-		{
-			timer->overflow = 0;
-			timer->cycles = timer->reload;
-			timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
-			break;
-		}
-
-		case MR_CMD_STOP:
-		{
-			timer->ops->stop(timer);
 			break;
 		}
 
@@ -144,7 +150,10 @@ static mr_size_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, m
 	mr_uint32_t cut = 0;
 
 	if (size != sizeof(mr_uint32_t))
+	{
+		MR_LOG_D(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
 		return 0;
+	}
 
 	cut = timer->ops->get_count(timer);
 	if (timer->information.cut_mode == _MR_TIMER_CUT_MODE_DOWN)
@@ -162,10 +171,16 @@ static mr_size_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *bu
 	mr_uint32_t period_reload = 0;
 
 	if (size != sizeof(mr_uint32_t))
+	{
+		MR_LOG_D(LOG_TAG, "Device %s: Invalid write size %d\r\n", device->object.name, size);
 		return 0;
+	}
 
 	if (timer->config.freq == 0)
+	{
+		MR_LOG_D(LOG_TAG, "Device %s: Invalid frequency %d\r\n", device->object.name, timer->config.freq);
 		return 0;
+	}
 
 	timer->ops->stop(timer);
 	period_reload = mr_timer_timeout_calculate(timer, *timeout);

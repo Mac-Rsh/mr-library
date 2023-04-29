@@ -112,30 +112,39 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CMD_MASK1)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CMD_SET:
 		{
-			if (args)
-				spi_device->config = *(struct mr_spi_config *)args;
-			break;
-		}
-
-		case MR_CMD_ATTACH:
-		{
-			if (args)
+			switch (cmd & _MR_CMD_MASK2)
 			{
-				/* Find in the kernel spi-bus */
-				mr_device_t spi_bus = mr_device_find((char *)args);
-				if (spi_bus == MR_NULL || spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
+				case MR_CMD_CONFIG:
 				{
-					ret = - MR_ERR_NOT_FOUND;
+					if (args)
+						spi_device->config = *(struct mr_spi_config *)args;
 					break;
 				}
 
-				/* Open spi-bus */
-				mr_device_open(spi_bus, MR_OPEN_RDWR);
-				spi_device->bus = (mr_spi_bus_t)spi_bus;
+				case MR_CMD_ATTACH:
+				{
+					if (args)
+					{
+						/* Find the spi-bus */
+						mr_device_t spi_bus = mr_device_find((char *)args);
+						if (spi_bus == MR_NULL || spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
+						{
+							ret = - MR_ERR_NOT_FOUND;
+							break;
+						}
+
+						/* Open the spi-bus */
+						mr_device_open(spi_bus, MR_OPEN_RDWR);
+						spi_device->bus = (mr_spi_bus_t)spi_bus;
+					}
+					break;
+				}
+
+				default: ret = - MR_ERR_UNSUPPORTED;
 			}
 			break;
 		}
@@ -155,7 +164,10 @@ static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buff
 	/* Take spi-bus */
 	ret = mr_take_spi_bus(spi_device);
 	if (ret != MR_ERR_OK)
+	{
+		MR_LOG_D("Device %s: Failed to take spi-bus\r\n", device->object.name);
 		return 0;
+	}
 
 	switch (spi_device->config.data_bits)
 	{
@@ -213,7 +225,10 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 	/* Take spi-bus */
 	ret = mr_take_spi_bus(spi_device);
 	if (ret != MR_ERR_OK)
+	{
+		MR_LOG_D("Device %s: Failed to take spi-bus\r\n", device->object.name);
 		return 0;
+	}
 
 	switch (spi_device->config.data_bits)
 	{
@@ -316,7 +331,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  void *cs_data)
+							  mr_uint16_t cs_pin)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -332,13 +347,14 @@ mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the spi-device to the container */
-	ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, cs_data);
+	ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, MR_NULL);
 	if (ret != MR_ERR_OK)
 		return ret;
 
 	/* Initialize the spi-device fields */
 	spi_device->config.baud_rate = 0;
 	spi_device->bus = MR_NULL;
+	spi_device->cs_pin = cs_pin;
 
 	return MR_ERR_OK;
 }

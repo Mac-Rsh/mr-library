@@ -32,16 +32,17 @@
 
 #define MR_SPI_CS_ACTIVE_LOW                 0
 #define MR_SPI_CS_ACTIVE_HIGH                1
+#define MR_SPI_CS_ACTIVE_NONE                2
 
 /* Default config for mr_spi_config structure */
 #define MR_SPI_CONFIG_DEFAULT                \
 {                                            \
-    3000000,                   		 		 \
-    MR_SPI_HOST,               				 \
-    MR_SPI_MODE_0,                   		 \
-    MR_SPI_DATA_BITS_8,         			 \
-    MR_SPI_BIT_ORDER_MSB,      			 	 \
-    MR_SPI_CS_ACTIVE_LOW,       			 \
+    3000000,                                 \
+    MR_SPI_HOST,                             \
+    MR_SPI_MODE_0,                           \
+    MR_SPI_DATA_BITS_8,                      \
+    MR_SPI_BIT_ORDER_MSB,                    \
+    MR_SPI_CS_ACTIVE_LOW,                    \
 }
 
 struct mr_spi_config
@@ -62,6 +63,7 @@ struct mr_spi_device
 
 	struct mr_spi_config config;
 	struct mr_spi_bus *bus;
+	mr_uint16_t cs_pin;
 };
 typedef struct mr_spi_device *mr_spi_device_t;
 
@@ -87,7 +89,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  void *cs_data);
+							  mr_uint16_t cs_pin);
 
 #endif
 

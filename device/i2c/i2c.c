@@ -12,6 +12,9 @@
 
 #if (MR_DEVICE_I2C == MR_CONF_ENABLE)
 
+#undef LOG_TAG
+#define LOG_TAG "i2c"
+
 static mr_err_t mr_take_i2c_bus(mr_i2c_device_t i2c_device)
 {
 	mr_err_t ret = MR_ERR_OK;
@@ -103,30 +106,39 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
 	mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CMD_MASK1)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CMD_SET:
 		{
-			if (args)
-				i2c_device->config = *(struct mr_i2c_config *)args;
-			break;
-		}
-
-		case MR_CMD_ATTACH:
-		{
-			if (args)
+			switch (cmd & _MR_CMD_MASK2)
 			{
-				/* Find in the kernel i2c-bus */
-				mr_device_t i2c_bus = mr_device_find((char *)args);
-				if (i2c_bus == MR_NULL || i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
+				case MR_CMD_CONFIG:
 				{
-					ret = - MR_ERR_NOT_FOUND;
+					if (args)
+						i2c_device->config = *(struct mr_i2c_config *)args;
 					break;
 				}
 
-				/* Open i2c-bus */
-				mr_device_open(i2c_bus, MR_OPEN_RDWR);
-				i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
+				case MR_CMD_ATTACH:
+				{
+					if (args)
+					{
+						/* Find the i2c-bus */
+						mr_device_t i2c_bus = mr_device_find((char *)args);
+						if (i2c_bus == MR_NULL || i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
+						{
+							ret = - MR_ERR_NOT_FOUND;
+							break;
+						}
+
+						/* Open the i2c-bus */
+						mr_device_open(i2c_bus, MR_OPEN_RDWR);
+						i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
+					}
+					break;
+				}
+
+				default: ret = - MR_ERR_UNSUPPORTED;
 			}
 			break;
 		}
@@ -147,7 +159,10 @@ static mr_size_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buff
 	/* Take i2c-bus */
 	ret = mr_take_i2c_bus(i2c_device);
 	if (ret != MR_ERR_OK)
+	{
+		MR_LOG_D("Device %s: Failed to take i2c-bus\r\n", device->object.name);
 		return 0;
+	}
 
 	/* Send the i2c start signal and read cmd */
 	i2c_device->bus->ops->start(i2c_device->bus);
@@ -182,7 +197,10 @@ static mr_size_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const voi
 	/* Take i2c-bus */
 	ret = mr_take_i2c_bus(i2c_device);
 	if (ret != MR_ERR_OK)
+	{
+		MR_LOG_D("Device %s: Failed to take i2c-bus\r\n", device->object.name);
 		return 0;
+	}
 
 	/* Send the i2c start signal and write cmd */
 	i2c_device->bus->ops->start(i2c_device->bus);

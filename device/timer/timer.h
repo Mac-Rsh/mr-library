@@ -27,8 +27,8 @@
 /* Default config for mr_timer_config structure */
 #define MR_TIMER_CONFIG_DEFAULT                     \
 {                                                   \
-    1000,                                   		\
-    MR_TIMER_MODE_PERIOD,                   		\
+    1000,                                           \
+    MR_TIMER_MODE_PERIOD,                           \
 }
 
 struct mr_timer_config

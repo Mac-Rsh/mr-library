@@ -12,6 +12,9 @@
 
 #if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
 
+#undef LOG_TAG
+#define LOG_TAG "serial"
+
 static mr_err_t mr_serial_open(mr_device_t device)
 {
 	mr_serial_t serial = (mr_serial_t)device;
@@ -77,30 +80,38 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 	mr_serial_t serial = (mr_serial_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CMD_MASK1)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CMD_SET:
 		{
-			if (args)
+			switch (cmd & _MR_CMD_MASK2)
 			{
-				ret = serial->ops->configure(serial, (struct mr_serial_config *)args);
-				if (ret == MR_ERR_OK)
-					serial->config = *(struct mr_serial_config *)args;
+				case MR_CMD_CONFIG:
+				{
+					if (args)
+					{
+						ret = serial->ops->configure(serial, (struct mr_serial_config *)args);
+						if (ret == MR_ERR_OK)
+							serial->config = *(struct mr_serial_config *)args;
+					}
+					break;
+				}
+
+				case MR_CMD_RX_CB:
+				{
+					device->rx_cb = args;
+					break;
+				}
+
+				case MR_CMD_TX_CB:
+				{
+					device->tx_cb = args;
+					break;
+				}
+
+				default: ret = - MR_ERR_UNSUPPORTED;
 			}
-			break;
-		}
 
-		case MR_CMD_SET_RX_CALLBACK:
-		{
-			if (args)
-				device->rx_cb = (mr_err_t (*)(mr_device_t device, void *args))args;
-			break;
-		}
-
-		case MR_CMD_SET_TX_CALLBACK:
-		{
-			if (args)
-				device->tx_cb = (mr_err_t (*)(mr_device_t device, void *args))args;
 			break;
 		}
 
@@ -209,7 +220,7 @@ mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial
 	return MR_ERR_OK;
 }
 
-void mr_hw_serial_isr(mr_serial_t serial, mr_uint16_t event)
+void mr_hw_serial_isr(mr_serial_t serial, mr_uint32_t event)
 {
 	switch (event & _MR_SERIAL_EVENT_MASK)
 	{
