@@ -28,54 +28,53 @@
 #define mr_memcpy                  memcpy
 #define mr_printf                  printf
 
-/* Compiler Related Definitions */
-#if defined(__ARMCC_VERSION)
-#define MR_SECTION(x)              __attribute__((section(x)))
-#define MR_USED                    __attribute__((used))
-#define MR_ALIGN(n)                __attribute__((aligned(n)))
-#define MR_WEAK                    __attribute__((weak))
-#define MR_INLINE                  static __inline
-
-#elif defined (__IAR_SYSTEMS_ICC__)
-#define MR_SECTION(x)               @ x
-#define MR_USED                     __root
-#define PRAGMA(x)                   _Pragma(#x)
-#define MR_ALIGN(n)                 PRAGMA(data_alignment=n)
-#define MR_WEAK                     __weak
-#define MR_INLINE                   static inline
-
-#elif defined (__GNUC__)
-#define MR_SECTION(x)               __attribute__((section(x)))
-#define MR_USED                     __attribute__((used))
-#define MR_ALIGN(n)                 __attribute__((aligned(n)))
-#define MR_WEAK                     __attribute__((weak))
-#define MR_INLINE                   static __inline
-
-#elif defined (__ADSPBLACKFIN__)
-#define MR_SECTION(x)               __attribute__((section(x)))
-#define MR_USED                     __attribute__((used))
-#define MR_ALIGN(n)                 __attribute__((aligned(n)))
-#define MR_WEAK                     __attribute__((weak))
-#define MR_INLINE                   static inline
-
-#elif defined (_MSC_VER)
-#define MR_SECTION(x)
-#define MR_USED
-#define MR_ALIGN(n)                 __declspec(align(n))
-#define MR_WEAK
-#define MR_INLINE                   static __inline
-
-#elif defined (__TASKING__)
-#define MR_SECTION(x)               __attribute__((section(x)))
-#define MR_USED                     __attribute__((used, protect))
-#define mrAGMA(x)                   _Pragma(#x)
-#define MR_ALIGN(n)                 __attribute__((__align(n)))
-#define MR_WEAK                     __attribute__((weak))
-#define MR_INLINE                   static inline
-#endif
-
 /* mr-library version information */
 #define MR_LIBRARY_VERSION         "0.0.2"
+
+/* Compiler Related Definitions */
+#if defined(__ARMCC_VERSION)
+#define mr_section(x)              __attribute__((section(x)))
+#define mr_used                    __attribute__((used))
+#define mr_align(n)                __attribute__((aligned(n)))
+#define mr_weak                    __attribute__((weak))
+#define mr_inline                  static __inline
+
+#elif defined (__IAR_SYSTEMS_ICC__)
+#define mr_section(x)               @ x
+#define mr_used                     __root
+#define PRAGMA(x)                   _Pragma(#x)
+#define mr_align(n)                 PRAGMA(data_alignment=n)
+#define mr_weak                     __weak
+#define mr_inline                   static inline
+
+#elif defined (__GNUC__)
+#define mr_section(x)               __attribute__((section(x)))
+#define mr_used                     __attribute__((used))
+#define mr_align(n)                 __attribute__((aligned(n)))
+#define mr_weak                     __attribute__((weak))
+#define mr_inline                   static __inline
+
+#elif defined (__ADSPBLACKFIN__)
+#define mr_section(x)               __attribute__((section(x)))
+#define mr_used                     __attribute__((used))
+#define mr_align(n)                 __attribute__((aligned(n)))
+#define mr_weak                     __attribute__((weak))
+#define mr_inline                   static inline
+
+#elif defined (_MSC_VER)
+#define mr_section(x)
+#define mr_used
+#define mr_align(n)                 __declspec(align(n))
+#define mr_weak
+#define mr_inline                   static __inline
+
+#elif defined (__TASKING__)
+#define mr_section(x)               __attribute__((section(x)))
+#define mr_used                     __attribute__((used, protect))
+#define mr_align(n)                 __attribute__((__align(n)))
+#define mr_weak                     __attribute__((weak))
+#define mr_inline                   static inline
+#endif
 
 #define MR_NULL                    0
 
@@ -99,33 +98,33 @@
 #define _MR_OPEN_FLAG_MASK         0xf000                       /**< Mask for getting open flag */
 
 /* mr-library basic command definitions */
-#define MR_CMD_NULL                0x0000                       /**< Null command */
-#define MR_CMD_CONFIG              0x1000                       /**< Configure command */
-#define MR_CMD_SET_RX_CALLBACK     0x2000                       /**< Set rx cb command */
-#define MR_CMD_SET_TX_CALLBACK     0x3000                       /**< Set tx cb command */
-#define MR_CMD_ATTACH              0x4000                       /**< Attach command */
-#define MR_CMD_TRANSFER            0x5000                       /**< Transfer command */
-#define MR_CMD_REBOOT              0x6000                       /**< Reboot command */
-#define MR_CMD_STOP                0x7000                       /**< Stop command */
-#define _MR_CMD_MASK               0xf000                       /**< Mask for getting command */
+#define MR_CMD_NONE                0x0000                       /**< No command */
+#define MR_CMD_SET				   0x1000                       /**< Set command */
+#define MR_CMD_GET				   0x2000                       /**< Get command */
+#define _MR_CMD_MASK1              0xf000                       /**< Mask for getting command 1 */
 
-/* mr-library basic data_p flag definitions */
+#define MR_CMD_CONFIG              0x0100                       /**< Configure command */
+#define MR_CMD_TX_CB               0x0200                       /**< Set tx cb command */
+#define MR_CMD_RX_CB               0x0300                       /**< Set rx cb command */
+#define MR_CMD_ATTACH              0x0400                       /**< Attach command */
+#define MR_CMD_REBOOT			   0x0500                       /**< Reboot command */
+#define _MR_CMD_MASK2              0x0f00                       /**< Mask for getting command 2 */
+
+/* mr-library basic data flag definitions */
 typedef signed char mr_int8_t;                                  /**< Type for 8bit integer */
 typedef signed short mr_int16_t;                                /**< Type for 16bit integer */
 typedef signed int mr_int32_t;                                  /**< Type for 32bit integer */
+typedef signed long long mr_int64_t;                            /**< Type for 64bit integer */
 typedef unsigned char mr_uint8_t;                               /**< Type for 8bit unsigned integer */
 typedef unsigned short mr_uint16_t;                             /**< Type for 16bit unsigned integer */
 typedef unsigned int mr_uint32_t;                               /**< Type for 32bit unsigned integer */
+typedef unsigned long long mr_uint64_t;                         /**< Type for 64bit unsigned integer */
 typedef float mr_float_t;                                       /**< Type for single-precision floating point */
 typedef double mr_double_t;                                     /**< Type for double-precision floating point */
 
-typedef signed long long mr_int64_t;                            /**< Type for 64bit integer */
-typedef unsigned long long mr_uint64_t;                         /**< Type for 64bit unsigned integer */
-
-typedef unsigned int mr_size_t;                                 /**< Type for size number */
 typedef signed int mr_base_t;                                   /**< Type for Nbit CPU related date */
 typedef unsigned int mr_ubase_t;                                /**< Type for Nbit unsigned CPU related data */
-
+typedef mr_ubase_t mr_size_t;                                   /**< Type for size number */
 typedef mr_base_t mr_err_t;                                     /**< Type for error number */
 typedef mr_base_t mr_off_t;                                     /**< Type for offset */
 
@@ -179,13 +178,6 @@ typedef struct mr_avl *mr_avl_t;                                /**< Type for av
 /**
  *  Fifo
  */
-enum mr_fifo_state
-{
-	MR_FIFO_EMPTY,                                              /**< Empty fifo state */
-	MR_FIFO_FULL,                                               /**< Full fifo state */
-	MR_FIFO_HALF_FULL,                                          /**< Half-full fifo state */
-};
-
 struct mr_fifo
 {
 	mr_uint8_t *buffer;                                         /**< Buffer pool */
@@ -221,7 +213,7 @@ typedef struct mr_container *mr_container_t;                    /**< Type for co
 /**
  *  Object
  */
-#define MR_OBJECT_TYPE_NULL         0x00
+#define MR_OBJECT_TYPE_NONE         0x00
 #define MR_OBJECT_TYPE_REGISTER     0x10
 
 struct mr_object
@@ -248,7 +240,7 @@ typedef struct mr_mutex *mr_mutex_t;                            /**< Type for mu
  */
 enum mr_device_type
 {
-	MR_DEVICE_TYPE_NULL,                                        /**< Null-type device */
+	MR_DEVICE_TYPE_NONE,                                        /**< No device */
 	MR_DEVICE_TYPE_PIN,                                         /**< GPIO device */
 	MR_DEVICE_TYPE_SPI_BUS,                                     /**< SPI-BUS device */
 	MR_DEVICE_TYPE_SPI,                                         /**< SPI device */
@@ -307,11 +299,10 @@ struct mr_manager
 	enum mr_manager_type type;                                  /**< Manager type */
 	mr_size_t ref_count;                                        /**< Number of manager references */
 	struct mr_fifo queue;                                       /**< Agent queue */
-	mr_uint8_t pool[MR_MANAGER_QUEUE_BUFSZ];                    /**< Agent queue pool */
 
-	mr_err_t (*err_cb)(struct mr_manager *manager,                /**< Agent error callback function */
+	mr_err_t (*err_cb)(struct mr_manager *manager,              /**< Agent error callback function */
 					   mr_uint32_t agent_id,                    /**< Agent id */
-					   mr_err_t err);                            /**< Error code */
+					   mr_err_t err);                           /**< Error code */
 
 	mr_avl_t avl;                                               /**< Manager list */
 };

@@ -84,8 +84,10 @@ mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, 
 mr_manager_t mr_manager_find(const char *name);
 mr_err_t mr_manager_add(mr_manager_t manager,
 						const char *name,
-						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err),
-						enum mr_manager_type type);
+						enum mr_manager_type type,
+						mr_uint8_t *pool,
+						mr_size_t pool_size,
+						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err));
 mr_err_t mr_manager_remove(mr_manager_t manager);
 mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t agent_id);
 void mr_manager_handler(mr_manager_t manager);

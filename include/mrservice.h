@@ -23,13 +23,13 @@
 #define mr_max(a, b)    ((a) > (b)) ? a:b
 #define mr_min(a, b)    ((a) < (b)) ? a:b
 
-MR_INLINE void mr_list_init(mr_list_t list)
+mr_inline void mr_list_init(mr_list_t list)
 {
 	list->next = list;
 	list->prev = list;
 }
 
-MR_INLINE void mr_list_insert_after(mr_list_t list, mr_list_t node)
+mr_inline void mr_list_insert_after(mr_list_t list, mr_list_t node)
 {
 	list->next->prev = node;
 	node->next = list->next;
@@ -38,7 +38,7 @@ MR_INLINE void mr_list_insert_after(mr_list_t list, mr_list_t node)
 	node->prev = list;
 }
 
-MR_INLINE void mr_list_remove(mr_list_t node)
+mr_inline void mr_list_remove(mr_list_t node)
 {
 	node->next->prev = node->prev;
 	node->prev->next = node->next;
@@ -46,7 +46,7 @@ MR_INLINE void mr_list_remove(mr_list_t node)
 	node->next = node->prev = node;
 }
 
-MR_INLINE mr_size_t mr_list_get_length(mr_list_t list)
+mr_inline mr_size_t mr_list_get_length(mr_list_t list)
 {
 	mr_size_t length = 0;
 	mr_list_t temp_list = list;
