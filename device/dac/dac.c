@@ -34,31 +34,21 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
 	mr_dac_t dac = (mr_dac_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK1)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_SET:
+		case MR_CTRL_CONFIG:
 		{
-			switch (cmd & _MR_CMD_MASK2)
+			if (args)
 			{
-				case MR_CMD_CONFIG:
-				{
-					if (args)
-						ret = dac->ops->channel_configure(dac,
-														  ((struct mr_dac_config *)args)->channel,
-														  ((struct mr_dac_config *)args)->state);
-
-					break;
-				}
-
-				default: ret = - MR_ERR_UNSUPPORTED;
+				return dac->ops->channel_configure(dac,
+												   ((struct mr_dac_config *)args)->channel,
+												   ((struct mr_dac_config *)args)->state);
 			}
-			break;
+			return - MR_ERR_INVALID;
 		}
 
-		default: ret = - MR_ERR_UNSUPPORTED;
+		default: return - MR_ERR_UNSUPPORTED;
 	}
-
-	return ret;
 }
 
 static mr_size_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)

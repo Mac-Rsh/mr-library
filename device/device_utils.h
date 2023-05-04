@@ -22,7 +22,7 @@ mr_inline mr_err_t mr_pin_init(mr_device_t pin, mr_uint16_t number, mr_uint16_t 
 								   mode,
 								   MR_PIN_IRQ_MODE_NONE};
 
-	return mr_device_ioctl(pin, MR_CMD_SET | MR_CMD_CONFIG, &config);
+	return mr_device_ioctl(pin, MR_CTRL_CONFIG, &config);
 }
 
 mr_inline mr_level_t mr_pin_read(mr_device_t pin, mr_uint16_t number)
@@ -57,7 +57,7 @@ mr_inline mr_err_t mr_serial_init(mr_device_t serial, mr_uint32_t baud_rate)
 	struct mr_serial_config config = MR_SERIAL_CONFIG_DEFAULT;
 
 	config.baud_rate = baud_rate;
-	return mr_device_ioctl(serial, MR_CMD_SET | MR_CMD_CONFIG, &config);
+	return mr_device_ioctl(serial, MR_CTRL_CONFIG, &config);
 }
 
 mr_inline mr_uint8_t mr_serial_read(mr_device_t serial)
@@ -86,7 +86,7 @@ mr_inline mr_size_t mr_serial_write_buffer(mr_device_t serial, mr_uint8_t *buffe
 mr_inline mr_err_t mr_serial_set_rx_callback(mr_device_t serial,
 											 mr_err_t (*rx_callback)(mr_device_t device, void *args))
 {
-	return mr_device_ioctl(serial, MR_CMD_SET | MR_CMD_RX_CB, (void *)rx_callback);
+	return mr_device_ioctl(serial, MR_CTRL_SET_RX_CB, (void *)rx_callback);
 }
 
 #endif
@@ -101,11 +101,11 @@ mr_inline mr_err_t mr_spi_init(mr_device_t spi_device, mr_uint32_t baud_rate, mr
 
 	config.baud_rate = baud_rate;
 	config.mode = mode;
-	ret = mr_device_ioctl(spi_device, MR_CMD_SET | MR_CMD_CONFIG, &config);
+	ret = mr_device_ioctl(spi_device, MR_CTRL_CONFIG, &config);
 	if (ret != MR_ERR_OK)
 		return ret;
 
-	return mr_device_ioctl(spi_device, MR_CMD_SET | MR_CMD_ATTACH, (void *)bus_name);
+	return mr_device_ioctl(spi_device, MR_CTRL_ATTACH, (void *)bus_name);
 }
 
 mr_inline mr_uint8_t mr_spi_read(mr_device_t spi_device)
@@ -150,7 +150,7 @@ mr_inline mr_err_t mr_adc_init(mr_device_t adc, mr_uint16_t channel)
 	struct mr_adc_config config = {channel,
 								   MR_ENABLE};
 
-	return mr_device_ioctl(adc, MR_CMD_SET | MR_CMD_CONFIG, &config);
+	return mr_device_ioctl(adc, MR_CTRL_CONFIG, &config);
 }
 
 mr_inline mr_uint16_t mr_adc_read(mr_device_t adc, mr_uint16_t channel)
@@ -171,7 +171,7 @@ mr_inline mr_err_t mr_dac_init(mr_device_t dac, mr_uint16_t channel)
 	struct mr_dac_config config = {channel,
 								   MR_ENABLE};
 
-	return mr_device_ioctl(dac, MR_CMD_SET | MR_CMD_CONFIG, &config);
+	return mr_device_ioctl(dac, MR_CTRL_CONFIG, &config);
 }
 
 mr_inline void mr_dac_write(mr_device_t dac, mr_uint16_t channel, mr_uint16_t value)
@@ -189,7 +189,7 @@ mr_inline mr_err_t mr_timer_init(mr_device_t timer, mr_uint32_t frequency, mr_ui
 	struct mr_timer_config config = {frequency,
 									 mode};
 
-	return mr_device_ioctl(timer, MR_CMD_SET | MR_CMD_CONFIG, &config);
+	return mr_device_ioctl(timer, MR_CTRL_CONFIG, &config);
 }
 
 mr_inline mr_uint32_t mr_timer_read(mr_device_t timer)
@@ -207,12 +207,12 @@ mr_inline void mr_timer_write(mr_device_t timer, mr_uint32_t timeout)
 
 mr_inline mr_err_t mr_timer_reboot(mr_device_t timer)
 {
-	return mr_device_ioctl(timer, MR_CMD_SET | MR_CMD_REBOOT, MR_NULL);
+	return mr_device_ioctl(timer, MR_CTRL_REBOOT, MR_NULL);
 }
 
 mr_inline mr_err_t mr_timer_set_rx_callback(mr_device_t timer, mr_err_t (*rx_cb)(mr_device_t device, void *args))
 {
-	return mr_device_ioctl(timer, MR_CMD_SET | MR_CMD_RX_CB, (void *)rx_cb);
+	return mr_device_ioctl(timer, MR_CTRL_SET_RX_CB, (void *)rx_cb);
 }
 
 #endif

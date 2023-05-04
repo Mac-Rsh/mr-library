@@ -22,36 +22,29 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 	mr_pin_t pin = (mr_pin_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK1)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_SET:
+		case MR_CTRL_CONFIG:
 		{
-			switch (cmd & _MR_CMD_MASK2)
+			if (args)
 			{
-				case MR_CMD_CONFIG:
-				{
-					if (args)
-						ret = pin->ops->configure(pin, args);
-					if (((struct mr_pin_config *)args)->irq_mode != MR_PIN_IRQ_MODE_NONE && ret == MR_ERR_OK)
-						mr_pin_irq_mask |= (1 << ((struct mr_pin_config *)args)->number % 16);
-					break;
-				}
+				ret = pin->ops->configure(pin, args);
+				if (((struct mr_pin_config *)args)->irq_mode != MR_PIN_IRQ_MODE_NONE && ret == MR_ERR_OK)
+					mr_pin_irq_mask |= (1 << ((struct mr_pin_config *)args)->number % 16);
 
-				case MR_CMD_RX_CB:
-				{
-					device->rx_cb = args;
-					break;
-				}
-
-				default: return - MR_ERR_UNSUPPORTED;
+				return ret;
 			}
-			break;
+			return - MR_ERR_INVALID;
+		}
+
+		case MR_CTRL_SET_RX_CB:
+		{
+			device->rx_cb = args;
+			return MR_ERR_OK;
 		}
 
 		default: return - MR_ERR_UNSUPPORTED;
 	}
-
-	return ret;
 }
 
 static mr_size_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)

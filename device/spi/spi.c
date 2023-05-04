@@ -110,49 +110,42 @@ static mr_err_t mr_spi_device_close(mr_device_t device)
 static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 {
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
-	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK1)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_SET:
+		case MR_CTRL_CONFIG:
 		{
-			switch (cmd & _MR_CMD_MASK2)
+			if (args)
 			{
-				case MR_CMD_CONFIG:
-				{
-					if (args)
-						spi_device->config = *(struct mr_spi_config *)args;
-					break;
-				}
-
-				case MR_CMD_ATTACH:
-				{
-					if (args)
-					{
-						/* Find the spi-bus */
-						mr_device_t spi_bus = mr_device_find((char *)args);
-						if (spi_bus == MR_NULL || spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
-						{
-							ret = - MR_ERR_NOT_FOUND;
-							break;
-						}
-
-						/* Open the spi-bus */
-						mr_device_open(spi_bus, MR_OPEN_RDWR);
-						spi_device->bus = (mr_spi_bus_t)spi_bus;
-					}
-					break;
-				}
-
-				default: ret = - MR_ERR_UNSUPPORTED;
+				spi_device->config = *(struct mr_spi_config *)args;
+				return MR_ERR_OK;
 			}
-			break;
+			return - MR_ERR_INVALID;
 		}
 
-		default: ret = - MR_ERR_UNSUPPORTED;
-	}
+		case MR_CTRL_ATTACH:
+		{
+			if (args == MR_NULL)
+			{
+				spi_device->bus = MR_NULL;
+				return MR_ERR_OK;
+			}
 
-	return ret;
+			/* Find the spi-bus */
+			mr_device_t spi_bus = mr_device_find((char *)args);
+			if (spi_bus == MR_NULL)
+				return - MR_ERR_NOT_FOUND;
+			if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
+				return - MR_ERR_INVALID;
+
+			/* Open the spi-bus */
+			mr_device_open(spi_bus, MR_OPEN_RDWR);
+			spi_device->bus = (mr_spi_bus_t)spi_bus;
+			return MR_ERR_OK;
+		}
+
+		default: return - MR_ERR_UNSUPPORTED;
+	}
 }
 
 static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)

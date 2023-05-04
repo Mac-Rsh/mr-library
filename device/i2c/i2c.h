@@ -26,7 +26,7 @@
 {                                            \
     3000000,                                 \
     MR_I2C_HOST,                             \
-    MR_I2C_ADDRESS_MODE_7                 	 \
+    MR_I2C_ADDRESS_MODE_7                    \
 }
 
 struct mr_i2c_config

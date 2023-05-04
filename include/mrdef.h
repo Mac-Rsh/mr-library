@@ -20,195 +20,192 @@
 #include <malloc.h>
 #include <string.h>
 
-#define mr_malloc                  malloc
-#define mr_free                    free
-#define mr_strncmp                 strncmp
-#define mr_strncpy                 strncpy
-#define mr_memset                  memset
-#define mr_memcpy                  memcpy
-#define mr_printf                  printf
+#define mr_malloc                       malloc
+#define mr_free                         free
+#define mr_strncmp                      strncmp
+#define mr_strncpy                      strncpy
+#define mr_memset                       memset
+#define mr_memcpy                       memcpy
+#define mr_printf                       printf
 
 /* mr-library version information */
-#define MR_LIBRARY_VERSION         "0.0.2"
+#define MR_LIBRARY_VERSION              "0.0.2"
 
 /* Compiler Related Definitions */
 #if defined(__ARMCC_VERSION)
-#define mr_section(x)              __attribute__((section(x)))
-#define mr_used                    __attribute__((used))
-#define mr_align(n)                __attribute__((aligned(n)))
-#define mr_weak                    __attribute__((weak))
-#define mr_inline                  static __inline
+#define mr_section(x)              		__attribute__((section(x)))
+#define mr_used                    		__attribute__((used))
+#define mr_align(n)                		__attribute__((aligned(n)))
+#define mr_weak                    		__attribute__((weak))
+#define mr_inline                  		static __inline
 
 #elif defined (__IAR_SYSTEMS_ICC__)
-#define mr_section(x)               @ x
-#define mr_used                     __root
-#define PRAGMA(x)                   _Pragma(#x)
-#define mr_align(n)                 PRAGMA(data_alignment=n)
-#define mr_weak                     __weak
-#define mr_inline                   static inline
+#define mr_section(x)               	@ x
+#define mr_used                     	__root
+#define PRAGMA(x)                   	_Pragma(#x)
+#define mr_align(n)                 	PRAGMA(data_alignment=n)
+#define mr_weak                     	__weak
+#define mr_inline                   	static inline
 
 #elif defined (__GNUC__)
-#define mr_section(x)               __attribute__((section(x)))
-#define mr_used                     __attribute__((used))
-#define mr_align(n)                 __attribute__((aligned(n)))
-#define mr_weak                     __attribute__((weak))
-#define mr_inline                   static __inline
+#define mr_section(x)                   __attribute__((section(x)))
+#define mr_used                         __attribute__((used))
+#define mr_align(n)                     __attribute__((aligned(n)))
+#define mr_weak                         __attribute__((weak))
+#define mr_inline                       static __inline
 
 #elif defined (__ADSPBLACKFIN__)
-#define mr_section(x)               __attribute__((section(x)))
-#define mr_used                     __attribute__((used))
-#define mr_align(n)                 __attribute__((aligned(n)))
-#define mr_weak                     __attribute__((weak))
-#define mr_inline                   static inline
+#define mr_section(x)               	__attribute__((section(x)))
+#define mr_used                     	__attribute__((used))
+#define mr_align(n)                 	__attribute__((aligned(n)))
+#define mr_weak                     	__attribute__((weak))
+#define mr_inline                   	static inline
 
 #elif defined (_MSC_VER)
 #define mr_section(x)
 #define mr_used
-#define mr_align(n)                 __declspec(align(n))
+#define mr_align(n)                 	__declspec(align(n))
 #define mr_weak
-#define mr_inline                   static __inline
+#define mr_inline                   	static __inline
 
 #elif defined (__TASKING__)
-#define mr_section(x)               __attribute__((section(x)))
-#define mr_used                     __attribute__((used, protect))
-#define mr_align(n)                 __attribute__((__align(n)))
-#define mr_weak                     __attribute__((weak))
-#define mr_inline                   static inline
+#define mr_section(x)               	__attribute__((section(x)))
+#define mr_used                     	__attribute__((used, protect))
+#define mr_align(n)                 	__attribute__((__align(n)))
+#define mr_weak                     	__attribute__((weak))
+#define mr_inline                   	static inline
 #endif
 
-#define MR_NULL                    0
+#define MR_NULL                         0
 
 /* mr-library error code definitions */
-#define MR_ERR_OK                  0                            /**< There is no error */
-#define MR_ERR_GENERIC             1                            /**< A generic error happens */
-#define MR_ERR_NO_MEMORY           2                            /**< No memory */
-#define MR_ERR_IO                  3                            /**< IO error */
-#define MR_ERR_TIMEOUT             4                            /**< Timed out */
-#define MR_ERR_BUSY                5                            /**< Busy */
-#define MR_ERR_NOT_FOUND           6                            /**< Not found */
-#define MR_ERR_UNSUPPORTED         7                            /**< Unsupported feature */
+#define MR_ERR_OK                       0                           /**< There is no error */
+#define MR_ERR_GENERIC                  1                           /**< A generic error happens */
+#define MR_ERR_NO_MEMORY                2                           /**< No memory */
+#define MR_ERR_IO                       3                           /**< IO error */
+#define MR_ERR_TIMEOUT                  4                           /**< Timed out */
+#define MR_ERR_BUSY                     5                           /**< Busy */
+#define MR_ERR_NOT_FOUND                6                           /**< Not found */
+#define MR_ERR_UNSUPPORTED              7                           /**< Unsupported feature */
+#define MR_ERR_INVALID                  8                           /**< Invalid parameter */
 
 /* mr-library basic open flag definitions */
-#define MR_OPEN_CLOSED             0x0000                       /**< Closed */
-#define MR_OPEN_RDONLY             0x1000                       /**< Read only */
-#define MR_OPEN_WRONLY             0x2000                       /**< Write only */
-#define MR_OPEN_RDWR               0x3000                       /**< Read and write */
-#define MR_OPEN_NONBLOCKING        0x4000                       /**< Non-blocking */
-#define MR_OPEN_ACTIVE             0x8000                       /**< Active */
-#define _MR_OPEN_FLAG_MASK         0xf000                       /**< Mask for getting open flag */
+#define MR_OPEN_CLOSED                  0x0000                      /**< Closed */
+#define MR_OPEN_RDONLY                  0x1000                      /**< Read only */
+#define MR_OPEN_WRONLY                  0x2000                      /**< Write only */
+#define MR_OPEN_RDWR                    0x3000                      /**< Read and write */
+#define MR_OPEN_NONBLOCKING             0x4000                      /**< Non-blocking */
+#define MR_OPEN_ACTIVE                  0x8000                      /**< Active */
+#define _MR_OPEN_FLAG_MASK              0xf000                      /**< Mask for getting open flag */
 
-/* mr-library basic command definitions */
-#define MR_CMD_NONE                0x0000                       /**< No command */
-#define MR_CMD_SET				   0x1000                       /**< Set command */
-#define MR_CMD_GET				   0x2000                       /**< Get command */
-#define _MR_CMD_MASK1              0xf000                       /**< Mask for getting command 1 */
-
-#define MR_CMD_CONFIG              0x0100                       /**< Configure command */
-#define MR_CMD_TX_CB               0x0200                       /**< Set tx cb command */
-#define MR_CMD_RX_CB               0x0300                       /**< Set rx cb command */
-#define MR_CMD_ATTACH              0x0400                       /**< Attach command */
-#define MR_CMD_REBOOT			   0x0500                       /**< Reboot command */
-#define _MR_CMD_MASK2              0x0f00                       /**< Mask for getting command 2 */
+/* mr-library basic control flag definitions */
+#define MR_CTRL_NONE                    0x0000                      /**< No control */
+#define MR_CTRL_CONFIG                  0x1000                      /**< Configure */
+#define MR_CTRL_SET_RX_CB               0x2000                      /**< Set receive callback */
+#define MR_CTRL_SET_TX_CB               0x3000                      /**< Set transmit callback */
+#define MR_CTRL_ATTACH                  0x4000                      /**< Attach the bus */
+#define MR_CTRL_REBOOT                  0x5000                      /**< Reboot */
+#define _MR_CTRL_FLAG_MASK              0xf000                      /**< Mask for getting control flag */
 
 /* mr-library basic data flag definitions */
-typedef signed char mr_int8_t;                                  /**< Type for 8bit integer */
-typedef signed short mr_int16_t;                                /**< Type for 16bit integer */
-typedef signed int mr_int32_t;                                  /**< Type for 32bit integer */
-typedef signed long long mr_int64_t;                            /**< Type for 64bit integer */
-typedef unsigned char mr_uint8_t;                               /**< Type for 8bit unsigned integer */
-typedef unsigned short mr_uint16_t;                             /**< Type for 16bit unsigned integer */
-typedef unsigned int mr_uint32_t;                               /**< Type for 32bit unsigned integer */
-typedef unsigned long long mr_uint64_t;                         /**< Type for 64bit unsigned integer */
-typedef float mr_float_t;                                       /**< Type for single-precision floating point */
-typedef double mr_double_t;                                     /**< Type for double-precision floating point */
+typedef signed char mr_int8_t;                                      /**< Type for 8bit integer */
+typedef signed short mr_int16_t;                                    /**< Type for 16bit integer */
+typedef signed int mr_int32_t;                                      /**< Type for 32bit integer */
+typedef signed long long mr_int64_t;                                /**< Type for 64bit integer */
+typedef unsigned char mr_uint8_t;                                   /**< Type for 8bit unsigned integer */
+typedef unsigned short mr_uint16_t;                                 /**< Type for 16bit unsigned integer */
+typedef unsigned int mr_uint32_t;                                   /**< Type for 32bit unsigned integer */
+typedef unsigned long long mr_uint64_t;                             /**< Type for 64bit unsigned integer */
+typedef float mr_float_t;                                           /**< Type for single-precision floating point */
+typedef double mr_double_t;                                         /**< Type for double-precision floating point */
 
-typedef signed int mr_base_t;                                   /**< Type for Nbit CPU related date */
-typedef unsigned int mr_ubase_t;                                /**< Type for Nbit unsigned CPU related data */
-typedef mr_ubase_t mr_size_t;                                   /**< Type for size number */
-typedef mr_base_t mr_err_t;                                     /**< Type for error number */
-typedef mr_base_t mr_off_t;                                     /**< Type for offset */
+typedef signed int mr_base_t;                                       /**< Type for Nbit CPU related date */
+typedef unsigned int mr_ubase_t;                                    /**< Type for Nbit unsigned CPU related data */
+typedef mr_ubase_t mr_size_t;                                       /**< Type for size number */
+typedef mr_base_t mr_err_t;                                         /**< Type for error number */
+typedef mr_base_t mr_off_t;                                         /**< Type for offset */
 
 typedef enum mr_bool
 {
-	MR_FALSE = 0,                                               /**< Boolean fails */
-	MR_TRUE = 1                                                 /**< Boolean true */
-} mr_bool_t;                                                    /**< Type for boolean */
+	MR_FALSE = 0,                                                   /**< Boolean fails */
+	MR_TRUE = 1                                                     /**< Boolean true */
+} mr_bool_t;                                                        /**< Type for boolean */
 
 typedef enum mr_level
 {
-	MR_LOW = 0,                                                 /**< Level low */
-	MR_HIGH = 1                                                 /**< Level high */
-} mr_level_t;                                                   /**< Type for level */
+	MR_LOW = 0,                                                     /**< Level low */
+	MR_HIGH = 1                                                     /**< Level high */
+} mr_level_t;                                                       /**< Type for level */
 
 typedef enum mr_state
 {
-	MR_DISABLE = 0,                                             /**< State disable */
-	MR_ENABLE = 1                                               /**< State enable */
-} mr_state_t;                                                   /**< Type for state */
+	MR_DISABLE = 0,                                                 /**< State disable */
+	MR_ENABLE = 1                                                   /**< State enable */
+} mr_state_t;                                                       /**< Type for state */
 
 typedef enum mr_lock
 {
-	MR_UNLOCK = 0,                                              /**< Unlock*/
-	MR_LOCK = 1                                                 /**< Lock */
-} mr_lock_t;                                                    /**< Type for lock */
+	MR_UNLOCK = 0,                                                  /**< Unlock*/
+	MR_LOCK = 1                                                     /**< Lock */
+} mr_lock_t;                                                        /**< Type for lock */
 
 /**
  *  Double-list
  */
 struct mr_list
 {
-	struct mr_list *next;                                       /**< Point to next node */
-	struct mr_list *prev;                                       /**< Point to prev node */
+	struct mr_list *next;                                           /**< Point to next node */
+	struct mr_list *prev;                                           /**< Point to prev node */
 };
-typedef struct mr_list *mr_list_t;                              /**< Type for list */
+typedef struct mr_list *mr_list_t;                                  /**< Type for list */
 
 /**
  *  Avl-tree
  */
 struct mr_avl
 {
-	mr_int8_t height;                                           /**< Balance factor */
-	mr_uint32_t value;                                          /**< Key-value */
+	mr_int8_t height;                                               /**< Balance factor */
+	mr_uint32_t value;                                              /**< Key-value */
 
-	struct mr_avl *left_child;                                  /**< Point to left-child node */
-	struct mr_avl *right_child;                                 /**< Point to right-child node */
+	struct mr_avl *left_child;                                      /**< Point to left-child node */
+	struct mr_avl *right_child;                                     /**< Point to right-child node */
 };
-typedef struct mr_avl *mr_avl_t;                                /**< Type for avl-tree */
+typedef struct mr_avl *mr_avl_t;                                    /**< Type for avl-tree */
 
 /**
  *  Fifo
  */
 struct mr_fifo
 {
-	mr_uint8_t *buffer;                                         /**< Buffer pool */
+	mr_uint8_t *buffer;                                             /**< Buffer pool */
 
-	mr_uint16_t read_mirror: 1;                                 /**< Read mirror flag */
-	mr_uint16_t read_index: 15;                                 /**< Read index */
-	mr_uint16_t write_mirror: 1;                                /**< Write mirror flag */
-	mr_uint16_t write_index: 15;                                /**< Write index */
+	mr_uint16_t read_mirror: 1;                                     /**< Read mirror flag */
+	mr_uint16_t read_index: 15;                                     /**< Read index */
+	mr_uint16_t write_mirror: 1;                                    /**< Write mirror flag */
+	mr_uint16_t write_index: 15;                                    /**< Write index */
 
-	mr_uint16_t size;                                           /**< Buffer pool size */
+	mr_uint16_t size;                                               /**< Buffer pool size */
 };
-typedef struct mr_fifo *mr_fifo_t;                              /**< Type for fifo */
+typedef struct mr_fifo *mr_fifo_t;                                  /**< Type for fifo */
 
 /**
  *  Container
  */
 enum mr_container_type
 {
-	MR_CONTAINER_TYPE_MISC,                                     /**< Miscellaneous container */
-	MR_CONTAINER_TYPE_DEVICE,                                   /**< Device container */
-	MR_CONTAINER_TYPE_MANAGER,                                  /**< Event container */
-	_MR_CONTAINER_TYPE_MASK,                                    /**< Mask for getting container type */
+	MR_CONTAINER_TYPE_MISC,                                         /**< Miscellaneous container */
+	MR_CONTAINER_TYPE_DEVICE,                                       /**< Device container */
+	MR_CONTAINER_TYPE_MANAGER,                                      /**< Event container */
+	_MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
 };
 
 struct mr_container
 {
-	struct mr_list list;                                        /**< Container list */
+	struct mr_list list;                                            /**< Container list */
 
-	enum mr_container_type type;                                /**< Container flag */
+	enum mr_container_type type;                                    /**< Container flag */
 };
-typedef struct mr_container *mr_container_t;                    /**< Type for container */
+typedef struct mr_container *mr_container_t;                        /**< Type for container */
 
 /**
  *  Object
@@ -218,45 +215,45 @@ typedef struct mr_container *mr_container_t;                    /**< Type for co
 
 struct mr_object
 {
-	struct mr_list list;                                        /**< Object list */
+	struct mr_list list;                                            /**< Object list */
 
-	char name[MR_NAME_MAX + 1];                                 /**< Object name */
-	mr_uint8_t flag;                                            /**< Object flag */
+	char name[MR_NAME_MAX + 1];                                     /**< Object name */
+	mr_uint8_t flag;                                                /**< Object flag */
 };
-typedef struct mr_object *mr_object_t;                          /**< Type for object */
+typedef struct mr_object *mr_object_t;                              /**< Type for object */
 
 /**
  *  Mutex
  */
 struct mr_mutex
 {
-	mr_object_t owner;                                          /**< Mutex owns the object */
-	mr_lock_t lock;                                             /**< Mutex lock state */
+	mr_object_t owner;                                              /**< Mutex owns the object */
+	mr_lock_t lock;                                                 /**< Mutex lock state */
 };
-typedef struct mr_mutex *mr_mutex_t;                            /**< Type for mutex */
+typedef struct mr_mutex *mr_mutex_t;                                /**< Type for mutex */
 
 /**
  *  Device
  */
 enum mr_device_type
 {
-	MR_DEVICE_TYPE_NONE,                                        /**< No device */
-	MR_DEVICE_TYPE_PIN,                                         /**< GPIO device */
-	MR_DEVICE_TYPE_SPI_BUS,                                     /**< SPI-BUS device */
-	MR_DEVICE_TYPE_SPI,                                         /**< SPI device */
-	MR_DEVICE_TYPE_I2C_BUS,                                     /**< I2C-BUS device */
-	MR_DEVICE_TYPE_I2C,                                         /**< I2C device */
-	MR_DEVICE_TYPE_SERIAL,                                      /**< UART device */
-	MR_DEVICE_TYPE_ADC,                                         /**< ADC device */
-	MR_DEVICE_TYPE_DAC,                                         /**< DAC device */
-	MR_DEVICE_TYPE_PWM,                                         /**< PWM device */
-	MR_DEVICE_TYPE_TIMER,                                       /**< TIMER device */
-	MR_DEVICE_TYPE_FLASH,                                       /**< FLASH device */
-	MR_DEVICE_TYPE_SDRAM,                                       /**< SDRAM device */
+	MR_DEVICE_TYPE_NONE,                                            /**< No device */
+	MR_DEVICE_TYPE_PIN,                                             /**< GPIO device */
+	MR_DEVICE_TYPE_SPI_BUS,                                         /**< SPI-BUS device */
+	MR_DEVICE_TYPE_SPI,                                             /**< SPI device */
+	MR_DEVICE_TYPE_I2C_BUS,                                         /**< I2C-BUS device */
+	MR_DEVICE_TYPE_I2C,                                             /**< I2C device */
+	MR_DEVICE_TYPE_SERIAL,                                          /**< UART device */
+	MR_DEVICE_TYPE_ADC,                                             /**< ADC device */
+	MR_DEVICE_TYPE_DAC,                                             /**< DAC device */
+	MR_DEVICE_TYPE_PWM,                                             /**< PWM device */
+	MR_DEVICE_TYPE_TIMER,                                           /**< TIMER device */
+	MR_DEVICE_TYPE_FLASH,                                           /**< FLASH device */
+	MR_DEVICE_TYPE_SDRAM,                                           /**< SDRAM device */
 	/* ... */
 };
 
-typedef struct mr_device *mr_device_t;                          /**< Type for device */
+typedef struct mr_device *mr_device_t;                              /**< Type for device */
 struct mr_device_ops
 {
 	mr_err_t (*open)(mr_device_t device);
@@ -268,18 +265,18 @@ struct mr_device_ops
 
 struct mr_device
 {
-	struct mr_object object;                                    /**< Device object */
+	struct mr_object object;                                        /**< Device object */
 
-	enum mr_device_type type;                                   /**< Device type */
-	mr_uint16_t support_flag;                                   /**< Open mode supported by the device */
-	mr_uint16_t open_flag;                                      /**< Opening mode of the device */
-	mr_size_t ref_count;                                        /**< Number of device references */
-	void *data;                                                 /**< Device data */
+	enum mr_device_type type;                                       /**< Device type */
+	mr_uint16_t support_flag;                                       /**< Open mode supported by the device */
+	mr_uint16_t open_flag;                                          /**< Opening mode of the device */
+	mr_size_t ref_count;                                            /**< Number of device references */
+	void *data;                                                     /**< Device data */
 
-	mr_err_t (*rx_cb)(mr_device_t device, void *args);          /**< Device receives the callback function */
-	mr_err_t (*tx_cb)(mr_device_t device, void *args);          /**< Device sends the callback function */
+	mr_err_t (*rx_cb)(mr_device_t device, void *args);              /**< Device receives the callback function */
+	mr_err_t (*tx_cb)(mr_device_t device, void *args);              /**< Device sends the callback function */
 
-	const struct mr_device_ops *ops;                            /**< Operations of the device */
+	const struct mr_device_ops *ops;                                /**< Operations of the device */
 };
 
 /**
@@ -287,38 +284,38 @@ struct mr_device
  */
 enum mr_manager_type
 {
-	MR_MANAGER_TYPE_EVENT,                                      /**< Event manager */
-	MR_MANAGER_TYPE_FSM,                                        /**< Finite state machine(FSM) manager */
+	MR_MANAGER_TYPE_EVENT,                                          /**< Event manager */
+	MR_MANAGER_TYPE_FSM,                                            /**< Finite state machine(FSM) manager */
 	/* ... */
 };
 
 struct mr_manager
 {
-	struct mr_object object;                                    /**< Manager object */
+	struct mr_object object;                                        /**< Manager object */
 
-	enum mr_manager_type type;                                  /**< Manager type */
-	mr_size_t ref_count;                                        /**< Number of manager references */
-	struct mr_fifo queue;                                       /**< Agent queue */
+	enum mr_manager_type type;                                      /**< Manager type */
+	mr_size_t ref_count;                                            /**< Number of manager references */
+	struct mr_fifo queue;                                           /**< Agent queue */
 
-	mr_err_t (*err_cb)(struct mr_manager *manager,              /**< Agent error callback function */
-					   mr_uint32_t agent_id,                    /**< Agent id */
-					   mr_err_t err);                           /**< Error code */
+	mr_err_t (*err_cb)(struct mr_manager *manager,                  /**< Agent error callback function */
+					   mr_uint32_t agent_id,                        /**< Agent id */
+					   mr_err_t err);                               /**< Error code */
 
-	mr_avl_t avl;                                               /**< Manager list */
+	mr_avl_t avl;                                                   /**< Manager list */
 };
-typedef struct mr_manager *mr_manager_t;                        /**< Type for manager */
+typedef struct mr_manager *mr_manager_t;                            /**< Type for manager */
 
 /**
  * 	Agent
  */
 struct mr_agent
 {
-	struct mr_avl avl;                                          /**< Avl-tree and agent id */
-	mr_size_t ref_count;                                        /**< Number of agent references */
+	struct mr_avl avl;                                              /**< Avl-tree and agent id */
+	mr_size_t ref_count;                                            /**< Number of agent references */
 
-	mr_err_t (*cb)(mr_manager_t manager, void *args);           /**< Agent occurrence callback function */
-	void *args;                                                 /**< Callback function argument */
+	mr_err_t (*cb)(mr_manager_t manager, void *args);               /**< Agent occurrence callback function */
+	void *args;                                                     /**< Callback function argument */
 };
-typedef struct mr_agent *mr_agent_t;                            /**< Type for agent */
+typedef struct mr_agent *mr_agent_t;                                /**< Type for agent */
 
 #endif

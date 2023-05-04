@@ -98,49 +98,41 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
 	mr_timer_t timer = (mr_timer_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK1)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_SET:
+		case MR_CTRL_CONFIG:
 		{
-			switch (cmd & _MR_CMD_MASK2)
+			if (args)
 			{
-				case MR_CMD_CONFIG:
-				{
-					if (args)
-					{
-						/* Check the frequency */
-						if (((struct mr_timer_config *)args)->freq > timer->information.max_freq)
-							return - MR_ERR_GENERIC;
-						ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
-						if (ret == MR_ERR_OK)
-							timer->config = *(struct mr_timer_config *)args;
-					}
-					break;
-				}
+				/* Check the frequency */
+				if (((struct mr_timer_config *)args)->freq > timer->information.max_freq)
+					return - MR_ERR_GENERIC;
 
-				case MR_CMD_RX_CB:
-				{
-					device->rx_cb = args;
-					break;
-				}
+				ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
+				if (ret == MR_ERR_OK)
+					timer->config = *(struct mr_timer_config *)args;
 
-				case MR_CMD_REBOOT:
-				{
-					timer->overflow = 0;
-					timer->cycles = timer->reload;
-					timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
-					break;
-				}
-
-				default: ret = - MR_ERR_UNSUPPORTED;
+				return ret;
 			}
-			break;
+			return -MR_ERR_INVALID;
 		}
 
-		default: ret = - MR_ERR_UNSUPPORTED;
-	}
+		case MR_CTRL_SET_RX_CB:
+		{
+			device->rx_cb = args;
+			return MR_ERR_OK;
+		}
 
-	return ret;
+		case MR_CTRL_REBOOT:
+		{
+			timer->overflow = 0;
+			timer->cycles = timer->reload;
+			timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
+			return MR_ERR_OK;
+		}
+
+		default: return -MR_ERR_UNSUPPORTED;
+	}
 }
 
 static mr_size_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)

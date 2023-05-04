@@ -80,45 +80,34 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 	mr_serial_t serial = (mr_serial_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK1)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_SET:
+		case MR_CTRL_CONFIG:
 		{
-			switch (cmd & _MR_CMD_MASK2)
+			if (args)
 			{
-				case MR_CMD_CONFIG:
-				{
-					if (args)
-					{
-						ret = serial->ops->configure(serial, (struct mr_serial_config *)args);
-						if (ret == MR_ERR_OK)
-							serial->config = *(struct mr_serial_config *)args;
-					}
-					break;
-				}
-
-				case MR_CMD_RX_CB:
-				{
-					device->rx_cb = args;
-					break;
-				}
-
-				case MR_CMD_TX_CB:
-				{
-					device->tx_cb = args;
-					break;
-				}
-
-				default: ret = - MR_ERR_UNSUPPORTED;
+				ret = serial->ops->configure(serial, (struct mr_serial_config *)args);
+				if (ret == MR_ERR_OK)
+					serial->config = *(struct mr_serial_config *)args;
+				return ret;
 			}
-
-			break;
+			return -MR_ERR_INVALID;
 		}
 
-		default: ret = - MR_ERR_UNSUPPORTED;
-	}
+		case MR_CTRL_SET_RX_CB:
+		{
+			device->rx_cb = args;
+			return MR_ERR_OK;
+		}
 
-	return ret;
+		case MR_CTRL_SET_TX_CB:
+		{
+			device->tx_cb = args;
+			return MR_ERR_OK;
+		}
+
+		default: return -MR_ERR_UNSUPPORTED;
+	}
 }
 
 static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
