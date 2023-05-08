@@ -47,36 +47,36 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 	}
 }
 
-static mr_size_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_pin_t pin = (mr_pin_t)device;
 	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 
-	if (size != sizeof(mr_uint8_t))
+	if (size < sizeof(*recv_buffer))
 	{
-		MR_LOG_D(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
-		return 0;
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
 	}
 
 	*recv_buffer = pin->ops->read(pin, (mr_uint16_t)pos);
 
-	return size;
+	return sizeof(*recv_buffer);
 }
 
-static mr_size_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_pin_t pin = (mr_pin_t)device;
 	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 
-	if (size != sizeof(mr_uint8_t))
+	if (size < sizeof(*send_buffer))
 	{
-		MR_LOG_D(LOG_TAG, "Device %s: Invalid write size %d\r\n", device->object.name, size);
-		return 0;
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid write size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
 	}
 
 	pin->ops->write(pin, (mr_uint16_t)pos, *send_buffer);
 
-	return size;
+	return sizeof(*send_buffer);
 }
 
 static mr_err_t _err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
@@ -112,7 +112,7 @@ mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, v
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the pin-device to the container */
-	ret = mr_device_add(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&pin->device, name, Mr_Device_Type_Pin, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 

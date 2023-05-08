@@ -77,8 +77,8 @@ static mr_err_t mr_serial_close(mr_device_t device)
 
 static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 {
-	mr_serial_t serial = (mr_serial_t)device;
 	mr_err_t ret = MR_ERR_OK;
+	mr_serial_t serial = (mr_serial_t)device;
 
 	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
@@ -91,7 +91,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 					serial->config = *(struct mr_serial_config *)args;
 				return ret;
 			}
-			return -MR_ERR_INVALID;
+			return - MR_ERR_INVALID;
 		}
 
 		case MR_CTRL_SET_RX_CB:
@@ -106,15 +106,15 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 			return MR_ERR_OK;
 		}
 
-		default: return -MR_ERR_UNSUPPORTED;
+		default: return - MR_ERR_UNSUPPORTED;
 	}
 }
 
-static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_serial_t serial = (mr_serial_t)device;
-	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 	struct mr_serial_fifo *fifo = (struct mr_serial_fifo *)serial->rx_fifo;
+	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 	mr_size_t recv_size = 0;
 
 	while (recv_size < size)
@@ -123,14 +123,14 @@ static mr_size_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, 
 		recv_size += mr_fifo_read(&fifo->fifo, recv_buffer + recv_size, size - recv_size);
 	}
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
-static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_serial_t serial = (mr_serial_t)device;
-	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 	struct mr_serial_fifo *fifo = (struct mr_serial_fifo *)serial->tx_fifo;
+	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 	mr_size_t send_size = 0;
 
 	while (send_size < size)
@@ -142,7 +142,7 @@ static mr_size_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *b
 		serial->ops->start_tx(serial);
 	}
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
 static mr_err_t _err_io_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
@@ -188,7 +188,7 @@ mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the serial-device to the container */
-	ret = mr_device_add(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&serial->device, name, Mr_Device_Type_Serial, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
