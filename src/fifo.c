@@ -81,6 +81,11 @@ mr_size_t mr_fifo_get_length(mr_fifo_t fifo)
 	}
 }
 
+mr_size_t mr_fifo_get_size(mr_fifo_t fifo)
+{
+	return fifo->size;
+}
+
 mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 {
 	mr_size_t length = 0;
