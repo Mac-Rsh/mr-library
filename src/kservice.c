@@ -142,3 +142,37 @@ mr_size_t mr_avl_get_length(mr_avl_t tree)
 
 	return length;
 }
+
+mr_uint32_t mr_strhase(const char *str)
+{
+	mr_uint32_t value = 0;
+
+	while (*str) {
+		value ^=  value << 15;
+		value ^=  value >> 10;
+		value ^= *str++;
+	}
+	value ^= value << 3;
+	value ^= value >> 6;
+	value ^= value << 2;
+	value ^= value >> 15;
+
+	return value;
+}
+
+mr_uint32_t mr_strnhase(const char *str, mr_size_t length)
+{
+	mr_uint32_t value = 0;
+
+	while (length--) {
+		value ^=  value << 15;
+		value ^=  value >> 10;
+		value ^= *str++;
+	}
+	value ^= value << 3;
+	value ^= value >> 6;
+	value ^= value << 2;
+	value ^= value >> 15;
+
+	return value;
+}

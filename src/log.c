@@ -27,7 +27,7 @@ static mr_size_t _mr_log_output(const char *fmt, va_list args)
 	char *string;
 	mr_int32_t value;
 	mr_uint32_t u_value, bits, number;
-	mr_double_t d_value;
+	mr_fp64_t d_value;
 
 	while (*fmt != '\0')
 	{

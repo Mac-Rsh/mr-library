@@ -32,11 +32,18 @@ mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
 
 /**
+ *  Export kservice functions
+ */
+mr_uint32_t mr_strhase(const char *str);
+mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
+
+/**
  *  Export fifo functions
  */
 void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size);
 void mr_fifo_reset(mr_fifo_t fifo);
 mr_size_t mr_fifo_get_length(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_size(mr_fifo_t fifo);
 mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size);
 mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
 mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
@@ -75,8 +82,8 @@ mr_err_t mr_device_add(mr_device_t device,
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
-mr_size_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-mr_size_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 
 /**
  *  Export manager functions
@@ -85,12 +92,12 @@ mr_manager_t mr_manager_find(const char *name);
 mr_err_t mr_manager_add(mr_manager_t manager,
 						const char *name,
 						enum mr_manager_type type,
-						mr_uint8_t *pool,
-						mr_size_t pool_size,
+						mr_size_t queue_number,
 						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err));
 mr_err_t mr_manager_remove(mr_manager_t manager);
 mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t agent_id);
 void mr_manager_handler(mr_manager_t manager);
+void mr_manager_at_isr(mr_manager_t manager, char data);
 
 /**
  *  Export agent functions
@@ -101,5 +108,6 @@ mr_err_t mr_agent_create(mr_uint32_t agent_id,
 						 void *args,
 						 mr_manager_t agent_manager);
 mr_err_t mr_agent_delete(mr_uint32_t agent_id, mr_manager_t agent_manager);
+mr_uint32_t mr_agent_str_to_id(const char *str);
 
 #endif

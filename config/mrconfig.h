@@ -3,11 +3,11 @@
 
 #include <board.h>
 
-//<<< CONFIG SWITCH >>>
+//<<< Config switch >>>
 #define MR_CONF_DISABLE                 0
 #define MR_CONF_ENABLE                  1
 
-//<<< LOG LEVEL >>>
+//<<< Log level >>>
 #define MR_LOG_LEVEL_ASSERT				0
 #define MR_LOG_LEVEL_ERROR				1
 #define MR_LOG_LEVEL_WARNING			2
@@ -17,11 +17,14 @@
 //<---------------------------- Kernel -------------------------------------->
 #define MR_NAME_MAX                     12
 
-//<<< LOG >>>
+//<<< Log >>>
 #define MR_LOG_OUTPUT					MR_CONF_ENABLE
 #define MR_LOG_BUFSZ					128
 #define MR_LOG_ASSERT					MR_CONF_ENABLE
 #define MR_LOG_LEVEL					MR_LOG_LEVEL_DEBUG
+
+//<<< Manager >>>
+#define MR_CONF_MANAGER_AT_BUFSZ		16
 
 //<---------------------------- Device -------------------------------------->
 //<<< GPIO >>>

@@ -5,7 +5,7 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-04-23     MacRsh       first version
+ * 2023-05-08     MacRsh       first version
  */
 
 #ifndef _MR_DEF_H_
@@ -76,8 +76,6 @@
 #define mr_inline                   	static inline
 #endif
 
-#define MR_NULL                         0
-
 /* mr-library error code definitions */
 #define MR_ERR_OK                       0                           /**< There is no error */
 #define MR_ERR_GENERIC                  1                           /**< A generic error happens */
@@ -101,13 +99,23 @@
 /* mr-library basic control flag definitions */
 #define MR_CTRL_NONE                    0x0000                      /**< No control */
 #define MR_CTRL_CONFIG                  0x1000                      /**< Configure */
-#define MR_CTRL_SET_RX_CB               0x2000                      /**< Set receive callback */
-#define MR_CTRL_SET_TX_CB               0x3000                      /**< Set transmit callback */
+#define MR_CTRL_SET_RX_CB               0x2000                      /**< Set receive baud */
+#define MR_CTRL_SET_TX_CB               0x3000                      /**< Set transmit baud */
 #define MR_CTRL_ATTACH                  0x4000                      /**< Attach the bus */
 #define MR_CTRL_REBOOT                  0x5000                      /**< Reboot */
 #define _MR_CTRL_FLAG_MASK              0xf000                      /**< Mask for getting control flag */
 
-/* mr-library basic data flag definitions */
+/* mr-library basic data type definitions */
+#define MR_NULL                         0                           /**< Null pointer */
+#define MR_FALSE                        0                           /**< False */
+#define MR_TRUE                         1                           /**< True */
+#define MR_LOW                          0                           /**< Low level */
+#define MR_HIGH                         1                           /**< High level */
+#define MR_DISABLE                      0                           /**< Disable */
+#define MR_ENABLE                       1                           /**< Enable */
+#define MR_UNLOCK                        0                           /**< Unlock */
+#define MR_LOCK                        1                            /**< Lock */
+
 typedef signed char mr_int8_t;                                      /**< Type for 8bit integer */
 typedef signed short mr_int16_t;                                    /**< Type for 16bit integer */
 typedef signed int mr_int32_t;                                      /**< Type for 32bit integer */
@@ -116,38 +124,19 @@ typedef unsigned char mr_uint8_t;                                   /**< Type fo
 typedef unsigned short mr_uint16_t;                                 /**< Type for 16bit unsigned integer */
 typedef unsigned int mr_uint32_t;                                   /**< Type for 32bit unsigned integer */
 typedef unsigned long long mr_uint64_t;                             /**< Type for 64bit unsigned integer */
-typedef float mr_float_t;                                           /**< Type for single-precision floating point */
-typedef double mr_double_t;                                         /**< Type for double-precision floating point */
+typedef float mr_fp32_t;                                            /**< Type for single-precision floating point */
+typedef double mr_fp64_t;                                           /**< Type for double-precision floating point */
 
 typedef signed int mr_base_t;                                       /**< Type for Nbit CPU related date */
 typedef unsigned int mr_ubase_t;                                    /**< Type for Nbit unsigned CPU related data */
 typedef mr_ubase_t mr_size_t;                                       /**< Type for size number */
+typedef mr_base_t mr_ssize_t;                                       /**< Type for signed size number */
 typedef mr_base_t mr_err_t;                                         /**< Type for error number */
 typedef mr_base_t mr_off_t;                                         /**< Type for offset */
-
-typedef enum mr_bool
-{
-	MR_FALSE = 0,                                                   /**< Boolean fails */
-	MR_TRUE = 1                                                     /**< Boolean true */
-} mr_bool_t;                                                        /**< Type for boolean */
-
-typedef enum mr_level
-{
-	MR_LOW = 0,                                                     /**< Level low */
-	MR_HIGH = 1                                                     /**< Level high */
-} mr_level_t;                                                       /**< Type for level */
-
-typedef enum mr_state
-{
-	MR_DISABLE = 0,                                                 /**< State disable */
-	MR_ENABLE = 1                                                   /**< State enable */
-} mr_state_t;                                                       /**< Type for state */
-
-typedef enum mr_lock
-{
-	MR_UNLOCK = 0,                                                  /**< Unlock*/
-	MR_LOCK = 1                                                     /**< Lock */
-} mr_lock_t;                                                        /**< Type for lock */
+typedef mr_int8_t mr_bool_t;                                        /**< Type for boolean */
+typedef mr_int8_t mr_level_t;                                       /**< Type for level */
+typedef mr_int8_t mr_state_t;                                       /**< Type for state */
+typedef mr_int8_t mr_lock_t;                                        /**< Type for lock */
 
 /**
  *  Double-list
@@ -193,10 +182,10 @@ typedef struct mr_fifo *mr_fifo_t;                                  /**< Type fo
  */
 enum mr_container_type
 {
-	MR_CONTAINER_TYPE_MISC,                                         /**< Miscellaneous container */
-	MR_CONTAINER_TYPE_DEVICE,                                       /**< Device container */
-	MR_CONTAINER_TYPE_MANAGER,                                      /**< Event container */
-	_MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
+	Mr_Container_Type_Misc,                                         /**< Miscellaneous container */
+	Mr_Container_Type_Device,                                       /**< Device container */
+	Mr_Container_Type_Manager,                                      /**< Event container */
+	_Mr_Container_Type_Mask,                                        /**< Mask for getting container type */
 };
 
 struct mr_container
@@ -210,8 +199,8 @@ typedef struct mr_container *mr_container_t;                        /**< Type fo
 /**
  *  Object
  */
-#define MR_OBJECT_TYPE_NONE         0x00
-#define MR_OBJECT_TYPE_REGISTER     0x10
+#define MR_OBJECT_TYPE_NONE            0x00
+#define MR_OBJECT_TYPE_REGISTER        0x10
 
 struct mr_object
 {
@@ -237,19 +226,18 @@ typedef struct mr_mutex *mr_mutex_t;                                /**< Type fo
  */
 enum mr_device_type
 {
-	MR_DEVICE_TYPE_NONE,                                            /**< No device */
-	MR_DEVICE_TYPE_PIN,                                             /**< GPIO device */
-	MR_DEVICE_TYPE_SPI_BUS,                                         /**< SPI-BUS device */
-	MR_DEVICE_TYPE_SPI,                                             /**< SPI device */
-	MR_DEVICE_TYPE_I2C_BUS,                                         /**< I2C-BUS device */
-	MR_DEVICE_TYPE_I2C,                                             /**< I2C device */
-	MR_DEVICE_TYPE_SERIAL,                                          /**< UART device */
-	MR_DEVICE_TYPE_ADC,                                             /**< ADC device */
-	MR_DEVICE_TYPE_DAC,                                             /**< DAC device */
-	MR_DEVICE_TYPE_PWM,                                             /**< PWM device */
-	MR_DEVICE_TYPE_TIMER,                                           /**< TIMER device */
-	MR_DEVICE_TYPE_FLASH,                                           /**< FLASH device */
-	MR_DEVICE_TYPE_SDRAM,                                           /**< SDRAM device */
+	Mr_Device_Type_None,                                            /**< No device */
+	Mr_Device_Type_Pin,                                             /**< GPIO device */
+	Mr_Device_Type_Spi_bus,                                         /**< SPI-BUS device */
+	Mr_Device_Type_Spi,                                             /**< SPI device */
+	Mr_Device_Type_I2c_bus,                                         /**< I2C-BUS device */
+	Mr_Device_Type_I2c,                                             /**< I2C device */
+	Mr_Device_Type_Serial,                                          /**< UART device */
+	Mr_Device_Type_Adc,                                             /**< ADC device */
+	Mr_Device_Type_Dac,                                             /**< DAC device */
+	Mr_Device_Type_Pwm,                                             /**< PWM device */
+	Mr_Device_Type_Timer,                                           /**< TIMER device */
+	Mr_Device_Type_Flash,                                           /**< FLASH device */
 	/* ... */
 };
 
@@ -259,8 +247,8 @@ struct mr_device_ops
 	mr_err_t (*open)(mr_device_t device);
 	mr_err_t (*close)(mr_device_t device);
 	mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-	mr_size_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-	mr_size_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+	mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+	mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 };
 
 struct mr_device
@@ -273,8 +261,8 @@ struct mr_device
 	mr_size_t ref_count;                                            /**< Number of device references */
 	void *data;                                                     /**< Device data */
 
-	mr_err_t (*rx_cb)(mr_device_t device, void *args);              /**< Device receives the callback function */
-	mr_err_t (*tx_cb)(mr_device_t device, void *args);              /**< Device sends the callback function */
+	mr_err_t (*rx_cb)(mr_device_t device, void *args);              /**< Device receives the baud function */
+	mr_err_t (*tx_cb)(mr_device_t device, void *args);              /**< Device sends the baud function */
 
 	const struct mr_device_ops *ops;                                /**< Operations of the device */
 };
@@ -284,9 +272,20 @@ struct mr_device
  */
 enum mr_manager_type
 {
-	MR_MANAGER_TYPE_EVENT,                                          /**< Event manager */
-	MR_MANAGER_TYPE_FSM,                                            /**< Finite state machine(FSM) manager */
+	Mr_Manager_Type_Event,                                          /**< Event manager */
+	Mr_Manager_Type_Fsm,                                            /**< Finite state machine(FSM) manager */
+	Mr_Manager_Type_At,                                             /**< Attention manager */
 	/* ... */
+};
+
+enum mr_manager_at_state
+{
+	Mr_Manager_At_State_None,                                       /**< No state */
+	Mr_Manager_At_State_Start,                                      /**< Start state */
+	Mr_Manager_At_State_Flag,                                       /**< Flag state */
+	Mr_Manager_At_State_Id, 	                                    /**< Name state */
+	Mr_Manager_At_State_Stop,                                       /**< Stop state */
+	Mr_Manager_At_State_Handle,                                     /**< Handle state */
 };
 
 struct mr_manager
@@ -295,9 +294,10 @@ struct mr_manager
 
 	enum mr_manager_type type;                                      /**< Manager type */
 	mr_size_t ref_count;                                            /**< Number of manager references */
+	void *data;                                                     /**< Manager data */
 	struct mr_fifo queue;                                           /**< Agent queue */
 
-	mr_err_t (*err_cb)(struct mr_manager *manager,                  /**< Agent error callback function */
+	mr_err_t (*err_cb)(struct mr_manager *manager,                  /**< Agent error baud function */
 					   mr_uint32_t agent_id,                        /**< Agent id */
 					   mr_err_t err);                               /**< Error code */
 
@@ -313,7 +313,7 @@ struct mr_agent
 	struct mr_avl avl;                                              /**< Avl-tree and agent id */
 	mr_size_t ref_count;                                            /**< Number of agent references */
 
-	mr_err_t (*cb)(mr_manager_t manager, void *args);               /**< Agent occurrence callback function */
+	mr_err_t (*cb)(mr_manager_t manager, void *args);               /**< Agent occurrence baud function */
 	void *args;                                                     /**< Callback function argument */
 };
 typedef struct mr_agent *mr_agent_t;                                /**< Type for agent */
