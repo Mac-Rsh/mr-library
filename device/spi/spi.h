@@ -23,10 +23,6 @@
 #define MR_SPI_MODE_2                        2
 #define MR_SPI_MODE_3                        3
 
-#define MR_SPI_DATA_BITS_8                   0
-#define MR_SPI_DATA_BITS_16                  1
-#define MR_SPI_DATA_BITS_32                  2
-
 #define MR_SPI_BIT_ORDER_MSB                 0
 #define MR_SPI_BIT_ORDER_LSB                 1
 
@@ -40,7 +36,6 @@
     3000000,                                 \
     MR_SPI_HOST,                             \
     MR_SPI_MODE_0,                           \
-    MR_SPI_DATA_BITS_8,                      \
     MR_SPI_BIT_ORDER_MSB,                    \
     MR_SPI_CS_ACTIVE_LOW,                    \
 }
@@ -51,7 +46,6 @@ struct mr_spi_config
 
 	mr_uint8_t host_slave: 1;
 	mr_uint8_t mode: 2;
-	mr_uint8_t data_bits: 2;
 	mr_uint8_t bit_order: 1;
 	mr_uint8_t cs_active: 1;
 };

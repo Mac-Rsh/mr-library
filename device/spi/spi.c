@@ -32,7 +32,6 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 
 		/* If the configuration is different, the spi-bus is reconfigured */
 		if (spi_device->config.baud_rate != spi_device->bus->config.baud_rate
-			|| spi_device->config.data_bits != spi_device->bus->config.data_bits
 			|| spi_device->config.host_slave != spi_device->bus->config.host_slave
 			|| spi_device->config.mode != spi_device->bus->config.mode
 			|| spi_device->config.bit_order != spi_device->bus->config.bit_order)
@@ -135,7 +134,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 			mr_device_t spi_bus = mr_device_find((char *)args);
 			if (spi_bus == MR_NULL)
 				return - MR_ERR_NOT_FOUND;
-			if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
+			if (spi_bus->type != Mr_Device_Type_Spi_bus)
 				return - MR_ERR_INVALID;
 
 			/* Open the spi-bus */
@@ -148,70 +147,37 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 	}
 }
 
-static mr_size_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
+	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 	mr_err_t ret = MR_ERR_OK;
-	mr_size_t recv_size = size;
+	mr_size_t recv_size = 0;
 
 	/* Take spi-bus */
 	ret = mr_take_spi_bus(spi_device);
 	if (ret != MR_ERR_OK)
 	{
-		MR_LOG_D("Device %s: Failed to take spi-bus\r\n", device->object.name);
-		return 0;
+		MR_LOG_E("Device %s: Failed to take spi-bus\r\n", device->object.name);
+		return ret;
 	}
 
-	switch (spi_device->config.data_bits)
+	for (recv_size = 0; recv_size < size; recv_size ++)
 	{
-		case MR_SPI_DATA_BITS_8:
-		{
-			mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
-
-			while (recv_size --)
-			{
-				*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
-				recv_buffer ++;
-			}
-			break;
-		}
-
-		case MR_SPI_DATA_BITS_16:
-		{
-			mr_uint16_t *recv_buffer = (mr_uint16_t *)buffer;
-
-			while (recv_size --)
-			{
-				*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
-				recv_buffer ++;
-			}
-			break;
-		}
-
-		case MR_SPI_DATA_BITS_32:
-		{
-			mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
-
-			while (recv_size --)
-			{
-				*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
-				recv_buffer ++;
-			}
-			break;
-		}
-
-		default:return 0;
+		*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
+		recv_buffer ++;
 	}
 
 	/* Release spi-bus */
 	mr_release_spi_bus(spi_device);
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
-static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
+	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 	mr_err_t ret = MR_ERR_OK;
 	mr_size_t send_size = size;
 
@@ -219,55 +185,20 @@ static mr_size_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const voi
 	ret = mr_take_spi_bus(spi_device);
 	if (ret != MR_ERR_OK)
 	{
-		MR_LOG_D("Device %s: Failed to take spi-bus\r\n", device->object.name);
-		return 0;
+		MR_LOG_E("Device %s: Failed to take spi-bus\r\n", device->object.name);
+		return ret;
 	}
 
-	switch (spi_device->config.data_bits)
+	for (send_size = 0; send_size < size; send_size ++)
 	{
-		case MR_SPI_DATA_BITS_8:
-		{
-			mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
-
-			while (send_size --)
-			{
-				spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
-				send_buffer ++;
-			}
-			break;
-		}
-
-		case MR_SPI_DATA_BITS_16:
-		{
-			mr_uint16_t *send_buffer = (mr_uint16_t *)buffer;
-
-			while (send_size --)
-			{
-				spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
-				send_buffer ++;
-			}
-			break;
-		}
-
-		case MR_SPI_DATA_BITS_32:
-		{
-			mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
-
-			while (send_size --)
-			{
-				spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
-				send_buffer ++;
-			}
-			break;
-		}
-
-		default:return 0;
+		spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
+		send_buffer ++;
 	}
 
 	/* Release spi-bus */
 	mr_release_spi_bus(spi_device);
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
 static mr_err_t _err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
@@ -303,7 +234,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the spi-bus to the container */
-	ret = mr_device_add(&spi_bus->device, name, MR_DEVICE_TYPE_SPI_BUS, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&spi_bus->device, name, Mr_Device_Type_Spi_bus, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -340,7 +271,7 @@ mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the spi-device to the container */
-	ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, MR_NULL);
+	ret = mr_device_add(&spi_device->device, name, Mr_Device_Type_Spi, support_flag, &device_ops, MR_NULL);
 	if (ret != MR_ERR_OK)
 		return ret;
 
