@@ -26,7 +26,7 @@ struct mr_adc_ops
 {
 	mr_err_t (*configure)(mr_adc_t adc, mr_state_t state);
 	mr_err_t (*channel_configure)(mr_adc_t adc, mr_uint16_t channel, mr_state_t state);
-	mr_uint16_t (*read)(mr_adc_t adc, mr_uint16_t channel);
+	mr_uint32_t (*read)(mr_adc_t adc, mr_uint16_t channel);
 };
 
 struct mr_adc

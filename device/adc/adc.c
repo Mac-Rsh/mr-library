@@ -50,25 +50,25 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 	}
 }
 
-static mr_size_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_adc_t adc = (mr_adc_t)device;
-	mr_uint16_t *recv_buffer = (mr_uint16_t *)buffer;
-	mr_size_t recv_size = size;
+	mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
+	mr_size_t recv_size = 0;
 
-	if (size != sizeof(mr_uint16_t))
+	if (size < sizeof(*recv_buffer))
 	{
-		MR_LOG_D(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
-		return 0;
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
 	}
 
-	while (recv_size -= sizeof(mr_uint16_t))
+	for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
 	{
 		*recv_buffer = adc->ops->read(adc, (mr_uint16_t)pos);
 		recv_buffer ++;
 	}
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
 static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_state_t state)
@@ -83,7 +83,7 @@ static mr_err_t _err_io_adc_channel_configure(mr_adc_t adc, mr_uint16_t channel,
 	return - MR_ERR_IO;
 }
 
-static mr_uint16_t _err_io_adc_read(mr_adc_t adc, mr_uint16_t channel)
+static mr_uint32_t _err_io_adc_read(mr_adc_t adc, mr_uint16_t channel)
 {
 	MR_ASSERT(0);
 	return 0;
@@ -105,7 +105,7 @@ mr_err_t mr_hw_adc_add(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, v
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the adc-device to the container */
-	ret = mr_device_add(&adc->device, name, MR_DEVICE_TYPE_ADC, MR_OPEN_RDONLY, &device_ops, data);
+	ret = mr_device_add(&adc->device, name, Mr_Device_Type_Adc, MR_OPEN_RDONLY, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
