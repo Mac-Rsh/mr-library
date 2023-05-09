@@ -104,7 +104,7 @@ mr_err_t mr_hw_dac_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, v
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the dac-device to the container */
-	ret = mr_device_add(&dac->device, name, Mr_Device_Type_Dac, MR_OPEN_WRONLY, &device_ops, data);
+	ret = mr_device_add(&dac->device, name, MR_DEVICE_TYPE_DAC, MR_OPEN_WRONLY, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 

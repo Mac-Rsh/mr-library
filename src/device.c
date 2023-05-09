@@ -25,7 +25,7 @@ mr_device_t mr_device_find(const char *name)
 	MR_ASSERT(name != MR_NULL);
 
 	/* Find the device object from the device container */
-	return (mr_device_t)mr_object_find(name, Mr_Container_Type_Device);
+	return (mr_device_t)mr_object_find(name, MR_CONTAINER_TYPE_DEVICE);
 }
 
 /**
@@ -54,7 +54,7 @@ mr_err_t mr_device_add(mr_device_t device,
 	MR_ASSERT(name != MR_NULL);
 
 	/* Add the object to the container */
-	ret = mr_object_add(&device->object, name, Mr_Container_Type_Device);
+	ret = mr_object_add(&device->object, name, MR_CONTAINER_TYPE_DEVICE);
 	if (ret != MR_ERR_OK)
 		return ret;
 

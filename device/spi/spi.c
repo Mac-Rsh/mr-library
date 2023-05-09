@@ -134,7 +134,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 			mr_device_t spi_bus = mr_device_find((char *)args);
 			if (spi_bus == MR_NULL)
 				return - MR_ERR_NOT_FOUND;
-			if (spi_bus->type != Mr_Device_Type_Spi_bus)
+			if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
 				return - MR_ERR_INVALID;
 
 			/* Open the spi-bus */
@@ -234,7 +234,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the spi-bus to the container */
-	ret = mr_device_add(&spi_bus->device, name, Mr_Device_Type_Spi_bus, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&spi_bus->device, name, MR_DEVICE_TYPE_SPI_BUS, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -271,7 +271,7 @@ mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the spi-device to the container */
-	ret = mr_device_add(&spi_device->device, name, Mr_Device_Type_Spi, support_flag, &device_ops, MR_NULL);
+	ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, MR_NULL);
 	if (ret != MR_ERR_OK)
 		return ret;
 

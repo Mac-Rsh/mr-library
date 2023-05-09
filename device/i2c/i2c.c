@@ -129,7 +129,7 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
 			mr_device_t i2c_bus = mr_device_find((char *)args);
 			if (i2c_bus == MR_NULL)
 				return - MR_ERR_NOT_FOUND;
-			if (i2c_bus->type != Mr_Device_Type_I2c_bus)
+			if (i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
 				return - MR_ERR_INVALID;
 
 			/* Open the i2c-bus */
@@ -261,7 +261,7 @@ mr_err_t mr_hw_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the i2c-bus to the container */
-	ret = mr_device_add(&i2c_bus->device, name, Mr_Device_Type_I2c_bus, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&i2c_bus->device, name, MR_DEVICE_TYPE_I2C_BUS, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
@@ -300,7 +300,7 @@ mr_err_t mr_hw_i2c_device_add(mr_i2c_device_t i2c_device,
 	MR_ASSERT(support_flag != MR_NULL);
 
 	/* Add the i2c-device to the container */
-	ret = mr_device_add(&i2c_device->device, name, Mr_Device_Type_I2c, support_flag, &device_ops, MR_NULL);
+	ret = mr_device_add(&i2c_device->device, name, MR_DEVICE_TYPE_I2C, support_flag, &device_ops, MR_NULL);
 	if (ret != MR_ERR_OK)
 		return ret;
 

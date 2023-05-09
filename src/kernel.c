@@ -10,22 +10,22 @@
 
 #include <mrlib.h>
 
-static struct mr_container mr_kernel_container[_Mr_Container_Type_Mask] =
+static struct mr_container mr_kernel_container[MR_CONTAINER_TYPE_MASK] =
 	{
 		{
-			.type = Mr_Container_Type_Misc,
-			.list = {&mr_kernel_container[Mr_Container_Type_Misc].list,
-					 &mr_kernel_container[Mr_Container_Type_Misc].list}
+			.type = MR_CONTAINER_TYPE_MISC,
+			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_MISC].list,
+					 &mr_kernel_container[MR_CONTAINER_TYPE_MISC].list}
 		},
 		{
-			.type = Mr_Container_Type_Device,
-			.list = {&mr_kernel_container[Mr_Container_Type_Device].list,
-					 &mr_kernel_container[Mr_Container_Type_Device].list}
+			.type = MR_CONTAINER_TYPE_DEVICE,
+			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list,
+					 &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
 		},
 		{
-			.type = Mr_Container_Type_Manager,
-			.list = {&mr_kernel_container[Mr_Container_Type_Manager].list,
-					 &mr_kernel_container[Mr_Container_Type_Manager].list}
+			.type = MR_CONTAINER_TYPE_MANAGER,
+			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_MANAGER].list,
+					 &mr_kernel_container[MR_CONTAINER_TYPE_MANAGER].list}
 		},
 	};
 
@@ -38,7 +38,7 @@ static struct mr_container mr_kernel_container[_Mr_Container_Type_Mask] =
  */
 mr_container_t mr_container_find(enum mr_container_type type)
 {
-	MR_ASSERT(type < _Mr_Container_Type_Mask);
+	MR_ASSERT(type < MR_CONTAINER_TYPE_MASK);
 
 	return &mr_kernel_container[type];
 }

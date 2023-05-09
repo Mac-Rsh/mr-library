@@ -98,6 +98,8 @@ mr_err_t mr_manager_remove(mr_manager_t manager);
 mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t agent_id);
 void mr_manager_handler(mr_manager_t manager);
 void mr_manager_at_isr(mr_manager_t manager, char data);
+mr_size_t mr_manager_at_get_length(void *args);
+char *mr_manager_at_get_arg(void *args, mr_size_t number);
 
 /**
  *  Export agent functions

@@ -231,7 +231,7 @@ mr_err_t mr_hw_timer_add(mr_timer_t timer,
 	MR_ASSERT(information->max_cut != 0);
 
 	/* Add the timer-device to the container */
-	ret = mr_device_add(&timer->device, name, Mr_Device_Type_Timer, MR_OPEN_RDWR, &device_ops, data);
+	ret = mr_device_add(&timer->device, name, MR_DEVICE_TYPE_TIMER, MR_OPEN_RDWR, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 

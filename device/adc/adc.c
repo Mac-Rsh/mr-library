@@ -105,7 +105,7 @@ mr_err_t mr_hw_adc_add(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, v
 	MR_ASSERT(ops != MR_NULL);
 
 	/* Add the adc-device to the container */
-	ret = mr_device_add(&adc->device, name, Mr_Device_Type_Adc, MR_OPEN_RDONLY, &device_ops, data);
+	ret = mr_device_add(&adc->device, name, MR_DEVICE_TYPE_ADC, MR_OPEN_RDONLY, &device_ops, data);
 	if (ret != MR_ERR_OK)
 		return ret;
 
