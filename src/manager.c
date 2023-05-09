@@ -18,7 +18,7 @@ mr_manager_t mr_manager_find(const char *name)
 	MR_ASSERT(name != MR_NULL);
 
 	/* Find the manager object from the manager-container */
-	return (mr_manager_t)mr_object_find(name, Mr_Container_Type_Manager);
+	return (mr_manager_t)mr_object_find(name, MR_CONTAINER_TYPE_MANAGER);
 }
 
 mr_err_t mr_manager_add(mr_manager_t manager,
@@ -34,6 +34,7 @@ mr_err_t mr_manager_add(mr_manager_t manager,
 
 	MR_ASSERT(manager != MR_NULL);
 	MR_ASSERT(name != MR_NULL);
+	MR_ASSERT(queue_number != 0);
 
 	/* Allocate memory for the queue, pool_size = queue_number * sizeof(agent_id) */
 	pool_size = queue_number * sizeof(mr_uint32_t);
@@ -45,19 +46,18 @@ mr_err_t mr_manager_add(mr_manager_t manager,
 	}
 
 	/* Add the object to the container */
-	ret = mr_object_add(&manager->object, name, Mr_Container_Type_Manager);
+	ret = mr_object_add(&manager->object, name, MR_CONTAINER_TYPE_MANAGER);
 	if (ret != MR_ERR_OK)
 		return ret;
 
 	/* Initialize the private fields */
 	manager->type = type;
-	manager->ref_count = 0;
 	manager->avl = MR_NULL;
 	manager->err_cb = err_cb;
 	manager->data = MR_NULL;
 	mr_fifo_init(&manager->queue, pool, pool_size);
 
-	if (type == Mr_Manager_Type_At)
+	if (type == MR_MANAGER_TYPE_AT_PARSER)
 	{
 		/* Allocate memory for the at-buffer, the one at_cmd = state(1byte) + cmd(4byte) + at_buffer(MR_CONF_MANAGER_AT_BUFSZ) */
 		at_buffer = mr_malloc(queue_number * (MR_CONF_MANAGER_AT_BUFSZ + 5));
@@ -100,7 +100,6 @@ mr_err_t mr_manager_remove(mr_manager_t manager)
 		return ret;
 
 	/* Reset the private fields */
-	manager->ref_count = 0;
 	manager->avl = MR_NULL;
 	manager->err_cb = MR_NULL;
 	mr_fifo_reset(&manager->queue);
@@ -153,11 +152,9 @@ void mr_manager_handler(mr_manager_t manager)
 		fsm_agent_id = agent->avl.value;
 
 		/* Increase the reference count */
-		manager->ref_count ++;
-		MR_LOG_D(LOG_TAG, "Agent %d occurred, ref-count %d\r\n", agent_id, manager->ref_count);
+		MR_LOG_D(LOG_TAG, "Agent %d occurred\r\n", agent_id);
 
 		/* Call the agent baud */
-		agent->ref_count ++;
 		ret = agent->cb(manager, agent->args);
 		if (ret != MR_ERR_OK)
 		{
@@ -167,13 +164,13 @@ void mr_manager_handler(mr_manager_t manager)
 		}
 
 		/* Empty the AT-buffer */
-		if (manager->type == Mr_Manager_Type_At)
+		if (manager->type == MR_MANAGER_TYPE_AT_PARSER && agent->args != MR_NULL)
 		{
 			mr_memset(agent->args - 5, 0, 5 + MR_CONF_MANAGER_AT_BUFSZ);
 		}
 	}
 
-	if (manager->type == Mr_Manager_Type_Fsm)
+	if (manager->type == MR_MANAGER_TYPE_FSM)
 	{
 		mr_manager_notify(manager, fsm_agent_id);
 	}
@@ -186,7 +183,7 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 	mr_uint32_t id = 0;
 	mr_agent_t agent = MR_NULL;
 
-	MR_ASSERT(manager->type == Mr_Manager_Type_At);
+	MR_ASSERT(manager->type == MR_MANAGER_TYPE_AT_PARSER);
 
 	/* Check the at-buffer */
 	if (manager->data == MR_NULL)
@@ -197,7 +194,7 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 	for (index = 0; index < queue_number; index ++)
 	{
 		state = manager->data + index * (MR_CONF_MANAGER_AT_BUFSZ + 5);
-		if (*state < Mr_Manager_At_State_Handle)
+		if (*state < MR_MANAGER_AT_STATE_HANDLE)
 			break;
 		state = MR_NULL;
 	}
@@ -207,40 +204,40 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 
 	switch (*state)
 	{
-		case Mr_Manager_At_State_None:
+		case MR_MANAGER_AT_STATE_NONE:
 		{
 			if (data == 'A')
 			{
-				*state = Mr_Manager_At_State_Start;
+				*state = MR_MANAGER_AT_STATE_START;
 			}
 			break;
 		}
 
-		case Mr_Manager_At_State_Start:
+		case MR_MANAGER_AT_STATE_START:
 		{
 			if (data == 'T')
 			{
-				*state = Mr_Manager_At_State_Flag;
+				*state = MR_MANAGER_AT_STATE_FLAG;
 			} else
 			{
-				*state = Mr_Manager_At_State_None;
+				*state = MR_MANAGER_AT_STATE_NONE;
 			}
 			break;
 		}
 
-		case Mr_Manager_At_State_Flag:
+		case MR_MANAGER_AT_STATE_FLAG:
 		{
 			if (data == '+')
 			{
-				*state = Mr_Manager_At_State_Id;
+				*state = MR_MANAGER_AT_STATE_ID;
 			} else
 			{
-				*state = Mr_Manager_At_State_None;
+				*state = MR_MANAGER_AT_STATE_NONE;
 			}
 			break;
 		}
 
-		case Mr_Manager_At_State_Id:
+		case MR_MANAGER_AT_STATE_ID:
 		{
 			/* Find the idle buffer store id */
 			for (index = 1; index < 4 + MR_CONF_MANAGER_AT_BUFSZ; index ++)
@@ -260,24 +257,18 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 
 				/* Release the occupied buffer */
 				mr_memset(state + 5, 0, MR_CONF_MANAGER_AT_BUFSZ);
-				*state = Mr_Manager_At_State_Stop;
+
+				if (data == '=')
+					*state = MR_MANAGER_AT_STATE_ARGS;
+				else
+					*state = MR_MANAGER_AT_STATE_STOP;
 			}
 			break;
 		}
 
-		case Mr_Manager_At_State_Stop:
+		case MR_MANAGER_AT_STATE_ARGS:
 		{
-			/* Find the idle buffer store arguments */
-			for (index = 5; index < 4 + MR_CONF_MANAGER_AT_BUFSZ; index ++)
-			{
-				if (*(state + index) == 0)
-				{
-					*(state + index) = data;
-					break;
-				}
-			}
-
-			if (data == '\0')
+			if (data == '\r' || data == '\n' || data == ';' || data == '0')
 			{
 				/* Get the id from buffer */
 				mr_memcpy(&id, state + 1, sizeof(id));
@@ -288,20 +279,96 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 				{
 					/* Release the occupied buffer */
 					mr_memset(state, 0, 5 + MR_CONF_MANAGER_AT_BUFSZ);
-					*state = Mr_Manager_At_State_None;
+					*state = MR_MANAGER_AT_STATE_NONE;
 					break;
 				}
 
 				/* Notify the agent happened */
 				agent->args = state + 5;
 				mr_manager_notify(manager, id);
-				*state = Mr_Manager_At_State_Handle;
+				*state = MR_MANAGER_AT_STATE_HANDLE;
+				break;
+			}
+
+			/* Find the idle buffer store arguments */
+			for (index = 5; index < 4 + MR_CONF_MANAGER_AT_BUFSZ; index ++)
+			{
+				if (*(state + index) == 0)
+				{
+					*(state + index) = data;
+					break;
+				}
+			}
+			break;
+		}
+
+		case MR_MANAGER_AT_STATE_STOP:
+		{
+			if (data == '\r' || data == '\n' || data == ';' || data == '0')
+			{
+				/* Get the id from buffer */
+				mr_memcpy(&id, state + 1, sizeof(id));
+
+				/* Notify the agent happened */
+				mr_manager_notify(manager, id);
+				mr_memset(state, 0, 5);
+				*state = MR_MANAGER_AT_STATE_NONE;
 			}
 			break;
 		}
 
 		default:break;
 	}
+}
+
+mr_size_t mr_manager_at_get_length(void *args)
+{
+	char *ch = (char *)args;
+	mr_size_t length = 1;
+
+	if (ch == MR_NULL)
+		return 0;
+
+	while (*ch)
+	{
+		if (*ch == ',')
+			length ++;
+
+		ch ++;
+	}
+
+	return length;
+}
+
+char *mr_manager_at_get_arg(void *args, mr_size_t number)
+{
+	char *ch = (char *)args;
+	char *arg = ch;
+
+	if (number == 0) {
+		return args;
+	}
+
+	while (*ch)
+	{
+		if (*ch == ',')
+		{
+			ch++;
+			number--;
+		}
+
+		if (number == 0) {
+			return arg;
+		}
+
+		arg = ch++;
+	}
+
+	if (ch == args + strlen(args)) {   // 判断是否遍历到末尾
+		return arg;
+	}
+
+	return MR_NULL;
 }
 
 mr_agent_t mr_agent_find(mr_uint32_t agent_id, mr_manager_t manager)
@@ -332,9 +399,8 @@ mr_err_t mr_agent_create(mr_uint32_t agent_id,
 
 	/* Initialize the private fields */
 	mr_avl_init(&agent->avl, agent_id);
-	agent->ref_count = 0;
 	agent->cb = callback;
-	agent->args = args;
+	agent_manager->type != MR_MANAGER_TYPE_AT_PARSER ? agent->args = args : MR_NULL;
 
 	/* Disable interrupt */
 	mr_hw_interrupt_disable();
