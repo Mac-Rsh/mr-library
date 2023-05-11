@@ -92,14 +92,13 @@ mr_manager_t mr_manager_find(const char *name);
 mr_err_t mr_manager_add(mr_manager_t manager,
 						const char *name,
 						enum mr_manager_type type,
-						mr_size_t queue_number,
-						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err));
+						mr_size_t queue_number);
 mr_err_t mr_manager_remove(mr_manager_t manager);
 mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t agent_id);
 void mr_manager_handler(mr_manager_t manager);
-void mr_manager_at_isr(mr_manager_t manager, char data);
-mr_size_t mr_manager_at_get_length(void *args);
-char *mr_manager_at_get_arg(void *args, mr_size_t number);
+void mr_manager_at_parser_isr(mr_manager_t manager, char data);
+mr_size_t mr_manager_at_parser_get_length(void *args);
+char *mr_manager_at_parser_get_arg(void *args, mr_size_t number);
 
 /**
  *  Export agent functions

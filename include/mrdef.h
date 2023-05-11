@@ -275,6 +275,7 @@ enum mr_manager_type
 	MR_MANAGER_TYPE_EVENT,                                          /**< Event manager */
 	MR_MANAGER_TYPE_FSM,                                            /**< Finite state machine(FSM) manager */
 	MR_MANAGER_TYPE_AT_PARSER,                                      /**< Attention(AT) Parser manager */
+	MR_MANAGER_TYPE_CMD_PARSER,                                     /**< Command(CMD) Parser manager */
 	/* ... */
 };
 
@@ -284,6 +285,7 @@ enum mr_manager_at_state
 	MR_MANAGER_AT_STATE_START,                                      /**< Start state */
 	MR_MANAGER_AT_STATE_FLAG,                                       /**< Flag state */
 	MR_MANAGER_AT_STATE_ID, 	                                    /**< Id state */
+	MR_MANAGER_AT_STATE_CHECK,                                      /**< Check state */
 	MR_MANAGER_AT_STATE_ARGS,                                       /**< Args state */
 	MR_MANAGER_AT_STATE_STOP,                                       /**< Stop state */
 	MR_MANAGER_AT_STATE_HANDLE,                                     /**< Handle state */
@@ -296,10 +298,6 @@ struct mr_manager
 	enum mr_manager_type type;                                      /**< Manager type */
 	void *data;                                                     /**< Manager data */
 	struct mr_fifo queue;                                           /**< Agent queue */
-
-	mr_err_t (*err_cb)(struct mr_manager *manager,                  /**< Agent error baud function */
-					   mr_uint32_t agent_id,                        /**< Agent id */
-					   mr_err_t err);                               /**< Error code */
 
 	mr_avl_t avl;                                                   /**< Manager list */
 };
