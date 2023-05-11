@@ -24,8 +24,7 @@ mr_manager_t mr_manager_find(const char *name)
 mr_err_t mr_manager_add(mr_manager_t manager,
 						const char *name,
 						enum mr_manager_type type,
-						mr_size_t queue_number,
-						mr_err_t (*err_cb)(struct mr_manager *manager, mr_uint32_t agent_id, mr_err_t err))
+						mr_size_t queue_number)
 {
 	mr_err_t ret = MR_ERR_OK;
 	mr_uint8_t *pool = MR_NULL;
@@ -53,29 +52,28 @@ mr_err_t mr_manager_add(mr_manager_t manager,
 	/* Initialize the private fields */
 	manager->type = type;
 	manager->avl = MR_NULL;
-	manager->err_cb = err_cb;
 	manager->data = MR_NULL;
 	mr_fifo_init(&manager->queue, pool, pool_size);
 
-	if (type == MR_MANAGER_TYPE_AT_PARSER)
+	if (type == MR_MANAGER_TYPE_AT_PARSER || type == MR_MANAGER_TYPE_CMD_PARSER)
 	{
-		/* Allocate memory for the at-buffer, the one at_cmd = state(1byte) + cmd(4byte) + at_buffer(MR_CONF_MANAGER_AT_BUFSZ) */
-		at_buffer = mr_malloc(queue_number * (MR_CONF_MANAGER_AT_BUFSZ + 5));
+		/* Allocate memory for the parse-buffer, the one cmd = state(1byte) + cmd(4byte) + parse-buffer(MR_CONF_MANAGER_PARSER_BUFSZ) */
+		at_buffer = mr_malloc(queue_number * (MR_CONF_MANAGER_PARSER_BUFSZ + 5));
 		if (at_buffer == MR_NULL)
 		{
-			MR_LOG_E(LOG_TAG, "Failed to allocate memory for at-buffer %s\r\n", name);
+			MR_LOG_E(LOG_TAG, "Failed to allocate memory for parse-buffer %s\r\n", name);
 			mr_free(manager->queue.buffer);
 			return - MR_ERR_NO_MEMORY;
 		}
-		mr_memset(at_buffer, 0, queue_number * (MR_CONF_MANAGER_AT_BUFSZ + 5));
+		mr_memset(at_buffer, 0, queue_number * (MR_CONF_MANAGER_PARSER_BUFSZ + 5));
 		manager->data = at_buffer;
 
 		MR_LOG_D(LOG_TAG,
-				 "Manager %s added, type %d, queue size %d, at-buffer size %d\r\n",
+				 "Manager %s added, type %d, queue size %d, parse-buffer size %d\r\n",
 				 name,
 				 type,
 				 pool_size,
-				 queue_number * (MR_CONF_MANAGER_AT_BUFSZ + 5));
+				 queue_number * (MR_CONF_MANAGER_PARSER_BUFSZ + 5));
 		return MR_ERR_OK;
 	}
 
@@ -101,7 +99,6 @@ mr_err_t mr_manager_remove(mr_manager_t manager)
 
 	/* Reset the private fields */
 	manager->avl = MR_NULL;
-	manager->err_cb = MR_NULL;
 	mr_fifo_reset(&manager->queue);
 
 	/* Free the memory */
@@ -159,14 +156,13 @@ void mr_manager_handler(mr_manager_t manager)
 		if (ret != MR_ERR_OK)
 		{
 			MR_LOG_E(LOG_TAG, "Agent %d failed, error %d\r\n", agent_id, ret);
-			if (manager->err_cb != MR_NULL)
-				manager->err_cb(manager, agent_id, ret);
 		}
 
 		/* Empty the AT-buffer */
-		if (manager->type == MR_MANAGER_TYPE_AT_PARSER && agent->args != MR_NULL)
+		if ((manager->type == MR_MANAGER_TYPE_AT_PARSER || manager->type == MR_MANAGER_TYPE_CMD_PARSER)
+			&& agent->args != MR_NULL)
 		{
-			mr_memset(agent->args - 5, 0, 5 + MR_CONF_MANAGER_AT_BUFSZ);
+			mr_memset(agent->args - 5, 0, 5 + MR_CONF_MANAGER_PARSER_BUFSZ);
 		}
 	}
 
@@ -176,7 +172,7 @@ void mr_manager_handler(mr_manager_t manager)
 	}
 }
 
-void mr_manager_at_isr(mr_manager_t manager, char data)
+void mr_manager_at_parser_isr(mr_manager_t manager, char data)
 {
 	mr_uint8_t *state = MR_NULL;
 	mr_size_t index = 0, queue_number = 0;
@@ -193,13 +189,12 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 	queue_number = mr_fifo_get_size(&manager->queue) / sizeof(mr_uint32_t);
 	for (index = 0; index < queue_number; index ++)
 	{
-		state = manager->data + index * (MR_CONF_MANAGER_AT_BUFSZ + 5);
+		state = manager->data + index * (MR_CONF_MANAGER_PARSER_BUFSZ + 5);
 		if (*state < MR_MANAGER_AT_STATE_HANDLE)
 			break;
-		state = MR_NULL;
 	}
 	/* No idle buffer */
-	if (state == MR_NULL)
+	if (index == queue_number)
 		return;
 
 	switch (*state)
@@ -207,40 +202,38 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 		case MR_MANAGER_AT_STATE_NONE:
 		{
 			if (data == 'A')
-			{
 				*state = MR_MANAGER_AT_STATE_START;
-			}
 			break;
 		}
 
 		case MR_MANAGER_AT_STATE_START:
 		{
 			if (data == 'T')
-			{
 				*state = MR_MANAGER_AT_STATE_FLAG;
-			} else
-			{
+			else
 				*state = MR_MANAGER_AT_STATE_NONE;
-			}
 			break;
 		}
 
 		case MR_MANAGER_AT_STATE_FLAG:
 		{
 			if (data == '+')
-			{
 				*state = MR_MANAGER_AT_STATE_ID;
-			} else
-			{
+			else
 				*state = MR_MANAGER_AT_STATE_NONE;
-			}
 			break;
 		}
 
 		case MR_MANAGER_AT_STATE_ID:
 		{
+			if (data == '\r' || data == '\n' || data == ';' || data == '\0')
+			{
+				*state = MR_MANAGER_AT_STATE_STOP;
+				break;
+			}
+
 			/* Find the idle buffer store id */
-			for (index = 1; index < 4 + MR_CONF_MANAGER_AT_BUFSZ; index ++)
+			for (index = 1; index < 4 + MR_CONF_MANAGER_PARSER_BUFSZ; index ++)
 			{
 				if (*(state + index) == 0)
 				{
@@ -249,26 +242,57 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 				}
 			}
 
-			if (data == '?' || data == '=' || data == ' ' || data == ':')
+			if (data == '?')
+				*state = MR_MANAGER_AT_STATE_STOP;
+
+			if (data == '=')
+				*state = MR_MANAGER_AT_STATE_CHECK;
+
+			break;
+		}
+
+		case MR_MANAGER_AT_STATE_CHECK:
+		{
+			if (data == '?')
+			{
+				/* Find the idle buffer store id */
+				for (index = 1; index < 4 + MR_CONF_MANAGER_PARSER_BUFSZ; index ++)
+				{
+					if (*(state + index) == 0)
+					{
+						*(state + index) = data;
+						break;
+					}
+				}
+
+				*state = MR_MANAGER_AT_STATE_STOP;
+			} else
 			{
 				/* Store the id */
 				id = mr_strhase((char *)(state + 1));
 				mr_memcpy(state + 1, &id, sizeof(id));
 
 				/* Release the occupied buffer */
-				mr_memset(state + 5, 0, MR_CONF_MANAGER_AT_BUFSZ);
+				mr_memset(state + 5, 0, MR_CONF_MANAGER_PARSER_BUFSZ);
 
-				if (data == '=')
-					*state = MR_MANAGER_AT_STATE_ARGS;
-				else
-					*state = MR_MANAGER_AT_STATE_STOP;
+				/* Find the idle buffer store arguments */
+				for (index = 5; index < 4 + MR_CONF_MANAGER_PARSER_BUFSZ; index ++)
+				{
+					if (*(state + index) == 0)
+					{
+						*(state + index) = data;
+						break;
+					}
+				}
+
+				*state = MR_MANAGER_AT_STATE_ARGS;
 			}
 			break;
 		}
 
 		case MR_MANAGER_AT_STATE_ARGS:
 		{
-			if (data == '\r' || data == '\n' || data == ';' || data == '0')
+			if (data == '\r' || data == '\n' || data == ';' || data == '\0')
 			{
 				/* Get the id from buffer */
 				mr_memcpy(&id, state + 1, sizeof(id));
@@ -278,7 +302,8 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 				if (agent == MR_NULL)
 				{
 					/* Release the occupied buffer */
-					mr_memset(state, 0, 5 + MR_CONF_MANAGER_AT_BUFSZ);
+					mr_memset(state, 0, 5 + MR_CONF_MANAGER_PARSER_BUFSZ);
+
 					*state = MR_MANAGER_AT_STATE_NONE;
 					break;
 				}
@@ -286,12 +311,13 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 				/* Notify the agent happened */
 				agent->args = state + 5;
 				mr_manager_notify(manager, id);
+
 				*state = MR_MANAGER_AT_STATE_HANDLE;
 				break;
 			}
 
 			/* Find the idle buffer store arguments */
-			for (index = 5; index < 4 + MR_CONF_MANAGER_AT_BUFSZ; index ++)
+			for (index = 5; index < 4 + MR_CONF_MANAGER_PARSER_BUFSZ; index ++)
 			{
 				if (*(state + index) == 0)
 				{
@@ -304,16 +330,18 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 
 		case MR_MANAGER_AT_STATE_STOP:
 		{
-			if (data == '\r' || data == '\n' || data == ';' || data == '0')
-			{
-				/* Get the id from buffer */
-				mr_memcpy(&id, state + 1, sizeof(id));
+			/* Store the id */
+			id = mr_strhase((char *)(state + 1));
+			mr_memcpy(state + 1, &id, sizeof(id));
 
-				/* Notify the agent happened */
-				mr_manager_notify(manager, id);
-				mr_memset(state, 0, 5);
-				*state = MR_MANAGER_AT_STATE_NONE;
-			}
+			/* Release the occupied buffer */
+			mr_memset(state + 5, 0, MR_CONF_MANAGER_PARSER_BUFSZ);
+
+			/* Notify the agent happened */
+			mr_manager_notify(manager, id);
+			mr_memset(state, 0, 5);
+
+			*state = MR_MANAGER_AT_STATE_NONE;
 			break;
 		}
 
@@ -321,7 +349,7 @@ void mr_manager_at_isr(mr_manager_t manager, char data)
 	}
 }
 
-mr_size_t mr_manager_at_get_length(void *args)
+mr_size_t mr_manager_at_parser_get_length(void *args)
 {
 	char *ch = (char *)args;
 	mr_size_t length = 1;
@@ -340,12 +368,13 @@ mr_size_t mr_manager_at_get_length(void *args)
 	return length;
 }
 
-char *mr_manager_at_get_arg(void *args, mr_size_t number)
+char *mr_manager_at_parser_get_arg(void *args, mr_size_t number)
 {
 	char *ch = (char *)args;
 	char *arg = ch;
 
-	if (number == 0) {
+	if (number == 0)
+	{
 		return args;
 	}
 
@@ -353,18 +382,20 @@ char *mr_manager_at_get_arg(void *args, mr_size_t number)
 	{
 		if (*ch == ',')
 		{
-			ch++;
-			number--;
+			ch ++;
+			number --;
 		}
 
-		if (number == 0) {
+		if (number == 0)
+		{
 			return arg;
 		}
 
-		arg = ch++;
+		arg = ch ++;
 	}
 
-	if (ch == args + strlen(args)) {   // 判断是否遍历到末尾
+	if (ch == args + strlen(args))
+	{
 		return arg;
 	}
 
