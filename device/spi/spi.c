@@ -10,6 +10,9 @@
 
 #include <device/spi/spi.h>
 
+#undef LOG_TAG
+#define LOG_TAG "spi"
+
 #if (MR_DEVICE_SPI == MR_CONF_ENABLE)
 
 static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
@@ -28,7 +31,7 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 	{
 		/* Stop the chip-select of the last spi-bus owner */
 		if (spi_device->bus->owner != MR_NULL)
-			spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->device.data, MR_DISABLE);
+			spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
 
 		/* If the configuration is different, the spi-bus is reconfigured */
 		if (spi_device->config.baud_rate != spi_device->bus->config.baud_rate
@@ -46,7 +49,7 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 		spi_device->bus->owner = spi_device;
 
 		/* Start the chip-select of the spi-device */
-		spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->device.data, MR_ENABLE);
+		spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_ENABLE);
 	}
 
 	return MR_ERR_OK;
@@ -124,12 +127,6 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
 		case MR_CTRL_ATTACH:
 		{
-			if (args == MR_NULL)
-			{
-				spi_device->bus = MR_NULL;
-				return MR_ERR_OK;
-			}
-
 			/* Find the spi-bus */
 			mr_device_t spi_bus = mr_device_find((char *)args);
 			if (spi_bus == MR_NULL)
@@ -158,7 +155,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
 	ret = mr_take_spi_bus(spi_device);
 	if (ret != MR_ERR_OK)
 	{
-		MR_LOG_E("Device %s: Failed to take spi-bus\r\n", device->object.name);
+		MR_LOG_E(LOG_TAG, "Device %s: Failed to take spi-bus\r\n", device->object.name);
 		return ret;
 	}
 
@@ -179,13 +176,13 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
 	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 	mr_err_t ret = MR_ERR_OK;
-	mr_size_t send_size = size;
+	mr_size_t send_size = 0;
 
 	/* Take spi-bus */
 	ret = mr_take_spi_bus(spi_device);
 	if (ret != MR_ERR_OK)
 	{
-		MR_LOG_E("Device %s: Failed to take spi-bus\r\n", device->object.name);
+		MR_LOG_E(LOG_TAG, "Device %s: Failed to take spi-bus\r\n", device->object.name);
 		return ret;
 	}
 
