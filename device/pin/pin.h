@@ -16,18 +16,18 @@
 #if (MR_DEVICE_PIN == MR_CONF_ENABLE)
 
 #define MR_PIN_MODE_NONE                0
-#define MR_PIN_MODE_OUT                 1
-#define MR_PIN_MODE_OUT_OD              2
-#define MR_PIN_MODE_IN                  3
-#define MR_PIN_MODE_IN_UP               4
-#define MR_PIN_MODE_IN_DOWN             5
+#define MR_PIN_MODE_OUTPUT              1
+#define MR_PIN_MODE_OUTPUT_OD           2
+#define MR_PIN_MODE_INPUT               3
+#define MR_PIN_MODE_INPUT_DOWN          4
+#define MR_PIN_MODE_INPUT_UP            5
 
 #define MR_PIN_IRQ_MODE_NONE            0
 #define MR_PIN_IRQ_MODE_RISING          1
 #define MR_PIN_IRQ_MODE_FALLING         2
 #define MR_PIN_IRQ_MODE_EDGE            3
-#define MR_PIN_IRQ_MODE_HIGH            4
-#define MR_PIN_IRQ_MODE_LOW             5
+#define MR_PIN_IRQ_MODE_LOW             4
+#define MR_PIN_IRQ_MODE_HIGH            5
 
 struct mr_pin_config
 {
