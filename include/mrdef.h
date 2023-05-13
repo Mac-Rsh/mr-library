@@ -99,8 +99,8 @@
 /* mr-library basic control flag definitions */
 #define MR_CTRL_NONE                    0x0000                      /**< No control */
 #define MR_CTRL_CONFIG                  0x1000                      /**< Configure */
-#define MR_CTRL_SET_RX_CB               0x2000                      /**< Set receive baud */
-#define MR_CTRL_SET_TX_CB               0x3000                      /**< Set transmit baud */
+#define MR_CTRL_SET_RX_CB               0x2000                      /**< Set receive callback */
+#define MR_CTRL_SET_TX_CB               0x3000                      /**< Set transmit callback */
 #define MR_CTRL_ATTACH                  0x4000                      /**< Attach the bus */
 #define MR_CTRL_REBOOT                  0x5000                      /**< Reboot */
 #define _MR_CTRL_FLAG_MASK              0xf000                      /**< Mask for getting control flag */
@@ -185,7 +185,7 @@ enum mr_container_type
 	MR_CONTAINER_TYPE_MISC,                                         /**< Miscellaneous container */
 	MR_CONTAINER_TYPE_DEVICE,                                       /**< Device container */
 	MR_CONTAINER_TYPE_MANAGER,                                      /**< Event container */
-	MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
+	_MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
 };
 
 struct mr_container
@@ -199,14 +199,14 @@ typedef struct mr_container *mr_container_t;                        /**< Type fo
 /**
  *  Object
  */
-#define MR_OBJECT_TYPE_NONE            0x00
-#define MR_OBJECT_TYPE_REGISTER        0x10
+#define _MR_OBJECT_TYPE_NONE           0x00
+#define _MR_OBJECT_TYPE_REGISTER       0x10
 
 struct mr_object
 {
 	struct mr_list list;                                            /**< Object list */
 
-	char name[MR_NAME_MAX + 1];                                     /**< Object name */
+	char name[MR_CONF_NAME_MAX + 1];                                /**< Object name */
 	mr_uint8_t flag;                                                /**< Object flag */
 };
 typedef struct mr_object *mr_object_t;                              /**< Type for object */
@@ -279,7 +279,7 @@ enum mr_manager_type
 	/* ... */
 };
 
-enum mr_manager_at_state
+enum mr_manager_at_parser_state
 {
 	MR_MANAGER_AT_STATE_NONE,                                       /**< No state */
 	MR_MANAGER_AT_STATE_START,                                      /**< Start state */
@@ -291,6 +291,14 @@ enum mr_manager_at_state
 	MR_MANAGER_AT_STATE_HANDLE,                                     /**< Handle state */
 };
 
+typedef struct mr_manager *mr_manager_t;                            /**< Type for manager */
+struct mr_manager_ops
+{
+	mr_err_t (*add)(mr_manager_t manager);
+	mr_err_t (*remove)(mr_manager_t manager);
+	void (*handler)(mr_manager_t manage);
+};
+
 struct mr_manager
 {
 	struct mr_object object;                                        /**< Manager object */
@@ -300,8 +308,9 @@ struct mr_manager
 	struct mr_fifo queue;                                           /**< Agent queue */
 
 	mr_avl_t avl;                                                   /**< Manager list */
+
+	const struct mr_manager_ops *ops;                               /**< Operations of the manager */
 };
-typedef struct mr_manager *mr_manager_t;                            /**< Type for manager */
 
 /**
  * 	Agent
@@ -310,7 +319,7 @@ struct mr_agent
 {
 	struct mr_avl avl;                                              /**< Avl-tree and agent id */
 
-	mr_err_t (*cb)(mr_manager_t manager, void *args);               /**< Agent occurrence baud function */
+	mr_err_t (*cb)(mr_manager_t manager, void *args);               /**< Agent occurrence callback function */
 	void *args;                                                     /**< Callback function argument */
 };
 typedef struct mr_agent *mr_agent_t;                                /**< Type for agent */

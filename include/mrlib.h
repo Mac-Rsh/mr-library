@@ -42,8 +42,9 @@ mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
  */
 void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size);
 void mr_fifo_reset(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_length(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo);
 mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size);
 mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
 mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
@@ -92,23 +93,51 @@ mr_manager_t mr_manager_find(const char *name);
 mr_err_t mr_manager_add(mr_manager_t manager,
 						const char *name,
 						enum mr_manager_type type,
-						mr_size_t queue_number);
+						mr_size_t queue_number,
+						struct mr_manager_ops *ops,
+						void *data);
 mr_err_t mr_manager_remove(mr_manager_t manager);
-mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t agent_id);
+mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t id);
 void mr_manager_handler(mr_manager_t manager);
-void mr_manager_at_parser_isr(mr_manager_t manager, char data);
-mr_size_t mr_manager_at_parser_get_length(void *args);
-char *mr_manager_at_parser_get_arg(void *args, mr_size_t number);
 
 /**
  *  Export agent functions
  */
-mr_agent_t mr_agent_find(mr_uint32_t agent_id, mr_manager_t manager);
-mr_err_t mr_agent_create(mr_uint32_t agent_id,
+mr_agent_t mr_agent_find(mr_uint32_t id, mr_manager_t manager);
+mr_err_t mr_agent_create(mr_uint32_t id,
 						 mr_err_t (*callback)(mr_manager_t manager, void *args),
 						 void *args,
-						 mr_manager_t agent_manager);
-mr_err_t mr_agent_delete(mr_uint32_t agent_id, mr_manager_t agent_manager);
-mr_uint32_t mr_agent_str_to_id(const char *str);
+						 mr_manager_t target_manager);
+mr_err_t mr_agent_delete(mr_uint32_t id, mr_manager_t manager);
+
+/**
+ *  Export event functions
+ */
+mr_err_t mr_event_manager_add(mr_manager_t manager, const char *name, mr_size_t queue_number);
+mr_err_t mr_event_create(mr_uint32_t event,
+						 mr_err_t (*callback)(mr_manager_t manager, void *args),
+						 void *args,
+						 mr_manager_t target_manager);
+mr_err_t mr_event_delete(mr_uint32_t event, mr_manager_t manager);
+
+/**
+ *  Export fsm functions
+ */
+mr_err_t mr_fsm_manager_add(mr_manager_t manager, const char *name, mr_size_t queue_number);
+mr_err_t mr_fsm_state_create(mr_uint32_t state,
+							 mr_err_t (*callback)(mr_manager_t manager, void *args),
+							 void *args,
+							 mr_manager_t target_manager);
+mr_err_t mr_fsm_state_delete(mr_uint32_t state, mr_manager_t manager);
+
+/**
+ *  Export at-parser functions
+ */
+mr_err_t mr_at_parser_manager_add(mr_manager_t manager, const char *name, mr_size_t queue_number);
+mr_err_t mr_at_cmd_create(const char *at_cmd,
+						  mr_err_t (*callback)(mr_manager_t manager, void *args),
+						  mr_manager_t target_manager);
+mr_err_t mr_at_cmd_delete(mr_uint32_t at_cmd, mr_manager_t manager);
+void mr_at_parser_isr(mr_manager_t manager, char data);
 
 #endif
