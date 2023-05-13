@@ -10,7 +10,7 @@
 
 #include <mrlib.h>
 
-static struct mr_container mr_kernel_container[MR_CONTAINER_TYPE_MASK] =
+static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 	{
 		{
 			.type = MR_CONTAINER_TYPE_MISC,
@@ -38,7 +38,7 @@ static struct mr_container mr_kernel_container[MR_CONTAINER_TYPE_MASK] =
  */
 mr_container_t mr_container_find(enum mr_container_type type)
 {
-	MR_ASSERT(type < MR_CONTAINER_TYPE_MASK);
+	MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
 	return &mr_kernel_container[type];
 }
@@ -69,7 +69,7 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
 	for (list = (container->list).next; list != &(container->list); list = list->next)
 	{
 		object = mr_struct_of(list, struct mr_object, list);
-		if (mr_strncmp(object->name, name, MR_NAME_MAX) == 0)
+		if (mr_strncmp(object->name, name, MR_CONF_NAME_MAX) == 0)
 		{
 			/* Enable interrupt */
 			mr_hw_interrupt_enable();
@@ -100,7 +100,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
 	MR_ASSERT(name != MR_NULL);
 
 	/* Check if the object is already registered */
-	if (object->flag & MR_OBJECT_TYPE_REGISTER)
+	if (object->flag & _MR_OBJECT_TYPE_REGISTER)
 		return - MR_ERR_BUSY;
 
 	/* Check if the object already exists in the container */
@@ -108,7 +108,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
 		return - MR_ERR_GENERIC;
 
 	/* Copy the specified name to the object name */
-	mr_strncpy(object->name, name, MR_NAME_MAX);
+	mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
 
 	/* Find the container for the specified flag */
 	container = mr_container_find(container_type);
@@ -118,7 +118,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
 
 	/* Insert the object into the container's list */
 	mr_list_insert_after(&(container->list), &(object->list));
-	object->flag |= MR_OBJECT_TYPE_REGISTER;
+	object->flag |= _MR_OBJECT_TYPE_REGISTER;
 
 	/* Enable interrupt */
 	mr_hw_interrupt_enable();
@@ -138,7 +138,7 @@ mr_err_t mr_object_remove(mr_object_t object)
 	MR_ASSERT(object != MR_NULL);
 
 	/* Check if the object is registered */
-	if ((object->flag & MR_OBJECT_TYPE_REGISTER) == 0)
+	if ((object->flag & _MR_OBJECT_TYPE_REGISTER) == 0)
 		return - MR_ERR_GENERIC;
 
 	/* Disable interrupt */
@@ -146,7 +146,7 @@ mr_err_t mr_object_remove(mr_object_t object)
 
 	/* Remove the object from the container's list */
 	mr_list_remove(&(object->list));
-	object->flag &= ~ MR_OBJECT_TYPE_REGISTER;
+	object->flag &= ~ _MR_OBJECT_TYPE_REGISTER;
 
 	/* Enable interrupt */
 	mr_hw_interrupt_enable();
@@ -189,7 +189,7 @@ void mr_object_rename(mr_object_t object, char *name)
 {
 	MR_ASSERT(object != MR_NULL);
 
-	mr_strncpy(object->name, name, MR_NAME_MAX);
+	mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
 }
 
 /**
