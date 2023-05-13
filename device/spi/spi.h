@@ -64,7 +64,8 @@ typedef struct mr_spi_device *mr_spi_device_t;
 struct mr_spi_bus_ops
 {
 	mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
-	mr_uint8_t (*transmit)(mr_spi_bus_t spi_bus, mr_uint8_t data);
+	void (*write)(mr_spi_bus_t spi_bus, mr_uint8_t data);
+	mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
 	void (*cs_set)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state);
 };
 

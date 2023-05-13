@@ -161,7 +161,8 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
 
 	for (recv_size = 0; recv_size < size; recv_size ++)
 	{
-		*recv_buffer = spi_device->bus->ops->transmit(spi_device->bus, 0u);
+		spi_device->bus->ops->write(spi_device->bus, 0u);
+		*recv_buffer = spi_device->bus->ops->read(spi_device->bus);
 		recv_buffer ++;
 	}
 
@@ -188,7 +189,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
 
 	for (send_size = 0; send_size < size; send_size ++)
 	{
-		spi_device->bus->ops->transmit(spi_device->bus, *send_buffer);
+		spi_device->bus->ops->write(spi_device->bus, *send_buffer);
 		send_buffer ++;
 	}
 
@@ -204,7 +205,12 @@ static mr_err_t _err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config
 	return - MR_ERR_IO;
 }
 
-static mr_uint8_t _err_io_spi_transmit(mr_spi_bus_t spi_bus, mr_uint8_t data)
+static void _err_io_spi_write(mr_spi_bus_t spi_bus, mr_uint8_t data)
+{
+	MR_ASSERT(0);
+}
+
+static mr_uint8_t _err_io_spi_read(mr_spi_bus_t spi_bus)
 {
 	MR_ASSERT(0);
 	return 0;
@@ -242,7 +248,8 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 
 	/* Set spi-bus operations as protect functions if ops is null */
 	ops->configure = ops->configure ? ops->configure : _err_io_spi_configure;
-	ops->transmit = ops->transmit ? ops->transmit : _err_io_spi_transmit;
+	ops->write = ops->write ? ops->write : _err_io_spi_write;
+	ops->read = ops->read ? ops->read : _err_io_spi_read;
 	ops->cs_set = ops->cs_set ? ops->cs_set : _err_io_spi_cs_set;
 	spi_bus->ops = ops;
 
