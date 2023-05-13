@@ -22,18 +22,16 @@
 #define MR_PIN_MODE_INPUT_DOWN          4
 #define MR_PIN_MODE_INPUT_UP            5
 
-#define MR_PIN_IRQ_MODE_NONE            0
-#define MR_PIN_IRQ_MODE_RISING          1
-#define MR_PIN_IRQ_MODE_FALLING         2
-#define MR_PIN_IRQ_MODE_EDGE            3
-#define MR_PIN_IRQ_MODE_LOW             4
-#define MR_PIN_IRQ_MODE_HIGH            5
+#define MR_PIN_MODE_RISING          	6
+#define MR_PIN_MODE_FALLING         	7
+#define MR_PIN_MODE_EDGE            	8
+#define MR_PIN_MODE_LOW             	9
+#define MR_PIN_MODE_HIGH            	10
 
 struct mr_pin_config
 {
 	mr_uint16_t number;
 	mr_uint8_t mode;
-	mr_uint8_t irq_mode;
 };
 
 typedef struct mr_pin *mr_pin_t;

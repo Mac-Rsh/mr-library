@@ -29,7 +29,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 			if (args)
 			{
 				ret = pin->ops->configure(pin, args);
-				if (((struct mr_pin_config *)args)->irq_mode != MR_PIN_IRQ_MODE_NONE && ret == MR_ERR_OK)
+				if (((struct mr_pin_config *)args)->mode >= MR_PIN_MODE_RISING && ret == MR_ERR_OK)
 					mr_pin_irq_mask |= (1 << ((struct mr_pin_config *)args)->number % 16);
 
 				return ret;
