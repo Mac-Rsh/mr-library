@@ -10,10 +10,10 @@
 
 #include <drv_uart.h>
 
-#undef DRV_LOG_TAG
-#define DRV_LOG_TAG        "drv_uart"
+#undef LOG_TAG
+#define LOG_TAG "drv_uart"
 
-#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 
 enum
 {
@@ -247,7 +247,7 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 	USART_Init(hw->hw_uart.Instance, &USART_InitStructure);
 	USART_Cmd(hw->hw_uart.Instance, ENABLE);
 
-	MR_LOG_E(DRV_LOG_TAG,
+	MR_LOG_D(LOG_TAG,
 			 "%s %d %d %d\r\n",
 			 hw->name,
 			 config->baud_rate,
@@ -396,9 +396,3 @@ mr_err_t mr_hw_uart_init(void)
 }
 
 #endif
-
-
-
-
-
-
