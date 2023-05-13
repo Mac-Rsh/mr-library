@@ -13,13 +13,13 @@
 
 #include <mrdef.h>
 
-#define MR_LOG_A(TAG, FORMAT, ...)    mr_log_output(MR_LOG_LEVEL_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
-#define MR_LOG_E(TAG, FORMAT, ...)    mr_log_output(MR_LOG_LEVEL_ERROR, TAG, FORMAT, ##__VA_ARGS__)
-#define MR_LOG_W(TAG, FORMAT, ...)    mr_log_output(MR_LOG_LEVEL_WARNING, TAG, FORMAT, ##__VA_ARGS__)
-#define MR_LOG_I(TAG, FORMAT, ...)    mr_log_output(MR_LOG_LEVEL_INFO, TAG, FORMAT, ##__VA_ARGS__)
-#define MR_LOG_D(TAG, FORMAT, ...)    mr_log_output(MR_LOG_LEVEL_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_LOG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_LOG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_ERROR, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_LOG_W(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_WARNING, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_LOG_I(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_INFO, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_LOG_D(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
 
-#if (MR_LOG_ASSERT == MR_CONF_ENABLE)
+#if (MR_CONF_LOG_ASSERT == MR_CONF_ENABLE)
 #define MR_ASSERT(EX)            			 \
     do{                          			 \
         if (!(EX))               			 \

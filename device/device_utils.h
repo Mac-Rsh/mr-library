@@ -13,7 +13,7 @@
 
 #include <mrlib.h>
 
-#if (MR_DEVICE_PIN == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
 #include <pin/pin.h>
 
 mr_inline mr_err_t mr_pin_init(mr_device_t pin, mr_uint16_t number, mr_uint16_t mode)
@@ -49,7 +49,7 @@ mr_inline void mr_pin_toggle(mr_device_t pin, mr_uint16_t number)
 
 #endif
 
-#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 #include <serial/serial.h>
 
 mr_inline mr_err_t mr_serial_init(mr_device_t serial, mr_uint32_t baud_rate)
@@ -91,7 +91,7 @@ mr_inline mr_err_t mr_serial_set_rx_callback(mr_device_t serial,
 
 #endif
 
-#if (MR_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
 #include <spi/spi.h>
 
 mr_inline mr_err_t mr_spi_init(mr_device_t spi_device, mr_uint32_t baud_rate, mr_uint8_t mode, const char *bus_name)
@@ -142,7 +142,7 @@ mr_inline mr_uint8_t mr_spi_write_then_read(mr_device_t spi_device, mr_uint8_t s
 
 #endif
 
-#if (MR_DEVICE_ADC == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_ADC == MR_CONF_ENABLE)
 #include <adc/adc.h>
 
 mr_inline mr_err_t mr_adc_init(mr_device_t adc, mr_uint16_t channel)
@@ -163,7 +163,7 @@ mr_inline mr_uint16_t mr_adc_read(mr_device_t adc, mr_uint16_t channel)
 
 #endif
 
-#if (MR_DEVICE_DAC == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_DAC == MR_CONF_ENABLE)
 #include <dac/dac.h>
 
 mr_inline mr_err_t mr_dac_init(mr_device_t dac, mr_uint16_t channel)
@@ -181,7 +181,7 @@ mr_inline void mr_dac_write(mr_device_t dac, mr_uint16_t channel, mr_uint16_t va
 
 #endif
 
-#if (MR_DEVICE_TIMER == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
 #include <timer/timer.h>
 
 mr_inline mr_err_t mr_timer_init(mr_device_t timer, mr_uint32_t frequency, mr_uint8_t mode)
