@@ -10,7 +10,7 @@
 
 #include <device/timer/timer.h>
 
-#if (MR_DEVICE_TIMER == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "timer"

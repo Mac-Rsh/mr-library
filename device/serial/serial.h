@@ -13,7 +13,7 @@
 
 #include <mrlib.h>
 
-#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 
 #define MR_SERIAL_DATA_BITS_8                       0
 #define MR_SERIAL_DATA_BITS_9                       1
@@ -36,8 +36,8 @@
 #define MR_SERIAL_FLOW_CONTROL_CTSRTS               1
 
 #define MR_SERIAL_BUFSZ_MIN                     	32
-#if MR_SERIAL_BUFSZ < MR_SERIAL_BUFSZ_MIN
-#define MR_SERIAL_BUFSZ         	MR_SERIAL_BUFSZ_MIN
+#if MR_CONF_SERIAL_BUFSZ < MR_SERIAL_BUFSZ_MIN
+#define MR_CONF_SERIAL_BUFSZ         	MR_SERIAL_BUFSZ_MIN
 #endif
 
 #define MR_SERIAL_EVENT_RX_INT                      0x1000

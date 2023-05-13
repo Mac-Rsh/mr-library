@@ -13,7 +13,7 @@
 
 #include <mrlib.h>
 
-#if (MR_DEVICE_I2C == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_I2C == MR_CONF_ENABLE)
 
 #define MR_I2C_HOST                          0
 #define MR_I2C_SLAVE                         1

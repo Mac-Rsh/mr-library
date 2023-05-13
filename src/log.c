@@ -22,7 +22,7 @@ static char *log_level_name[] =
 static mr_size_t _mr_log_output(const char *fmt, va_list args)
 {
 	mr_size_t rst = 0;
-	char buffer[MR_LOG_BUFSZ];
+	char buffer[MR_CONF_LOG_BUFSZ];
 	char value_buffer[12];
 	char *string;
 	mr_int32_t value;
@@ -219,11 +219,11 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
 {
 	va_list args;
 
-#if (MR_LOG_OUTPUT == MR_CONF_DISABLE)
+#if (MR_CONF_LOG_OUTPUT == MR_CONF_DISABLE)
 	return;
 #endif
 
-	if (level > MR_LOG_LEVEL || level < 0)
+	if (level > MR_CONF_LOG_LEVEL || level < 0)
 		return;
 
 	va_start(args, format);

@@ -10,7 +10,7 @@
 
 #include <device/dac/dac.h>
 
-#if (MR_DEVICE_DAC == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_DAC == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "dac"

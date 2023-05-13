@@ -10,7 +10,7 @@
 
 #include <device/serial/serial.h>
 
-#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "serial"
@@ -194,7 +194,7 @@ mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial
 
 	/* Initialize the serial fields */
 	serial->config.baud_rate = 0;
-	serial->fifo_bufsz = MR_SERIAL_BUFSZ;
+	serial->fifo_bufsz = MR_CONF_SERIAL_BUFSZ;
 	serial->rx_fifo = MR_NULL;
 	serial->tx_fifo = MR_NULL;
 
@@ -229,7 +229,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint32_t event)
 			{
 				mr_size_t length;
 
-				length = mr_fifo_get_length(&rx_fifo->fifo);
+				length = mr_fifo_get_data_size(&rx_fifo->fifo);
 				serial->device.rx_cb(&serial->device, &length);
 			}
 			break;
@@ -243,7 +243,7 @@ void mr_hw_serial_isr(mr_serial_t serial, mr_uint32_t event)
 
 			tx_fifo = (struct mr_serial_fifo *)serial->tx_fifo;
 
-			length = mr_fifo_get_length(&tx_fifo->fifo);
+			length = mr_fifo_get_data_size(&tx_fifo->fifo);
 			if (length == 0)
 			{
 				serial->ops->stop_tx(serial);

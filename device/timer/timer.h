@@ -13,7 +13,7 @@
 
 #include <mrlib.h>
 
-#if (MR_DEVICE_TIMER == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
 
 #define MR_TIMER_MODE_PERIOD                        0
 #define MR_TIMER_MODE_ONE_SHOT                      1

@@ -13,7 +13,7 @@
 #undef LOG_TAG
 #define LOG_TAG "spi"
 
-#if (MR_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
 
 static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 {
@@ -204,15 +204,15 @@ static mr_err_t _err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config
 	return - MR_ERR_IO;
 }
 
-static void _err_io_spi_cs_set(mr_spi_bus_t spi_bus, void *cs_data, mr_state_t state)
-{
-	MR_ASSERT(0);
-}
-
-static mr_uint32_t _err_io_spi_transmit(mr_spi_bus_t spi_bus, mr_uint32_t send_data)
+static mr_uint8_t _err_io_spi_transmit(mr_spi_bus_t spi_bus, mr_uint8_t data)
 {
 	MR_ASSERT(0);
 	return 0;
+}
+
+static void _err_io_spi_cs_set(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state)
+{
+	MR_ASSERT(0);
 }
 
 mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data)
@@ -242,8 +242,8 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 
 	/* Set spi-bus operations as protect functions if ops is null */
 	ops->configure = ops->configure ? ops->configure : _err_io_spi_configure;
-	ops->cs_set = ops->cs_set ? ops->cs_set : _err_io_spi_cs_set;
 	ops->transmit = ops->transmit ? ops->transmit : _err_io_spi_transmit;
+	ops->cs_set = ops->cs_set ? ops->cs_set : _err_io_spi_cs_set;
 	spi_bus->ops = ops;
 
 	return MR_ERR_OK;
@@ -257,11 +257,11 @@ mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
 		{
-			.open = mr_spi_device_open,
-			.close = mr_spi_device_close,
-			.ioctl = mr_spi_device_ioctl,
-			.read = mr_spi_device_read,
-			.write = mr_spi_device_write,
+			mr_spi_device_open,
+			mr_spi_device_close,
+			mr_spi_device_ioctl,
+			mr_spi_device_read,
+			mr_spi_device_write,
 		};
 
 	MR_ASSERT(spi_device != MR_NULL);
