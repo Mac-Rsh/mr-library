@@ -63,13 +63,48 @@ mr_err_t mr_device_add(mr_device_t device,
 	device->tx_cb = MR_NULL;
 	device->type = type;
 	device->support_flag = support_flag;
-	device->open_flag = MR_NULL;
+	device->open_flag = MR_OPEN_CLOSED;
 	device->data = data;
 
 	/* Set operations as null-ops if ops is null */
 	device->ops = (ops == MR_NULL) ? &null_ops : ops;
 
-	MR_LOG_D(LOG_TAG, "Add device %s\r\n", device->object.name);
+	MR_LOG_D(LOG_TAG, "Add device %s, type %d\r\n", device->object.name, type);
+
+	return MR_ERR_OK;
+}
+
+/**
+ * @brief This function removes a device from the container.
+ *
+ * @param device The device to be removed.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_device_remove(mr_device_t device)
+{
+	mr_err_t ret = MR_ERR_OK;
+	static struct mr_device_ops null_ops = {MR_NULL};
+
+	MR_ASSERT(device != MR_NULL);
+
+	/* Remove the object from the container */
+	ret = mr_object_remove(&device->object);
+	if (ret != MR_ERR_OK)
+		return ret;
+
+	/* Initialize the private fields */
+	device->rx_cb = MR_NULL;
+	device->tx_cb = MR_NULL;
+	device->type = MR_DEVICE_TYPE_NONE;
+	device->support_flag = MR_OPEN_CLOSED;
+	device->open_flag = MR_OPEN_CLOSED;
+	device->data = MR_NULL;
+
+	/* Set operations as null-ops */
+	device->ops = &null_ops;
+
+	MR_LOG_D(LOG_TAG, "Remove device %s\r\n", device->object.name);
 
 	return MR_ERR_OK;
 }
