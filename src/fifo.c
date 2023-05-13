@@ -10,6 +10,13 @@
 
 #include <mrlib.h>
 
+/**
+ * @brief This function initialize the fifo.
+ *
+ * @param fifo The fifo to initialize.
+ * @param pool The pool of data.
+ * @param pool_size The size of the pool.
+ */
 void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size)
 {
 	MR_ASSERT(fifo != MR_NULL);
@@ -24,6 +31,11 @@ void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size)
 	fifo->size = pool_size;
 }
 
+/**
+ * @brief This function reset the fifo.
+ *
+ * @param fifo The fifo to reset.
+ */
 void mr_fifo_reset(mr_fifo_t fifo)
 {
 	MR_ASSERT(fifo != MR_NULL);
@@ -41,7 +53,14 @@ void mr_fifo_reset(mr_fifo_t fifo)
 	mr_hw_interrupt_enable();
 }
 
-mr_size_t mr_fifo_get_length(mr_fifo_t fifo)
+/**
+ * @brief This function get the data size from the fifo.
+ *
+ * @param fifo The fifo to get the data size.
+ *
+ * @return The data size.
+ */
+mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo)
 {
 	MR_ASSERT(fifo != MR_NULL);
 
@@ -81,11 +100,39 @@ mr_size_t mr_fifo_get_length(mr_fifo_t fifo)
 	}
 }
 
-mr_size_t mr_fifo_get_size(mr_fifo_t fifo)
+/**
+ * @brief This function get the space size from the fifo.
+ *
+ * @param fifo The fifo to get the space size.
+ *
+ * @return The space size.
+ */
+mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo)
+{
+	return fifo->size - mr_fifo_get_data_size(fifo);
+}
+
+/**
+ * @brief This function get the buffer size from the fifo.
+ *
+ * @param fifo The fifo to get the buffer size.
+ *
+ * @return  The buffer size.
+ */
+mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo)
 {
 	return fifo->size;
 }
 
+/**
+ * @brief This function reads from the fifo.
+ *
+ * @param fifo The fifo to be read.
+ * @param buffer The data buffer to be read from the fifo.
+ * @param size The size of the read.
+ *
+ * @return The size of the actual read.
+ */
 mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 {
 	mr_size_t length = 0;
@@ -96,8 +143,8 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 	if (size == 0)
 		return 0;
 
-	/* Get the number of bytes that can be read */
-	length = mr_fifo_get_length(fifo);
+	/* Get the data size */
+	length = mr_fifo_get_data_size(fifo);
 
 	/* If there is no data to read, return 0 */
 	if (length == 0)
@@ -133,6 +180,15 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 	return size;
 }
 
+/**
+ * @brief This function write the fifo.
+ *
+ * @param fifo The fifo to be written.
+ * @param buffer The data buffer to be written to fifo.
+ * @param size The size of write.
+ *
+ * @return The size of the actual write.
+ */
 mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size)
 {
 	mr_size_t length = 0;
@@ -143,8 +199,8 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size
 	if (size == 0)
 		return 0;
 
-	/* Calculate the number of bytes that can be written */
-	length = fifo->size - mr_fifo_get_length(fifo);
+	/* Get the space size */
+	length = mr_fifo_get_space_size(fifo);
 
 	/* If there is no space to write, return 0 */
 	if (length == 0)
@@ -181,6 +237,15 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size
 	return size;
 }
 
+/**
+ * @brief This function force write the fifo.
+ *
+ * @param fifo The fifo to be written.
+ * @param buffer The data buffer to be written to fifo.
+ * @param size The size of write.
+ *
+ * @return The size of the actual write.
+ */
 mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size)
 {
 	mr_size_t length = 0;
@@ -191,8 +256,8 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_
 	if (size == 0)
 		return 0;
 
-	/* Calculate the number of bytes that can be written */
-	length = fifo->size - mr_fifo_get_length(fifo);
+	/* Get the space size */
+	length = mr_fifo_get_space_size(fifo);
 
 	/* If the data exceeds the buffer length, the front data is discarded */
 	if (size > fifo->size)
