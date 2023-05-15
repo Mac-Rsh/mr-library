@@ -11,7 +11,7 @@
 #ifndef _PIN_H_
 #define _PIN_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
 

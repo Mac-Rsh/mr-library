@@ -8,14 +8,12 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <device/pin/pin.h>
+#include "device/pin/pin.h"
 
 #if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "pin"
-
-static mr_uint32_t mr_pin_irq_mask = 0;
 
 static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
@@ -29,8 +27,6 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 			if (args)
 			{
 				ret = pin->ops->configure(pin, args);
-				if (((struct mr_pin_config *)args)->mode >= MR_PIN_MODE_RISING && ret == MR_ERR_OK)
-					mr_pin_irq_mask |= (1 << ((struct mr_pin_config *)args)->number % 16);
 
 				return ret;
 			}
@@ -127,13 +123,10 @@ mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, v
 
 void mr_hw_pin_isr(mr_pin_t pin, mr_uint32_t Line)
 {
-	if (mr_pin_irq_mask & (1 << Line))
+	/* Invoke the rx-cb function */
+	if (pin->device.rx_cb != MR_NULL)
 	{
-		/* Invoke the rx-cb function */
-		if (pin->device.rx_cb != MR_NULL)
-		{
-			pin->device.rx_cb(&pin->device, &Line);
-		}
+		pin->device.rx_cb(&pin->device, &Line);
 	}
 }
 
