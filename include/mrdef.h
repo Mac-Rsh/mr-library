@@ -11,7 +11,7 @@
 #ifndef _MR_DEF_H_
 #define _MR_DEF_H_
 
-#include <mrconfig.h>
+#include "mrconfig.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,7 +42,7 @@
 #elif defined (__IAR_SYSTEMS_ICC__)
 #define mr_section(x)               	@ x
 #define mr_used                     	__root
-#define PRAGMA(x)                   	_Pragma(#x)
+#define mr_pragma(x)                   	_Pragma(#x)
 #define mr_align(n)                 	PRAGMA(data_alignment=n)
 #define mr_weak                     	__weak
 #define mr_inline                   	static inline
@@ -137,6 +137,18 @@ typedef mr_int8_t mr_bool_t;                                        /**< Type fo
 typedef mr_int8_t mr_level_t;                                       /**< Type for level */
 typedef mr_int8_t mr_state_t;                                       /**< Type for state */
 typedef mr_int8_t mr_lock_t;                                        /**< Type for lock */
+
+/**
+ *  Auto-Init
+ */
+typedef int (*init_fn_t)(void);
+#define INIT_EXPORT(fn,level) \
+    mr_used const init_fn_t _mr_init_##fn mr_section(".mri_fn."level) = fn
+
+#define INIT_BOARD_EXPORT(fn)           INIT_EXPORT(fn, "1")
+#define INIT_DEV_EXPORT(fn)          	INIT_EXPORT(fn, "2")
+#define INIT_ENV_EXPORT(fn)             INIT_EXPORT(fn, "3")
+#define INIT_APP_EXPORT(fn)             INIT_EXPORT(fn, "4")
 
 /**
  *  Double-list
@@ -284,7 +296,7 @@ enum mr_manager_at_parser_state
 	MR_MANAGER_AT_STATE_NONE,                                       /**< No state */
 	MR_MANAGER_AT_STATE_START,                                      /**< Start state */
 	MR_MANAGER_AT_STATE_FLAG,                                       /**< Flag state */
-	MR_MANAGER_AT_STATE_ID, 	                                    /**< Id state */
+	MR_MANAGER_AT_STATE_ID,                                        /**< Id state */
 	MR_MANAGER_AT_STATE_CHECK,                                      /**< Check state */
 	MR_MANAGER_AT_STATE_ARGS,                                       /**< Args state */
 	MR_MANAGER_AT_STATE_STOP,                                       /**< Stop state */
