@@ -1,7 +1,7 @@
 #ifndef _MR_CONFIG_H_
 #define _MR_CONFIG_H_
 
-#include <board.h>
+#include "board.h"
 
 //<<< Config switch >>>
 #define MR_CONF_DISABLE                 0

@@ -11,14 +11,14 @@
 #ifndef _MR_DRV_H_
 #define _MR_DRV_H_
 
-#include <mrconfig.h>
+#include "mrconfig.h"
 
 #if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
-#include <drv_uart.h>
+#include "drv_uart.h"
 #endif
 
 #if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
-#include <drv_gpio.h>
+#include "drv_gpio.h"
 #endif
 
 #endif

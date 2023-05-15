@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #undef LOG_TAG
 #define LOG_TAG "device"

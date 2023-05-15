@@ -11,7 +11,7 @@
 #ifndef _ADC_H_
 #define _ADC_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #if (MR_CONF_DEVICE_ADC == MR_CONF_ENABLE)
 

@@ -11,7 +11,7 @@
 #ifndef _MR_LOG_H_
 #define _MR_LOG_H_
 
-#include <mrdef.h>
+#include "mrdef.h"
 
 #define MR_LOG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
 #define MR_LOG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_ERROR, TAG, FORMAT, ##__VA_ARGS__)

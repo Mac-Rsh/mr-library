@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <device/spi/spi.h>
+#include "device/spi/spi.h"
 
 #undef LOG_TAG
 #define LOG_TAG "spi"

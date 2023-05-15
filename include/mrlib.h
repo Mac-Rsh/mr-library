@@ -11,9 +11,9 @@
 #ifndef _MR_LIB_H_
 #define _MR_LIB_H_
 
-#include <mrdef.h>
-#include <mrservice.h>
-#include <mrlog.h>
+#include "mrdef.h"
+#include "mrservice.h"
+#include "mrlog.h"
 
 /**
  *  Export hardware functions
@@ -34,6 +34,7 @@ mr_size_t mr_avl_get_length(mr_avl_t tree);
 /**
  *  Export kservice functions
  */
+void mr_auto_init(void);
 mr_uint32_t mr_strhase(const char *str);
 mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
 

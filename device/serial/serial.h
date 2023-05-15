@@ -11,7 +11,7 @@
 #ifndef _SERIAL_H_
 #define _SERIAL_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 

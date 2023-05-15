@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <device/i2c/i2c.h>
+#include "device/i2c/i2c.h"
 
 #if (MR_CONF_DEVICE_I2C == MR_CONF_ENABLE)
 

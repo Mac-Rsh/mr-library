@@ -11,7 +11,7 @@
 #ifndef _I2C_H_
 #define _I2C_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #if (MR_CONF_DEVICE_I2C == MR_CONF_ENABLE)
 

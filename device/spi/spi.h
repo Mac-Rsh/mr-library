@@ -11,7 +11,7 @@
 #ifndef _SPI_H_
 #define _SPI_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
 

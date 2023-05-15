@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <device/dac/dac.h>
+#include "device/dac/dac.h"
 
 #if (MR_CONF_DEVICE_DAC == MR_CONF_ENABLE)
 

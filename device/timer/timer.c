@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <device/timer/timer.h>
+#include "device/timer/timer.h"
 
 #if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
 

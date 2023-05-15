@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <device/adc/adc.h>
+#include "device/adc/adc.h"
 
 #if (MR_CONF_DEVICE_ADC == MR_CONF_ENABLE)
 

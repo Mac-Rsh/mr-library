@@ -11,7 +11,7 @@
 #ifndef _MR_SERVE_H_
 #define _MR_SERVE_H_
 
-#include <mrdef.h>
+#include "mrdef.h"
 
 #define mr_struct_of(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))

@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 	{

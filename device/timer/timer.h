@@ -11,7 +11,7 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 #if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
 
