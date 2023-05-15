@@ -11,7 +11,7 @@
 #ifndef _DRV_GPIO_H_
 #define _DRV_GPIO_H_
 
-#include <device/pin/pin.h>
+#include "device/pin/pin.h"
 
 #if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
 

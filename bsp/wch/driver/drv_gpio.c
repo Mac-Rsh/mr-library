@@ -8,7 +8,7 @@
  * 2023-04-27     MacRsh       first version
  */
 
-#include <drv_gpio.h>
+#include "drv_gpio.h"
 
 #undef LOG_TAG
 #define LOG_TAG "drv_gpio"
@@ -39,6 +39,23 @@ static IRQn_Type irqno[] =
 		EXTI15_10_IRQn,
 		EXTI15_10_IRQn,
 	};
+
+static mr_int16_t mask[16] = {- 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1};
 
 static struct mr_pin hw_pin;
 
@@ -111,8 +128,11 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 		default: return - MR_ERR_GENERIC;
 	}
 
-	if (config->mode >= MR_PIN_MODE_RISING)
+	if (config->mode >= MR_PIN_MODE_RISING
+		&& (mask[config->number % 16] == - 1 || mask[config->number % 16] == config->number))
 	{
+		mask[config->number % 16] = config->number;
+
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
 		EXTI_InitStructure.EXTI_Line = PIN_STPIN(config->number);
@@ -127,6 +147,16 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init(&NVIC_InitStructure);
+	} else if (config->number == mask[config->number % 16])
+	{
+		mask[config->number % 16] = - 1;
+
+		EXTI_InitStructure.EXTI_Line = PIN_STPIN(config->number);
+		EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+		EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+
+		GPIO_EXTILineConfig(PIN_PORT(config->number), config->number % 16);
+		EXTI_Init(&EXTI_InitStructure);
 	}
 
 	GPIO_Init(PIN_STPORT(config->number), &GPIO_InitStruct);
@@ -248,5 +278,6 @@ mr_err_t mr_hw_gpio_init(void)
 
 	return MR_ERR_OK;
 }
+INIT_BOARD_EXPORT(mr_hw_gpio_init);
 
 #endif
