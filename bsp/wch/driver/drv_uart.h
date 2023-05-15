@@ -11,7 +11,7 @@
 #ifndef _DRV_UART_H_
 #define _DRV_UART_H_
 
-#include <device/serial/serial.h>
+#include "device/serial/serial.h"
 
 #if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 
