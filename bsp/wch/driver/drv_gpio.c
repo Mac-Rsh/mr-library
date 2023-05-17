@@ -40,7 +40,22 @@ static IRQn_Type irqno[] =
 		EXTI15_10_IRQn,
 	};
 
-static mr_int16_t mask[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+static mr_int16_t mask[16] = {- 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1,
+							  - 1};
 
 static struct mr_pin hw_pin;
 
@@ -113,9 +128,15 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 		default: return - MR_ERR_GENERIC;
 	}
 
-	if (config->mode >= MR_PIN_MODE_RISING && (mask[config->number%16] == -1 || mask[config->number%16] == config->number))
+	if (config->mode >= MR_PIN_MODE_RISING)
 	{
-		mask[config->number%16] = config->number;
+		if ((mask[config->number % 16] != - 1 && mask[config->number % 16] != config->number))
+		{
+			MR_LOG_E(LOG_TAG, "pin exit-line %d busy\r\n", config->number % 16);
+			return - MR_ERR_BUSY;
+		}
+
+		mask[config->number % 16] = config->number;
 
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
@@ -131,36 +152,34 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init(&NVIC_InitStructure);
-	}
-	else if (config->number == mask[config->number%16])
+	} else if (config->number == mask[config->number % 16])
 	{
-		if (config->number%16 >= 5 && config->number%16 <= 9 )
+		if (config->number % 16 >= 5 && config->number % 16 <= 9)
 		{
-			if (mask[5] == -1 && mask[6] == -1&&mask[7] == -1&&mask[8] == -1&&mask[9] == -1)
+			if (mask[5] == - 1 && mask[6] == - 1 && mask[7] == - 1 && mask[8] == - 1 && mask[9] == - 1)
 			{
 				EXTI_InitStructure.EXTI_LineCmd = DISABLE;
-			}
-			else
+			} else
 			{
 				EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 			}
 
-		}else if (config->number%16 >= 10 && config->number%16 <= 15)
+		} else if (config->number % 16 >= 10 && config->number % 16 <= 15)
 		{
-			if (mask[10] == -1 && mask[11] == -1&&mask[12] == -1&&mask[13] == -1&&mask[14] == -1&&mask[15] == -1)
+			if (mask[10] == - 1 && mask[11] == - 1 && mask[12] == - 1 && mask[13] == - 1 && mask[14] == - 1
+				&& mask[15] == - 1)
 			{
 				EXTI_InitStructure.EXTI_LineCmd = DISABLE;
-			}
-			else
+			} else
 			{
 				EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 			}
-		}
-		else {
+		} else
+		{
 			EXTI_InitStructure.EXTI_LineCmd = DISABLE;
 		}
 
-		mask[config->number%16] = -1;
+		mask[config->number % 16] = - 1;
 
 		EXTI_InitStructure.EXTI_Line = PIN_STPIN(config->number);
 		EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
@@ -171,7 +190,7 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 
 	GPIO_Init(PIN_STPORT(config->number), &GPIO_InitStruct);
 
-	MR_LOG_D(LOG_TAG, "%s %d %d\r\n", pin->device.object.name, config->number, config->mode);
+	MR_LOG_D(LOG_TAG, "Config %s %d %d\r\n", pin->device.object.name, config->number, config->mode);
 
 	return MR_ERR_OK;
 }
