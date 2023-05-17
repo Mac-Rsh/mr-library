@@ -250,6 +250,7 @@ enum mr_device_type
 	MR_DEVICE_TYPE_PWM,                                             /**< PWM device */
 	MR_DEVICE_TYPE_TIMER,                                           /**< TIMER device */
 	MR_DEVICE_TYPE_FLASH,                                           /**< FLASH device */
+	MR_DEVICE_TYPE_SENSOR,                                          /**< SENSOR device */
 	/* ... */
 };
 
