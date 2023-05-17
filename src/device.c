@@ -225,14 +225,14 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
 	/* Check if the device is closed or unsupported */
 	if ((device->ref_count == 0) || ! (device->open_flag & MR_OPEN_RDONLY))
 	{
-		MR_LOG_E("Device %s does not support read\r\n", device->object.name);
+		MR_LOG_E(LOG_TAG, "Device %s does not support read\r\n", device->object.name);
 		return - MR_ERR_UNSUPPORTED;
 	}
 
 	/* Call the device-read function, if provided */
 	if (device->ops->read == MR_NULL)
 	{
-		MR_LOG_E("Device %s read function is null\r\n", device->object.name);
+		MR_LOG_E(LOG_TAG, "Device %s read function is null\r\n", device->object.name);
 		return - MR_ERR_IO;
 	}
 
@@ -257,14 +257,14 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
 	/* Check if the device is closed or unsupported */
 	if ((device->ref_count == 0) || ! (device->open_flag & MR_OPEN_WRONLY))
 	{
-		MR_LOG_E("Device %s does not support write\r\n", device->object.name);
+		MR_LOG_E(LOG_TAG, "Device %s does not support write\r\n", device->object.name);
 		return - MR_ERR_UNSUPPORTED;
 	}
 
 	/* Call the device-write function, if provided */
 	if (device->ops->write == MR_NULL)
 	{
-		MR_LOG_E("Device %s write function is null", device->object.name);
+		MR_LOG_E(LOG_TAG, "Device %s write function is null\r\n", device->object.name);
 		return - MR_ERR_IO;
 	}
 

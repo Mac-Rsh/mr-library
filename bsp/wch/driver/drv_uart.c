@@ -248,12 +248,11 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 	USART_Cmd(hw->hw_uart.Instance, ENABLE);
 
 	MR_LOG_D(LOG_TAG,
-			 "%s %d %d %d\r\n",
+			 "Config %s %d %d %d\r\n",
 			 hw->name,
 			 config->baud_rate,
 			 config->data_bits,
-			 config->stop_bits,
-			 config->parity);
+			 config->stop_bits);
 
 	return MR_ERR_OK;
 }
