@@ -20,8 +20,8 @@
 //<<< Log >>>
 #define MR_CONF_LOG_OUTPUT              MR_CONF_DISABLE
 #define MR_CONF_LOG_BUFSZ               128
-#define MR_CONF_LOG_ASSERT              MR_CONF_DISABLE
-#define MR_CONF_LOG_LEVEL               MR_CONF_LOG_LEVEL_ASSERT
+#define MR_CONF_LOG_ASSERT              MR_CONF_ENABLE
+#define MR_CONF_LOG_LEVEL               MR_CONF_LOG_LEVEL_DEBUG
 
 //<<< Manager >>>
 #define MR_CONF_MANAGER                 MR_CONF_DISABLE
@@ -52,5 +52,8 @@
 
 //<<< TIMER >>>
 #define MR_CONF_DEVICE_TIMER            MR_CONF_DISABLE
+
+//<<< MOTION-SENSOR >>>
+#define MR_CONF_DEVICE_MOTION           MR_CONF_DISABLE
 
 #endif
