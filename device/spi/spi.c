@@ -259,7 +259,8 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  mr_uint16_t cs_pin)
+							  mr_uint16_t cs_pin,
+							  const char *bus_name)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -283,6 +284,15 @@ mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 	spi_device->config.baud_rate = 0;
 	spi_device->bus = MR_NULL;
 	spi_device->cs_pin = cs_pin;
+
+	/* Attach the spi-device to the spi-bus */
+	mr_device_t spi_bus = mr_device_find(bus_name);
+	if (spi_bus == MR_NULL)
+		return - MR_ERR_NOT_FOUND;
+	if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
+		return - MR_ERR_INVALID;
+	mr_device_open(spi_bus, MR_OPEN_RDWR);
+	spi_device->bus = (mr_spi_bus_t)spi_bus;
 
 	return MR_ERR_OK;
 }

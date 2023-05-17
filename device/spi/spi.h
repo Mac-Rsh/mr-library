@@ -84,7 +84,8 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  mr_uint16_t cs_pin);
+							  mr_uint16_t cs_pin,
+							  const char *bus_name);
 
 #endif
 
