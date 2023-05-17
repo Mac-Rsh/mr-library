@@ -37,7 +37,7 @@
 
 #define MR_SERIAL_BUFSZ_MIN                     	32
 #if MR_CONF_SERIAL_BUFSZ < MR_SERIAL_BUFSZ_MIN
-#define MR_CONF_SERIAL_BUFSZ         	MR_SERIAL_BUFSZ_MIN
+#define MR_CONF_SERIAL_BUFSZ         				MR_SERIAL_BUFSZ_MIN
 #endif
 
 #define MR_SERIAL_EVENT_RX_INT                      0x1000
