@@ -1,19 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-28     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _DAC_H_
 #define _DAC_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
-#if (MR_DEVICE_DAC == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_DAC == MR_CONF_ENABLE)
 
 struct mr_dac_config
 {
@@ -26,7 +26,7 @@ struct mr_dac_ops
 {
 	mr_err_t (*configure)(mr_dac_t dac, mr_state_t state);
 	mr_err_t (*channel_configure)(mr_dac_t dac, mr_uint16_t channel, mr_state_t state);
-	void (*write)(mr_dac_t dac, mr_uint16_t channel, mr_uint16_t value);
+	void (*write)(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value);
 };
 
 struct mr_dac

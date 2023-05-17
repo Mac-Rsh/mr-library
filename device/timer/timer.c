@@ -1,16 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-29     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
-#include <device/timer/timer.h>
+#include "device/timer/timer.h"
 
-#if (MR_DEVICE_TIMER == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
+
+#undef LOG_TAG
+#define LOG_TAG "timer"
 
 static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t timeout)
 {
@@ -95,84 +98,90 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
 	mr_timer_t timer = (mr_timer_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CTRL_CONFIG:
 		{
 			if (args)
 			{
-				if (timer->config.freq > timer->information.max_freq)
+				/* Check the frequency */
+				if (((struct mr_timer_config *)args)->freq > timer->information.max_freq)
 					return - MR_ERR_GENERIC;
+
 				ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
 				if (ret == MR_ERR_OK)
 					timer->config = *(struct mr_timer_config *)args;
+
+				return ret;
 			}
-			break;
+			return - MR_ERR_INVALID;
 		}
 
-		case MR_CMD_SET_RX_CALLBACK:
+		case MR_CTRL_SET_RX_CB:
 		{
-			if (args)
-				device->rx_callback = (mr_err_t (*)(mr_device_t device, void *args))args;
-			break;
+			device->rx_cb = args;
+			return MR_ERR_OK;
 		}
 
-		case MR_CMD_REBOOT:
+		case MR_CTRL_REBOOT:
 		{
 			timer->overflow = 0;
 			timer->cycles = timer->reload;
 			timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
-			break;
+			return MR_ERR_OK;
 		}
 
-		case MR_CMD_STOP:
-		{
-			timer->ops->stop(timer);
-			break;
-		}
-
-		default: ret = - MR_ERR_UNSUPPORTED;
+		default: return - MR_ERR_UNSUPPORTED;
 	}
-
-	return ret;
 }
 
-static mr_size_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_timer_t timer = (mr_timer_t)device;
-	mr_uint32_t *time = (mr_uint32_t *)buffer;
+	mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
 	mr_uint32_t cut = 0;
 
-	if (size != sizeof(mr_uint32_t))
-		return 0;
+	if (size < sizeof(*recv_buffer))
+	{
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
+	}
 
 	cut = timer->ops->get_count(timer);
 	if (timer->information.cut_mode == _MR_TIMER_CUT_MODE_DOWN)
 		cut = timer->timeout / (1000000 / timer->config.freq) - cut;
 
-	*time = timer->overflow * timer->timeout + cut * (1000000 / timer->config.freq);
+	*recv_buffer = timer->overflow * timer->timeout + cut * (1000000 / timer->config.freq);
 
-	return size;
+	return sizeof(*recv_buffer);
 }
 
-static mr_size_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_timer_t timer = (mr_timer_t)device;
-	mr_uint32_t *timeout = (mr_uint32_t *)buffer;
+	mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
 	mr_uint32_t period_reload = 0;
 
-	if (size != sizeof(mr_uint32_t))
-		return 0;
+	if (size < sizeof(*send_buffer))
+	{
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid write size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
+	}
 
 	if (timer->config.freq == 0)
-		return 0;
+	{
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid frequency %d\r\n", device->object.name, timer->config.freq);
+		return - MR_ERR_GENERIC;
+	}
 
 	timer->ops->stop(timer);
-	period_reload = mr_timer_timeout_calculate(timer, *timeout);
+	period_reload = mr_timer_timeout_calculate(timer, *send_buffer);
+
+	/* When the time is not less than one time, the timer is started */
 	if (timer->cycles != 0)
 		timer->ops->start(timer, period_reload);
 
-	return size;
+	return sizeof(*send_buffer);
 }
 
 static mr_err_t _err_io_timer_configure(mr_timer_t timer, struct mr_timer_config *config)
@@ -265,9 +274,9 @@ void mr_hw_timer_isr(mr_timer_t timer, mr_uint16_t event)
 				if (timer->config.mode == MR_TIMER_MODE_ONE_SHOT)
 					timer->ops->stop(timer);
 
-				/* Invoke the rx-callback function */
-				if (timer->device.rx_callback != MR_NULL)
-					timer->device.rx_callback(&timer->device, MR_NULL);
+				/* Invoke the rx-cb function */
+				if (timer->device.rx_cb != MR_NULL)
+					timer->device.rx_cb(&timer->device, MR_NULL);
 			}
 		}
 

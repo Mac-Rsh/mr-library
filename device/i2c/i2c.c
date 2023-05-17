@@ -1,16 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-21     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
-#include <device/i2c/i2c.h>
+#include "device/i2c/i2c.h"
 
-#if (MR_DEVICE_I2C == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_I2C == MR_CONF_ENABLE)
+
+#undef LOG_TAG
+#define LOG_TAG "i2c"
 
 static mr_err_t mr_take_i2c_bus(mr_i2c_device_t i2c_device)
 {
@@ -101,53 +104,58 @@ static mr_err_t mr_i2c_device_close(mr_device_t device)
 static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
 {
 	mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_CONFIG:
-		{
-			if (args)
-				i2c_device->config = *(struct mr_i2c_config *)args;
-			break;
-		}
-
-		case MR_CMD_ATTACH:
+		case MR_CTRL_CONFIG:
 		{
 			if (args)
 			{
-				/* Find in the kernel i2c-bus */
-				mr_device_t i2c_bus = mr_device_find((char *)args);
-				if (i2c_bus == MR_NULL || i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
-				{
-					ret = - MR_ERR_NOT_FOUND;
-					break;
-				}
-
-				/* Open i2c-bus */
-				mr_device_open(i2c_bus, MR_OPEN_RDWR);
-				i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
+				i2c_device->config = *(struct mr_i2c_config *)args;
+				return MR_ERR_OK;
 			}
-			break;
+			return - MR_ERR_INVALID;
 		}
 
-		default: ret = - MR_ERR_UNSUPPORTED;
-	}
+		case MR_CTRL_ATTACH:
+		{
+			if (args == MR_NULL)
+			{
+				i2c_device->bus = MR_NULL;
+				return MR_ERR_OK;
+			}
 
-	return ret;
+			/* Find the i2c-bus */
+			mr_device_t i2c_bus = mr_device_find((char *)args);
+			if (i2c_bus == MR_NULL)
+				return - MR_ERR_NOT_FOUND;
+			if (i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
+				return - MR_ERR_INVALID;
+
+			/* Open the i2c-bus */
+			mr_device_open(i2c_bus, MR_OPEN_RDWR);
+			i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
+			return MR_ERR_OK;
+		}
+
+		default: return - MR_ERR_UNSUPPORTED;
+	}
 }
 
-static mr_size_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
 	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 	mr_err_t ret = MR_ERR_OK;
-	mr_size_t recv_size = size;
+	mr_size_t recv_size = 0;
 
 	/* Take i2c-bus */
 	ret = mr_take_i2c_bus(i2c_device);
 	if (ret != MR_ERR_OK)
-		return 0;
+	{
+		MR_LOG_E("Device %s: Failed to take i2c-bus\r\n", device->object.name);
+		return ret;
+	}
 
 	/* Send the i2c start signal and read cmd */
 	i2c_device->bus->ops->start(i2c_device->bus);
@@ -160,7 +168,7 @@ static mr_size_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buff
 		i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 1 | 0x01));
 	}
 
-	while (recv_size --)
+	for (recv_size = 0; recv_size < size; recv_size ++)
 	{
 		*recv_buffer = i2c_device->bus->ops->read(i2c_device->bus, (mr_state_t)(recv_size == 0));
 		recv_buffer ++;
@@ -169,20 +177,23 @@ static mr_size_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buff
 	/* Release i2c-bus */
 	mr_release_i2c_bus(i2c_device);
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
-static mr_size_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
 	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 	mr_err_t ret = MR_ERR_OK;
-	mr_size_t send_size = size;
+	mr_size_t send_size = 0;
 
 	/* Take i2c-bus */
 	ret = mr_take_i2c_bus(i2c_device);
 	if (ret != MR_ERR_OK)
-		return 0;
+	{
+		MR_LOG_E("Device %s: Failed to take i2c-bus\r\n", device->object.name);
+		return ret;
+	}
 
 	/* Send the i2c start signal and write cmd */
 	i2c_device->bus->ops->start(i2c_device->bus);
@@ -195,7 +206,7 @@ static mr_size_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const voi
 		i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 1));
 	}
 
-	while (send_size --)
+	for (send_size = 0; send_size < size; send_size ++)
 	{
 		i2c_device->bus->ops->write(i2c_device->bus, *send_buffer);
 		send_buffer ++;
@@ -204,7 +215,7 @@ static mr_size_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const voi
 	/* Release i2c-bus */
 	mr_release_i2c_bus(i2c_device);
 
-	return size;
+	return (mr_ssize_t)size;
 }
 
 static mr_err_t _err_io_i2c_configure(mr_i2c_bus_t i2c_bus, struct mr_i2c_config *config)

@@ -1,14 +1,14 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-04-17     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
-#include <mrlib.h>
+#include "mrlib.h"
 
 static char *log_level_name[] =
 	{
@@ -22,12 +22,12 @@ static char *log_level_name[] =
 static mr_size_t _mr_log_output(const char *fmt, va_list args)
 {
 	mr_size_t rst = 0;
-	char buffer[MR_LOG_BUFSZ];
+	char buffer[MR_CONF_LOG_BUFSZ];
 	char value_buffer[12];
 	char *string;
 	mr_int32_t value;
 	mr_uint32_t u_value, bits, number;
-	mr_double_t d_value;
+	mr_fp64_t d_value;
 
 	while (*fmt != '\0')
 	{
@@ -219,11 +219,11 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
 {
 	va_list args;
 
-#if (MR_LOG_OUTPUT == MR_CONF_DISABLE)
+#if (MR_CONF_LOG_OUTPUT == MR_CONF_DISABLE)
 	return;
 #endif
 
-	if (level > MR_LOG_LEVEL || level < 0)
+	if (level > MR_CONF_LOG_LEVEL || level < 0)
 		return;
 
 	va_start(args, format);

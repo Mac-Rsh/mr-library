@@ -1,18 +1,59 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-04-13     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #include <mrlib.h>
 
+static int mri_start(void)
+{
+	return 0;
+}
+INIT_EXPORT(mri_start, "0");
+
+static int mri_board_start(void)
+{
+	return 0;
+}
+INIT_EXPORT(mri_board_start, "0.end");
+
+static int mri_board_end(void)
+{
+	return 0;
+}
+INIT_EXPORT(mri_board_end, "1.end");
+
+static int mri_end(void)
+{
+	return 0;
+}
+INIT_EXPORT(mri_end,"6.end");
+
+void mr_auto_init(void)
+{
+	volatile const init_fn_t *fn_ptr;
+
+	/* auto-init-board */
+	for (fn_ptr = &_mr_init_mri_start; fn_ptr < &_mr_init_mri_board_end; fn_ptr++)
+	{
+		(*fn_ptr)();
+	}
+
+	/* auto-init-other */
+	for (fn_ptr = &_mr_init_mri_board_end; fn_ptr < &_mr_init_mri_end; fn_ptr++)
+	{
+		(*fn_ptr)();
+	}
+}
+
 static mr_int8_t mr_avl_get_height(mr_avl_t node)
 {
-	if (node == NULL)
+	if (node == MR_NULL)
 		return - 1;
 
 	return node->height;
@@ -20,7 +61,7 @@ static mr_int8_t mr_avl_get_height(mr_avl_t node)
 
 static mr_int8_t mr_avl_get_balance(mr_avl_t node)
 {
-	if (node == NULL)
+	if (node == MR_NULL)
 		return 0;
 
 	return mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child);
@@ -141,4 +182,38 @@ mr_size_t mr_avl_get_length(mr_avl_t tree)
 		length += mr_avl_get_length(tree->right_child);
 
 	return length;
+}
+
+mr_uint32_t mr_strhase(const char *str)
+{
+	mr_uint32_t value = 0;
+
+	while (*str) {
+		value ^=  value << 15;
+		value ^=  value >> 10;
+		value ^= *str++;
+	}
+	value ^= value << 3;
+	value ^= value >> 6;
+	value ^= value << 2;
+	value ^= value >> 15;
+
+	return value;
+}
+
+mr_uint32_t mr_strnhase(const char *str, mr_size_t length)
+{
+	mr_uint32_t value = 0;
+
+	while (length--) {
+		value ^=  value << 15;
+		value ^=  value >> 10;
+		value ^= *str++;
+	}
+	value ^= value << 3;
+	value ^= value >> 6;
+	value ^= value << 2;
+	value ^= value >> 15;
+
+	return value;
 }

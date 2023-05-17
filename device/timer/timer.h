@@ -1,19 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-29     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
-#if (MR_DEVICE_TIMER == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_TIMER == MR_CONF_ENABLE)
 
 #define MR_TIMER_MODE_PERIOD                        0
 #define MR_TIMER_MODE_ONE_SHOT                      1
@@ -27,8 +27,8 @@
 /* Default config for mr_timer_config structure */
 #define MR_TIMER_CONFIG_DEFAULT                     \
 {                                                   \
-    1000,                                   		\
-    MR_TIMER_MODE_PERIOD,                   		\
+    1000,                                           \
+    MR_TIMER_MODE_PERIOD,                           \
 }
 
 struct mr_timer_config

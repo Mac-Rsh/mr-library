@@ -1,67 +1,81 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-16     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
-#include <device/pin/pin.h>
+#include "device/pin/pin.h"
 
-#if (MR_DEVICE_PIN == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
+
+#undef LOG_TAG
+#define LOG_TAG "pin"
 
 static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
 	mr_pin_t pin = (mr_pin_t)device;
 	mr_err_t ret = MR_ERR_OK;
 
-	switch (cmd & _MR_CMD_MASK)
+	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
-		case MR_CMD_CONFIG:
+		case MR_CTRL_CONFIG:
 		{
 			if (args)
-				ret = pin->ops->configure(pin,
-										  ((struct mr_pin_config *)args)->number,
-										  ((struct mr_pin_config *)args)->mode);
+			{
+				ret = pin->ops->configure(pin, args);
 
-			break;
+				return ret;
+			}
+			return - MR_ERR_INVALID;
 		}
 
-		default: ret = - MR_ERR_UNSUPPORTED;
-	}
+		case MR_CTRL_SET_RX_CB:
+		{
+			device->rx_cb = args;
+			return MR_ERR_OK;
+		}
 
-	return ret;
+		default: return - MR_ERR_UNSUPPORTED;
+	}
 }
 
-static mr_size_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
 	mr_pin_t pin = (mr_pin_t)device;
 	mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
 
-	if (size != sizeof(mr_uint8_t))
-		return 0;
+	if (size < sizeof(*recv_buffer))
+	{
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
+	}
 
 	*recv_buffer = pin->ops->read(pin, (mr_uint16_t)pos);
 
-	return size;
+	return sizeof(*recv_buffer);
 }
 
-static mr_size_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
 	mr_pin_t pin = (mr_pin_t)device;
 	mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
 
-	if (size != sizeof(mr_uint8_t))
-		return 0;
+	if (size < sizeof(*send_buffer))
+	{
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid write size %d\r\n", device->object.name, size);
+		return - MR_ERR_INVALID;
+	}
 
 	pin->ops->write(pin, (mr_uint16_t)pos, *send_buffer);
 
-	return size;
+	return sizeof(*send_buffer);
 }
 
-static mr_err_t _err_io_pin_configure(mr_pin_t pin, mr_uint16_t number, mr_uint16_t mode)
+static mr_err_t _err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 {
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
@@ -105,6 +119,15 @@ mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, v
 	pin->ops = ops;
 
 	return MR_ERR_OK;
+}
+
+void mr_hw_pin_isr(mr_pin_t pin, mr_uint32_t Line)
+{
+	/* Invoke the rx-cb function */
+	if (pin->device.rx_cb != MR_NULL)
+	{
+		pin->device.rx_cb(&pin->device, &Line);
+	}
 }
 
 #endif

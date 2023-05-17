@@ -1,19 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-04-20     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _DRV_UART_H_
 #define _DRV_UART_H_
 
-#include <device/serial/serial.h>
+#include "device/serial/serial.h"
 
-#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 
 #define CH32_UART_GPIO_REMAP_NONE		0
 

@@ -1,19 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-04-20     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
-#include <drv_uart.h>
+#include "drv_uart.h"
 
-#undef DRV_LOG_TAG
-#define DRV_LOG_TAG        "drv_uart"
+#undef LOG_TAG
+#define LOG_TAG "drv_uart"
 
-#if (MR_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
 
 enum
 {
@@ -247,13 +247,12 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 	USART_Init(hw->hw_uart.Instance, &USART_InitStructure);
 	USART_Cmd(hw->hw_uart.Instance, ENABLE);
 
-	MR_LOG_E(DRV_LOG_TAG,
-			 "%s %d %d %d\r\n",
+	MR_LOG_D(LOG_TAG,
+			 "Config %s %d %d %d\r\n",
 			 hw->name,
 			 config->baud_rate,
 			 config->data_bits,
-			 config->stop_bits,
-			 config->parity);
+			 config->stop_bits);
 
 	return MR_ERR_OK;
 }
@@ -394,11 +393,6 @@ mr_err_t mr_hw_uart_init(void)
 
 	return MR_ERR_OK;
 }
+INIT_BOARD_EXPORT(mr_hw_uart_init);
 
 #endif
-
-
-
-
-
-

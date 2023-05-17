@@ -1,19 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-21     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _I2C_H_
 #define _I2C_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
-#if (MR_DEVICE_I2C == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_I2C == MR_CONF_ENABLE)
 
 #define MR_I2C_HOST                          0
 #define MR_I2C_SLAVE                         1
@@ -24,9 +24,9 @@
 /* Default config for mr_i2c_config structure */
 #define MR_I2C_CONFIG_DEFAULT                \
 {                                            \
-    3000000,                    			 \
-    MR_I2C_HOST,               			     \
-    MR_I2C_ADDRESS_MODE_7   			 	 \
+    3000000,                                 \
+    MR_I2C_HOST,                             \
+    MR_I2C_ADDRESS_MODE_7                    \
 }
 
 struct mr_i2c_config

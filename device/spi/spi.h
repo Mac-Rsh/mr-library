@@ -1,19 +1,19 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-18     MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _SPI_H_
 #define _SPI_H_
 
-#include <mrlib.h>
+#include "mrlib.h"
 
-#if (MR_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
 
 #define MR_SPI_HOST                          0
 #define MR_SPI_SLAVE                         1
@@ -23,25 +23,21 @@
 #define MR_SPI_MODE_2                        2
 #define MR_SPI_MODE_3                        3
 
-#define MR_SPI_DATA_BITS_8                   0
-#define MR_SPI_DATA_BITS_16                  1
-#define MR_SPI_DATA_BITS_32                  2
-
 #define MR_SPI_BIT_ORDER_MSB                 0
 #define MR_SPI_BIT_ORDER_LSB                 1
 
 #define MR_SPI_CS_ACTIVE_LOW                 0
 #define MR_SPI_CS_ACTIVE_HIGH                1
+#define MR_SPI_CS_ACTIVE_NONE                2
 
 /* Default config for mr_spi_config structure */
 #define MR_SPI_CONFIG_DEFAULT                \
 {                                            \
-    3000000,                   		 		 \
-    MR_SPI_HOST,               				 \
-    MR_SPI_MODE_0,                   		 \
-    MR_SPI_DATA_BITS_8,         			 \
-    MR_SPI_BIT_ORDER_MSB,      			 	 \
-    MR_SPI_CS_ACTIVE_LOW,       			 \
+    3000000,                                 \
+    MR_SPI_HOST,                             \
+    MR_SPI_MODE_0,                           \
+    MR_SPI_BIT_ORDER_MSB,                    \
+    MR_SPI_CS_ACTIVE_LOW,                    \
 }
 
 struct mr_spi_config
@@ -50,7 +46,6 @@ struct mr_spi_config
 
 	mr_uint8_t host_slave: 1;
 	mr_uint8_t mode: 2;
-	mr_uint8_t data_bits: 2;
 	mr_uint8_t bit_order: 1;
 	mr_uint8_t cs_active: 1;
 };
@@ -62,14 +57,16 @@ struct mr_spi_device
 
 	struct mr_spi_config config;
 	struct mr_spi_bus *bus;
+	mr_uint16_t cs_pin;
 };
 typedef struct mr_spi_device *mr_spi_device_t;
 
 struct mr_spi_bus_ops
 {
 	mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
-	void (*cs_set)(mr_spi_bus_t spi_bus, void *cs_data, mr_state_t state);
-	mr_uint32_t (*transmit)(mr_spi_bus_t spi_bus, mr_uint32_t send_data);
+	void (*write)(mr_spi_bus_t spi_bus, mr_uint8_t data);
+	mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
+	void (*cs_set)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state);
 };
 
 struct mr_spi_bus
@@ -87,7 +84,8 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  void *cs_data);
+							  mr_uint16_t cs_pin,
+							  const char *bus_name);
 
 #endif
 
