@@ -172,7 +172,7 @@ struct mr_avl
 	struct mr_avl *left_child;                                      /**< Point to left-child node */
 	struct mr_avl *right_child;                                     /**< Point to right-child node */
 };
-typedef struct mr_avl *mr_avl_t;                                    /**< Type for avl-tree */
+typedef struct mr_avl *mr_avl_t;                                    /**< Type for list-tree */
 
 /**
  *  Fifo
@@ -206,7 +206,7 @@ enum mr_container_type
 {
 	MR_CONTAINER_TYPE_MISC,                                         /**< Miscellaneous container */
 	MR_CONTAINER_TYPE_DEVICE,                                       /**< Device container */
-	MR_CONTAINER_TYPE_MANAGER,                                      /**< Event container */
+	MR_CONTAINER_TYPE_SERVER,                                       /**< Server container */
 	_MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
 };
 
@@ -239,7 +239,7 @@ typedef struct mr_object *mr_object_t;                              /**< Type fo
 struct mr_mutex
 {
 	mr_object_t owner;                                              /**< Mutex owns the object */
-	mr_lock_t lock;                                                 /**< Mutex lock state */
+	volatile mr_lock_t lock;                                        /**< Mutex lock state */
 };
 typedef struct mr_mutex *mr_mutex_t;                                /**< Type for mutex */
 
@@ -290,61 +290,26 @@ struct mr_device
 	const struct mr_device_ops *ops;                                /**< Operations of the device */
 };
 
-/**
- *  Manager
- */
-enum mr_manager_type
+#if (MR_CONF_EVENT == MR_CONF_ENABLE)
+
+struct mr_event_server
 {
-	MR_MANAGER_TYPE_EVENT,                                          /**< Event manager */
-	MR_MANAGER_TYPE_FSM,                                            /**< Finite state machine(FSM) manager */
-	MR_MANAGER_TYPE_AT_PARSER,                                      /**< Attention(AT) Parser manager */
-	MR_MANAGER_TYPE_CMD_PARSER,                                     /**< Command(CMD) Parser manager */
-	/* ... */
-};
+	struct mr_object object;                                        /**< Event object */
 
-enum mr_manager_at_parser_state
+	struct mr_fifo queue;                                           /**< Event queue */
+	mr_avl_t list;                                                   /**< Event list */
+};
+typedef struct mr_event_server *mr_event_server_t;                  /**< Type for event server */
+
+struct mr_event_client
 {
-	MR_MANAGER_AT_STATE_NONE,                                       /**< No state */
-	MR_MANAGER_AT_STATE_START,                                      /**< Start state */
-	MR_MANAGER_AT_STATE_FLAG,                                       /**< Flag state */
-	MR_MANAGER_AT_STATE_ID,                                        /**< Id state */
-	MR_MANAGER_AT_STATE_CHECK,                                      /**< Check state */
-	MR_MANAGER_AT_STATE_ARGS,                                       /**< Args state */
-	MR_MANAGER_AT_STATE_STOP,                                       /**< Stop state */
-	MR_MANAGER_AT_STATE_HANDLE,                                     /**< Handle state */
+	struct mr_avl list;                                             /**< Event list */
+
+	mr_err_t (*cb)(mr_event_server_t server, void *args);      		/**< Event callback */
+	void *args;                                                     /**< Event arguments */
 };
+typedef struct mr_event_client *mr_event_client_t;                  /**< Type for event client */
 
-typedef struct mr_manager *mr_manager_t;                            /**< Type for manager */
-struct mr_manager_ops
-{
-	mr_err_t (*add)(mr_manager_t manager);
-	mr_err_t (*remove)(mr_manager_t manager);
-	void (*handler)(mr_manager_t manage);
-};
-
-struct mr_manager
-{
-	struct mr_object object;                                        /**< Manager object */
-
-	enum mr_manager_type type;                                      /**< Manager type */
-	void *data;                                                     /**< Manager data */
-	struct mr_fifo queue;                                           /**< Agent queue */
-
-	mr_avl_t avl;                                                   /**< Manager list */
-
-	const struct mr_manager_ops *ops;                               /**< Operations of the manager */
-};
-
-/**
- * 	Agent
- */
-struct mr_agent
-{
-	struct mr_avl avl;                                              /**< Avl-tree and agent id */
-
-	mr_err_t (*cb)(mr_manager_t manager, void *args);               /**< Agent occurrence callback function */
-	void *args;                                                     /**< Callback function argument */
-};
-typedef struct mr_agent *mr_agent_t;                                /**< Type for agent */
+#endif
 
 #endif

@@ -23,9 +23,9 @@ static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 					 &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
 		},
 		{
-			.type = MR_CONTAINER_TYPE_MANAGER,
-			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_MANAGER].list,
-					 &mr_kernel_container[MR_CONTAINER_TYPE_MANAGER].list}
+			.type = MR_CONTAINER_TYPE_SERVER,
+			.list = {&mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list,
+					 &mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list}
 		},
 	};
 

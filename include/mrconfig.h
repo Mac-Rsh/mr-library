@@ -19,29 +19,28 @@
 
 //<<< Log >>>
 #define MR_CONF_LOG_OUTPUT              MR_CONF_DISABLE
-#define MR_CONF_LOG_BUFSZ               128
+#define MR_CONF_LOG_BUFSZ               64
 #define MR_CONF_LOG_ASSERT              MR_CONF_ENABLE
 #define MR_CONF_LOG_LEVEL               MR_CONF_LOG_LEVEL_DEBUG
 
-//<<< Manager >>>
-#define MR_CONF_MANAGER                 MR_CONF_DISABLE
-#define MR_CONF_MANAGER_PARSER_BUFSZ    16
+//<<< Event >>>
+#define MR_CONF_EVENT                 	MR_CONF_ENABLE
 
 //<---------------------------- Device -------------------------------------->
 //<<< GPIO >>>
-#define MR_CONF_PIN              		MR_CONF_ENABLE
+#define MR_CONF_PIN              		MR_CONF_DISABLE
 //<<< SERIAL >>>
-#define MR_CONF_SERIAL           		MR_CONF_ENABLE
+#define MR_CONF_SERIAL           		MR_CONF_DISABLE
 #define MR_CONF_SERIAL_BUFSZ            64
 //<<< SPI >>>
-#define MR_CONF_SPI              		MR_CONF_ENABLE
+#define MR_CONF_SPI              		MR_CONF_DISABLE
 //<<< I2C >>>
-#define MR_CONF_I2C              		MR_CONF_ENABLE
+#define MR_CONF_I2C              		MR_CONF_DISABLE
 //<<< ADC >>>
-#define MR_CONF_ADC              		MR_CONF_ENABLE
+#define MR_CONF_ADC              		MR_CONF_DISABLE
 //<<< DAC >>>
-#define MR_CONF_DAC             	 	MR_CONF_ENABLE
+#define MR_CONF_DAC             	 	MR_CONF_DISABLE
 //<<< TIMER >>>
-#define MR_CONF_TIMER            		MR_CONF_ENABLE
+#define MR_CONF_TIMER            		MR_CONF_DISABLE
 
 #endif
