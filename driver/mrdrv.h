@@ -13,12 +13,16 @@
 
 #include "mrconfig.h"
 
-#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
+#include "drv_gpio.h"
+#endif
+
+#if (MR_CONF_SERIAL == MR_CONF_ENABLE)
 #include "drv_uart.h"
 #endif
 
-#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
-#include "drv_gpio.h"
+#if (MR_CONF_SPI == MR_CONF_ENABLE)
+#include "drv_spi.h"
 #endif
 
 #endif

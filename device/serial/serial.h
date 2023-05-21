@@ -13,7 +13,7 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_SERIAL == MR_CONF_ENABLE)
 
 #define MR_SERIAL_DATA_BITS_8                       0
 #define MR_SERIAL_DATA_BITS_9                       1

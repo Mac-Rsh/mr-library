@@ -13,7 +13,7 @@
 #undef LOG_TAG
 #define LOG_TAG "drv_gpio"
 
-#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
 
 #define PIN_PORT(pin)       ((uint8_t)(((pin) >> 4) & 0x0Fu))
 #define PIN_STPORT(pin)     ((GPIO_TypeDef *)(GPIOA_BASE + (0x400u * PIN_PORT(pin))))

@@ -10,7 +10,7 @@
 
 #include "device/i2c/i2c.h"
 
-#if (MR_CONF_DEVICE_I2C == MR_CONF_ENABLE)
+#if (MR_CONF_I2C == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "i2c"

@@ -13,7 +13,7 @@
 
 #include "device/serial/serial.h"
 
-#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_SERIAL == MR_CONF_ENABLE)
 
 #define CH32_UART_GPIO_REMAP_NONE		0
 

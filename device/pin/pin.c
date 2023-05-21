@@ -10,7 +10,7 @@
 
 #include "device/pin/pin.h"
 
-#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "pin"

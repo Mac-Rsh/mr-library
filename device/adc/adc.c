@@ -10,7 +10,7 @@
 
 #include "device/adc/adc.h"
 
-#if (MR_CONF_DEVICE_ADC == MR_CONF_ENABLE)
+#if (MR_CONF_ADC == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "adc"

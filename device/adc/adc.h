@@ -13,7 +13,7 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_DEVICE_ADC == MR_CONF_ENABLE)
+#if (MR_CONF_ADC == MR_CONF_ENABLE)
 
 struct mr_adc_config
 {

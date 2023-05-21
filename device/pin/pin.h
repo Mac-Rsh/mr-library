@@ -13,7 +13,7 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
 
 #define MR_PIN_MODE_NONE                0
 #define MR_PIN_MODE_OUTPUT              1

@@ -1,5 +1,5 @@
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef _MR_BOARD_H_
+#define _MR_BOARD_H_
 
 //<---------------------------- Hardware -------------------------------------->
 //<<< Please include bsp head file >>>

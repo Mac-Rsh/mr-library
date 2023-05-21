@@ -10,7 +10,7 @@
 
 #include "device/serial/serial.h"
 
-#if (MR_CONF_DEVICE_SERIAL == MR_CONF_ENABLE)
+#if (MR_CONF_SERIAL == MR_CONF_ENABLE)
 
 #undef LOG_TAG
 #define LOG_TAG "serial"
