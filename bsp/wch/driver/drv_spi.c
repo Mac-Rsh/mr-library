@@ -13,7 +13,7 @@
 #undef LOG_TAG
 #define LOG_TAG "drv_spi"
 
-#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_SPI == MR_CONF_ENABLE)
 
 #define PIN_PORT(pin)       ((uint8_t)(((pin) >> 4) & 0x0Fu))
 #define PIN_STPORT(pin)     ((GPIO_TypeDef *)(GPIOA_BASE + (0x400u * PIN_PORT(pin))))
@@ -103,6 +103,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 		pclk_freq = RCC_ClockStruct.PCLK1_Frequency;
 	}
 	RCC_APB2PeriphClockCmd(hw->hw_spi.gpio_periph_clock, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
 	SPI_InitStructure.SPI_BaudRatePrescaler = ch32_spi_baud_rate_prescaler(pclk_freq, config->baud_rate);
 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
@@ -156,7 +157,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 		GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
 
 		GPIO_InitStructure.GPIO_Pin = hw->hw_spi.miso_gpio_pin;
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 		GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
 
 		GPIO_InitStructure.GPIO_Pin = hw->hw_spi.mosi_gpio_pin;
@@ -194,26 +195,25 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 	return MR_ERR_OK;
 }
 
-static void ch32_spi_write(mr_spi_bus_t spi_bus, mr_uint8_t data)
+static mr_uint8_t ch32_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
 {
 	struct ch32_spi *hw = (struct ch32_spi *)spi_bus->device.data;
+	mr_size_t i = 0;
 
-	while (SPI_I2S_GetFlagStatus(hw->hw_spi.Instance, SPI_I2S_FLAG_TXE) == RESET);
-	hw->hw_spi.Instance->DATAR = data;
-}
-
-static mr_uint8_t ch32_spi_read(mr_spi_bus_t spi_bus)
-{
-	struct ch32_spi *hw = (struct ch32_spi *)spi_bus->device.data;
-	mr_size_t count = 0;
+	while (SPI_I2S_GetFlagStatus(hw->hw_spi.Instance, SPI_I2S_FLAG_TXE) == RESET)
+	{
+		i++;
+		if (i > 200) return 0;
+	}
+	SPI_I2S_SendData(hw->hw_spi.Instance, data);
 
 	while (SPI_I2S_GetFlagStatus(hw->hw_spi.Instance, SPI_I2S_FLAG_RXNE) == RESET)
 	{
-		count ++;
-		if (count > 200) return 0;
+		i++;
+		if(i > 200) return 0;
 	}
 
-	return hw->hw_spi.Instance->DATAR;
+	return SPI_I2S_ReceiveData(hw->hw_spi.Instance);
 }
 
 static void ch32_spi_cs_set(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state)
@@ -234,8 +234,7 @@ mr_err_t mr_hw_spi_init(void)
 	static struct mr_spi_bus_ops ops =
 		{
 			ch32_spi_configure,
-			ch32_spi_write,
-			ch32_spi_read,
+			ch32_spi_transfer,
 			ch32_spi_cs_set,
 		};
 

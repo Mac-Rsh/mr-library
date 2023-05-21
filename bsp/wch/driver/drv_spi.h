@@ -13,7 +13,7 @@
 
 #include "device/spi/spi.h"
 
-#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_SPI == MR_CONF_ENABLE)
 
 struct ch32_hw_spi
 {
