@@ -13,7 +13,7 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_SPI == MR_CONF_ENABLE)
 
 #define MR_SPI_HOST                          0
 #define MR_SPI_SLAVE                         1
@@ -64,8 +64,7 @@ typedef struct mr_spi_device *mr_spi_device_t;
 struct mr_spi_bus_ops
 {
 	mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
-	void (*write)(mr_spi_bus_t spi_bus, mr_uint8_t data);
-	mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
+	mr_uint8_t (*transfer)(mr_spi_bus_t spi_bus, mr_uint8_t data);
 	void (*cs_set)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state);
 };
 

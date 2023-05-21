@@ -13,7 +13,7 @@
 #undef LOG_TAG
 #define LOG_TAG "spi"
 
-#if (MR_CONF_DEVICE_SPI == MR_CONF_ENABLE)
+#if (MR_CONF_SPI == MR_CONF_ENABLE)
 
 static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 {
@@ -29,7 +29,7 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 	/* Check if the current spi-device is the owner of the spi-bus */
 	if (spi_device->bus->owner != spi_device)
 	{
-		/* Stop the chip-select of the last spi-bus owner */
+		/* Stop the chip-select of the last spi-device */
 		if (spi_device->bus->owner != MR_NULL)
 			spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
 
@@ -47,19 +47,29 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 		/* Sets the spi-bus owner to the current spi-device */
 		spi_device->bus->config = spi_device->config;
 		spi_device->bus->owner = spi_device;
-
-		/* Start the chip-select of the spi-device */
-		spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_ENABLE);
 	}
+
+	/* Start the chip-select of the current spi-device */
+	spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_ENABLE);
 
 	return MR_ERR_OK;
 }
 
 static mr_err_t mr_release_spi_bus(mr_spi_device_t spi_device)
 {
+	mr_err_t ret = MR_ERR_OK;
+
 	MR_ASSERT(spi_device->bus != MR_NULL);
 
-	return mr_mutex_release(&spi_device->bus->lock, &spi_device->device.object);
+	/* Release the mutex lock of the spi-bus */
+	ret = mr_mutex_release(&spi_device->bus->lock, &spi_device->device.object);
+	if (ret != MR_ERR_OK)
+		return ret;
+
+	/* Stop the chip-select of the current spi-device */
+	spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
+
+	return MR_ERR_OK;
 }
 
 static mr_err_t mr_spi_bus_open(mr_device_t device)
@@ -112,6 +122,9 @@ static mr_err_t mr_spi_device_close(mr_device_t device)
 static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 {
 	mr_spi_device_t spi_device = (mr_spi_device_t)device;
+	mr_err_t ret = MR_ERR_OK;
+	mr_uint8_t *buffer = MR_NULL;
+	mr_size_t size = 0;
 
 	switch (cmd & _MR_CTRL_FLAG_MASK)
 	{
@@ -140,6 +153,39 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 			return MR_ERR_OK;
 		}
 
+		case MR_CTRL_TRANSFER:
+		{
+			if (args)
+			{
+				/* Take spi-bus */
+				ret = mr_take_spi_bus(spi_device);
+				if (ret != MR_ERR_OK)
+				{
+					MR_LOG_E(LOG_TAG, "Device %s: Failed to take spi-bus\r\n", device->object.name);
+					return ret;
+				}
+
+				do
+				{
+					buffer = (mr_uint8_t *)((mr_message_t)args)->data;
+
+					for (size = 0; size < ((mr_message_t)args)->size; size ++)
+					{
+						*buffer = spi_device->bus->ops->transfer(spi_device->bus, *buffer);
+						buffer ++;
+					}
+
+					/* Get the next message */
+					args = ((mr_message_t)args)->next;
+				} while (args != MR_NULL);
+
+				/* Release spi-bus */
+				mr_release_spi_bus(spi_device);
+				return MR_ERR_OK;
+			}
+			return - MR_ERR_INVALID;
+		}
+
 		default: return - MR_ERR_UNSUPPORTED;
 	}
 }
@@ -161,8 +207,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
 
 	for (recv_size = 0; recv_size < size; recv_size ++)
 	{
-		spi_device->bus->ops->write(spi_device->bus, 0u);
-		*recv_buffer = spi_device->bus->ops->read(spi_device->bus);
+		*recv_buffer = spi_device->bus->ops->transfer(spi_device->bus, 0u);
 		recv_buffer ++;
 	}
 
@@ -189,7 +234,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
 
 	for (send_size = 0; send_size < size; send_size ++)
 	{
-		spi_device->bus->ops->write(spi_device->bus, *send_buffer);
+		spi_device->bus->ops->transfer(spi_device->bus, *send_buffer);
 		send_buffer ++;
 	}
 
@@ -205,12 +250,7 @@ static mr_err_t _err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config
 	return - MR_ERR_IO;
 }
 
-static void _err_io_spi_write(mr_spi_bus_t spi_bus, mr_uint8_t data)
-{
-	MR_ASSERT(0);
-}
-
-static mr_uint8_t _err_io_spi_read(mr_spi_bus_t spi_bus)
+static mr_uint8_t _err_io_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
 {
 	MR_ASSERT(0);
 	return 0;
@@ -248,8 +288,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 
 	/* Set spi-bus operations as protect functions if ops is null */
 	ops->configure = ops->configure ? ops->configure : _err_io_spi_configure;
-	ops->write = ops->write ? ops->write : _err_io_spi_write;
-	ops->read = ops->read ? ops->read : _err_io_spi_read;
+	ops->transfer = ops->transfer ? ops->transfer : _err_io_spi_transfer;
 	ops->cs_set = ops->cs_set ? ops->cs_set : _err_io_spi_cs_set;
 	spi_bus->ops = ops;
 
