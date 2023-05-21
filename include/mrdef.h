@@ -102,7 +102,8 @@
 #define MR_CTRL_SET_RX_CB               0x2000                      /**< Set receive callback */
 #define MR_CTRL_SET_TX_CB               0x3000                      /**< Set transmit callback */
 #define MR_CTRL_ATTACH                  0x4000                      /**< Attach the bus */
-#define MR_CTRL_REBOOT                  0x5000                      /**< Reboot */
+#define MR_CTRL_TRANSFER                0x5000                      /**< Transfer */
+#define MR_CTRL_REBOOT                  0x6000                      /**< Reboot */
 #define _MR_CTRL_FLAG_MASK              0xf000                      /**< Mask for getting control flag */
 
 /* mr-library basic data type definitions */
@@ -188,6 +189,15 @@ struct mr_fifo
 	mr_uint16_t size;                                               /**< Buffer pool size */
 };
 typedef struct mr_fifo *mr_fifo_t;                                  /**< Type for fifo */
+
+struct mr_message
+{
+	void *data;                                                     /**< Message data */
+	mr_size_t size;                                                 /**< Message size */
+
+	struct mr_message *next;                                        /**< Point to next node */
+};
+typedef struct mr_message *mr_message_t;                            /**< Type for message */
 
 /**
  *  Container
