@@ -25,4 +25,8 @@
 #include "drv_spi.h"
 #endif
 
+#if (MR_CONF_ADC == MR_CONF_ENABLE)
+#include "drv_adc.h"
+#endif
+
 #endif
