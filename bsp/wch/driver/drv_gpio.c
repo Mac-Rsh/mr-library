@@ -61,66 +61,66 @@ static struct mr_pin hw_pin;
 
 static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 {
-	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitTypeDef GPIO_InitStructure;
 	EXTI_InitTypeDef EXTI_InitStructure = {0};
 	NVIC_InitTypeDef NVIC_InitStructure = {0};
 
 	RCC_APB2PeriphClockCmd(PIN_RCC(config->number), ENABLE);
 
 	/* Configure GPIO_InitStructure */
-	GPIO_InitStruct.GPIO_Pin = PIN_STPIN(config->number);
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Pin = PIN_STPIN(config->number);
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 
 	switch (config->mode)
 	{
 		case MR_PIN_MODE_OUTPUT:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 			break;
 		}
 
 		case MR_PIN_MODE_OUTPUT_OD:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_OD;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
 			break;
 		}
 
 		case MR_PIN_MODE_INPUT:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 			break;
 		}
 
 		case MR_PIN_MODE_INPUT_DOWN:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPD;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
 			break;
 		}
 
 		case MR_PIN_MODE_INPUT_UP:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 			break;
 		}
 
 		case MR_PIN_MODE_RISING:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPD;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
 			EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
 			break;
 		}
 
 		case MR_PIN_MODE_FALLING:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 			EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
 			break;
 		}
 
 		case MR_PIN_MODE_EDGE:
 		{
-			GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+			GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 			EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
 			break;
 		}
@@ -188,7 +188,7 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 		EXTI_Init(&EXTI_InitStructure);
 	}
 
-	GPIO_Init(PIN_STPORT(config->number), &GPIO_InitStruct);
+	GPIO_Init(PIN_STPORT(config->number), &GPIO_InitStructure);
 
 	MR_LOG_D(LOG_TAG, "Config %s %d %d\r\n", pin->device.object.name, config->number, config->mode);
 

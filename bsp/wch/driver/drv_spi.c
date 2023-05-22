@@ -19,19 +19,6 @@
 #define PIN_STPORT(pin)     ((GPIO_TypeDef *)(GPIOA_BASE + (0x400u * PIN_PORT(pin))))
 #define PIN_STPIN(pin)      ((uint16_t)(1u << (mr_uint8_t)(pin & 0x0Fu)))
 
-enum
-{
-#ifdef BSP_SPI_1
-	SPI1_INDEX,
-#endif
-#ifdef BSP_SPI_2
-	SPI2_INDEX,
-#endif
-#ifdef BSP_SPI_3
-	SPI3_INDEX,
-#endif
-};
-
 static struct ch32_spi ch32_spi[] =
 	{
 #ifdef BSP_SPI_1
