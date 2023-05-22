@@ -92,11 +92,6 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 	RCC_APB2PeriphClockCmd(hw->hw_spi.gpio_periph_clock, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
-	SPI_InitStructure.SPI_BaudRatePrescaler = ch32_spi_baud_rate_prescaler(pclk_freq, config->baud_rate);
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-
 	if (config->cs_active == MR_SPI_CS_ACTIVE_NONE)
 	{
 		SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
@@ -169,6 +164,10 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 		GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
 	}
 
+	SPI_InitStructure.SPI_BaudRatePrescaler = ch32_spi_baud_rate_prescaler(pclk_freq, config->baud_rate);
+	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+	SPI_InitStructure.SPI_CRCPolynomial = 7;
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
 	SPI_Init(hw->hw_spi.Instance, &SPI_InitStructure);
 	SPI_Cmd(hw->hw_spi.Instance, ENABLE);
 
