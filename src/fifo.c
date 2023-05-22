@@ -17,7 +17,7 @@
  * @param pool The pool of data.
  * @param pool_size The size of the pool.
  */
-void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size)
+void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size)
 {
 	MR_ASSERT(fifo != MR_NULL);
 	MR_ASSERT(pool != MR_NULL);
@@ -133,8 +133,9 @@ mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo)
  *
  * @return The size of the actual read.
  */
-mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
+mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size)
 {
+	mr_uint8_t *buf = (mr_uint8_t *)buffer;
 	mr_size_t length = 0;
 
 	MR_ASSERT(fifo != MR_NULL);
@@ -160,7 +161,7 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 	/* Copy the data from the fifo to the buffer */
 	if ((fifo->size - fifo->read_index) > size)
 	{
-		mr_memcpy(buffer, &fifo->buffer[fifo->read_index], size);
+		mr_memcpy(buf, &fifo->buffer[fifo->read_index], size);
 		fifo->read_index += size;
 
 		/* Enable interrupt */
@@ -168,8 +169,8 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
 		return size;
 	}
 
-	mr_memcpy(buffer, &fifo->buffer[fifo->read_index], fifo->size - fifo->read_index);
-	mr_memcpy(&buffer[fifo->size - fifo->read_index], &fifo->buffer[0], size - (fifo->size - fifo->read_index));
+	mr_memcpy(buf, &fifo->buffer[fifo->read_index], fifo->size - fifo->read_index);
+	mr_memcpy(&buf[fifo->size - fifo->read_index], &fifo->buffer[0], size - (fifo->size - fifo->read_index));
 
 	fifo->read_mirror = ~ fifo->read_mirror;
 	fifo->read_index = size - (fifo->size - fifo->read_index);
@@ -189,12 +190,13 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size)
  *
  * @return The size of the actual write.
  */
-mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size)
+mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size)
 {
+	mr_uint8_t *buf = (mr_uint8_t *)buffer;
 	mr_size_t length = 0;
 
 	MR_ASSERT(fifo != MR_NULL);
-	MR_ASSERT(buffer != MR_NULL);
+	MR_ASSERT(buf != MR_NULL);
 
 	if (size == 0)
 		return 0;
@@ -216,7 +218,7 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size
 	/* Copy the data from the buffer to the fifo */
 	if ((fifo->size - fifo->write_index) > size)
 	{
-		mr_memcpy(&fifo->buffer[fifo->write_index], buffer, size);
+		mr_memcpy(&fifo->buffer[fifo->write_index], buf, size);
 		fifo->write_index += size;
 
 		/* Enable interrupt */
@@ -225,8 +227,8 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size
 		return size;
 	}
 
-	mr_memcpy(&fifo->buffer[fifo->write_index], buffer, fifo->size - fifo->write_index);
-	mr_memcpy(&fifo->buffer[0], &buffer[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
+	mr_memcpy(&fifo->buffer[fifo->write_index], buf, fifo->size - fifo->write_index);
+	mr_memcpy(&fifo->buffer[0], &buf[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
 
 	fifo->write_mirror = ~ fifo->write_mirror;
 	fifo->write_index = size - (fifo->size - fifo->write_index);
@@ -246,12 +248,13 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size
  *
  * @return The size of the actual write.
  */
-mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size)
+mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size)
 {
+	mr_uint8_t *buf = (mr_uint8_t *)buffer;
 	mr_size_t length = 0;
 
 	MR_ASSERT(fifo != MR_NULL);
-	MR_ASSERT(buffer != MR_NULL);
+	MR_ASSERT(buf != MR_NULL);
 
 	if (size == 0)
 		return 0;
@@ -262,7 +265,7 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_
 	/* If the data exceeds the buffer length, the front data is discarded */
 	if (size > fifo->size)
 	{
-		buffer = &buffer[size - fifo->size];
+		buf = &buf[size - fifo->size];
 		size = fifo->size;
 	}
 
@@ -272,7 +275,7 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_
 	/* Copy the data from the buffer to the fifo */
 	if ((fifo->size - fifo->write_index) > size)
 	{
-		mr_memcpy(&fifo->buffer[fifo->write_index], buffer, size);
+		mr_memcpy(&fifo->buffer[fifo->write_index], buf, size);
 		fifo->write_index += size;
 		if (size > length)
 			fifo->read_index = fifo->write_index;
@@ -283,8 +286,8 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_
 		return size;
 	}
 
-	mr_memcpy(&fifo->buffer[fifo->write_index], buffer, fifo->size - fifo->write_index);
-	mr_memcpy(&fifo->buffer[0], &buffer[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
+	mr_memcpy(&fifo->buffer[fifo->write_index], buf, fifo->size - fifo->write_index);
+	mr_memcpy(&fifo->buffer[0], &buf[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
 
 	fifo->write_mirror = ~ fifo->write_mirror;
 	fifo->write_index = size - (fifo->size - fifo->write_index);
