@@ -27,13 +27,14 @@
 #define BSP_UART_4
 #define BSP_UART_5
 #define BSP_UART_6
+#define BSP_UART_7
+#define BSP_UART_8
 
 //<--------------------------- BSP-SPI -------------------------------------->
 //<<< Bsp using SPIx >>>
 #define BSP_SPI_1
 #define BSP_SPI_2
 #define BSP_SPI_3
-#define BSP_SPI_4
 
 //<--------------------------- BSP-I2C -------------------------------------->
 //<<< Bsp using I2Cx >>>
@@ -44,8 +45,6 @@
 //<<< Bsp using ADCx >>>
 #define BSP_ADC_1
 #define BSP_ADC_2
-#define BSP_ADC_3
-#define BSP_ADC_4
 
 //<--------------------------- BSP-DAC -------------------------------------->
 //<<< Bsp using DACx >>>
