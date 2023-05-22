@@ -29,4 +29,8 @@
 #include "drv_adc.h"
 #endif
 
+#if (MR_CONF_DAC == MR_CONF_ENABLE)
+#include "drv_dac.h"
+#endif
+
 #endif
