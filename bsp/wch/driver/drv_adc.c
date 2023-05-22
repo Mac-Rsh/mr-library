@@ -65,11 +65,17 @@ mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_uint16_t channel, mr_state_
 	{
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 		GPIOx = GPIOB;
-	} else
+	} else if (channel <= 15)
 	{
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 		GPIOx = GPIOC;
 	}
+	else if(channel <= 17)
+	{
+		ADC_TempSensorVrefintCmd(ENABLE);
+	}
+	else
+		return -MR_ERR_INVALID;
 
 	if (state == MR_ENABLE)
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
@@ -92,6 +98,9 @@ mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
 {
 	struct ch32_adc *hw = (struct ch32_adc *)adc->device.data;
 	mr_uint32_t data = 0;
+
+	if (channel >17)
+		return 0;
 
 	ADC_RegularChannelConfig(hw->hw_adc.Instance, channel, 1, ADC_SampleTime_239Cycles5);
 	ADC_SoftwareStartConvCmd(hw->hw_adc.Instance, ENABLE);
