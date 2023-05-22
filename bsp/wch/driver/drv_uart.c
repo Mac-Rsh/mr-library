@@ -152,7 +152,6 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 	NVIC_InitTypeDef NVIC_InitStructure = {0};
 	USART_InitTypeDef USART_InitStructure = {0};
 
-	/* Close the uart */
 	if (config->baud_rate == 0)
 	{
 		if (hw->hw_uart.Instance == USART1)
@@ -167,7 +166,6 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 		return MR_ERR_OK;
 	}
 
-	/* UART and GPIO clk enable*/
 	if (hw->hw_uart.Instance == USART1)
 	{
 		RCC_APB2PeriphClockCmd(hw->hw_uart.uart_periph_clock, ENABLE);
@@ -177,11 +175,6 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 	}
 	RCC_APB2PeriphClockCmd(hw->hw_uart.gpio_periph_clock, ENABLE);
 
-	USART_InitStructure.USART_BaudRate = config->baud_rate;
-	USART_InitStructure.USART_HardwareFlowControl = 0;
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-
-	/* Set data-bits */
 	switch (config->data_bits)
 	{
 		case MR_SERIAL_DATA_BITS_8:USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -192,7 +185,6 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 			break;
 	}
 
-	/* Set stop-bits */
 	switch (config->stop_bits)
 	{
 		case MR_SERIAL_STOP_BITS_1:USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -203,7 +195,6 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 			break;
 	}
 
-	/* Set parity */
 	switch (config->parity)
 	{
 		case MR_SERIAL_PARITY_NONE:USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -216,26 +207,22 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 			break;
 	}
 
-	/* Set GPIO-remap */
 	if (hw->hw_uart.remap != CH32_UART_GPIO_REMAP_NONE)
 	{
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 		GPIO_PinRemapConfig(hw->hw_uart.remap, ENABLE);
 	}
 
-	/* Tx-GPIO */
 	GPIO_InitStructure.GPIO_Pin = hw->hw_uart.tx_gpio_pin;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(hw->hw_uart.tx_gpio_port, &GPIO_InitStructure);
 
-	/* Rx-GPIO */
 	GPIO_InitStructure.GPIO_Pin = hw->hw_uart.rx_gpio_pin;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(hw->hw_uart.rx_gpio_port, &GPIO_InitStructure);
 
-	/* Interrupt enable */
 	NVIC_InitStructure.NVIC_IRQChannel = hw->hw_uart.irqno;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
@@ -243,7 +230,9 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 	NVIC_Init(&NVIC_InitStructure);
 	USART_ITConfig(hw->hw_uart.Instance, USART_IT_RXNE, ENABLE);
 
-	/* UART enable */
+	USART_InitStructure.USART_BaudRate = config->baud_rate;
+	USART_InitStructure.USART_HardwareFlowControl = 0;
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_Init(hw->hw_uart.Instance, &USART_InitStructure);
 	USART_Cmd(hw->hw_uart.Instance, ENABLE);
 
