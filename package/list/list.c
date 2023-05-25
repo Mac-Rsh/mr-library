@@ -11,7 +11,7 @@
 #include "list.h"
 
 /**
- * @brief Initialize a single list.
+ * @brief This function initialize a single list.
  *
  * @param list The list to initialize.
  */
@@ -23,7 +23,7 @@ void slist_init(slist_t list)
 }
 
 /**
- * @brief Append a node to a single list.
+ * @brief This function append a node to a single list.
  *
  * @param list The list to append to.
  * @param node The node to append.
@@ -46,7 +46,7 @@ void slist_append(slist_t list, slist_t node)
 }
 
 /**
- * @brief Insert a node after a node in a single list.
+ * @brief This function insert a node after a node in a single list.
  *
  * @param list The list to insert after.
  * @param node The node to insert.
@@ -61,7 +61,7 @@ void slist_insert_after(slist_t list, slist_t node)
 }
 
 /**
- * @brief Remove a node from a single list.
+ * @brief This function remove a node from a single list.
  *
  * @param list The list to remove from.
  * @param node The node to remove.
@@ -86,7 +86,7 @@ void slist_remove(slist_t list, slist_t node)
 }
 
 /**
- * @brief Get the length of a single list.
+ * @brief This function get the length of a single list.
  *
  * @param list The list to get the length of.
  *
@@ -110,7 +110,7 @@ size_t slist_get_length(slist_t list)
 }
 
 /**
- * @brief Get the tail of a single list.
+ * @brief This function get the tail of a single list.
  *
  * @param list The list to get the tail of.
  *
@@ -131,7 +131,7 @@ slist_t slist_get_tail(slist_t list)
 }
 
 /**
- * @brief Check if a single list is empty.
+ * @brief This function check if a single list is empty.
  *
  * @param list The list to check if it is empty.
  *
@@ -145,7 +145,7 @@ int slist_is_empty(slist_t list)
 }
 
 /**
- * @brief Initialize a double list.
+ * @brief This function initialize a double list.
  *
  * @param list The list to initialize.
  */
@@ -158,7 +158,7 @@ void list_init(list_t list)
 }
 
 /**
- * @brief Insert a node after a node in a double list.
+ * @brief This function insert a node after a node in a double list.
  *
  * @param list The list to insert after.
  * @param node The node to insert.
@@ -176,7 +176,7 @@ void list_insert_after(list_t list, list_t node)
 }
 
 /**
- * @brief Insert a node before a node in a double list.
+ * @brief This function insert a node before a node in a double list.
  *
  * @param list The list to insert before.
  * @param node The node to insert.
@@ -194,7 +194,7 @@ void list_insert_before(list_t list, list_t node)
 }
 
 /**
- * @brief Remove a node from a double list.
+ * @brief This function remove a node from a double list.
  *
  * @param node The node to remove.
  */
@@ -209,7 +209,7 @@ void list_remove(list_t node)
 }
 
 /**
- * @brief Get the length of a double list.
+ * @brief This function get the length of a double list.
  *
  * @param list The list to get the length of.
  *
@@ -233,7 +233,7 @@ size_t list_get_length(list_t list)
 }
 
 /**
- * @brief Check if a double list is empty.
+ * @brief This function check if a double list is empty.
  *
  * @param list The list to check if it is empty.
  *

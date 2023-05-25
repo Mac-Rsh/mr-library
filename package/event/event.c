@@ -54,7 +54,7 @@ int event_queue_empty(void)
 }
 
 /**
- * @brief Notify an event happening.
+ * @brief This function notify an event happening.
  *
  * @param id The event id.
  *
@@ -71,7 +71,7 @@ int event_notify(uint32_t id)
 }
 
 /**
- * @brief Handle events.
+ * @brief This function handle events.
  */
 void event_handle(void)
 {

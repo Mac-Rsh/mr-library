@@ -64,14 +64,23 @@ static int icm20602_self_check(icm20602_t icm20602)
 	return 0;
 }
 
+/**
+ * @brief This function initializes the ICM20602.
+ *
+ * @param icm20602 The ICM20602 to initialize.
+ * @param write The write data function for spi.
+ * @param read The read data function for spi.
+ * @param cs_ctrl The chip select control function for spi.
+ * @param data The data for user.
+ *
+ * @return ICM20602_ERR_OK on success, otherwise an error code.
+ */
 int icm20602_init(icm20602_t icm20602,
 				  void (*write)(icm20602_t icm20602, uint8_t data),
 				  uint8_t (*read)(icm20602_t icm20602),
 				  void (*cs_ctrl)(icm20602_t icm20602, uint8_t state),
 				  void *data)
 {
-	int ret = ICM20602_ERR_OK;
-
 	ICM20602_ASSERT(icm20602 != NULL);
 	ICM20602_ASSERT(write != NULL);
 	ICM20602_ASSERT(read != NULL);
@@ -102,6 +111,15 @@ int icm20602_init(icm20602_t icm20602,
 	return ICM20602_ERR_OK;
 }
 
+/**
+ * @brief This function configures the ICM20602.
+ *
+ * @param icm20602 The ICM20602 to configure.
+ * @param acc_range The accelerometer range.
+ * @param gyro_range The gyroscope range.
+ *
+ * @return ICM20602_ERR_OK on success, otherwise an error code.
+ */
 int icm20602_config(icm20602_t icm20602, uint8_t acc_range, uint16_t gyro_range)
 {
 	ICM20602_ASSERT(icm20602 != MR_NULL);
@@ -139,6 +157,13 @@ int icm20602_config(icm20602_t icm20602, uint8_t acc_range, uint16_t gyro_range)
 	return ICM20602_ERR_OK;
 }
 
+/**
+ * @brief This function reads the accelerometer data.
+ *
+ * @param icm20602 The ICM20602 to read.
+ *
+ * @return The acceleration data.
+ */
 struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602)
 {
 	uint8_t buffer[6] = {0};
@@ -157,6 +182,13 @@ struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602)
 	return axis;
 }
 
+/**
+ * @brief This function reads the gyroscope data.
+ *
+ * @param icm20602 The ICM20602 to read.
+ *
+ * @return The gyroscope data.
+ */
 struct icm20602_3_axis icm20602_read_gyro_3_axis(icm20602_t icm20602)
 {
 	uint8_t buffer[6] = {0};
