@@ -17,6 +17,7 @@
 | -driver    | 驱动文件  |
 | -include   | 库头文件  |
 | -module    | 组件    |
+| -package   | 软件包   |
 | -src       | 库源文件  |
 
 选择工程所需的文件：
