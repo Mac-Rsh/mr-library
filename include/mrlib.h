@@ -35,6 +35,7 @@ mr_size_t mr_avl_get_length(mr_avl_t tree);
  *  Export kservice functions
  */
 void mr_auto_init(void);
+mr_size_t mr_printf(const char *fmt, ...);
 mr_uint32_t mr_strhase(const char *str);
 mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
 

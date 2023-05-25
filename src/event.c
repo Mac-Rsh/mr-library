@@ -13,6 +13,8 @@
 #undef LOG_TAG
 #define LOG_TAG "event"
 
+#if (MR_CONF_EVENT == MR_CONF_ENABLE)
+
 /**
  * @brief This function find the event-server object.
  *
@@ -249,7 +251,6 @@ mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server)
 	/* Disable interrupt */
 	mr_hw_interrupt_disable();
 
-
 	/* Remove the agent from the manager's list */
 	mr_avl_remove(&server->list, &client->list);
 
@@ -263,3 +264,5 @@ mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server)
 
 	return MR_ERR_OK;
 }
+
+#endif
