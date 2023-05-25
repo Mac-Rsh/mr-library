@@ -15,9 +15,6 @@
 
 #define EVENT_QUEUE_SIZE                16
 
-#define EVENT_ERR_OK                    0
-#define EVENT_ERR_NO_MEMORY             2
-
 struct event
 {
 	uint32_t id;
@@ -25,6 +22,9 @@ struct event
 	void (*cb)(void *args);
 	void *args;
 };
+
+#define EVENT_ERR_OK                    0
+#define EVENT_ERR_QUEUE_FULL            1
 
 #if defined(__ARMCC_VERSION)
 #define event_section(x)              	__attribute__((section(x)))

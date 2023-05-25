@@ -63,7 +63,7 @@ int event_queue_empty(void)
 int event_notify(uint32_t id)
 {
 	if (event_queue_full())
-		return - EVENT_ERR_NO_MEMORY;
+		return - EVENT_ERR_QUEUE_FULL;
 
 	event_queue_put(id);
 
