@@ -34,7 +34,7 @@ static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
  *
  * @param type The flag of the container.
  *
- * @return a handle to the find container, or MR_NULL if not find.
+ * @return A handle to the find container, or MR_NULL if not find.
  */
 mr_container_t mr_container_find(enum mr_container_type type)
 {
@@ -49,7 +49,7 @@ mr_container_t mr_container_find(enum mr_container_type type)
  * @param name The name of the object.
  * @param type The container flag to which the object belongs.
  *
- * @return a handle to the find object, or MR_NULL if not find.
+ * @return A handle to the find object, or MR_NULL if not find.
  */
 mr_object_t mr_object_find(const char *name, enum mr_container_type type)
 {
