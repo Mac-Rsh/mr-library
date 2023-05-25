@@ -307,6 +307,6 @@ mr_err_t mr_hw_gpio_init(void)
 
 	return MR_ERR_OK;
 }
-INIT_BOARD_EXPORT(mr_hw_gpio_init);
+AUTO_INIT_DRIVER_EXPORT(mr_hw_gpio_init);
 
 #endif

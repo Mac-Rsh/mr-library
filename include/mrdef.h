@@ -26,7 +26,6 @@
 #define mr_strncpy                      strncpy
 #define mr_memset                       memset
 #define mr_memcpy                       memcpy
-#define mr_printf                       printf
 
 /* mr-library version information */
 #define MR_LIBRARY_VERSION              "0.0.2"
@@ -143,13 +142,12 @@ typedef mr_int8_t mr_lock_t;                                        /**< Type fo
  *  Auto-Init
  */
 typedef int (*init_fn_t)(void);
-#define INIT_EXPORT(fn,level) \
-    mr_used const init_fn_t _mr_init_##fn mr_section(".mri_fn."level) = fn
+#define AUTO_INIT_EXPORT(fn,level) \
+    mr_used const init_fn_t _mr_auto_init_##fn mr_section(".auto_init."level) = fn
 
-#define INIT_BOARD_EXPORT(fn)           INIT_EXPORT(fn, "1")
-#define INIT_DEV_EXPORT(fn)          	INIT_EXPORT(fn, "2")
-#define INIT_ENV_EXPORT(fn)             INIT_EXPORT(fn, "3")
-#define INIT_APP_EXPORT(fn)             INIT_EXPORT(fn, "4")
+#define AUTO_INIT_DRIVER_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "1")
+#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")
+#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")
 
 /**
  *  Double-list

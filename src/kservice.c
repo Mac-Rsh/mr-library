@@ -8,47 +8,75 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include <mrlib.h>
+#include "mrlib.h"
 
-static int mri_start(void)
+static mr_device_t console_device = MR_NULL;
+
+static int start(void)
 {
 	return 0;
 }
-INIT_EXPORT(mri_start, "0");
+AUTO_INIT_EXPORT(start, "0");
 
-static int mri_board_start(void)
+static int driver_state(void)
 {
 	return 0;
 }
-INIT_EXPORT(mri_board_start, "0.end");
+AUTO_INIT_EXPORT(driver_state, "0.end");
 
-static int mri_board_end(void)
+static int driver_end(void)
 {
 	return 0;
 }
-INIT_EXPORT(mri_board_end, "1.end");
+AUTO_INIT_EXPORT(driver_end, "1.end");
 
-static int mri_end(void)
+static int end(void)
 {
 	return 0;
 }
-INIT_EXPORT(mri_end,"6.end");
+AUTO_INIT_EXPORT(end, "3.end");
 
 void mr_auto_init(void)
 {
 	volatile const init_fn_t *fn_ptr;
 
-	/* auto-init-board */
-	for (fn_ptr = &_mr_init_mri_start; fn_ptr < &_mr_init_mri_board_end; fn_ptr++)
+	/* auto-init */
+	for (fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr ++)
 	{
 		(*fn_ptr)();
 	}
+}
 
-	/* auto-init-other */
-	for (fn_ptr = &_mr_init_mri_board_end; fn_ptr < &_mr_init_mri_end; fn_ptr++)
-	{
-		(*fn_ptr)();
-	}
+mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t length)
+{
+	return 0;
+}
+
+mr_err_t mr_printf_init(void)
+{
+	console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
+	MR_ASSERT(console_device != MR_NULL);
+
+	return MR_ERR_OK;
+}
+AUTO_INIT_DEVICE_EXPORT(mr_printf_init);
+
+mr_weak mr_size_t mr_printf(const char *fmt, ...)
+{
+	char str_buffer[MR_CONF_CONSOLE_BUFSZ];
+	mr_size_t length = 0;
+
+	va_list arg;
+	va_start(arg, fmt);
+	length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, arg);
+#if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
+	mr_device_write(console_device, 0, str_buffer, length);
+#else
+	mr_printf_output(str_buffer, length);
+#endif
+	va_end(arg);
+
+	return length;
 }
 
 static mr_int8_t mr_avl_get_height(mr_avl_t node)
@@ -188,10 +216,11 @@ mr_uint32_t mr_strhase(const char *str)
 {
 	mr_uint32_t value = 0;
 
-	while (*str) {
-		value ^=  value << 15;
-		value ^=  value >> 10;
-		value ^= *str++;
+	while (*str)
+	{
+		value ^= value << 15;
+		value ^= value >> 10;
+		value ^= *str ++;
 	}
 	value ^= value << 3;
 	value ^= value >> 6;
@@ -205,10 +234,11 @@ mr_uint32_t mr_strnhase(const char *str, mr_size_t length)
 {
 	mr_uint32_t value = 0;
 
-	while (length--) {
-		value ^=  value << 15;
-		value ^=  value >> 10;
-		value ^= *str++;
+	while (length --)
+	{
+		value ^= value << 15;
+		value ^= value >> 10;
+		value ^= *str ++;
 	}
 	value ^= value << 3;
 	value ^= value >> 6;
