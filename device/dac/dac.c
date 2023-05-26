@@ -39,9 +39,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
 		{
 			if (args)
 			{
-				return dac->ops->channel_configure(dac,
-												   ((struct mr_dac_config *)args)->channel,
-												   ((struct mr_dac_config *)args)->state);
+				return dac->ops->channel_configure(dac, (struct mr_dac_config *)args);
 			}
 			return - MR_ERR_INVALID;
 		}
@@ -77,7 +75,7 @@ static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_state_t state)
 	return - MR_ERR_IO;
 }
 
-static mr_err_t _err_io_dac_channel_configure(mr_dac_t dac, mr_uint16_t channel, mr_state_t state)
+static mr_err_t _err_io_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
 {
 	MR_ASSERT(0);
 	return - MR_ERR_IO;

@@ -58,7 +58,7 @@ mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
 	return MR_ERR_OK;
 }
 
-mr_err_t ch32_dac_channel_configure(mr_dac_t dac, mr_uint16_t channel, mr_state_t state)
+mr_err_t ch32_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
 {
 	struct ch32_dac *hw = (struct ch32_dac *)dac->device.data;
 	GPIO_InitTypeDef GPIO_InitStructure = {0};
@@ -83,8 +83,8 @@ mr_err_t ch32_dac_channel_configure(mr_dac_t dac, mr_uint16_t channel, mr_state_
 	MR_LOG_D(LOG_TAG,
 			 "Config %s %d %d\r\n",
 			 hw->name,
-			 channel,
-			 state);
+			 config->channel,
+			 config->state);
 
 	return MR_ERR_OK;
 }

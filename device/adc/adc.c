@@ -39,9 +39,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 		{
 			if (args)
 			{
-				return adc->ops->channel_configure(adc,
-												   ((struct mr_adc_config *)args)->channel,
-												   ((struct mr_adc_config *)args)->state);
+				return adc->ops->channel_configure(adc, (struct mr_adc_config *)args);
 			}
 			return - MR_ERR_INVALID;
 		}
@@ -58,7 +56,7 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr
 
 	if (size < sizeof(*recv_buffer))
 	{
-		MR_LOG_E(LOG_TAG, "Device %s: Invalid read size %d\r\n", device->object.name, size);
+		MR_LOG_E(LOG_TAG, "Device %s: Invalid read bufsz %d\r\n", device->object.name, size);
 		return - MR_ERR_INVALID;
 	}
 
@@ -77,7 +75,7 @@ static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_state_t state)
 	return - MR_ERR_IO;
 }
 
-static mr_err_t _err_io_adc_channel_configure(mr_adc_t adc, mr_uint16_t channel, mr_state_t state)
+static mr_err_t _err_io_adc_channel_configure(mr_adc_t adc, struct mr_adc_config *config)
 {
 	MR_ASSERT(0);
 	return - MR_ERR_IO;

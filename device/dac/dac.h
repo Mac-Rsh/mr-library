@@ -25,7 +25,7 @@ typedef struct mr_dac *mr_dac_t;
 struct mr_dac_ops
 {
 	mr_err_t (*configure)(mr_dac_t dac, mr_state_t state);
-	mr_err_t (*channel_configure)(mr_dac_t dac, mr_uint16_t channel, mr_state_t state);
+	mr_err_t (*channel_configure)(mr_dac_t dac, struct mr_dac_config *config);
 	void (*write)(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value);
 };
 
