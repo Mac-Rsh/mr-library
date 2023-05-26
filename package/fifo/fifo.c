@@ -10,16 +10,7 @@
 
 #include "fifo.h"
 
-/**
- * @brief This function memcpy.
- *
- * @param dst The destination.
- * @param src The source.
- * @param n The number of bytes.
- *
- * @return The destination.
- */
-void *fifo_memcpy(void *dst, const void *src, size_t n)
+static void *fifo_memcpy(void *dst, const void *src, size_t n)
 {
 	char *d = (char *)dst;
 	const char *s = (const char *)src;
@@ -164,7 +155,7 @@ size_t fifo_write(fifo_t fifo, const void *buffer, size_t size)
 	size_t length = 0;
 
 	FIFO_ASSERT(fifo != MR_NULL);
-	FIFO_ASSERT(buf != MR_NULL);
+	FIFO_ASSERT(buffer != MR_NULL);
 
 	if (size == 0)
 		return 0;
@@ -213,7 +204,7 @@ size_t fifo_write_force(fifo_t fifo, const void *buffer, size_t size)
 	size_t length = 0;
 
 	FIFO_ASSERT(fifo != MR_NULL);
-	FIFO_ASSERT(buf != MR_NULL);
+	FIFO_ASSERT(buffer != MR_NULL);
 
 	if (size == 0)
 		return 0;
