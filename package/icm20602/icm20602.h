@@ -73,5 +73,7 @@ int icm20602_init(icm20602_t icm20602,
 				  void (*cs_ctrl)(icm20602_t icm20602, uint8_t state),
 				  void *data);
 int icm20602_config(icm20602_t icm20602, uint8_t acc_range, uint16_t gyro_range);
+struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602);
+struct icm20602_3_axis icm20602_read_gyro_3_axis(icm20602_t icm20602);
 
 #endif
