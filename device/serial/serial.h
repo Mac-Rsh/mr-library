@@ -15,58 +15,52 @@
 
 #if (MR_CONF_SERIAL == MR_CONF_ENABLE)
 
-#define MR_SERIAL_DATA_BITS_8                       0
-#define MR_SERIAL_DATA_BITS_9                       1
+#define MR_SERIAL_DATA_BITS_8           0
+#define MR_SERIAL_DATA_BITS_9           1
 
-#define MR_SERIAL_STOP_BITS_1                       0
-#define MR_SERIAL_STOP_BITS_1_5                     1
-#define MR_SERIAL_STOP_BITS_2                       2
+#define MR_SERIAL_STOP_BITS_1           0
+#define MR_SERIAL_STOP_BITS_1_5         1
+#define MR_SERIAL_STOP_BITS_2           2
 
-#define MR_SERIAL_PARITY_NONE                       0
-#define MR_SERIAL_PARITY_EVEN                       1
-#define MR_SERIAL_PARITY_ODD                        2
+#define MR_SERIAL_PARITY_NONE           0
+#define MR_SERIAL_PARITY_EVEN           1
+#define MR_SERIAL_PARITY_ODD            2
 
-#define MR_SERIAL_BIT_ORDER_LSB                     0
-#define MR_SERIAL_BIT_ORDER_MSB                     1
+#define MR_SERIAL_BIT_ORDER_LSB         0
+#define MR_SERIAL_BIT_ORDER_MSB         1
 
-#define MR_SERIAL_NRZ_NORMAL                        0
-#define MR_SERIAL_NRZ_INVERTED                      1
+#define MR_SERIAL_NRZ_NORMAL            0
+#define MR_SERIAL_NRZ_INVERTED          1
 
-#define MR_SERIAL_FLOW_CONTROL_NONE                 0
-#define MR_SERIAL_FLOW_CONTROL_CTSRTS               1
-
-#define MR_SERIAL_BUFSZ_MIN                     	32
+#define MR_SERIAL_BUFSZ_MIN             32
 #if MR_CONF_SERIAL_BUFSZ < MR_SERIAL_BUFSZ_MIN
-#define MR_CONF_SERIAL_BUFSZ         				MR_SERIAL_BUFSZ_MIN
+#define MR_CONF_SERIAL_BUFSZ         	MR_SERIAL_BUFSZ_MIN
 #endif
 
-#define MR_SERIAL_EVENT_RX_INT                      0x1000
-#define MR_SERIAL_EVENT_TX_INT                      0x2000
-#define _MR_SERIAL_EVENT_MASK                       0xf000
+#define MR_SERIAL_EVENT_RX_INT          0x1000
+#define MR_SERIAL_EVENT_TX_INT          0x2000
+#define _MR_SERIAL_EVENT_MASK           0xf000
 
 /* Default config for mr_serial_config structure */
-#define MR_SERIAL_CONFIG_DEFAULT                    \
-{                                                   \
-    115200,                            				\
-    MR_SERIAL_DATA_BITS_8,             				\
-    MR_SERIAL_STOP_BITS_1,             				\
-    MR_SERIAL_PARITY_NONE,                			\
-    MR_SERIAL_BIT_ORDER_LSB,           				\
-    MR_SERIAL_NRZ_NORMAL,                 			\
-    MR_SERIAL_FLOW_CONTROL_NONE     				\
+#define MR_SERIAL_CONFIG_DEFAULT        \
+{                                       \
+    115200,                             \
+    MR_SERIAL_DATA_BITS_8,              \
+    MR_SERIAL_STOP_BITS_1,              \
+    MR_SERIAL_PARITY_NONE,              \
+    MR_SERIAL_BIT_ORDER_LSB,            \
+    MR_SERIAL_NRZ_NORMAL,               \
 }
 
 struct mr_serial_config
 {
 	mr_uint32_t baud_rate;
 
-	mr_uint16_t data_bits: 4;
-	mr_uint16_t stop_bits: 2;
-	mr_uint16_t parity: 2;
-	mr_uint16_t bit_order: 1;
-	mr_uint16_t invert: 1;
-	mr_uint16_t flow_control: 1;
-	mr_uint16_t reserved: 5;
+	mr_uint8_t data_bits;
+	mr_uint8_t stop_bits;
+	mr_uint8_t parity;
+	mr_uint8_t bit_order;
+	mr_uint8_t invert;
 };
 
 struct mr_serial_fifo

@@ -15,20 +15,20 @@
 
 #if (MR_CONF_TIMER == MR_CONF_ENABLE)
 
-#define MR_TIMER_MODE_PERIOD                        0
-#define MR_TIMER_MODE_ONE_SHOT                      1
+#define MR_TIMER_MODE_PERIOD            0
+#define MR_TIMER_MODE_ONE_SHOT          1
 
-#define _MR_TIMER_CUT_MODE_UP                       0
-#define _MR_TIMER_CUT_MODE_DOWN                     1
+#define _MR_TIMER_CUT_MODE_UP           0
+#define _MR_TIMER_CUT_MODE_DOWN         1
 
-#define MR_TIMER_EVENT_PIT_INT                      0x1000
-#define _MR_TIMER_EVENT_MASK                        0xf000
+#define MR_TIMER_EVENT_PIT_INT          0x1000
+#define _MR_TIMER_EVENT_MASK            0xf000
 
 /* Default config for mr_timer_config structure */
-#define MR_TIMER_CONFIG_DEFAULT                     \
-{                                                   \
-    1000,                                           \
-    MR_TIMER_MODE_PERIOD,                           \
+#define MR_TIMER_CONFIG_DEFAULT         \
+{                                       \
+    1000,                               \
+    MR_TIMER_MODE_PERIOD,               \
 }
 
 struct mr_timer_config
