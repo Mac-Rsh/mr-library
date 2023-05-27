@@ -17,39 +17,22 @@
 
 static void icm20602_write_reg(icm20602_t icm20602, mr_uint8_t reg, mr_uint8_t data)
 {
-	mr_uint8_t buffer[2] = {reg,
-							data};
-
-	mr_device_write(&icm20602->spi.device, - 1, buffer, sizeof(buffer));
+	mr_device_write(&icm20602->spi.device, reg, &data, sizeof(data));
 }
 
 static mr_uint8_t icm20602_read_reg(icm20602_t icm20602, mr_uint8_t reg)
 {
-	mr_uint8_t buffer[2] = {reg | 0x80,
-							0};
-	struct mr_message msg = {buffer,
-							 sizeof(buffer),
-							 MR_NULL};
+	mr_uint8_t data = 0;
 
-	mr_device_ioctl(&icm20602->spi.device, MR_CTRL_TRANSFER, &msg);
+	mr_device_read(&icm20602->spi.device, reg | 0x80, &data, sizeof(data));
 
-	return buffer[1];
+	return data;
 }
 
 static mr_ssize_t icm20602_read_regs(icm20602_t icm20602, mr_uint8_t reg, mr_uint8_t *buffer, mr_size_t size)
 {
-	mr_uint8_t recv_buffer = reg | 0x80;
-	struct mr_message msg[2] = {MR_NULL};
+	mr_device_read(&icm20602->spi.device, reg | 0x80, buffer, size);
 
-	msg[0].data = &recv_buffer;
-	msg[0].size = sizeof(recv_buffer);
-	msg[0].next = &msg[1];
-
-	msg[1].data = buffer;
-	msg[1].size = size;
-	msg[1].next = MR_NULL;
-
-	mr_device_ioctl(&icm20602->spi.device, MR_CTRL_TRANSFER, &msg);
 	return (mr_ssize_t)size;
 }
 
