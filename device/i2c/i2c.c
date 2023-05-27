@@ -284,7 +284,8 @@ mr_err_t mr_hw_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c
 mr_err_t mr_hw_i2c_device_add(mr_i2c_device_t i2c_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  mr_uint8_t address)
+							  mr_uint8_t address,
+							  const char *bus_name)
 {
 	mr_err_t ret = MR_ERR_OK;
 	const static struct mr_device_ops device_ops =
@@ -305,9 +306,18 @@ mr_err_t mr_hw_i2c_device_add(mr_i2c_device_t i2c_device,
 		return ret;
 
 	/* Initialize the i2c-device fields */
-	i2c_device->address = address;
 	i2c_device->config.baud_rate = 0;
 	i2c_device->bus = MR_NULL;
+	i2c_device->address = address;
+
+	/* Attach the i2c-device to the i2c-bus */
+	mr_device_t i2c_bus = mr_device_find(bus_name);
+	if (i2c_bus == MR_NULL)
+		return - MR_ERR_NOT_FOUND;
+	if (i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
+		return - MR_ERR_INVALID;
+	mr_device_open(i2c_bus, MR_OPEN_RDWR);
+	i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
 
 	return MR_ERR_OK;
 }

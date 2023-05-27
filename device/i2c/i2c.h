@@ -15,27 +15,26 @@
 
 #if (MR_CONF_I2C == MR_CONF_ENABLE)
 
-#define MR_I2C_HOST                          0
-#define MR_I2C_SLAVE                         1
+#define MR_I2C_HOST                     0
+#define MR_I2C_SLAVE                    1
 
-#define MR_I2C_ADDRESS_MODE_7                0
-#define MR_I2C_ADDRESS_MODE_10               1
+#define MR_I2C_ADDRESS_MODE_7           0
+#define MR_I2C_ADDRESS_MODE_10          1
 
 /* Default config for mr_i2c_config structure */
-#define MR_I2C_CONFIG_DEFAULT                \
-{                                            \
-    3000000,                                 \
-    MR_I2C_HOST,                             \
-    MR_I2C_ADDRESS_MODE_7                    \
+#define MR_I2C_CONFIG_DEFAULT           \
+{                                       \
+    3000000,                            \
+    MR_I2C_HOST,                        \
+    MR_I2C_ADDRESS_MODE_7               \
 }
 
 struct mr_i2c_config
 {
 	mr_uint32_t baud_rate;
 
-	mr_uint8_t host_slave: 1;
-	mr_uint8_t address_mode: 1;
-	mr_uint8_t reserve: 6;
+	mr_uint8_t host_slave;
+	mr_uint8_t address_mode;
 };
 
 typedef struct mr_i2c_bus *mr_i2c_bus_t;
@@ -73,7 +72,8 @@ mr_err_t mr_hw_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c
 mr_err_t mr_hw_i2c_device_add(mr_i2c_device_t i2c_device,
 							  const char *name,
 							  mr_uint16_t support_flag,
-							  mr_uint8_t address);
+							  mr_uint8_t address,
+							  const char *bus_name);
 
 #endif
 

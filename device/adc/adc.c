@@ -19,14 +19,14 @@ static mr_err_t mr_adc_open(mr_device_t device)
 {
 	mr_adc_t adc = (mr_adc_t)device;
 
-	return adc->ops->configure(adc, MR_ENABLE);
+	return adc->ops->configure(adc, MR_ADC_STATE_ENABLE);
 }
 
 static mr_err_t mr_adc_close(mr_device_t device)
 {
 	mr_adc_t adc = (mr_adc_t)device;
 
-	return adc->ops->configure(adc, MR_DISABLE);
+	return adc->ops->configure(adc, MR_ADC_STATE_DISABLE);
 }
 
 static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
@@ -69,7 +69,7 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr
 	return (mr_ssize_t)size;
 }
 
-static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_state_t state)
+static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_uint8_t state)
 {
 	MR_ASSERT(0);
 	return - MR_ERR_IO;

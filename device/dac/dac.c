@@ -19,14 +19,14 @@ static mr_err_t mr_dac_open(mr_device_t device)
 {
 	mr_dac_t dac = (mr_dac_t)device;
 
-	return dac->ops->configure(dac, MR_ENABLE);
+	return dac->ops->configure(dac, MR_DAC_STATE_ENABLE);
 }
 
 static mr_err_t mr_dac_close(mr_device_t device)
 {
 	mr_dac_t dac = (mr_dac_t)device;
 
-	return dac->ops->configure(dac, MR_DISABLE);
+	return dac->ops->configure(dac, MR_DAC_STATE_DISABLE);
 }
 
 static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
@@ -69,7 +69,7 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buf
 	return (mr_ssize_t)size;
 }
 
-static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_state_t state)
+static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_uint8_t state)
 {
 	MR_ASSERT(0);
 	return - MR_ERR_IO;
