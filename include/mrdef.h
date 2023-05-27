@@ -145,9 +145,9 @@ typedef int (*init_fn_t)(void);
 #define AUTO_INIT_EXPORT(fn,level) \
     mr_used const init_fn_t _mr_auto_init_##fn mr_section(".auto_init."level) = fn
 
-#define AUTO_INIT_DRIVER_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "1")
-#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")
-#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")
+#define AUTO_INIT_DRIVER_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "1")   /**< Driver auto-init export */
+#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")	/**< Device auto-init export */
+#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")	/**< Module auto-init export */
 
 /**
  *  Double-list
@@ -295,7 +295,7 @@ struct mr_event_server
 	struct mr_object object;                                        /**< Event object */
 
 	struct mr_fifo queue;                                           /**< Event queue */
-	mr_avl_t list;                                                   /**< Event list */
+	mr_avl_t list;                                                  /**< Event list */
 };
 typedef struct mr_event_server *mr_event_server_t;                  /**< Type for event server */
 
