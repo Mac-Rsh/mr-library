@@ -205,6 +205,12 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
 		return ret;
 	}
 
+	/* Send offset */
+	if (pos > 0)
+	{
+		spi_device->bus->ops->transfer(spi_device->bus, (mr_uint8_t)pos);
+	}
+
 	for (recv_size = 0; recv_size < size; recv_size ++)
 	{
 		*recv_buffer = spi_device->bus->ops->transfer(spi_device->bus, 0u);
@@ -230,6 +236,12 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
 	{
 		MR_LOG_E(LOG_TAG, "Device %s: Failed to take spi-bus\r\n", device->object.name);
 		return ret;
+	}
+
+	/* Send offset */
+	if (pos > 0)
+	{
+		spi_device->bus->ops->transfer(spi_device->bus, (mr_uint8_t)pos);
 	}
 
 	for (send_size = 0; send_size < size; send_size ++)

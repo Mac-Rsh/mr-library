@@ -15,39 +15,39 @@
 
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
 
-#define MR_SPI_HOST                          0
-#define MR_SPI_SLAVE                         1
+#define MR_SPI_HOST                     0
+#define MR_SPI_SLAVE                    1
 
-#define MR_SPI_MODE_0                        0
-#define MR_SPI_MODE_1                        1
-#define MR_SPI_MODE_2                        2
-#define MR_SPI_MODE_3                        3
+#define MR_SPI_MODE_0                   0
+#define MR_SPI_MODE_1                   1
+#define MR_SPI_MODE_2                   2
+#define MR_SPI_MODE_3                   3
 
-#define MR_SPI_BIT_ORDER_MSB                 0
-#define MR_SPI_BIT_ORDER_LSB                 1
+#define MR_SPI_BIT_ORDER_MSB            0
+#define MR_SPI_BIT_ORDER_LSB            1
 
-#define MR_SPI_CS_ACTIVE_LOW                 0
-#define MR_SPI_CS_ACTIVE_HIGH                1
-#define MR_SPI_CS_ACTIVE_NONE                2
+#define MR_SPI_CS_ACTIVE_LOW            0
+#define MR_SPI_CS_ACTIVE_HIGH           1
+#define MR_SPI_CS_ACTIVE_NONE           2
 
 /* Default config for mr_spi_config structure */
-#define MR_SPI_CONFIG_DEFAULT                \
-{                                            \
-    3000000,                                 \
-    MR_SPI_HOST,                             \
-    MR_SPI_MODE_0,                           \
-    MR_SPI_BIT_ORDER_MSB,                    \
-    MR_SPI_CS_ACTIVE_LOW,                    \
+#define MR_SPI_CONFIG_DEFAULT           \
+{                                       \
+    3000000,                            \
+    MR_SPI_HOST,                        \
+    MR_SPI_MODE_0,                      \
+    MR_SPI_BIT_ORDER_MSB,               \
+    MR_SPI_CS_ACTIVE_LOW,               \
 }
 
 struct mr_spi_config
 {
 	mr_uint32_t baud_rate;
 
-	mr_uint8_t host_slave: 1;
-	mr_uint8_t mode: 2;
-	mr_uint8_t bit_order: 1;
-	mr_uint8_t cs_active: 1;
+	mr_uint8_t host_slave;
+	mr_uint8_t mode;
+	mr_uint8_t bit_order;
+	mr_uint8_t cs_active;
 };
 
 typedef struct mr_spi_bus *mr_spi_bus_t;
