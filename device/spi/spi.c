@@ -31,7 +31,7 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 	{
 		/* Stop the chip-select of the last spi-device */
 		if (spi_device->bus->owner != MR_NULL)
-			spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
+			spi_device->bus->ops->cs_ctrl(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
 
 		/* If the configuration is different, the spi-bus is reconfigured */
 		if (spi_device->config.baud_rate != spi_device->bus->config.baud_rate
@@ -50,7 +50,7 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
 	}
 
 	/* Start the chip-select of the current spi-device */
-	spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_ENABLE);
+	spi_device->bus->ops->cs_ctrl(spi_device->bus, spi_device->bus->owner->cs_pin, MR_ENABLE);
 
 	return MR_ERR_OK;
 }
@@ -67,7 +67,7 @@ static mr_err_t mr_release_spi_bus(mr_spi_device_t spi_device)
 		return ret;
 
 	/* Stop the chip-select of the current spi-device */
-	spi_device->bus->ops->cs_set(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
+	spi_device->bus->ops->cs_ctrl(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
 
 	return MR_ERR_OK;
 }
@@ -268,7 +268,7 @@ static mr_uint8_t _err_io_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
 	return 0;
 }
 
-static void _err_io_spi_cs_set(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state)
+static void _err_io_spi_cs_ctrl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state)
 {
 	MR_ASSERT(0);
 }
@@ -301,7 +301,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
 	/* Set spi-bus operations as protect functions if ops is null */
 	ops->configure = ops->configure ? ops->configure : _err_io_spi_configure;
 	ops->transfer = ops->transfer ? ops->transfer : _err_io_spi_transfer;
-	ops->cs_set = ops->cs_set ? ops->cs_set : _err_io_spi_cs_set;
+	ops->cs_ctrl = ops->cs_ctrl ? ops->cs_ctrl : _err_io_spi_cs_ctrl;
 	spi_bus->ops = ops;
 
 	return MR_ERR_OK;

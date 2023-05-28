@@ -202,7 +202,7 @@ static mr_uint8_t ch32_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
 	return SPI_I2S_ReceiveData(hw->hw_spi.Instance);
 }
 
-static void ch32_spi_cs_set(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_state_t state)
+static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state)
 {
 	if (state == MR_ENABLE)
 	{
@@ -221,7 +221,7 @@ mr_err_t mr_hw_spi_init(void)
 		{
 			ch32_spi_configure,
 			ch32_spi_transfer,
-			ch32_spi_cs_set,
+			ch32_spi_cs_crtl,
 		};
 
 	while (count --)
