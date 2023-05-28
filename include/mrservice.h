@@ -13,7 +13,7 @@
 
 #include "mrdef.h"
 
-#define mr_struct_of(ptr, type, member) \
+#define mr_container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 
 #define mr_array_get_length(array)    sizeof(array)/sizeof(array[0])
@@ -23,12 +23,140 @@
 #define mr_max(a, b)    ((a) > (b)) ? a:b
 #define mr_min(a, b)    ((a) < (b)) ? a:b
 
+/**
+ * @brief This function initialize a single list.
+ *
+ * @param list The list to initialize.
+ */
+mr_inline void mr_slist_init(mr_slist_t list)
+{
+	list->next = NULL;
+}
+
+/**
+ * @brief This function append a node to a single list.
+ *
+ * @param list The list to append to.
+ * @param node The node to append.
+ */
+mr_inline void mr_slist_append(mr_slist_t list, mr_slist_t node)
+{
+	mr_slist_t temp_node = NULL;
+
+	temp_node = list;
+	while (temp_node->next != NULL)
+	{
+		temp_node = temp_node->next;
+	}
+
+	temp_node->next = node;
+	node->next = NULL;
+}
+
+/**
+ * @brief This function insert a node after a node in a single list.
+ *
+ * @param list The list to insert after.
+ * @param node The node to insert.
+ */
+mr_inline void mr_slist_insert_after(mr_slist_t list, mr_slist_t node)
+{
+	node->next = list->next;
+	list->next = node;
+}
+
+/**
+ * @brief This function remove a node from a single list.
+ *
+ * @param list The list to remove from.
+ * @param node The node to remove.
+ */
+mr_inline void mr_slist_remove(mr_slist_t list, mr_slist_t node)
+{
+	mr_slist_t temp_node = NULL;
+
+	temp_node = list;
+	while (temp_node->next != NULL && temp_node->next != node)
+	{
+		temp_node = temp_node->next;
+	}
+
+	if (temp_node->next != NULL)
+	{
+		temp_node->next = temp_node->next->next;
+	}
+}
+
+/**
+ * @brief This function get the length of a single list.
+ *
+ * @param list The list to get the length of.
+ *
+ * @return The length of the list.
+ */
+mr_inline mr_size_t mr_slist_get_length(mr_slist_t list)
+{
+	mr_slist_t temp_node = NULL;
+	size_t length = 0;
+
+	temp_node = list;
+	while (temp_node->next != NULL)
+	{
+		temp_node = temp_node->next;
+		length ++;
+	}
+
+	return length;
+}
+
+/**
+ * @brief This function get the tail of a single list.
+ *
+ * @param list The list to get the tail of.
+ *
+ * @return A handle to the tail of the list.
+ */
+mr_inline mr_slist_t mr_slist_get_tail(mr_slist_t list)
+{
+	mr_slist_t temp_node = NULL;
+
+	while (temp_node->next != NULL)
+	{
+		temp_node = temp_node->next;
+	}
+
+	return temp_node;
+}
+
+/**
+ * @brief This function check if a single list is empty.
+ *
+ * @param list The list to check if it is empty.
+ *
+ * @return Whether the list is empty.
+ */
+mr_inline mr_bool_t mr_slist_is_empty(mr_slist_t list)
+{
+	return (mr_bool_t)(list->next == NULL);
+}
+
+/**
+ * @brief This function initialize a double list.
+ *
+ * @param list The list to initialize.
+ */
 mr_inline void mr_list_init(mr_list_t list)
 {
 	list->next = list;
 	list->prev = list;
 }
 
+/**
+ * @brief This function insert a node after a node in a double list.
+ *
+ * @param list The list to insert after.
+ * @param node The node to insert.
+ */
 mr_inline void mr_list_insert_after(mr_list_t list, mr_list_t node)
 {
 	list->next->prev = node;
@@ -38,6 +166,26 @@ mr_inline void mr_list_insert_after(mr_list_t list, mr_list_t node)
 	node->prev = list;
 }
 
+/**
+ * @brief This function insert a node before a node in a double list.
+ *
+ * @param list The list to insert before.
+ * @param node The node to insert.
+ */
+mr_inline void mr_list_insert_before(mr_list_t list, mr_list_t node)
+{
+	list->prev->next = node;
+	node->prev = list->prev;
+
+	list->prev = node;
+	node->next = list;
+}
+
+/**
+ * @brief This function remove a node from a double list.
+ *
+ * @param node The node to remove.
+ */
 mr_inline void mr_list_remove(mr_list_t node)
 {
 	node->next->prev = node->prev;
@@ -46,6 +194,13 @@ mr_inline void mr_list_remove(mr_list_t node)
 	node->next = node->prev = node;
 }
 
+/**
+ * @brief This function get the length of a double list.
+ *
+ * @param list The list to get the length of.
+ *
+ * @return The length of the list.
+ */
 mr_inline mr_size_t mr_list_get_length(mr_list_t list)
 {
 	mr_size_t length = 0;
@@ -58,6 +213,18 @@ mr_inline mr_size_t mr_list_get_length(mr_list_t list)
 	}
 
 	return length;
+}
+
+/**
+ * @brief This function check if a double list is empty.
+ *
+ * @param list The list to check if it is empty.
+ *
+ * @return Whether the list is empty.
+ */
+mr_inline mr_bool_t mr_list_is_empty(mr_list_t list)
+{
+	return (mr_bool_t)(list->next == list);
 }
 
 #endif
