@@ -68,7 +68,7 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
 	/* Walk through the container looking for objects */
 	for (list = (container->list).next; list != &(container->list); list = list->next)
 	{
-		object = mr_struct_of(list, struct mr_object, list);
+		object = mr_container_of(list, struct mr_object, list);
 		if (mr_strncmp(object->name, name, MR_CONF_NAME_MAX) == 0)
 		{
 			/* Enable interrupt */

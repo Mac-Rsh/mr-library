@@ -148,7 +148,7 @@ void mr_event_server_handle(mr_event_server_t server)
 			continue;
 		}
 
-		client = mr_struct_of(node, struct mr_event_client, list);
+		client = mr_container_of(node, struct mr_event_client, list);
 
 		MR_LOG_D(LOG_TAG, "Server %s wake client %d\r\n", server->object.name, id);
 

@@ -54,10 +54,11 @@ mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t length)
 
 mr_err_t mr_printf_init(void)
 {
+#if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
 	console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
 	MR_ASSERT(console_device != MR_NULL);
-
-	return MR_ERR_OK;
+	return mr_device_open(console_device, MR_OPEN_RDWR);
+#endif
 }
 AUTO_INIT_DEVICE_EXPORT(mr_printf_init);
 
@@ -92,7 +93,7 @@ static mr_int8_t mr_avl_get_balance(mr_avl_t node)
 	if (node == MR_NULL)
 		return 0;
 
-	return mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child);
+	return (mr_int8_t)(mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
 }
 
 static void mr_avl_left_rotate(mr_avl_t *node)

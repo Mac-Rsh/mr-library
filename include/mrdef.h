@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-
 #include <malloc.h>
 #include <string.h>
 
@@ -150,8 +149,14 @@ typedef int (*init_fn_t)(void);
 #define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")	/**< Module auto-init export */
 
 /**
- *  Double-list
+ *  List
  */
+struct mr_slist
+{
+	struct mr_slist *next;                                          /**< Point to next node */
+};
+typedef struct mr_slist *mr_slist_t;                                /**< Type for slist */
+
 struct mr_list
 {
 	struct mr_list *next;                                           /**< Point to next node */
