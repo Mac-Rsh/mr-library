@@ -32,23 +32,26 @@ struct icm20602_3_axis
 	int16_t z;
 };
 
+struct icm20602_config
+{
+	uint8_t acc_range;
+	uint16_t gyro_range;
+};
+
 typedef struct icm20602 *icm20602_t;
+struct icm20602_ops
+{
+	void (*write)(icm20602_t icm20602, uint8_t data);
+	uint8_t (*read)(icm20602_t icm20602);
+	void (*cs_ctrl)(icm20602_t icm20602, uint8_t state);
+};
 struct icm20602
 {
-	struct
-	{
-		void (*write)(icm20602_t icm20602, uint8_t data);
-		uint8_t (*read)(icm20602_t icm20602);
-		void (*cs_ctrl)(icm20602_t icm20602, uint8_t state);
-	} io;
-
-	struct
-	{
-		uint8_t acc_range;
-		uint16_t gyro_range;
-	} config;
+	struct icm20602_config config;
 
 	void *data;
+
+	struct icm20602_ops *ops;
 };
 
 #define ICM20602_ERR_OK					0
@@ -67,12 +70,8 @@ struct icm20602
 #define ICM20602_PWR_MGMT_2             (0x6C)
 #define ICM20602_WHO_AM_I               (0x75)
 
-int icm20602_init(icm20602_t icm20602,
-				  void (*write)(icm20602_t icm20602, uint8_t data),
-				  uint8_t (*read)(icm20602_t icm20602),
-				  void (*cs_ctrl)(icm20602_t icm20602, uint8_t state),
-				  void *data);
-int icm20602_config(icm20602_t icm20602, uint8_t acc_range, uint16_t gyro_range);
+int icm20602_init(icm20602_t icm20602, const struct icm20602_ops *ops, void *data);
+int icm20602_config(icm20602_t icm20602, struct icm20602_config *config);
 struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602);
 struct icm20602_3_axis icm20602_read_gyro_3_axis(icm20602_t icm20602);
 
