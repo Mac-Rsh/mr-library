@@ -14,55 +14,55 @@
 
 static void i2c_bus_start(i2c_bus_t bus)
 {
-	bus->io.clk_ctrl(bus, 1);
-	bus->io.sda_ctrl(bus, 1);
+	bus->ops->clk_ctrl(bus, 1);
+	bus->ops->sda_ctrl(bus, 1);
 
-	i2c_delay(100);
-	bus->io.sda_ctrl(bus, 0);
-	i2c_delay(100);
-	bus->io.clk_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
+	bus->ops->sda_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
+	bus->ops->clk_ctrl(bus, 0);
 }
 
 static void i2c_bus_stop(i2c_bus_t bus)
 {
-	bus->io.sda_ctrl(bus, 0);
-	bus->io.clk_ctrl(bus, 0);
+	bus->ops->sda_ctrl(bus, 0);
+	bus->ops->clk_ctrl(bus, 0);
 
-	i2c_delay(100);
-	bus->io.clk_ctrl(bus, 1);
-	i2c_delay(100);
-	bus->io.sda_ctrl(bus, 1);
+	i2c_delay(I2C_DELAY);
+	bus->ops->clk_ctrl(bus, 1);
+	i2c_delay(I2C_DELAY);
+	bus->ops->sda_ctrl(bus, 1);
 }
 
 static void i2c_bus_send_ack(i2c_bus_t bus, uint8_t ack)
 {
-	bus->io.clk_ctrl(bus, 0);
+	bus->ops->clk_ctrl(bus, 0);
 
-	i2c_delay(100);
+	i2c_delay(I2C_DELAY);
 	if (ack)
-		bus->io.sda_ctrl(bus, 1);
+		bus->ops->sda_ctrl(bus, 1);
 	else
-		bus->io.sda_ctrl(bus, 0);
+		bus->ops->sda_ctrl(bus, 0);
 
-	bus->io.clk_ctrl(bus, 1);
-	i2c_delay(100);
-	bus->io.clk_ctrl(bus, 0);
-	i2c_delay(100);
+	bus->ops->clk_ctrl(bus, 1);
+	i2c_delay(I2C_DELAY);
+	bus->ops->clk_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
 }
 
 static uint8_t i2c_bus_wait_ack(i2c_bus_t bus)
 {
 	uint8_t ack;
 
-	bus->io.clk_ctrl(bus, 0);
-	i2c_delay(100);
-	bus->io.clk_ctrl(bus, 1);
-	i2c_delay(100);
+	bus->ops->clk_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
+	bus->ops->clk_ctrl(bus, 1);
+	i2c_delay(I2C_DELAY);
 
-	ack = bus->io.read(bus);
+	ack = bus->ops->read(bus);
 
-	bus->io.clk_ctrl(bus, 0);
-	i2c_delay(100);
+	bus->ops->clk_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
 
 	return ack;
 }
@@ -74,15 +74,15 @@ static void i2c_bus_write(i2c_bus_t bus, uint8_t data)
 	while (count --)
 	{
 		if (data & 0x80)
-			bus->io.sda_ctrl(bus, 1);
+			bus->ops->sda_ctrl(bus, 1);
 		else
-			bus->io.sda_ctrl(bus, 0);
+			bus->ops->sda_ctrl(bus, 0);
 		data = data << 1;
 
-		i2c_delay(100);
-		bus->io.clk_ctrl(bus, 1);
-		i2c_delay(100);
-		bus->io.clk_ctrl(bus, 0);
+		i2c_delay(I2C_DELAY);
+		bus->ops->clk_ctrl(bus, 1);
+		i2c_delay(I2C_DELAY);
+		bus->ops->clk_ctrl(bus, 0);
 	}
 
 	i2c_bus_wait_ack(bus);
@@ -93,24 +93,24 @@ static uint8_t i2c_bus_read(i2c_bus_t bus, uint8_t ack)
 	uint8_t data = 0;
 	uint8_t count = 8;
 
-	bus->io.clk_ctrl(bus, 0);
-	i2c_delay(100);
-	bus->io.sda_ctrl(bus, 1);
+	bus->ops->clk_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
+	bus->ops->sda_ctrl(bus, 1);
 
 	while (count --)
 	{
-		i2c_delay(100);
-		bus->io.clk_ctrl(bus, 0);
-		i2c_delay(100);
-		bus->io.clk_ctrl(bus, 1);
-		i2c_delay(100);
+		i2c_delay(I2C_DELAY);
+		bus->ops->clk_ctrl(bus, 0);
+		i2c_delay(I2C_DELAY);
+		bus->ops->clk_ctrl(bus, 1);
+		i2c_delay(I2C_DELAY);
 		data = data << 1;
-		if (bus->io.read(bus) == 1)
+		if (bus->ops->read(bus) == 1)
 			data |= 1;
 	}
 
-	bus->io.clk_ctrl(bus, 0);
-	i2c_delay(100);
+	bus->ops->clk_ctrl(bus, 0);
+	i2c_delay(I2C_DELAY);
 	i2c_bus_send_ack(bus, ack);
 
 	return data;
@@ -118,27 +118,27 @@ static uint8_t i2c_bus_read(i2c_bus_t bus, uint8_t ack)
 
 static int take_i2c_bus(i2c_device_t device)
 {
-	if (device->bus->owner.lock == 1)
+	if (device->bus->lock == 1)
 		return - I2C_ERR_BUSY;
 
-	if (device->bus->owner.device != device)
+	if (device->bus->owner != device)
 	{
-		device->bus->owner.device = device;
+		device->bus->owner = device;
 	}
 
-	device->bus->owner.lock = 1;
+	device->bus->lock = 1;
 
 	return I2C_ERR_OK;
 }
 
 static int release_i2c_bus(i2c_device_t device)
 {
-	if (device->bus->owner.device != device)
+	if (device->bus->owner != device)
 	{
 		return - I2C_ERR_BUSY;
 	}
 
-	device->bus->owner.lock = 0;
+	device->bus->lock = 0;
 
 	return I2C_ERR_OK;
 }
@@ -152,24 +152,17 @@ static int release_i2c_bus(i2c_device_t device)
  * @param read The read sda function for i2c bus.
  * @param data The data for user.
  */
-void i2c_bus_init(i2c_bus_t bus,
-				  void (*clk_ctrl)(i2c_bus_t i2c_bus, uint8_t state),
-				  void (*sda_ctrl)(i2c_bus_t i2c_bus, uint8_t state),
-				  uint8_t (*read)(i2c_bus_t i2c_bus),
-				  void *data)
+void i2c_bus_init(i2c_bus_t bus, const struct i2c_bus_ops *ops, void *data)
 {
 	I2C_ASSERT(bus != NULL);
-	I2C_ASSERT(clk_ctrl != NULL);
-	I2C_ASSERT(sda_ctrl != NULL);
-	I2C_ASSERT(read != NULL);
+	I2C_ASSERT(ops != NULL);
 
-	bus->io.clk_ctrl = clk_ctrl;
-	bus->io.sda_ctrl = sda_ctrl;
-	bus->io.read = read;
+	bus->owner = NULL;
+	bus->lock = 0;
+
 	bus->data = data;
 
-	bus->owner.device = NULL;
-	bus->owner.lock = 0;
+	bus->ops = ops;
 }
 
 /**

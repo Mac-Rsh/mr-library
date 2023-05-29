@@ -1,11 +1,11 @@
 /*
- * Copyright (c), mr-library Development Team
+ * Copyright (c) 2023, mr-library Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-03-10    MacRsh       first version
+ * 2023-04-23     MacRsh       first version
  */
 
 #ifndef _LINK_H_
@@ -13,52 +13,36 @@
 
 #include <mrlib.h>
 
-#define MR_LINK_PACKET_MAX 4
-
-enum mr_link_state
-{
-	MR_LINK_CHECK_HEAD,
-	MR_LINK_CHECK_DATA,
-	MR_LINK_OK,
-};
+#define MR_LINK_PACKET_HEAD 0x55
 
 struct mr_link_packet_head
 {
-	mr_uint8_t frame_head: 7;
-	mr_uint8_t ack: 1;
-	mr_uint8_t src_addr;
-	mr_uint8_t dst_addr;
-	mr_uint8_t sequence;
-	mr_uint16_t length;
-	mr_uint32_t crc;
+	mr_uint8_t start;
+	mr_uint8_t length;
+	mr_uint16_t sequence;
+	mr_uint8_t crc;
 };
 
-typedef struct mr_link *mr_link_t;
-
-struct mr_link_service
+struct mr_link_packet
 {
-	struct mr_device device;
+	struct mr_link_packet_head head;
+	mr_uint8_t *data;
 
-	struct mr_list list;
-	mr_uint8_t src_addr;
+	struct mr_link_packet *next;
 };
-typedef struct mr_link_service *mr_link_service_t;
+typedef struct mr_link_packet *mr_link_packet_t;
 
 struct mr_link
 {
-	struct mr_device device;
+	struct mr_object object;
 
-	struct mr_list list;
-	mr_uint8_t buffer[MR_LINK_PACKET_MAX];
+	struct mr_fifo rx_fifo;
+
+	mr_uint16_t tx_sequence;
+	mr_link_packet_t tx_packet;
+
+	mr_uint32_t (*get_crc)(mr_uint8_t *buffer, mr_size_t length);
 };
-
-mr_size_t mr_link_write(mr_link_t link,
-						mr_uint8_t src_addr,
-						mr_uint8_t dst_addr,
-						mr_uint8_t *buffer,
-						mr_size_t count);
-
-mr_err_t mr_link_service_add_to_container(mr_link_service_t link_service, const char *name);
-mr_err_t mr_link_add_to_container(mr_link_t link, const char *name, char *port_name);
+typedef struct mr_link *mr_link_t;
 
 #endif
