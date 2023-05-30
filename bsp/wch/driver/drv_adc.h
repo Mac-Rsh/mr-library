@@ -17,16 +17,16 @@
 
 struct ch32_hw_adc
 {
-	ADC_TypeDef *Instance;
+    ADC_TypeDef *Instance;
 
-	mr_uint32_t adc_periph_clock;
+    mr_uint32_t adc_periph_clock;
 };
 
 struct ch32_adc
 {
-	char *name;
+    char *name;
 
-	struct ch32_hw_adc hw_adc;
+    struct ch32_hw_adc hw_adc;
 };
 
 mr_err_t mr_hw_adc_init(void);

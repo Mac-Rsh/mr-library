@@ -33,45 +33,46 @@
 
 struct mr_timer_config
 {
-	mr_uint32_t freq;
-	mr_uint8_t mode;
+    mr_uint32_t freq;
+    mr_uint8_t mode;
 };
 
 struct mr_timer_information
 {
-	mr_uint32_t max_freq;
-	mr_uint32_t max_cut;
-	mr_uint8_t cut_mode;
+    mr_uint32_t max_freq;
+    mr_uint32_t max_cut;
+    mr_uint8_t cut_mode;
 };
 
 typedef struct mr_timer *mr_timer_t;
+
 struct mr_timer_ops
 {
-	mr_err_t (*configure)(mr_timer_t timer, struct mr_timer_config *config);
-	mr_err_t (*start)(mr_timer_t timer, mr_uint32_t period_reload);
-	mr_err_t (*stop)(mr_timer_t timer);
-	mr_uint32_t (*get_count)(mr_timer_t timer);
+    mr_err_t (*configure)(mr_timer_t timer, struct mr_timer_config *config);
+    mr_err_t (*start)(mr_timer_t timer, mr_uint32_t period_reload);
+    mr_err_t (*stop)(mr_timer_t timer);
+    mr_uint32_t (*get_count)(mr_timer_t timer);
 };
 
 struct mr_timer
 {
-	struct mr_device device;
+    struct mr_device device;
 
-	struct mr_timer_config config;
-	struct mr_timer_information information;
-	mr_uint32_t reload;
-	mr_uint32_t cycles;
-	mr_uint32_t overflow;
-	mr_uint32_t timeout;
+    struct mr_timer_config config;
+    struct mr_timer_information information;
+    mr_uint32_t reload;
+    mr_uint32_t cycles;
+    mr_uint32_t overflow;
+    mr_uint32_t timeout;
 
-	const struct mr_timer_ops *ops;
+    const struct mr_timer_ops *ops;
 };
 
 mr_err_t mr_hw_timer_add(mr_timer_t timer,
-						 const char *name,
-						 struct mr_timer_ops *ops,
-						 struct mr_timer_information *information,
-						 void *data);
+                         const char *name,
+                         struct mr_timer_ops *ops,
+                         struct mr_timer_information *information,
+                         void *data);
 void mr_hw_timer_isr(mr_timer_t timer, mr_uint16_t event);
 
 #endif

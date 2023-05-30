@@ -17,9 +17,9 @@
  */
 void slist_init(slist_t list)
 {
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	list->next = NULL;
+    list->next = NULL;
 }
 
 /**
@@ -30,19 +30,19 @@ void slist_init(slist_t list)
  */
 void slist_append(slist_t list, slist_t node)
 {
-	slist_t temp_node = NULL;
+    slist_t temp_node = NULL;
 
-	LIST_ASSERT(list != NULL);
-	LIST_ASSERT(node != NULL);
+    LIST_ASSERT(list != NULL);
+    LIST_ASSERT(node != NULL);
 
-	temp_node = list;
-	while (temp_node->next != NULL)
-	{
-		temp_node = temp_node->next;
-	}
+    temp_node = list;
+    while (temp_node->next != NULL)
+    {
+        temp_node = temp_node->next;
+    }
 
-	temp_node->next = node;
-	node->next = NULL;
+    temp_node->next = node;
+    node->next = NULL;
 }
 
 /**
@@ -53,11 +53,11 @@ void slist_append(slist_t list, slist_t node)
  */
 void slist_insert_after(slist_t list, slist_t node)
 {
-	LIST_ASSERT(list != NULL);
-	LIST_ASSERT(node != NULL);
+    LIST_ASSERT(list != NULL);
+    LIST_ASSERT(node != NULL);
 
-	node->next = list->next;
-	list->next = node;
+    node->next = list->next;
+    list->next = node;
 }
 
 /**
@@ -68,21 +68,21 @@ void slist_insert_after(slist_t list, slist_t node)
  */
 void slist_remove(slist_t list, slist_t node)
 {
-	slist_t temp_node = NULL;
+    slist_t temp_node = NULL;
 
-	LIST_ASSERT(list != NULL);
-	LIST_ASSERT(node != NULL);
+    LIST_ASSERT(list != NULL);
+    LIST_ASSERT(node != NULL);
 
-	temp_node = list;
-	while (temp_node->next != NULL && temp_node->next != node)
-	{
-		temp_node = temp_node->next;
-	}
+    temp_node = list;
+    while (temp_node->next != NULL && temp_node->next != node)
+    {
+        temp_node = temp_node->next;
+    }
 
-	if (temp_node->next != NULL)
-	{
-		temp_node->next = temp_node->next->next;
-	}
+    if (temp_node->next != NULL)
+    {
+        temp_node->next = temp_node->next->next;
+    }
 }
 
 /**
@@ -94,19 +94,19 @@ void slist_remove(slist_t list, slist_t node)
  */
 size_t slist_get_length(slist_t list)
 {
-	slist_t temp_node = NULL;
-	size_t length = 0;
+    slist_t temp_node = NULL;
+    size_t length = 0;
 
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	temp_node = list;
-	while (temp_node->next != NULL)
-	{
-		temp_node = temp_node->next;
-		length ++;
-	}
+    temp_node = list;
+    while (temp_node->next != NULL)
+    {
+        temp_node = temp_node->next;
+        length++;
+    }
 
-	return length;
+    return length;
 }
 
 /**
@@ -118,16 +118,16 @@ size_t slist_get_length(slist_t list)
  */
 slist_t slist_get_tail(slist_t list)
 {
-	slist_t temp_node = NULL;
+    slist_t temp_node = NULL;
 
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	while (temp_node->next != NULL)
-	{
-		temp_node = temp_node->next;
-	}
+    while (temp_node->next != NULL)
+    {
+        temp_node = temp_node->next;
+    }
 
-	return temp_node;
+    return temp_node;
 }
 
 /**
@@ -139,9 +139,9 @@ slist_t slist_get_tail(slist_t list)
  */
 int slist_is_empty(slist_t list)
 {
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	return list->next == NULL;
+    return list->next == NULL;
 }
 
 /**
@@ -151,10 +151,10 @@ int slist_is_empty(slist_t list)
  */
 void list_init(list_t list)
 {
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	list->next = list;
-	list->prev = list;
+    list->next = list;
+    list->prev = list;
 }
 
 /**
@@ -165,14 +165,14 @@ void list_init(list_t list)
  */
 void list_insert_after(list_t list, list_t node)
 {
-	LIST_ASSERT(list != NULL);
-	LIST_ASSERT(node != NULL);
+    LIST_ASSERT(list != NULL);
+    LIST_ASSERT(node != NULL);
 
-	list->next->prev = node;
-	node->next = list->next;
+    list->next->prev = node;
+    node->next = list->next;
 
-	list->next = node;
-	node->prev = list;
+    list->next = node;
+    node->prev = list;
 }
 
 /**
@@ -183,14 +183,14 @@ void list_insert_after(list_t list, list_t node)
  */
 void list_insert_before(list_t list, list_t node)
 {
-	LIST_ASSERT(list != NULL);
-	LIST_ASSERT(node != NULL);
+    LIST_ASSERT(list != NULL);
+    LIST_ASSERT(node != NULL);
 
-	list->prev->next = node;
-	node->prev = list->prev;
+    list->prev->next = node;
+    node->prev = list->prev;
 
-	list->prev = node;
-	node->next = list;
+    list->prev = node;
+    node->next = list;
 }
 
 /**
@@ -200,12 +200,12 @@ void list_insert_before(list_t list, list_t node)
  */
 void list_remove(list_t node)
 {
-	LIST_ASSERT(node != NULL);
+    LIST_ASSERT(node != NULL);
 
-	node->next->prev = node->prev;
-	node->prev->next = node->next;
+    node->next->prev = node->prev;
+    node->prev->next = node->next;
 
-	node->next = node->prev = node;
+    node->next = node->prev = node;
 }
 
 /**
@@ -217,19 +217,19 @@ void list_remove(list_t node)
  */
 size_t list_get_length(list_t list)
 {
-	list_t temp_node = NULL;
-	size_t length = 0;
+    list_t temp_node = NULL;
+    size_t length = 0;
 
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	temp_node = list;
-	while (temp_node->next != list)
-	{
-		temp_node = temp_node->next;
-		length ++;
-	}
+    temp_node = list;
+    while (temp_node->next != list)
+    {
+        temp_node = temp_node->next;
+        length++;
+    }
 
-	return length;
+    return length;
 }
 
 /**
@@ -241,7 +241,7 @@ size_t list_get_length(list_t list)
  */
 int list_is_empty(list_t list)
 {
-	LIST_ASSERT(list != NULL);
+    LIST_ASSERT(list != NULL);
 
-	return list->next == list;
+    return list->next == list;
 }

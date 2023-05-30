@@ -12,168 +12,223 @@
 
 static mr_device_t console_device = MR_NULL;
 
+static char *log_level_name[] =
+        {
+                "log-a",
+                "log-e",
+                "log-w",
+                "log-i",
+                "log-d",
+        };
+
 static int start(void)
 {
-	return 0;
+    return 0;
 }
+
 AUTO_INIT_EXPORT(start, "0");
 
 static int driver_state(void)
 {
-	return 0;
+    return 0;
 }
+
 AUTO_INIT_EXPORT(driver_state, "0.end");
 
 static int driver_end(void)
 {
-	return 0;
+    return 0;
 }
+
 AUTO_INIT_EXPORT(driver_end, "1.end");
 
 static int end(void)
 {
-	return 0;
+    return 0;
 }
+
 AUTO_INIT_EXPORT(end, "3.end");
 
 void mr_auto_init(void)
 {
-	volatile const init_fn_t *fn_ptr;
+    volatile const init_fn_t *fn_ptr;
 
-	/* auto-init */
-	for (fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr ++)
-	{
-		(*fn_ptr)();
-	}
-}
-
-mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t length)
-{
-	return 0;
+    /* Auto-init */
+    for (fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr++)
+    {
+        (*fn_ptr)();
+    }
 }
 
 mr_err_t mr_printf_init(void)
 {
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-	console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
-	MR_ASSERT(console_device != MR_NULL);
-	return mr_device_open(console_device, MR_OPEN_RDWR);
+    console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
+    MR_ASSERT(console_device != MR_NULL);
+    return mr_device_open(console_device, MR_OPEN_RDWR);
+#else
+    return MR_ERR_OK;
 #endif
 }
+
 AUTO_INIT_DEVICE_EXPORT(mr_printf_init);
+
+mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t length)
+{
+    return 0;
+}
 
 mr_weak mr_size_t mr_printf(const char *fmt, ...)
 {
-	char str_buffer[MR_CONF_CONSOLE_BUFSZ];
-	mr_size_t length = 0;
+    char str_buffer[MR_CONF_CONSOLE_BUFSZ];
+    mr_size_t length = 0;
 
-	va_list arg;
-	va_start(arg, fmt);
-	length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, arg);
+    va_list args;
+    va_start(args, fmt);
+    length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-	mr_device_write(console_device, 0, str_buffer, length);
+    mr_device_write(console_device, 0, str_buffer, length);
 #else
-	mr_printf_output(str_buffer, length);
+    mr_printf_output(str_buffer, length);
 #endif
-	va_end(arg);
+    va_end(args);
 
-	return length;
+    return length;
+}
+
+void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...)
+{
+    char str_buffer[MR_CONF_CONSOLE_BUFSZ];
+    mr_size_t length = 0;
+    va_list args;
+
+    va_start(args, fmt);
+
+    mr_printf("[%s/%s]: ", log_level_name[level], tag);
+    length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, args);
+#if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
+    mr_device_write(console_device, 0, str_buffer, length);
+#else
+    mr_printf_output(str_buffer, length);
+#endif
+
+    va_end(args);
+}
+
+mr_weak void mr_assert_handler(void)
+{
+    while (1)
+    {
+
+    }
 }
 
 static mr_int8_t mr_avl_get_height(mr_avl_t node)
 {
-	if (node == MR_NULL)
-		return - 1;
+    if (node == MR_NULL)
+    {
+        return -1;
+    }
 
-	return node->height;
+    return node->height;
 }
 
 static mr_int8_t mr_avl_get_balance(mr_avl_t node)
 {
-	if (node == MR_NULL)
-		return 0;
+    if (node == MR_NULL)
+    {
+        return 0;
+    }
 
-	return (mr_int8_t)(mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
+    return (mr_int8_t)(mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
 }
 
 static void mr_avl_left_rotate(mr_avl_t *node)
 {
-	mr_avl_t right_child = (*node)->right_child;
+    mr_avl_t right_child = (*node)->right_child;
 
-	(*node)->right_child = right_child->left_child;
-	right_child->left_child = (*node);
+    (*node)->right_child = right_child->left_child;
+    right_child->left_child = (*node);
 
-	(*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
-	right_child->height =
-			mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
+    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    right_child->height =
+                    mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
 
-	(*node) = right_child;
+    (*node) = right_child;
 }
 
 static void mr_avl_right_rotate(mr_avl_t *node)
 {
-	mr_avl_t left_child = (*node)->left_child;
+    mr_avl_t left_child = (*node)->left_child;
 
-	(*node)->left_child = left_child->right_child;
-	left_child->right_child = (*node);
+    (*node)->left_child = left_child->right_child;
+    left_child->right_child = (*node);
 
-	(*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
-	left_child->height =
-			mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
+    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    left_child->height =
+                    mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
 
-	(*node) = left_child;
+    (*node) = left_child;
 }
 
 void mr_avl_init(mr_avl_t node, mr_uint32_t value)
 {
-	node->height = 0;
-	node->value = value;
-	node->left_child = MR_NULL;
-	node->right_child = MR_NULL;
+    node->height = 0;
+    node->value = value;
+    node->left_child = MR_NULL;
+    node->right_child = MR_NULL;
 }
 
 void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
 {
-	mr_int8_t balance = 0;
+    mr_int8_t balance = 0;
 
-	if ((*tree) == MR_NULL)
-		(*tree) = node;
+    if ((*tree) == MR_NULL)
+    {
+        (*tree) = node;
+    }
 
-	if (node->value < (*tree)->value)
-		mr_avl_insert(&(*tree)->left_child, node);
-	else if (node->value > (*tree)->value)
-		mr_avl_insert(&(*tree)->right_child, node);
-	else
-		return;
+    if (node->value < (*tree)->value)
+    {
+        mr_avl_insert(&(*tree)->left_child, node);
+    }
+    else if (node->value > (*tree)->value)
+    {
+        mr_avl_insert(&(*tree)->right_child, node);
+    }
+    else
+    {
+        return;
+    }
 
-	(*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
-	balance = mr_avl_get_balance((*tree));
-	if (balance > 1 && node->value < (*tree)->left_child->value)
-	{
-		mr_avl_right_rotate(&(*tree));
-		return;
-	}
+    balance = mr_avl_get_balance((*tree));
+    if (balance > 1 && node->value < (*tree)->left_child->value)
+    {
+        mr_avl_right_rotate(&(*tree));
+        return;
+    }
 
-	if (balance < - 1 && node->value > (*tree)->right_child->value)
-	{
-		mr_avl_left_rotate(&(*tree));
-		return;
-	}
+    if (balance < -1 && node->value > (*tree)->right_child->value)
+    {
+        mr_avl_left_rotate(&(*tree));
+        return;
+    }
 
-	if (balance > 1 && node->value > (*tree)->left_child->value)
-	{
-		mr_avl_left_rotate(&(*tree)->left_child);
-		mr_avl_right_rotate(&(*tree));
-		return;
-	}
+    if (balance > 1 && node->value > (*tree)->left_child->value)
+    {
+        mr_avl_left_rotate(&(*tree)->left_child);
+        mr_avl_right_rotate(&(*tree));
+        return;
+    }
 
-	if (balance < - 1 && node->value < (*tree)->right_child->value)
-	{
-		mr_avl_right_rotate(&(*tree)->right_child);
-		mr_avl_left_rotate(&(*tree));
-		return;
-	}
+    if (balance < -1 && node->value < (*tree)->right_child->value)
+    {
+        mr_avl_right_rotate(&(*tree)->right_child);
+        mr_avl_left_rotate(&(*tree));
+        return;
+    }
 }
 
 void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
@@ -183,68 +238,82 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
 
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value)
 {
-	if (tree == MR_NULL)
-		return tree;
+    if (tree == MR_NULL)
+    {
+        return tree;
+    }
 
-	if (tree->value == value)
-		return tree;
+    if (tree->value == value)
+    {
+        return tree;
+    }
 
-	if (value < tree->value)
-		return mr_avl_find(tree->left_child, value);
-	else if (value > tree->value)
-		return mr_avl_find(tree->right_child, value);
+    if (value < tree->value)
+    {
+        return mr_avl_find(tree->left_child, value);
+    }
+    else if (value > tree->value)
+    {
+        return mr_avl_find(tree->right_child, value);
+    }
 
-	return MR_NULL;
+    return MR_NULL;
 }
 
 mr_size_t mr_avl_get_length(mr_avl_t tree)
 {
-	mr_size_t length = 1;
+    mr_size_t length = 1;
 
-	if (tree == MR_NULL)
-		return 0;
+    if (tree == MR_NULL)
+    {
+        return 0;
+    }
 
-	if (tree->left_child != MR_NULL)
-		length += mr_avl_get_length(tree->left_child);
+    if (tree->left_child != MR_NULL)
+    {
+        length += mr_avl_get_length(tree->left_child);
+    }
 
-	if (tree->right_child != MR_NULL)
-		length += mr_avl_get_length(tree->right_child);
+    if (tree->right_child != MR_NULL)
+    {
+        length += mr_avl_get_length(tree->right_child);
+    }
 
-	return length;
+    return length;
 }
 
 mr_uint32_t mr_strhase(const char *str)
 {
-	mr_uint32_t value = 0;
+    mr_uint32_t value = 0;
 
-	while (*str)
-	{
-		value ^= value << 15;
-		value ^= value >> 10;
-		value ^= *str ++;
-	}
-	value ^= value << 3;
-	value ^= value >> 6;
-	value ^= value << 2;
-	value ^= value >> 15;
+    while (*str)
+    {
+        value ^= value << 15;
+        value ^= value >> 10;
+        value ^= *str++;
+    }
+    value ^= value << 3;
+    value ^= value >> 6;
+    value ^= value << 2;
+    value ^= value >> 15;
 
-	return value;
+    return value;
 }
 
 mr_uint32_t mr_strnhase(const char *str, mr_size_t length)
 {
-	mr_uint32_t value = 0;
+    mr_uint32_t value = 0;
 
-	while (length --)
-	{
-		value ^= value << 15;
-		value ^= value >> 10;
-		value ^= *str ++;
-	}
-	value ^= value << 3;
-	value ^= value >> 6;
-	value ^= value << 2;
-	value ^= value >> 15;
+    while (length--)
+    {
+        value ^= value << 15;
+        value ^= value >> 10;
+        value ^= *str++;
+    }
+    value ^= value << 3;
+    value ^= value >> 6;
+    value ^= value << 2;
+    value ^= value >> 15;
 
-	return value;
+    return value;
 }

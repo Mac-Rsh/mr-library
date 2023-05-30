@@ -17,16 +17,16 @@
 
 struct ch32_hw_dac
 {
-	mr_uint32_t dac_channel;
+    mr_uint32_t dac_channel;
 
-	mr_uint32_t dac_periph_clock;
+    mr_uint32_t dac_periph_clock;
 };
 
 struct ch32_dac
 {
-	char *name;
+    char *name;
 
-	struct ch32_hw_dac hw_dac;
+    struct ch32_hw_dac hw_dac;
 };
 
 mr_err_t mr_hw_dac_init(void);

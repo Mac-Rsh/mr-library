@@ -54,41 +54,42 @@
 
 struct mr_serial_config
 {
-	mr_uint32_t baud_rate;
+    mr_uint32_t baud_rate;
 
-	mr_uint8_t data_bits;
-	mr_uint8_t stop_bits;
-	mr_uint8_t parity;
-	mr_uint8_t bit_order;
-	mr_uint8_t invert;
+    mr_uint8_t data_bits;
+    mr_uint8_t stop_bits;
+    mr_uint8_t parity;
+    mr_uint8_t bit_order;
+    mr_uint8_t invert;
 };
 
 struct mr_serial_fifo
 {
-	struct mr_fifo fifo;
-	mr_uint8_t pool[];
+    struct mr_fifo fifo;
+    mr_uint8_t pool[];
 };
 
 typedef struct mr_serial *mr_serial_t;
+
 struct mr_serial_ops
 {
-	mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
-	void (*write)(mr_serial_t serial, mr_uint8_t data);
-	mr_uint8_t (*read)(mr_serial_t serial);
-	void (*start_tx)(mr_serial_t serial);
-	void (*stop_tx)(mr_serial_t serial);
+    mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
+    void (*write)(mr_serial_t serial, mr_uint8_t data);
+    mr_uint8_t (*read)(mr_serial_t serial);
+    void (*start_tx)(mr_serial_t serial);
+    void (*stop_tx)(mr_serial_t serial);
 };
 
 struct mr_serial
 {
-	struct mr_device device;
+    struct mr_device device;
 
-	struct mr_serial_config config;
-	mr_size_t fifo_bufsz;
-	void *rx_fifo;
-	void *tx_fifo;
+    struct mr_serial_config config;
+    mr_size_t fifo_bufsz;
+    void *rx_fifo;
+    void *tx_fifo;
 
-	const struct mr_serial_ops *ops;
+    const struct mr_serial_ops *ops;
 };
 
 mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data);

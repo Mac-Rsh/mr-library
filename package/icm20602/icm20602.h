@@ -27,37 +27,39 @@
 
 struct icm20602_3_axis
 {
-	int16_t x;
-	int16_t y;
-	int16_t z;
+    int16_t x;
+    int16_t y;
+    int16_t z;
 };
 
 struct icm20602_config
 {
-	uint8_t acc_range;
-	uint16_t gyro_range;
+    uint8_t acc_range;
+    uint16_t gyro_range;
 };
 
 typedef struct icm20602 *icm20602_t;
+
 struct icm20602_ops
 {
-	void (*write)(icm20602_t icm20602, uint8_t data);
-	uint8_t (*read)(icm20602_t icm20602);
-	void (*cs_ctrl)(icm20602_t icm20602, uint8_t state);
+    void (*write)(icm20602_t icm20602, uint8_t data);
+    uint8_t (*read)(icm20602_t icm20602);
+    void (*cs_ctrl)(icm20602_t icm20602, uint8_t state);
 };
+
 struct icm20602
 {
-	struct icm20602_config config;
+    struct icm20602_config config;
 
-	void *data;
+    void *data;
 
-	struct icm20602_ops *ops;
+    struct icm20602_ops *ops;
 };
 
-#define ICM20602_ERR_OK					0
+#define ICM20602_ERR_OK                    0
 #define ICM20602_ERR_SELF_CHECK         1
-#define ICM20602_ERR_RESET				2
-#define ICM20602_ERR_UNSUPPORTED		3
+#define ICM20602_ERR_RESET                2
+#define ICM20602_ERR_UNSUPPORTED        3
 
 #define ICM20602_SMPLRT_DIV             (0x19)
 #define ICM20602_CONFIG                 (0x1A)

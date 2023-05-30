@@ -17,27 +17,28 @@
 
 struct adc_config
 {
-	uint16_t channel;
-	uint8_t state;
+    uint16_t channel;
+    uint8_t state;
 };
 
 typedef struct adc *adc_t;
+
 struct adc_ops
 {
-	int (*configure)(adc_t adc, uint8_t state);
-	int (*channel_configure)(adc_t adc, struct adc_config *config);
-	uint32_t (*read)(adc_t adc, uint16_t channel);
+    int (*configure)(adc_t adc, uint8_t state);
+    int (*channel_configure)(adc_t adc, struct adc_config *config);
+    uint32_t (*read)(adc_t adc, uint16_t channel);
 };
 
 struct adc
 {
-	void *data;
+    void *data;
 
-	struct adc_ops *ops;
+    struct adc_ops *ops;
 };
 
-#define ADC_ERR_OK						0
-#define ADC_ERR_IO						1
+#define ADC_ERR_OK                        0
+#define ADC_ERR_IO                        1
 
 int adc_init(adc_t adc, struct adc_ops *ops, void *data);
 int adc_configure(adc_t adc, struct adc_config *config);

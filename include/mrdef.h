@@ -141,26 +141,26 @@ typedef mr_int8_t mr_lock_t;                                        /**< Type fo
  *  Auto-Init
  */
 typedef int (*init_fn_t)(void);
-#define AUTO_INIT_EXPORT(fn,level) \
+#define AUTO_INIT_EXPORT(fn, level) \
     mr_used const init_fn_t _mr_auto_init_##fn mr_section(".auto_init."level) = fn
 
 #define AUTO_INIT_DRIVER_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "1")   /**< Driver auto-init export */
-#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")	/**< Device auto-init export */
-#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")	/**< Module auto-init export */
+#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")    /**< Device auto-init export */
+#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")    /**< Module auto-init export */
 
 /**
  *  List
  */
 struct mr_slist
 {
-	struct mr_slist *next;                                          /**< Point to next node */
+    struct mr_slist *next;                                          /**< Point to next node */
 };
 typedef struct mr_slist *mr_slist_t;                                /**< Type for slist */
 
 struct mr_list
 {
-	struct mr_list *next;                                           /**< Point to next node */
-	struct mr_list *prev;                                           /**< Point to prev node */
+    struct mr_list *next;                                           /**< Point to next node */
+    struct mr_list *prev;                                           /**< Point to prev node */
 };
 typedef struct mr_list *mr_list_t;                                  /**< Type for list */
 
@@ -169,11 +169,11 @@ typedef struct mr_list *mr_list_t;                                  /**< Type fo
  */
 struct mr_avl
 {
-	mr_int8_t height;                                               /**< Balance factor */
-	mr_uint32_t value;                                              /**< Key-value */
+    mr_int8_t height;                                               /**< Balance factor */
+    mr_uint32_t value;                                              /**< Key-value */
 
-	struct mr_avl *left_child;                                      /**< Point to left-child node */
-	struct mr_avl *right_child;                                     /**< Point to right-child node */
+    struct mr_avl *left_child;                                      /**< Point to left-child node */
+    struct mr_avl *right_child;                                     /**< Point to right-child node */
 };
 typedef struct mr_avl *mr_avl_t;                                    /**< Type for list-tree */
 
@@ -182,23 +182,23 @@ typedef struct mr_avl *mr_avl_t;                                    /**< Type fo
  */
 struct mr_fifo
 {
-	mr_uint8_t *buffer;                                             /**< Buffer pool */
+    mr_uint8_t *buffer;                                             /**< Buffer pool */
 
-	mr_uint16_t read_mirror: 1;                                     /**< Read mirror flag */
-	mr_uint16_t read_index: 15;                                     /**< Read index */
-	mr_uint16_t write_mirror: 1;                                    /**< Write mirror flag */
-	mr_uint16_t write_index: 15;                                    /**< Write index */
+    mr_uint16_t read_mirror: 1;                                     /**< Read mirror flag */
+    mr_uint16_t read_index: 15;                                     /**< Read index */
+    mr_uint16_t write_mirror: 1;                                    /**< Write mirror flag */
+    mr_uint16_t write_index: 15;                                    /**< Write index */
 
-	mr_uint16_t size;                                               /**< Buffer pool size */
+    mr_uint16_t size;                                               /**< Buffer pool size */
 };
 typedef struct mr_fifo *mr_fifo_t;                                  /**< Type for fifo */
 
 struct mr_message
 {
-	void *data;                                                     /**< Message data */
-	mr_size_t size;                                                 /**< Message size */
+    void *data;                                                     /**< Message data */
+    mr_size_t size;                                                 /**< Message size */
 
-	struct mr_message *next;                                        /**< Point to next node */
+    struct mr_message *next;                                        /**< Point to next node */
 };
 typedef struct mr_message *mr_message_t;                            /**< Type for message */
 
@@ -207,17 +207,17 @@ typedef struct mr_message *mr_message_t;                            /**< Type fo
  */
 enum mr_container_type
 {
-	MR_CONTAINER_TYPE_MISC,                                         /**< Miscellaneous container */
-	MR_CONTAINER_TYPE_DEVICE,                                       /**< Device container */
-	MR_CONTAINER_TYPE_SERVER,                                       /**< Server container */
-	_MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
+    MR_CONTAINER_TYPE_MISC,                                         /**< Miscellaneous container */
+    MR_CONTAINER_TYPE_DEVICE,                                       /**< Device container */
+    MR_CONTAINER_TYPE_SERVER,                                       /**< Server container */
+    _MR_CONTAINER_TYPE_MASK,                                        /**< Mask for getting container type */
 };
 
 struct mr_container
 {
-	struct mr_list list;                                            /**< Container list */
+    struct mr_list list;                                            /**< Container list */
 
-	enum mr_container_type type;                                    /**< Container flag */
+    enum mr_container_type type;                                    /**< Container flag */
 };
 typedef struct mr_container *mr_container_t;                        /**< Type for container */
 
@@ -229,10 +229,10 @@ typedef struct mr_container *mr_container_t;                        /**< Type fo
 
 struct mr_object
 {
-	struct mr_list list;                                            /**< Object list */
+    struct mr_list list;                                            /**< Object list */
 
-	char name[MR_CONF_NAME_MAX + 1];                                /**< Object name */
-	mr_uint8_t flag;                                                /**< Object flag */
+    char name[MR_CONF_NAME_MAX + 1];                                /**< Object name */
+    mr_uint8_t flag;                                                /**< Object flag */
 };
 typedef struct mr_object *mr_object_t;                              /**< Type for object */
 
@@ -241,8 +241,8 @@ typedef struct mr_object *mr_object_t;                              /**< Type fo
  */
 struct mr_mutex
 {
-	mr_object_t owner;                                              /**< Mutex owns the object */
-	volatile mr_lock_t lock;                                        /**< Mutex lock state */
+    mr_object_t owner;                                              /**< Mutex owns the object */
+    volatile mr_lock_t lock;                                        /**< Mutex lock state */
 };
 typedef struct mr_mutex *mr_mutex_t;                                /**< Type for mutex */
 
@@ -251,66 +251,67 @@ typedef struct mr_mutex *mr_mutex_t;                                /**< Type fo
  */
 enum mr_device_type
 {
-	MR_DEVICE_TYPE_NONE,                                            /**< No device */
-	MR_DEVICE_TYPE_PIN,                                             /**< GPIO device */
-	MR_DEVICE_TYPE_SPI_BUS,                                         /**< SPI-BUS device */
-	MR_DEVICE_TYPE_SPI,                                             /**< SPI device */
-	MR_DEVICE_TYPE_I2C_BUS,                                         /**< I2C-BUS device */
-	MR_DEVICE_TYPE_I2C,                                             /**< I2C device */
-	MR_DEVICE_TYPE_SERIAL,                                          /**< UART device */
-	MR_DEVICE_TYPE_ADC,                                             /**< ADC device */
-	MR_DEVICE_TYPE_DAC,                                             /**< DAC device */
-	MR_DEVICE_TYPE_PWM,                                             /**< PWM device */
-	MR_DEVICE_TYPE_TIMER,                                           /**< TIMER device */
-	MR_DEVICE_TYPE_FLASH,                                           /**< FLASH device */
-	MR_DEVICE_TYPE_SENSOR,                                          /**< SENSOR device */
-	/* ... */
+    MR_DEVICE_TYPE_NONE,                                            /**< No device */
+    MR_DEVICE_TYPE_PIN,                                             /**< GPIO device */
+    MR_DEVICE_TYPE_SPI_BUS,                                         /**< SPI-BUS device */
+    MR_DEVICE_TYPE_SPI,                                             /**< SPI device */
+    MR_DEVICE_TYPE_I2C_BUS,                                         /**< I2C-BUS device */
+    MR_DEVICE_TYPE_I2C,                                             /**< I2C device */
+    MR_DEVICE_TYPE_SERIAL,                                          /**< UART device */
+    MR_DEVICE_TYPE_ADC,                                             /**< ADC device */
+    MR_DEVICE_TYPE_DAC,                                             /**< DAC device */
+    MR_DEVICE_TYPE_PWM,                                             /**< PWM device */
+    MR_DEVICE_TYPE_TIMER,                                           /**< TIMER device */
+    MR_DEVICE_TYPE_FLASH,                                           /**< FLASH device */
+    /* ... */
 };
 
 typedef struct mr_device *mr_device_t;                              /**< Type for device */
+
 struct mr_device_ops
 {
-	mr_err_t (*open)(mr_device_t device);
-	mr_err_t (*close)(mr_device_t device);
-	mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-	mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-	mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+    mr_err_t (*open)(mr_device_t device);
+    mr_err_t (*close)(mr_device_t device);
+    mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
+    mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 };
 
 struct mr_device
 {
-	struct mr_object object;                                        /**< Device object */
+    struct mr_object object;                                        /**< Device object */
 
-	enum mr_device_type type;                                       /**< Device type */
-	mr_uint16_t support_flag;                                       /**< Open mode supported by the device */
-	mr_uint16_t open_flag;                                          /**< Opening mode of the device */
-	mr_size_t ref_count;                                            /**< Number of device references */
-	void *data;                                                     /**< Device data */
+    enum mr_device_type type;                                       /**< Device type */
+    mr_uint16_t support_flag;                                       /**< Open mode supported by the device */
+    mr_uint16_t open_flag;                                          /**< Opening mode of the device */
+    mr_size_t ref_count;                                            /**< Number of device references */
+    void *data;                                                     /**< Device data */
 
-	mr_err_t (*rx_cb)(mr_device_t device, void *args);              /**< Device receives the baud function */
-	mr_err_t (*tx_cb)(mr_device_t device, void *args);              /**< Device sends the baud function */
+    mr_err_t (*rx_cb)(mr_device_t device, void *args);              /**< Device receives the baud function */
+    mr_err_t (*tx_cb)(mr_device_t device, void *args);              /**< Device sends the baud function */
 
-	const struct mr_device_ops *ops;                                /**< Operations of the device */
+    const struct mr_device_ops *ops;                                /**< Operations of the device */
 };
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 
 struct mr_event_server
 {
-	struct mr_object object;                                        /**< Event object */
+    struct mr_object object;                                        /**< Event object */
 
-	struct mr_fifo queue;                                           /**< Event queue */
-	mr_avl_t list;                                                  /**< Event list */
+    struct mr_fifo queue;                                           /**< Event queue */
+    mr_avl_t list;                                                  /**< Event list */
 };
 typedef struct mr_event_server *mr_event_server_t;                  /**< Type for event server */
 
 struct mr_event_client
 {
-	struct mr_avl list;                                             /**< Event list */
+    struct mr_avl list;                                             /**< Event list */
 
-	mr_err_t (*cb)(mr_event_server_t server, void *args);      		/**< Event callback */
-	void *args;                                                     /**< Event arguments */
+    mr_err_t (*cb)(mr_event_server_t server, void *args);            /**< Event callback */
+    void *args;                                                     /**< Event arguments */
 };
+
 typedef struct mr_event_client *mr_event_client_t;                  /**< Type for event client */
 
 #endif

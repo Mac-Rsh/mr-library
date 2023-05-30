@@ -30,28 +30,29 @@
 
 struct pin_config
 {
-	uint16_t number;
-	uint8_t mode;
+    uint16_t number;
+    uint8_t mode;
 };
 
 typedef struct pin *pin_t;
+
 struct pin_ops
 {
-	int (*configure)(pin_t pin, struct pin_config *config);
-	uint8_t (*read)(pin_t pin, uint16_t number);
-	void (*write)(pin_t pin, uint16_t number, uint8_t value);
+    int (*configure)(pin_t pin, struct pin_config *config);
+    uint8_t (*read)(pin_t pin, uint16_t number);
+    void (*write)(pin_t pin, uint16_t number, uint8_t value);
 };
 
 struct pin
 {
-	int (*callback)(pin_t pin, uint16_t number);
-	void *data;
+    int (*callback)(pin_t pin, uint16_t number);
+    void *data;
 
-	struct pin_ops *ops;
+    struct pin_ops *ops;
 };
 
-#define PIN_ERR_OK						0
-#define PIN_ERR_IO						1
+#define PIN_ERR_OK                        0
+#define PIN_ERR_IO                        1
 
 #define GET_PIN_NUMBER(port, pin)       ((port -'A') * 16 + pin)
 

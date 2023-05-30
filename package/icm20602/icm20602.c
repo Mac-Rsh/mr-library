@@ -12,56 +12,58 @@
 
 static void icm20602_delay(size_t ms)
 {
-	volatile size_t count = 0;
+    volatile size_t count = 0;
 
-	while (count < ms * 1000000)
-	{
-		count ++;
-	}
+    while (count < ms * 1000000)
+    {
+        count++;
+    }
 }
 
 static void icm20602_write_reg(icm20602_t icm20602, uint8_t reg, uint8_t data)
 {
-	icm20602->ops->cs_ctrl(icm20602, 0);
-	icm20602->ops->write(icm20602, reg);
-	icm20602->ops->write(icm20602, data);
-	icm20602->ops->cs_ctrl(icm20602, 1);
+    icm20602->ops->cs_ctrl(icm20602, 0);
+    icm20602->ops->write(icm20602, reg);
+    icm20602->ops->write(icm20602, data);
+    icm20602->ops->cs_ctrl(icm20602, 1);
 }
 
 static uint8_t icm20602_read_reg(icm20602_t icm20602, uint8_t reg)
 {
-	uint8_t data = 0;
+    uint8_t data = 0;
 
-	icm20602-> ops->cs_ctrl(icm20602, 0);
-	icm20602-> ops->write(icm20602, reg | 0x80);
-	data = icm20602-> ops->read(icm20602);
-	icm20602-> ops->cs_ctrl(icm20602, 1);
+    icm20602->ops->cs_ctrl(icm20602, 0);
+    icm20602->ops->write(icm20602, reg | 0x80);
+    data = icm20602->ops->read(icm20602);
+    icm20602->ops->cs_ctrl(icm20602, 1);
 
-	return data;
+    return data;
 }
 
 static void icm20602_read_regs(icm20602_t icm20602, uint8_t reg, uint8_t *buffer, size_t size)
 {
-	icm20602-> ops->cs_ctrl(icm20602, 0);
-	icm20602-> ops->write(icm20602, reg | 0x80);
-	while (size --)
-	{
-		*buffer ++ = icm20602-> ops->read(icm20602);
-	}
-	icm20602-> ops->cs_ctrl(icm20602, 1);
+    icm20602->ops->cs_ctrl(icm20602, 0);
+    icm20602->ops->write(icm20602, reg | 0x80);
+    while (size--)
+    {
+        *buffer++ = icm20602->ops->read(icm20602);
+    }
+    icm20602->ops->cs_ctrl(icm20602, 1);
 }
 
 static int icm20602_self_check(icm20602_t icm20602)
 {
-	size_t count = 0;
+    size_t count = 0;
 
-	for (count = 0; count < 200; count ++)
-	{
-		if (icm20602_read_reg(icm20602, ICM20602_WHO_AM_I) == 0x12)
-			return 1;
-	}
+    for (count = 0; count < 200; count++)
+    {
+        if (icm20602_read_reg(icm20602, ICM20602_WHO_AM_I) == 0x12)
+        {
+            return 1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 /**
@@ -75,33 +77,33 @@ static int icm20602_self_check(icm20602_t icm20602)
  */
 int icm20602_init(icm20602_t icm20602, const struct icm20602_ops *ops, void *data)
 {
-	struct icm20602_config config = {ICM20602_ACC_RANGE_8G,
-									 ICM20602_GYRO_RANGE_2000DPS};
+    struct icm20602_config config = {ICM20602_ACC_RANGE_8G,
+                                     ICM20602_GYRO_RANGE_2000DPS};
 
-	ICM20602_ASSERT(icm20602 != NULL);
-	ICM20602_ASSERT(ops != NULL);
+    ICM20602_ASSERT(icm20602 != NULL);
+    ICM20602_ASSERT(ops != NULL);
 
-	icm20602->data = data;
-	icm20602->ops = ops;
+    icm20602->data = data;
+    icm20602->ops = ops;
 
-	if (icm20602_self_check(icm20602) == 0)
-	{
-		return - ICM20602_ERR_SELF_CHECK;
-	}
-	icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x80);
-	icm20602_delay(10);
-	if (icm20602_read_reg(icm20602, ICM20602_PWR_MGMT_1) != 0x41)
-	{
-		return - ICM20602_ERR_RESET;
-	}
-	icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x01);
-	icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_2, 0x00);
-	icm20602_write_reg(icm20602, ICM20602_CONFIG, 0x01);
-	icm20602_write_reg(icm20602, ICM20602_SMPLRT_DIV, 0x07);
-	icm20602_config(icm20602, &config);
-	icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG_2, 0x03);
+    if (icm20602_self_check(icm20602) == 0)
+    {
+        return -ICM20602_ERR_SELF_CHECK;
+    }
+    icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x80);
+    icm20602_delay(10);
+    if (icm20602_read_reg(icm20602, ICM20602_PWR_MGMT_1) != 0x41)
+    {
+        return -ICM20602_ERR_RESET;
+    }
+    icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x01);
+    icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_2, 0x00);
+    icm20602_write_reg(icm20602, ICM20602_CONFIG, 0x01);
+    icm20602_write_reg(icm20602, ICM20602_SMPLRT_DIV, 0x07);
+    icm20602_config(icm20602, &config);
+    icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG_2, 0x03);
 
-	return ICM20602_ERR_OK;
+    return ICM20602_ERR_OK;
 }
 
 /**
@@ -114,38 +116,48 @@ int icm20602_init(icm20602_t icm20602, const struct icm20602_ops *ops, void *dat
  */
 int icm20602_config(icm20602_t icm20602, struct icm20602_config *config)
 {
-	ICM20602_ASSERT(icm20602 != MR_NULL);
+    ICM20602_ASSERT(icm20602 != MR_NULL);
 
-	switch (config->acc_range)
-	{
-		case ICM20602_ACC_RANGE_2G: icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x00);
-			break;
-		case ICM20602_ACC_RANGE_4G: icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x08);
-			break;
-		case ICM20602_ACC_RANGE_8G: icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x10);
-			break;
-		case ICM20602_ACC_RANGE_16G: icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x18);
-			break;
+    switch (config->acc_range)
+    {
+        case ICM20602_ACC_RANGE_2G:
+            icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x00);
+            break;
+        case ICM20602_ACC_RANGE_4G:
+            icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x08);
+            break;
+        case ICM20602_ACC_RANGE_8G:
+            icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x10);
+            break;
+        case ICM20602_ACC_RANGE_16G:
+            icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x18);
+            break;
 
-		default: return - ICM20602_ERR_UNSUPPORTED;
-	}
+        default:
+            return -ICM20602_ERR_UNSUPPORTED;
+    }
 
-	switch (config->gyro_range)
-	{
-		case ICM20602_GYRO_RANGE_250DPS: icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x00);
-			break;
-		case ICM20602_GYRO_RANGE_500DPS: icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x08);
-			break;
-		case ICM20602_GYRO_RANGE_1000DPS: icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x10);
-			break;
-		case ICM20602_GYRO_RANGE_2000DPS: icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x18);
-			break;
+    switch (config->gyro_range)
+    {
+        case ICM20602_GYRO_RANGE_250DPS:
+            icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x00);
+            break;
+        case ICM20602_GYRO_RANGE_500DPS:
+            icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x08);
+            break;
+        case ICM20602_GYRO_RANGE_1000DPS:
+            icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x10);
+            break;
+        case ICM20602_GYRO_RANGE_2000DPS:
+            icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x18);
+            break;
 
-		default: return - ICM20602_ERR_UNSUPPORTED;
-	}
-	icm20602->config = *config;
+        default:
+            return -ICM20602_ERR_UNSUPPORTED;
+    }
+    icm20602->config = *config;
 
-	return ICM20602_ERR_OK;
+    return ICM20602_ERR_OK;
 }
 
 /**
@@ -157,20 +169,20 @@ int icm20602_config(icm20602_t icm20602, struct icm20602_config *config)
  */
 struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602)
 {
-	uint8_t buffer[6] = {0};
-	struct icm20602_3_axis axis = {0,
-								   0,
-								   0};
+    uint8_t buffer[6] = {0};
+    struct icm20602_3_axis axis = {0,
+                                   0,
+                                   0};
 
-	ICM20602_ASSERT(icm20602 != NULL);
+    ICM20602_ASSERT(icm20602 != NULL);
 
-	icm20602_read_regs(icm20602, ICM20602_ACCEL_XOUT_H, buffer, 6);
+    icm20602_read_regs(icm20602, ICM20602_ACCEL_XOUT_H, buffer, 6);
 
-	axis.x = (int16_t)((buffer[0] << 8) | buffer[1]);
-	axis.y = (int16_t)((buffer[2] << 8) | buffer[3]);
-	axis.z = (int16_t)((buffer[4] << 8) | buffer[5]);
+    axis.x = (int16_t)((buffer[0] << 8) | buffer[1]);
+    axis.y = (int16_t)((buffer[2] << 8) | buffer[3]);
+    axis.z = (int16_t)((buffer[4] << 8) | buffer[5]);
 
-	return axis;
+    return axis;
 }
 
 /**
@@ -182,18 +194,18 @@ struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602)
  */
 struct icm20602_3_axis icm20602_read_gyro_3_axis(icm20602_t icm20602)
 {
-	uint8_t buffer[6] = {0};
-	struct icm20602_3_axis axis = {0,
-								   0,
-								   0};
+    uint8_t buffer[6] = {0};
+    struct icm20602_3_axis axis = {0,
+                                   0,
+                                   0};
 
-	ICM20602_ASSERT(icm20602 != NULL);
+    ICM20602_ASSERT(icm20602 != NULL);
 
-	icm20602_read_regs(icm20602, ICM20602_GYRO_XOUT_H, buffer, 6);
+    icm20602_read_regs(icm20602, ICM20602_GYRO_XOUT_H, buffer, 6);
 
-	axis.x = (int16_t)((buffer[0] << 8) | buffer[1]);
-	axis.y = (int16_t)((buffer[2] << 8) | buffer[3]);
-	axis.z = (int16_t)((buffer[4] << 8) | buffer[5]);
+    axis.x = (int16_t)((buffer[0] << 8) | buffer[1]);
+    axis.y = (int16_t)((buffer[2] << 8) | buffer[3]);
+    axis.z = (int16_t)((buffer[4] << 8) | buffer[5]);
 
-	return axis;
+    return axis;
 }

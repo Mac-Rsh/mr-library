@@ -42,49 +42,50 @@
 
 struct mr_spi_config
 {
-	mr_uint32_t baud_rate;
+    mr_uint32_t baud_rate;
 
-	mr_uint8_t host_slave;
-	mr_uint8_t mode;
-	mr_uint8_t bit_order;
-	mr_uint8_t cs_active;
+    mr_uint8_t host_slave;
+    mr_uint8_t mode;
+    mr_uint8_t bit_order;
+    mr_uint8_t cs_active;
 };
 
 typedef struct mr_spi_bus *mr_spi_bus_t;
+
 struct mr_spi_device
 {
-	struct mr_device device;
+    struct mr_device device;
 
-	struct mr_spi_config config;
-	struct mr_spi_bus *bus;
-	mr_uint16_t cs_pin;
+    struct mr_spi_config config;
+    struct mr_spi_bus *bus;
+    mr_uint16_t cs_pin;
 };
 typedef struct mr_spi_device *mr_spi_device_t;
 
 struct mr_spi_bus_ops
 {
-	mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
-	mr_uint8_t (*transfer)(mr_spi_bus_t spi_bus, mr_uint8_t data);
-	void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state);
+    mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
+    mr_uint8_t (*transfer)(mr_spi_bus_t spi_bus, mr_uint8_t data);
+    void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state);
 };
 
 struct mr_spi_bus
 {
-	struct mr_device device;
+    struct mr_device device;
 
-	struct mr_spi_config config;
-	struct mr_spi_device *owner;
-	struct mr_mutex lock;
+    struct mr_spi_config config;
+    struct mr_spi_device *owner;
+    struct mr_mutex lock;
 
-	const struct mr_spi_bus_ops *ops;
+    const struct mr_spi_bus_ops *ops;
 };
 
 mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data);
 mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
-							  const char *name,
-							  mr_uint16_t support_flag,
-							  mr_uint16_t cs_pin,
-							  const char *bus_name);
+                              const char *name,
+                              mr_uint16_t support_flag,
+                              mr_uint16_t cs_pin,
+                              const char *bus_name);
 
 #endif
 

@@ -34,35 +34,36 @@
 
 struct serial_config
 {
-	size_t baud_rate;
+    size_t baud_rate;
 
-	uint8_t data_bits;
-	uint8_t stop_bits;
-	uint8_t parity;
-	uint8_t bit_order;
+    uint8_t data_bits;
+    uint8_t stop_bits;
+    uint8_t parity;
+    uint8_t bit_order;
 };
 
 typedef struct serial *serial_t;
+
 struct serial_ops
 {
-	int (*configure)(serial_t serial, struct serial_config *config);
-	void (*write)(serial_t serial, uint8_t data);
-	uint8_t (*read)(serial_t serial);
-	void (*start_tx)(serial_t serial);
-	void (*stop_tx)(serial_t serial);
+    int (*configure)(serial_t serial, struct serial_config *config);
+    void (*write)(serial_t serial, uint8_t data);
+    uint8_t (*read)(serial_t serial);
+    void (*start_tx)(serial_t serial);
+    void (*stop_tx)(serial_t serial);
 };
 
 struct serial
 {
-	struct serial_config config;
-	size_t fifo_bufsz;
-	void *rx_fifo;
-	void *tx_fifo;
+    struct serial_config config;
+    size_t fifo_bufsz;
+    void *rx_fifo;
+    void *tx_fifo;
 
-	int (*rx_callback)(serial_t serial, size_t rx_size);
-	void *data;
+    int (*rx_callback)(serial_t serial, size_t rx_size);
+    void *data;
 
-	struct serial_ops *ops;
+    struct serial_ops *ops;
 };
 
 #define SERIAL_ERR_OK                   0
@@ -75,11 +76,11 @@ struct serial
 int serial_init(serial_t serial, size_t fifo_bufsz, struct serial_ops *ops, void *data);
 int serial_configure(serial_t serial, struct serial_config *config);
 int serial_mode(serial_t serial,
-				size_t baud_rate,
-				uint8_t data_bits,
-				uint8_t stop_bits,
-				uint8_t parity,
-				uint8_t bit_order);
+                size_t baud_rate,
+                uint8_t data_bits,
+                uint8_t stop_bits,
+                uint8_t parity,
+                uint8_t bit_order);
 uint8_t serial_get(serial_t serial);
 void serial_put(serial_t serial, uint8_t data);
 size_t serial_read(serial_t serial, void *buffer, size_t size);

@@ -17,10 +17,10 @@
 
 struct event
 {
-	uint32_t id;
+    uint32_t id;
 
-	void (*cb)(void *args);
-	void *args;
+    void (*cb)(void *args);
+    void *args;
 };
 
 #define EVENT_ERR_OK                    0

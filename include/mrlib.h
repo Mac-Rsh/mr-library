@@ -13,7 +13,6 @@
 
 #include "mrdef.h"
 #include "mrservice.h"
-#include "mrlog.h"
 
 /**
  *  Export hardware functions
@@ -35,7 +34,9 @@ mr_size_t mr_avl_get_length(mr_avl_t tree);
  *  Export kservice functions
  */
 void mr_auto_init(void);
-mr_size_t mr_printf(const char *fmt, ...);
+mr_weak mr_size_t mr_printf(const char *fmt, ...);
+void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...);
+mr_weak void mr_assert_handler(void);
 mr_uint32_t mr_strhase(const char *str);
 mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
 
@@ -77,11 +78,11 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
  */
 mr_device_t mr_device_find(const char *name);
 mr_err_t mr_device_add(mr_device_t device,
-					   const char *name,
-					   enum mr_device_type type,
-					   mr_uint16_t support_flag,
-					   const struct mr_device_ops *ops,
-					   void *data);
+                       const char *name,
+                       enum mr_device_type type,
+                       mr_uint16_t support_flag,
+                       const struct mr_device_ops *ops,
+                       void *data);
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
@@ -99,9 +100,9 @@ mr_err_t mr_event_server_notify(mr_event_server_t server, mr_uint8_t id);
 void mr_event_server_handle(mr_event_server_t server);
 mr_event_client_t mr_event_client_find(mr_uint8_t id, mr_event_server_t server);
 mr_err_t mr_event_client_create(mr_uint8_t id,
-								mr_err_t (*cb)(mr_event_server_t server, void *args),
-								void *args,
-								mr_event_server_t server);
+                                mr_err_t (*cb)(mr_event_server_t server, void *args),
+                                void *args,
+                                mr_event_server_t server);
 mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server);
 #endif
 

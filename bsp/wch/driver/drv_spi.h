@@ -17,22 +17,21 @@
 
 struct ch32_hw_spi
 {
-	SPI_TypeDef *Instance;
+    SPI_TypeDef *Instance;
 
-	mr_uint32_t spi_periph_clock;
-	mr_uint32_t gpio_periph_clock;
-	GPIO_TypeDef *gpio_port;
-	mr_uint16_t clk_gpio_pin;
-	mr_uint16_t miso_gpio_pin;
-	mr_uint16_t mosi_gpio_pin;
+    mr_uint32_t spi_periph_clock;
+    mr_uint32_t gpio_periph_clock;
+    GPIO_TypeDef *gpio_port;
+    mr_uint16_t clk_gpio_pin;
+    mr_uint16_t miso_gpio_pin;
+    mr_uint16_t mosi_gpio_pin;
 };
-
 
 struct ch32_spi
 {
-	char *name;
+    char *name;
 
-	struct ch32_hw_spi hw_spi;
+    struct ch32_hw_spi hw_spi;
 };
 
 mr_err_t mr_hw_spi_init(void);

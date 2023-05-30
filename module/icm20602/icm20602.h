@@ -46,22 +46,22 @@
 
 struct icm20602_3_axis
 {
-	mr_int16_t x;
-	mr_int16_t y;
-	mr_int16_t z;
+    mr_int16_t x;
+    mr_int16_t y;
+    mr_int16_t z;
 };
 
 struct icm20602_config
 {
-	mr_uint8_t acc_range;
-	mr_uint16_t gyro_range;
+    mr_uint8_t acc_range;
+    mr_uint16_t gyro_range;
 };
 
 struct icm20602
 {
-	struct mr_spi_device spi;
+    struct mr_spi_device spi;
 
-	struct icm20602_config config;
+    struct icm20602_config config;
 };
 typedef struct icm20602 *icm20602_t;
 
