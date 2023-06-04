@@ -13,8 +13,6 @@
 
 #include "mrconfig.h"
 
-#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
-
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
 #include "drv_gpio.h"
 #endif
@@ -33,8 +31,6 @@
 
 #if (MR_CONF_DAC == MR_CONF_ENABLE)
 #include "drv_dac.h"
-#endif
-
 #endif
 
 #endif

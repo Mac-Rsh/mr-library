@@ -12,13 +12,13 @@
 
 static mr_device_t console_device = MR_NULL;
 
-static char *log_level_name[] =
+static char *debug_level_name[] =
         {
-                "log-a",
-                "log-e",
-                "log-w",
-                "log-i",
-                "log-d",
+                "debug-a",
+                "debug-e",
+                "debug-w",
+                "debug-i",
+                "debug-d",
         };
 
 static int start(void)
@@ -104,7 +104,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...)
 
     va_start(args, fmt);
 
-    mr_printf("[%s/%s]: ", log_level_name[level], tag);
+    mr_printf("[%s/%s]: ", debug_level_name[level], tag);
     length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
     mr_device_write(console_device, 0, str_buffer, length);
@@ -223,6 +223,8 @@ mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo)
  */
 mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo)
 {
+    MR_ASSERT(fifo != MR_NULL);
+
     return fifo->size - mr_fifo_get_data_size(fifo);
 }
 
@@ -235,6 +237,8 @@ mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo)
  */
 mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo)
 {
+    MR_ASSERT(fifo != MR_NULL);
+
     return fifo->size;
 }
 
@@ -310,7 +314,7 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size)
     mr_size_t length = 0;
 
     MR_ASSERT(fifo != MR_NULL);
-    MR_ASSERT(buf != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
 
     if (size == 0)
     {
@@ -365,7 +369,7 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size
     mr_size_t length = 0;
 
     MR_ASSERT(fifo != MR_NULL);
-    MR_ASSERT(buf != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
 
     if (size == 0)
     {
@@ -441,6 +445,8 @@ static void mr_avl_left_rotate(mr_avl_t *node)
 {
     mr_avl_t right_child = (*node)->right_child;
 
+    MR_ASSERT(node != MR_NULL);
+
     (*node)->right_child = right_child->left_child;
     right_child->left_child = (*node);
 
@@ -455,6 +461,8 @@ static void mr_avl_right_rotate(mr_avl_t *node)
 {
     mr_avl_t left_child = (*node)->left_child;
 
+    MR_ASSERT(node != MR_NULL);
+
     (*node)->left_child = left_child->right_child;
     left_child->right_child = (*node);
 
@@ -467,6 +475,8 @@ static void mr_avl_right_rotate(mr_avl_t *node)
 
 void mr_avl_init(mr_avl_t node, mr_uint32_t value)
 {
+    MR_ASSERT(node != MR_NULL);
+
     node->height = 0;
     node->value = value;
     node->left_child = MR_NULL;

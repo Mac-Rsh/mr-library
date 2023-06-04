@@ -23,9 +23,9 @@ mr_container_t mr_container_find(enum mr_container_type type);
  *  Export object functions
  */
 mr_object_t mr_object_find(const char *name, enum mr_container_type type);
-mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type container_type);
+mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type type);
 mr_err_t mr_object_remove(mr_object_t object);
-mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dest_type);
+mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type);
 void mr_object_rename(mr_object_t object, char *name);
 
 /**

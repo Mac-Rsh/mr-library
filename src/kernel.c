@@ -58,6 +58,7 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
     mr_object_t object = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
     /* Get corresponding container */
     container = mr_container_find(type);
@@ -92,12 +93,13 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type container_type)
+mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type type)
 {
     mr_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
     /* Check if the object is already registered */
     if (object->flag & _MR_OBJECT_TYPE_REGISTER)
@@ -106,7 +108,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
     }
 
     /* Check if the object already exists in the container */
-    if (mr_object_find(name, container_type) != MR_NULL)
+    if (mr_object_find(name, type) != MR_NULL)
     {
         return -MR_ERR_GENERIC;
     }
@@ -115,7 +117,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
     mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
 
     /* Find the container for the specified flag */
-    container = mr_container_find(container_type);
+    container = mr_container_find(type);
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -164,15 +166,16 @@ mr_err_t mr_object_remove(mr_object_t object)
  * @brief This function move object to specified container.
  *
  * @param object The object to be moved.
- * @param dst_type The target container flag.
+ * @param type The target container flag.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dst_type)
+mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type)
 {
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(object != MR_NULL);
+    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
     /* Remove the object from its current container */
     ret = mr_object_remove(object);
@@ -182,7 +185,7 @@ mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dst_type)
     }
 
     /* Add the object to the new container */
-    ret = mr_object_add(object, object->name, dst_type);
+    ret = mr_object_add(object, object->name, type);
 
     return ret;
 }
