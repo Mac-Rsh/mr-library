@@ -99,7 +99,7 @@ mr_err_t icm20602_init(icm20602_t icm20602, const char *name, mr_uint16_t cs_pin
     }
 
     icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x80);    /* reset */
-    mr_hw_delay_ms(10);
+    mr_delay_ms(10);
     for (count = 0; count < 200; count++)
     {
         if (icm20602_read_reg(icm20602, ICM20602_PWR_MGMT_1) == 0x41)

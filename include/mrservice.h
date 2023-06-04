@@ -13,34 +13,34 @@
 
 #include "mrdef.h"
 
-#if (MR_CONF_LOG_LEVEL >= MR_CONF_LOG_LEVEL_ASSERT && MR_CONF_LOG == MR_CONF_ENABLE)
-#define MR_LOG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_ASSERT && MR_CONF_DEBUG == MR_CONF_ENABLE)
+#define MR_LOG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_LOG_A(TAG, FORMAT, ...)
 #endif
-#if (MR_CONF_LOG_LEVEL >= MR_CONF_LOG_LEVEL_ERROR && MR_CONF_LOG == MR_CONF_ENABLE)
-#define MR_LOG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_ERROR, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_ERROR && MR_CONF_DEBUG == MR_CONF_ENABLE)
+#define MR_LOG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ERROR, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_LOG_E(TAG, FORMAT, ...)
 #endif
-#if (MR_CONF_LOG_LEVEL >= MR_CONF_LOG_LEVEL_WARNING && MR_CONF_LOG == MR_CONF_ENABLE)
-#define MR_LOG_W(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_WARNING, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_WARNING && MR_CONF_DEBUG == MR_CONF_ENABLE)
+#define MR_LOG_W(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_WARNING, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_LOG_W(TAG, FORMAT, ...)
 #endif
-#if (MR_CONF_LOG_LEVEL >= MR_CONF_LOG_LEVEL_INFO && MR_CONF_LOG == MR_CONF_ENABLE)
-#define MR_LOG_I(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_INFO, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_INFO && MR_CONF_DEBUG == MR_CONF_ENABLE)
+#define MR_LOG_I(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_INFO, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_LOG_I(TAG, FORMAT, ...)
 #endif
 
-#if (MR_CONF_LOG_LEVEL >= MR_CONF_LOG_LEVEL_DEBUG && MR_CONF_LOG == MR_CONF_ENABLE)
-#define MR_LOG_D(TAG, FORMAT, ...)    mr_log_output(MR_CONF_LOG_LEVEL_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_DEBUG && MR_CONF_DEBUG == MR_CONF_ENABLE)
+#define MR_LOG_D(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_LOG_D(TAG, FORMAT, ...)
 #endif
 
-#if (MR_CONF_LOG_ASSERT == MR_CONF_ENABLE)
+#if (MR_CONF_ASSERT == MR_CONF_ENABLE)
 #define MR_ASSERT(EX)                         \
     do{                                       \
         if (!(EX))                            \
@@ -49,7 +49,7 @@
                    "File: %s, Line: %d\r\n",  \
                    __FILE__,                  \
                    __LINE__);                 \
-          mr_assert_handler();                \
+          mr_assert_handle();                 \
         }                                     \
     }while(0)
 #else

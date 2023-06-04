@@ -201,13 +201,13 @@ mr_err_t mr_event_client_create(mr_uint8_t id,
     mr_avl_init(&client->list, id);
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     /* Insert the agent into the manager's list */
     mr_avl_insert(&server->list, &client->list);
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     return MR_ERR_OK;
 }
@@ -234,13 +234,13 @@ mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server)
     }
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     /* Remove the agent from the manager's list */
     mr_avl_remove(&server->list, &client->list);
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     /* Free the client */
     mr_free(client);

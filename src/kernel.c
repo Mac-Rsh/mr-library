@@ -63,7 +63,7 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
     container = mr_container_find(type);
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     /* Walk through the container looking for objects */
     for (list = (container->list).next; list != &(container->list); list = list->next)
@@ -72,13 +72,13 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
         if (mr_strncmp(object->name, name, MR_CONF_NAME_MAX) == 0)
         {
             /* Enable interrupt */
-            mr_hw_interrupt_enable();
+            mr_interrupt_enable();
             return object;
         }
     }
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     return MR_NULL;
 }
@@ -118,14 +118,14 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
     container = mr_container_find(container_type);
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     /* Insert the object into the container's list */
     mr_list_insert_after(&(container->list), &(object->list));
     object->flag |= _MR_OBJECT_TYPE_REGISTER;
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     return MR_ERR_OK;
 }
@@ -148,14 +148,14 @@ mr_err_t mr_object_remove(mr_object_t object)
     }
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     /* Remove the object from the container's list */
     mr_list_remove(&(object->list));
     object->flag &= ~_MR_OBJECT_TYPE_REGISTER;
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     return MR_ERR_OK;
 }
@@ -227,14 +227,14 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
     MR_ASSERT(owner != MR_NULL);
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     if (mutex->owner != owner)
     {
         if (mutex->lock == MR_LOCK)
         {
             /* Enable interrupt */
-            mr_hw_interrupt_enable();
+            mr_interrupt_enable();
 
             return -MR_ERR_BUSY;
         }
@@ -244,7 +244,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
     mutex->lock = MR_LOCK;
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     return MR_ERR_OK;
 }
@@ -263,20 +263,20 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
     MR_ASSERT(owner != MR_NULL);
 
     /* Disable interrupt */
-    mr_hw_interrupt_disable();
+    mr_interrupt_disable();
 
     if (mutex->owner == owner)
     {
         mutex->lock = MR_UNLOCK;
 
         /* Enable interrupt */
-        mr_hw_interrupt_enable();
+        mr_interrupt_enable();
 
         return MR_ERR_OK;
     }
 
     /* Enable interrupt */
-    mr_hw_interrupt_enable();
+    mr_interrupt_enable();
 
     return -MR_ERR_GENERIC;
 }
