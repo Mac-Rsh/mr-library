@@ -6,10 +6,10 @@
 
 
 //<<< Please give your bsp a name >>>
-#define BSP_NAME                          "CH32V303RBT6"
+#define BSP_NAME                          "bsp-name"
 
 //<<< Bsp system frequency >>>
-#define BSP_SYSCLK_FREQ                   SystemCoreClock
+#define BSP_SYSCLK_FREQ                   144000000
 
 //<--------------------------- BSP-GPIO ------------------------------------->
 //<<< Bsp using GPIOx >>>

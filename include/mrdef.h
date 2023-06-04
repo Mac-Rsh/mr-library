@@ -145,8 +145,8 @@ typedef int (*init_fn_t)(void);
     mr_used const init_fn_t _mr_auto_init_##fn mr_section(".auto_init."level) = fn
 
 #define AUTO_INIT_DRIVER_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "1")   /**< Driver auto-init export */
-#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")    /**< Device auto-init export */
-#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")    /**< Module auto-init export */
+#define AUTO_INIT_DEVICE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "2")   /**< Device auto-init export */
+#define AUTO_INIT_MODULE_EXPORT(fn)     AUTO_INIT_EXPORT(fn, "3")   /**< Module auto-init export */
 
 /**
  *  List
@@ -224,8 +224,8 @@ typedef struct mr_container *mr_container_t;                        /**< Type fo
 /**
  *  Object
  */
-#define _MR_OBJECT_TYPE_NONE           0x00
-#define _MR_OBJECT_TYPE_REGISTER       0x10
+#define _MR_OBJECT_TYPE_NONE            0x00
+#define _MR_OBJECT_TYPE_REGISTER        0x10
 
 struct mr_object
 {
@@ -246,6 +246,7 @@ struct mr_mutex
 };
 typedef struct mr_mutex *mr_mutex_t;                                /**< Type for mutex */
 
+#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
 /**
  *  Device
  */
@@ -292,9 +293,12 @@ struct mr_device
 
     const struct mr_device_ops *ops;                                /**< Operations of the device */
 };
+#endif
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
-
+/**
+ *  Event server
+ */
 struct mr_event_server
 {
     struct mr_object object;                                        /**< Event object */
@@ -311,9 +315,7 @@ struct mr_event_client
     mr_err_t (*cb)(mr_event_server_t server, void *args);            /**< Event callback */
     void *args;                                                     /**< Event arguments */
 };
-
 typedef struct mr_event_client *mr_event_client_t;                  /**< Type for event client */
-
 #endif
 
 #endif

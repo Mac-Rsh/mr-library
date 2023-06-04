@@ -15,44 +15,6 @@
 #include "mrservice.h"
 
 /**
- *  Export hardware functions
- */
-void mr_hw_interrupt_disable(void);
-void mr_hw_interrupt_enable(void);
-void mr_hw_delay_ms(mr_uint32_t ms);
-
-/**
- *  Export list-tree functions
- */
-void mr_avl_init(mr_avl_t node, mr_uint32_t value);
-void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
-void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
-mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
-mr_size_t mr_avl_get_length(mr_avl_t tree);
-
-/**
- *  Export kservice functions
- */
-void mr_auto_init(void);
-mr_weak mr_size_t mr_printf(const char *fmt, ...);
-void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...);
-mr_weak void mr_assert_handler(void);
-mr_uint32_t mr_strhase(const char *str);
-mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
-
-/**
- *  Export fifo functions
- */
-void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size);
-void mr_fifo_reset(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size);
-mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size);
-mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size);
-
-/**
  *  Export container functions
  */
 mr_container_t mr_container_find(enum mr_container_type type);
@@ -73,6 +35,7 @@ void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
 
+#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
 /**
  *  Export device functions
  */
@@ -88,6 +51,7 @@ mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+#endif
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
@@ -105,5 +69,37 @@ mr_err_t mr_event_client_create(mr_uint8_t id,
                                 mr_event_server_t server);
 mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server);
 #endif
+
+/**
+ *  Export kservice functions
+ */
+void mr_auto_init(void);
+mr_size_t mr_printf(const char *fmt, ...);
+void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...);
+mr_weak void mr_assert_handle(void);
+mr_weak void mr_interrupt_disable(void);
+mr_weak void mr_interrupt_enable(void);
+mr_weak void mr_delay_ms(mr_uint32_t ms);
+
+/**
+ *  Export fifo functions
+ */
+void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size);
+void mr_fifo_reset(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size);
+mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size);
+mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size);
+
+/**
+ *  Export avl functions
+ */
+void mr_avl_init(mr_avl_t node, mr_uint32_t value);
+void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
+void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
+mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
+mr_size_t mr_avl_get_length(mr_avl_t tree);
 
 #endif

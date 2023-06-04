@@ -10,6 +10,8 @@
 
 #include "mrlib.h"
 
+#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
+
 /**
  * @brief This function finds a device.
  *
@@ -267,3 +269,5 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
 
     return device->ops->write(device, pos, buffer, size);
 }
+
+#endif

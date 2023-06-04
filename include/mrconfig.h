@@ -3,44 +3,52 @@
 
 #include "mrboard.h"
 
-//<<< Config switch >>>
+//<---------------------------- Options -------------------------------------->
+//<<< Configuration switch >>>
 #define MR_CONF_DISABLE                 0
 #define MR_CONF_ENABLE                  1
-//<<< Log level >>>
-#define MR_CONF_LOG_LEVEL_ASSERT        0
-#define MR_CONF_LOG_LEVEL_ERROR         1
-#define MR_CONF_LOG_LEVEL_WARNING       2
-#define MR_CONF_LOG_LEVEL_INFO          3
-#define MR_CONF_LOG_LEVEL_DEBUG         4
 
-//<---------------------------- Kernel -------------------------------------->
-//<<< Console >>>
+//<<< Debug level >>>
+#define MR_CONF_DEBUG_ASSERT            0
+#define MR_CONF_DEBUG_ERROR             1
+#define MR_CONF_DEBUG_WARNING           2
+#define MR_CONF_DEBUG_INFO              3
+#define MR_CONF_DEBUG_DEBUG             4
+
+//<---------------------------- Configuration -------------------------------------->
+//<<< Object >>>
 #define MR_CONF_NAME_MAX                12
-#define MR_CONF_CONSOLE                 MR_CONF_ENABLE
-#define MR_CONF_CONSOLE_BUFSZ           128
-#define MR_CONF_CONSOLE_NAME            "uart1"
-//<<< Log >>>
-#define MR_CONF_LOG                     MR_CONF_ENABLE
-#define MR_CONF_LOG_ASSERT              MR_CONF_ENABLE
-#define MR_CONF_LOG_LEVEL               MR_CONF_LOG_LEVEL_DEBUG
+
+//<<< Debug >>>
+#define MR_CONF_DEBUG                   MR_CONF_ENABLE
+#define MR_CONF_ASSERT                  MR_CONF_ENABLE
+#define MR_CONF_DEBUG_LEVEL             MR_CONF_DEBUG_DEBUG
+
 //<<< Event >>>
 #define MR_CONF_EVENT                   MR_CONF_ENABLE
 
-//<---------------------------- Device -------------------------------------->
-//<<< GPIO >>>
+//<<< Device >>>
+#define MR_CONF_DEVICE                  MR_CONF_ENABLE
+#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
+//< pin >
 #define MR_CONF_PIN                     MR_CONF_ENABLE
-//<<< SERIAL >>>
+//< serial >
 #define MR_CONF_SERIAL                  MR_CONF_ENABLE
 #define MR_CONF_SERIAL_BUFSZ            64
-//<<< SPI >>>
+//< spi >
 #define MR_CONF_SPI                     MR_CONF_ENABLE
-//<<< I2C >>>
+//< i2c >
 #define MR_CONF_I2C                     MR_CONF_ENABLE
-//<<< ADC >>>
+//< adc >
 #define MR_CONF_ADC                     MR_CONF_ENABLE
-//<<< DAC >>>
+//< dac >
 #define MR_CONF_DAC                     MR_CONF_ENABLE
-//<<< TIMER >>>
+//< timer >
 #define MR_CONF_TIMER                   MR_CONF_ENABLE
+//< console >
+#define MR_CONF_CONSOLE                 MR_CONF_ENABLE
+#define MR_CONF_CONSOLE_BUFSZ           128
+#define MR_CONF_CONSOLE_NAME            "uart1"
+#endif
 
 #endif
