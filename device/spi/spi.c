@@ -284,7 +284,7 @@ static void _err_io_spi_cs_ctrl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uin
     MR_ASSERT(0);
 }
 
-mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data)
+mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -297,6 +297,7 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
             };
 
     MR_ASSERT(spi_bus != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Add the spi-bus to the container */
@@ -320,11 +321,11 @@ mr_err_t mr_hw_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi
     return MR_ERR_OK;
 }
 
-mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
-                              const char *name,
-                              mr_uint16_t support_flag,
-                              mr_uint16_t cs_pin,
-                              const char *bus_name)
+mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
+                           const char *name,
+                           mr_uint16_t support_flag,
+                           mr_uint16_t cs_pin,
+                           const char *bus_name)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -337,7 +338,9 @@ mr_err_t mr_hw_spi_device_add(mr_spi_device_t spi_device,
             };
 
     MR_ASSERT(spi_device != MR_NULL);
-    MR_ASSERT(support_flag != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(support_flag != MR_OPEN_CLOSED);
+    MR_ASSERT(bus_name != MR_NULL);
 
     /* Add the spi-device to the container */
     ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, MR_NULL);

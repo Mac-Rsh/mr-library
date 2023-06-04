@@ -211,7 +211,7 @@ void EXTI0_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line0) != RESET)
     {
-        mr_hw_pin_isr(&hw_pin, 0);
+        mr_pin_device_isr(&hw_pin, 0);
         EXTI_ClearITPendingBit(EXTI_Line0);
     }
 }
@@ -222,7 +222,7 @@ void EXTI1_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line1) != RESET)
     {
-        mr_hw_pin_isr(&hw_pin, 1);
+        mr_pin_device_isr(&hw_pin, 1);
         EXTI_ClearITPendingBit(EXTI_Line1);
     }
 }
@@ -233,7 +233,7 @@ void EXTI2_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line2) != RESET)
     {
-        mr_hw_pin_isr(&hw_pin, 2);
+        mr_pin_device_isr(&hw_pin, 2);
         EXTI_ClearITPendingBit(EXTI_Line2);
     }
 }
@@ -244,7 +244,7 @@ void EXTI3_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line3) != RESET)
     {
-        mr_hw_pin_isr(&hw_pin, 3);
+        mr_pin_device_isr(&hw_pin, 3);
         EXTI_ClearITPendingBit(EXTI_Line3);
     }
 }
@@ -255,7 +255,7 @@ void EXTI4_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line4) != RESET)
     {
-        mr_hw_pin_isr(&hw_pin, 4);
+        mr_pin_device_isr(&hw_pin, 4);
         EXTI_ClearITPendingBit(EXTI_Line4);
     }
 }
@@ -270,11 +270,11 @@ void EXTI9_5_IRQHandler(void)
         || (EXTI_GetITStatus(EXTI_Line8) != RESET)
         || (EXTI_GetITStatus(EXTI_Line9) != RESET))
     {
-        mr_hw_pin_isr(&hw_pin, 5);
-        mr_hw_pin_isr(&hw_pin, 6);
-        mr_hw_pin_isr(&hw_pin, 7);
-        mr_hw_pin_isr(&hw_pin, 8);
-        mr_hw_pin_isr(&hw_pin, 9);
+        mr_pin_device_isr(&hw_pin, 5);
+        mr_pin_device_isr(&hw_pin, 6);
+        mr_pin_device_isr(&hw_pin, 7);
+        mr_pin_device_isr(&hw_pin, 8);
+        mr_pin_device_isr(&hw_pin, 9);
         EXTI_ClearITPendingBit(EXTI_Line5 | EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9);
     }
 }
@@ -290,11 +290,11 @@ void EXTI15_10_IRQHandler(void)
         || (EXTI_GetITStatus(EXTI_Line14) != RESET)
         || (EXTI_GetITStatus(EXTI_Line15) != RESET))
     {
-        mr_hw_pin_isr(&hw_pin, 10);
-        mr_hw_pin_isr(&hw_pin, 11);
-        mr_hw_pin_isr(&hw_pin, 12);
-        mr_hw_pin_isr(&hw_pin, 13);
-        mr_hw_pin_isr(&hw_pin, 14);
+        mr_pin_device_isr(&hw_pin, 10);
+        mr_pin_device_isr(&hw_pin, 11);
+        mr_pin_device_isr(&hw_pin, 12);
+        mr_pin_device_isr(&hw_pin, 13);
+        mr_pin_device_isr(&hw_pin, 14);
         EXTI_ClearITPendingBit(EXTI_Line10 | EXTI_Line11 | EXTI_Line12 | EXTI_Line13 | EXTI_Line14 | EXTI_Line15);
     }
 }
@@ -309,7 +309,7 @@ mr_err_t mr_hw_gpio_init(void)
                     ch32_pin_read,
             };
 
-    ret = mr_hw_pin_add(&hw_pin, "pin", &ops, MR_NULL);
+    ret = mr_pin_device_add(&hw_pin, "pin", &ops, MR_NULL);
     MR_ASSERT(ret == MR_ERR_OK);
 
     return MR_ERR_OK;

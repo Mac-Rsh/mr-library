@@ -238,7 +238,7 @@ mr_err_t mr_hw_spi_init(void)
 
     while (count--)
     {
-        ret = mr_hw_spi_bus_add(&hw_spi[count], ch32_spi[count].name, &ops, &ch32_spi[count]);
+        ret = mr_spi_bus_add(&hw_spi[count], ch32_spi[count].name, &ops, &ch32_spi[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

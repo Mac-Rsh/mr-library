@@ -218,11 +218,11 @@ static mr_uint32_t _err_io_timer_get_count(mr_timer_t timer)
     return 0;
 }
 
-mr_err_t mr_hw_timer_add(mr_timer_t timer,
-                         const char *name,
-                         struct mr_timer_ops *ops,
-                         struct mr_timer_information *information,
-                         void *data)
+mr_err_t mr_timer_device_add(mr_timer_t timer,
+                             const char *name,
+                             struct mr_timer_ops *ops,
+                             struct mr_timer_information *information,
+                             void *data)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -235,6 +235,7 @@ mr_err_t mr_hw_timer_add(mr_timer_t timer,
             };
 
     MR_ASSERT(timer != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
     MR_ASSERT(information != MR_NULL);
     MR_ASSERT(information->max_freq != 0);
@@ -265,8 +266,10 @@ mr_err_t mr_hw_timer_add(mr_timer_t timer,
     return MR_ERR_OK;
 }
 
-void mr_hw_timer_isr(mr_timer_t timer, mr_uint16_t event)
+void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event)
 {
+    MR_ASSERT(timer != MR_NULL);
+
     switch (event & _MR_TIMER_EVENT_MASK)
     {
         case MR_TIMER_EVENT_PIT_INT:

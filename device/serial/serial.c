@@ -178,7 +178,7 @@ static void _err_io_serial_stop_tx(mr_serial_t serial)
     MR_ASSERT(0);
 }
 
-mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
+mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -191,6 +191,7 @@ mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial
             };
 
     MR_ASSERT(serial != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Add the serial-device to the container */
@@ -217,8 +218,10 @@ mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial
     return MR_ERR_OK;
 }
 
-void mr_hw_serial_isr(mr_serial_t serial, mr_uint32_t event)
+void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
 {
+    MR_ASSERT(serial != MR_NULL);
+
     switch (event & _MR_SERIAL_EVENT_MASK)
     {
         case MR_SERIAL_EVENT_RX_INT:

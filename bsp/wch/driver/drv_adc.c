@@ -124,7 +124,7 @@ mr_err_t mr_hw_adc_init(void)
 
     while (count--)
     {
-        ret = mr_hw_adc_add(&hw_adc[count], ch32_adc[count].name, &ops, &ch32_adc[count]);
+        ret = mr_adc_device_add(&hw_adc[count], ch32_adc[count].name, &ops, &ch32_adc[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

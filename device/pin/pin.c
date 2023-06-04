@@ -87,7 +87,7 @@ static mr_uint8_t _err_io_pin_read(mr_pin_t pin, mr_uint16_t number)
     return 0;
 }
 
-mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data)
+mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -100,6 +100,7 @@ mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, v
             };
 
     MR_ASSERT(pin != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Add the pin-device to the container */
@@ -118,8 +119,10 @@ mr_err_t mr_hw_pin_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, v
     return MR_ERR_OK;
 }
 
-void mr_hw_pin_isr(mr_pin_t pin, mr_uint32_t Line)
+void mr_pin_device_isr(mr_pin_t pin, mr_uint32_t Line)
 {
+    MR_ASSERT(pin != MR_NULL);
+
     /* Invoke the rx-cb function */
     if (pin->device.rx_cb != MR_NULL)
     {

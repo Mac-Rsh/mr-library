@@ -68,12 +68,12 @@ struct mr_timer
     const struct mr_timer_ops *ops;
 };
 
-mr_err_t mr_hw_timer_add(mr_timer_t timer,
-                         const char *name,
-                         struct mr_timer_ops *ops,
-                         struct mr_timer_information *information,
-                         void *data);
-void mr_hw_timer_isr(mr_timer_t timer, mr_uint16_t event);
+mr_err_t mr_timer_device_add(mr_timer_t timer,
+                             const char *name,
+                             struct mr_timer_ops *ops,
+                             struct mr_timer_information *information,
+                             void *data);
+void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event);
 
 #endif
 

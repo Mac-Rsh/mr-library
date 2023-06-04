@@ -83,7 +83,7 @@ static void _err_io_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t val
     MR_ASSERT(0);
 }
 
-mr_err_t mr_hw_dac_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data)
+mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -96,6 +96,7 @@ mr_err_t mr_hw_dac_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, v
             };
 
     MR_ASSERT(dac != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Add the dac-device to the container */

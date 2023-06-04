@@ -288,13 +288,13 @@ static void ch32_serial_isr(mr_serial_t serial)
 
     if (USART_GetITStatus(hw->hw_uart.Instance, USART_IT_RXNE) != RESET)
     {
-        mr_hw_serial_isr(serial, MR_SERIAL_EVENT_RX_INT);
+        mr_serial_device_isr(serial, MR_SERIAL_EVENT_RX_INT);
         USART_ClearITPendingBit(hw->hw_uart.Instance, USART_IT_RXNE);
     }
 
     if (USART_GetITStatus(hw->hw_uart.Instance, USART_IT_TXE) != RESET)
     {
-        mr_hw_serial_isr(serial, MR_SERIAL_EVENT_TX_INT);
+        mr_serial_device_isr(serial, MR_SERIAL_EVENT_TX_INT);
         USART_ClearITPendingBit(hw->hw_uart.Instance, USART_IT_TXE);
     }
 }
@@ -394,7 +394,7 @@ mr_err_t mr_hw_uart_init(void)
 
     while (count--)
     {
-        ret = mr_hw_serial_add(&hw_serial[count], ch32_uart[count].name, &ops, &ch32_uart[count]);
+        ret = mr_serial_device_add(&hw_serial[count], ch32_uart[count].name, &ops, &ch32_uart[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
