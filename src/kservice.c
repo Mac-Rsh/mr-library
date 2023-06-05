@@ -25,35 +25,31 @@ static int start(void)
 {
     return 0;
 }
-
 AUTO_INIT_EXPORT(start, "0");
 
 static int driver_state(void)
 {
     return 0;
 }
-
 AUTO_INIT_EXPORT(driver_state, "0.end");
 
 static int driver_end(void)
 {
     return 0;
 }
-
 AUTO_INIT_EXPORT(driver_end, "1.end");
 
 static int end(void)
 {
     return 0;
 }
-
 AUTO_INIT_EXPORT(end, "3.end");
 
 void mr_auto_init(void)
 {
     volatile const init_fn_t *fn_ptr;
 
-    /* Auto-init */
+    /* Auto-initialization */
     for (fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr++)
     {
         (*fn_ptr)();
@@ -70,7 +66,6 @@ mr_err_t mr_printf_init(void)
     return MR_ERR_OK;
 #endif
 }
-
 AUTO_INIT_DEVICE_EXPORT(mr_printf_init);
 
 mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t length)
