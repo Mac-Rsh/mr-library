@@ -6,6 +6,7 @@
 
 1. 引用 `mrdrv.h` 头文件以使用驱动部分。
 2. 调用pin设备注册函数（如果实现了自动初始化，则无需调用）。
+3. 打开 mrconfig.h 头文件中PIN宏开关。
 
  ----------
 
@@ -57,7 +58,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 | args      | 控制参数    |
 | **返回**    |         |
 | MR_ERR_OK | 控制设备成功  |
-| MR_NULL   | 寻找设备失败  |
+| 错误码       | 控制设备失败  |
 
 通过`ioctl`函数将控制参数配置到PIN设备。PIN控制参数原型如下:
 
@@ -161,7 +162,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, 
 使用示例如下所示:
 
 ```c
-/* 读取B13电平 */
+/* 获取B13电平 */
 mr_uint8_t pin_level = 0;
 mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
 ```
@@ -180,13 +181,13 @@ mr_err_t (*rx_cb)(mr_device_t device, void *args);
 /* 定义回调函数 */
 mr_err_t pin_device_cb(mr_device_t device, void *args)
 {
-mr_uint32_t *line = args;           /* 获取中断源 */
-
-/* 判断中断源是line-13 */
-if (*line == 13)
-{
-/* do something */
-}
+    mr_uint32_t *line = args;           /* 获取中断源 */
+    
+    /* 判断中断源是line-13 */
+    if (*line == 13)
+    {
+    /* do something */
+    }
 }
 
 /* 绑定PIN函数回调函数 */
