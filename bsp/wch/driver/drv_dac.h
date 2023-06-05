@@ -29,7 +29,7 @@ struct ch32_dac
     struct ch32_hw_dac hw_dac;
 };
 
-mr_err_t mr_hw_dac_init(void);
+mr_err_t ch32_dac_init(void);
 
 #endif
 

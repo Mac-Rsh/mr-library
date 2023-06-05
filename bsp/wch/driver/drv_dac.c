@@ -103,7 +103,7 @@ void ch32_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value)
     }
 }
 
-mr_err_t mr_hw_dac_init(void)
+mr_err_t ch32_dac_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
     mr_size_t count = mr_array_get_length(hw_dac);
@@ -123,6 +123,6 @@ mr_err_t mr_hw_dac_init(void)
     return MR_ERR_OK;
 }
 
-AUTO_INIT_DRIVER_EXPORT(mr_hw_dac_init);
+AUTO_INIT_DRIVER_EXPORT(ch32_dac_init);
 
 #endif

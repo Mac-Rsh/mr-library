@@ -299,7 +299,7 @@ void EXTI15_10_IRQHandler(void)
     }
 }
 
-mr_err_t mr_hw_gpio_init(void)
+mr_err_t ch32_gpio_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
     static struct mr_pin_ops ops =
@@ -314,7 +314,6 @@ mr_err_t mr_hw_gpio_init(void)
 
     return MR_ERR_OK;
 }
-
-AUTO_INIT_DRIVER_EXPORT(mr_hw_gpio_init);
+AUTO_INIT_DRIVER_EXPORT(ch32_gpio_init);
 
 #endif

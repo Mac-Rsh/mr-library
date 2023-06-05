@@ -34,7 +34,7 @@ struct ch32_spi
     struct ch32_hw_spi hw_spi;
 };
 
-mr_err_t mr_hw_spi_init(void);
+mr_err_t ch32_spi_init(void);
 
 #endif
 

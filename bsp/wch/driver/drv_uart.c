@@ -379,7 +379,7 @@ void UART8_IRQHandler(void)
 
 #endif
 
-mr_err_t mr_hw_uart_init(void)
+mr_err_t ch32_uart_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
     mr_size_t count = mr_array_get_length(hw_serial);
@@ -400,7 +400,6 @@ mr_err_t mr_hw_uart_init(void)
 
     return MR_ERR_OK;
 }
-
-AUTO_INIT_DRIVER_EXPORT(mr_hw_uart_init);
+AUTO_INIT_DRIVER_EXPORT(ch32_uart_init);
 
 #endif

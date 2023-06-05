@@ -29,7 +29,7 @@ struct ch32_adc
     struct ch32_hw_adc hw_adc;
 };
 
-mr_err_t mr_hw_adc_init(void);
+mr_err_t ch32_adc_init(void);
 
 #endif
 

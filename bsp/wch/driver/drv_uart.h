@@ -39,7 +39,7 @@ struct ch32_uart
     struct ch32_hw_uart hw_uart;
 };
 
-mr_err_t mr_hw_uart_init(void);
+mr_err_t ch32_uart_init(void);
 
 #endif
 
