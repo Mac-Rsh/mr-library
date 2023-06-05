@@ -13,42 +13,6 @@
 
 #include "mrdef.h"
 #include "mrservice.h"
-#include "mrlog.h"
-
-/**
- *  Export hardware functions
- */
-void mr_hw_interrupt_disable(void);
-void mr_hw_interrupt_enable(void);
-void mr_hw_delay_ms(mr_uint32_t ms);
-
-/**
- *  Export avl-tree functions
- */
-void mr_avl_init(mr_avl_t node, mr_uint32_t value);
-void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
-void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
-mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
-mr_size_t mr_avl_get_length(mr_avl_t tree);
-
-/**
- *  Export kservice functions
- */
-void mr_auto_init(void);
-mr_uint32_t mr_strhase(const char *str);
-mr_uint32_t mr_strnhase(const char *str, mr_size_t length);
-
-/**
- *  Export fifo functions
- */
-void mr_fifo_init(mr_fifo_t fifo, mr_uint8_t *pool, mr_size_t pool_size);
-void mr_fifo_reset(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_read(mr_fifo_t fifo, mr_uint8_t *buffer, mr_size_t size);
-mr_size_t mr_fifo_write(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
-mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const mr_uint8_t *buffer, mr_size_t size);
 
 /**
  *  Export container functions
@@ -59,9 +23,9 @@ mr_container_t mr_container_find(enum mr_container_type type);
  *  Export object functions
  */
 mr_object_t mr_object_find(const char *name, enum mr_container_type type);
-mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type container_type);
+mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type type);
 mr_err_t mr_object_remove(mr_object_t object);
-mr_err_t mr_object_move(mr_object_t object, enum mr_container_type dest_type);
+mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type);
 void mr_object_rename(mr_object_t object, char *name);
 
 /**
@@ -71,74 +35,71 @@ void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
 
+#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
 /**
  *  Export device functions
  */
 mr_device_t mr_device_find(const char *name);
 mr_err_t mr_device_add(mr_device_t device,
-					   const char *name,
-					   enum mr_device_type type,
-					   mr_uint16_t support_flag,
-					   const struct mr_device_ops *ops,
-					   void *data);
+                       const char *name,
+                       enum mr_device_type type,
+                       mr_uint16_t support_flag,
+                       const struct mr_device_ops *ops,
+                       void *data);
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+#endif
 
-/**
- *  Export manager functions
- */
-mr_manager_t mr_manager_find(const char *name);
-mr_err_t mr_manager_add(mr_manager_t manager,
-						const char *name,
-						enum mr_manager_type type,
-						mr_size_t queue_number,
-						struct mr_manager_ops *ops,
-						void *data);
-mr_err_t mr_manager_remove(mr_manager_t manager);
-mr_err_t mr_manager_notify(mr_manager_t manager, mr_uint32_t id);
-void mr_manager_handler(mr_manager_t manager);
-
-/**
- *  Export agent functions
- */
-mr_agent_t mr_agent_find(mr_uint32_t id, mr_manager_t manager);
-mr_err_t mr_agent_create(mr_uint32_t id,
-						 mr_err_t (*callback)(mr_manager_t manager, void *args),
-						 void *args,
-						 mr_manager_t target_manager);
-mr_err_t mr_agent_delete(mr_uint32_t id, mr_manager_t manager);
-
+#if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
  *  Export event functions
  */
-mr_err_t mr_event_manager_add(mr_manager_t manager, const char *name, mr_size_t queue_number);
-mr_err_t mr_event_create(mr_uint32_t event,
-						 mr_err_t (*callback)(mr_manager_t manager, void *args),
-						 void *args,
-						 mr_manager_t target_manager);
-mr_err_t mr_event_delete(mr_uint32_t event, mr_manager_t manager);
+mr_event_server_t mr_event_server_find(const char *name);
+mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size_t queue_length);
+mr_err_t mr_event_server_remove(mr_event_server_t server);
+mr_err_t mr_event_server_notify(mr_event_server_t server, mr_uint8_t id);
+void mr_event_server_handle(mr_event_server_t server);
+mr_event_client_t mr_event_client_find(mr_uint8_t id, mr_event_server_t server);
+mr_err_t mr_event_client_create(mr_uint8_t id,
+                                mr_err_t (*cb)(mr_event_server_t server, void *args),
+                                void *args,
+                                mr_event_server_t server);
+mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server);
+#endif
 
 /**
- *  Export fsm functions
+ *  Export kservice functions
  */
-mr_err_t mr_fsm_manager_add(mr_manager_t manager, const char *name, mr_size_t queue_number);
-mr_err_t mr_fsm_state_create(mr_uint32_t state,
-							 mr_err_t (*callback)(mr_manager_t manager, void *args),
-							 void *args,
-							 mr_manager_t target_manager);
-mr_err_t mr_fsm_state_delete(mr_uint32_t state, mr_manager_t manager);
+void mr_auto_init(void);
+mr_size_t mr_printf(const char *fmt, ...);
+void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...);
+mr_weak void mr_assert_handle(void);
+mr_weak void mr_interrupt_disable(void);
+mr_weak void mr_interrupt_enable(void);
+mr_weak void mr_delay_ms(mr_uint32_t ms);
 
 /**
- *  Export at-parser functions
+ *  Export fifo functions
  */
-mr_err_t mr_at_parser_manager_add(mr_manager_t manager, const char *name, mr_size_t queue_number);
-mr_err_t mr_at_cmd_create(const char *at_cmd,
-						  mr_err_t (*callback)(mr_manager_t manager, void *args),
-						  mr_manager_t target_manager);
-mr_err_t mr_at_cmd_delete(mr_uint32_t at_cmd, mr_manager_t manager);
-void mr_at_parser_isr(mr_manager_t manager, char data);
+void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size);
+void mr_fifo_reset(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo);
+mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size);
+mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size);
+mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size);
+
+/**
+ *  Export avl functions
+ */
+void mr_avl_init(mr_avl_t node, mr_uint32_t value);
+void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
+void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
+mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
+mr_size_t mr_avl_get_length(mr_avl_t tree);
 
 #endif

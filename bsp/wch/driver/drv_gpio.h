@@ -13,9 +13,9 @@
 
 #include "device/pin/pin.h"
 
-#if (MR_CONF_DEVICE_PIN == MR_CONF_ENABLE)
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
 
-mr_err_t mr_hw_gpio_init(void);
+mr_err_t ch32_gpio_init(void);
 
 #endif
 

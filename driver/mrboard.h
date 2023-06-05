@@ -1,15 +1,15 @@
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef _MR_BOARD_H_
+#define _MR_BOARD_H_
 
 //<---------------------------- Hardware -------------------------------------->
 //<<< Please include bsp head file >>>
 
 
 //<<< Please give your bsp a name >>>
-#define BSP_NAME                          "CH32V303RBT6"
+#define BSP_NAME                          "bsp-name"
 
 //<<< Bsp system frequency >>>
-#define BSP_SYSCLK_FREQ                   SystemCoreClock
+#define BSP_SYSCLK_FREQ                   144000000
 
 //<--------------------------- BSP-GPIO ------------------------------------->
 //<<< Bsp using GPIOx >>>
@@ -27,13 +27,14 @@
 #define BSP_UART_4
 #define BSP_UART_5
 #define BSP_UART_6
+#define BSP_UART_7
+#define BSP_UART_8
 
 //<--------------------------- BSP-SPI -------------------------------------->
 //<<< Bsp using SPIx >>>
 #define BSP_SPI_1
 #define BSP_SPI_2
 #define BSP_SPI_3
-#define BSP_SPI_4
 
 //<--------------------------- BSP-I2C -------------------------------------->
 //<<< Bsp using I2Cx >>>
@@ -44,8 +45,6 @@
 //<<< Bsp using ADCx >>>
 #define BSP_ADC_1
 #define BSP_ADC_2
-#define BSP_ADC_3
-#define BSP_ADC_4
 
 //<--------------------------- BSP-DAC -------------------------------------->
 //<<< Bsp using DACx >>>
