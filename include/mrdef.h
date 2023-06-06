@@ -217,7 +217,7 @@ struct mr_container
 {
     struct mr_list list;                                            /**< Container list */
 
-    enum mr_container_type type;                                    /**< Container flag */
+    enum mr_container_type type;                                    /**< Container type */
 };
 typedef struct mr_container *mr_container_t;                        /**< Type for container */
 
@@ -312,7 +312,7 @@ struct mr_event_client
 {
     struct mr_avl list;                                             /**< Event list */
 
-    mr_err_t (*cb)(mr_event_server_t server, void *args);            /**< Event callback */
+    mr_err_t (*cb)(mr_event_server_t server, void *args);           /**< Event callback */
     void *args;                                                     /**< Event arguments */
 };
 typedef struct mr_event_client *mr_event_client_t;                  /**< Type for event client */

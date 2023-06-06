@@ -70,10 +70,10 @@ struct mr_pin_config
 };
 ```
 
-**编号**:`mr-library`对GPIO进行编码，计算公式(端口号,引脚号) `->` ('A' - 端口号) * 16 + 引脚号，例如 B13 = 1 * 16 + 13 =
+- 编号:`mr-library`对GPIO进行编码，计算公式(端口号,引脚号) `->` ('A' - 端口号) * 16 + 引脚号，例如 B13 = 1 * 16 + 13 =
 29。
 
-**模式**:支持对GPIO进行普通和中断模式配置。
+- 模式:支持对GPIO进行普通和中断模式配置。
 
 ```c
 /* GPIO 模式 */
@@ -132,7 +132,7 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
 | **返回**    |         |
 | 实际写入的数据大小 |         |
 
-**写入位置**:指需要写入数据的位置，如写入B13，则pos = 29。
+- 写入位置:指需要写入数据的位置，如写入B13，则pos = 29。
 
 使用示例如下所示:
 
@@ -157,7 +157,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, 
 | **返回**    |         |
 | 实际读取的数据大小 |         |
 
-**读取位置**:指需要读取数据的位置，如读取B13，则pos = 29。
+- 读取位置:指需要读取数据的位置，如读取B13，则pos = 29。
 
 使用示例如下所示:
 
@@ -173,7 +173,7 @@ mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
 mr_err_t (*rx_cb)(mr_device_t device, void *args); 
 ```
 
-**回调函数**:device为触发回调设备，args传入中断来源。
+- 回调函数:device为触发回调设备，args传入中断来源。
 
 使用示例如下所示:
 
