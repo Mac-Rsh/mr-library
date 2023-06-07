@@ -10,7 +10,7 @@
 
  ----------
 
-## 寻找PIN设备
+## 查找PIN设备
 
 ```c
 mr_device_t mr_device_find(const char *name);
@@ -20,8 +20,8 @@ mr_device_t mr_device_find(const char *name);
 |:--------|:-------|
 | name    | PIN设备名 |
 | **返回**  |        |
-| PIN句柄   | 寻找设备成功 |
-| MR_NULL | 寻找设备失败 |
+| PIN句柄   | 查找设备成功 |
+| MR_NULL | 查找设备失败 |
 
 ## 打开PIN设备
 
@@ -72,7 +72,6 @@ struct mr_pin_config
 
 - 编号:`mr-library`对GPIO进行编码，计算公式(端口号,引脚号) `->` ('A' - 端口号) * 16 + 引脚号，例如 B13 = 1 * 16 + 13 =
 29。
-
 - 模式:支持对GPIO进行普通和中断模式配置。
 
 ```c
@@ -106,7 +105,7 @@ MR_PIN_MODE_HIGH                /* 高电平触发 */
 使用示例如下所示:
 
 ```c
-/* 寻找PIN设备 */
+/* 查找PIN设备 */
 mr_device_t pin_device = mr_device_find("pin");
 
 /* 以可读可写的方式打开PIN设备 */
@@ -181,12 +180,12 @@ mr_err_t (*rx_cb)(mr_device_t device, void *args);
 /* 定义回调函数 */
 mr_err_t pin_device_cb(mr_device_t device, void *args)
 {
-    mr_uint32_t *line = args;           /* 获取中断源 */
+    mr_int32_t number = *(mr_int32_t *)args;            /* 获取中断源 */
     
-    /* 判断中断源是line-13 */
-    if (*line == 13)
+    /* 判断中断源B13 */
+    if (number == 29)
     {
-    /* do something */
+        /* Do something */
     }
 }
 
