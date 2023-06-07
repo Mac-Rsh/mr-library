@@ -119,14 +119,14 @@ mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *op
     return MR_ERR_OK;
 }
 
-void mr_pin_device_isr(mr_pin_t pin, mr_uint32_t Line)
+void mr_pin_device_isr(mr_pin_t pin, mr_int32_t number)
 {
     MR_ASSERT(pin != MR_NULL);
 
     /* Invoke the rx-cb function */
     if (pin->device.rx_cb != MR_NULL)
     {
-        pin->device.rx_cb(&pin->device, &Line);
+        pin->device.rx_cb(&pin->device, &number);
     }
 }
 
