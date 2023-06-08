@@ -26,14 +26,14 @@ static struct ch32_adc ch32_adc[] =
 #endif
         };
 
-static struct mr_adc hw_adc[mr_array_get_length(ch32_adc)];
+static struct mr_adc adc_driver[mr_array_get_length(ch32_adc)];
 
 mr_err_t ch32_adc_configure(mr_adc_t adc, mr_uint8_t state)
 {
-    struct ch32_adc *hw = (struct ch32_adc *)adc->device.data;
+    struct ch32_adc *driver = (struct ch32_adc *)adc->device.data;
     ADC_InitTypeDef ADC_InitStructure = {0};
 
-    RCC_APB2PeriphClockCmd(hw->hw_adc.adc_periph_clock, (FunctionalState)state);
+    RCC_APB2PeriphClockCmd(driver->hw_adc.adc_periph_clock, (FunctionalState)state);
     RCC_ADCCLKConfig(RCC_PCLK2_Div2);
 
     ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
@@ -42,8 +42,8 @@ mr_err_t ch32_adc_configure(mr_adc_t adc, mr_uint8_t state)
     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_NbrOfChannel = 1;
-    ADC_Init(hw->hw_adc.Instance, &ADC_InitStructure);
-    ADC_Cmd(hw->hw_adc.Instance, (FunctionalState)state);
+    ADC_Init(driver->hw_adc.Instance, &ADC_InitStructure);
+    ADC_Cmd(driver->hw_adc.Instance, (FunctionalState)state);
 
     return MR_ERR_OK;
 }
@@ -94,7 +94,7 @@ mr_err_t ch32_adc_channel_configure(mr_adc_t adc, struct mr_adc_config *config)
 
 mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
 {
-    struct ch32_adc *hw = (struct ch32_adc *)adc->device.data;
+    struct ch32_adc *driver = (struct ch32_adc *)adc->device.data;
     mr_uint32_t data = 0;
 
     if (channel > 17)
@@ -102,11 +102,11 @@ mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
         return 0;
     }
 
-    ADC_RegularChannelConfig(hw->hw_adc.Instance, channel, 1, ADC_SampleTime_239Cycles5);
-    ADC_SoftwareStartConvCmd(hw->hw_adc.Instance, ENABLE);
-    while (!ADC_GetFlagStatus(hw->hw_adc.Instance, ADC_FLAG_EOC));
-    data = ADC_GetConversionValue(hw->hw_adc.Instance);
-    ADC_ClearFlag(hw->hw_adc.Instance, ADC_FLAG_EOC);
+    ADC_RegularChannelConfig(driver->hw_adc.Instance, channel, 1, ADC_SampleTime_239Cycles5);
+    ADC_SoftwareStartConvCmd(driver->hw_adc.Instance, ENABLE);
+    while (!ADC_GetFlagStatus(driver->hw_adc.Instance, ADC_FLAG_EOC));
+    data = ADC_GetConversionValue(driver->hw_adc.Instance);
+    ADC_ClearFlag(driver->hw_adc.Instance, ADC_FLAG_EOC);
 
     return data;
 }
@@ -114,7 +114,7 @@ mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
 mr_err_t ch32_adc_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(hw_adc);
+    mr_size_t count = mr_array_get_length(adc_driver);
     static struct mr_adc_ops ops =
             {
                     ch32_adc_configure,
@@ -124,7 +124,7 @@ mr_err_t ch32_adc_init(void)
 
     while (count--)
     {
-        ret = mr_adc_device_add(&hw_adc[count], ch32_adc[count].name, &ops, &ch32_adc[count]);
+        ret = mr_adc_device_add(&adc_driver[count], ch32_adc[count].name, &ops, &ch32_adc[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

@@ -50,7 +50,7 @@ static struct ch32_spi ch32_spi[] =
 #endif
         };
 
-static struct mr_spi_bus hw_spi[mr_array_get_length(ch32_spi)];
+static struct mr_spi_bus spi_bus_driver[mr_array_get_length(ch32_spi)];
 
 static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32_t baud_rate)
 {
@@ -77,7 +77,7 @@ static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32
 
 static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
 {
-    struct ch32_spi *hw = (struct ch32_spi *)spi_bus->device.data;
+    struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     SPI_InitTypeDef SPI_InitStructure = {0};
     RCC_ClocksTypeDef RCC_ClockStruct = {0};
@@ -85,17 +85,17 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 
     RCC_GetClocksFreq(&RCC_ClockStruct);
 
-    if ((uint32_t)hw->hw_spi.Instance > APB2PERIPH_BASE)
+    if ((uint32_t)driver->hw_spi.Instance > APB2PERIPH_BASE)
     {
-        RCC_APB2PeriphClockCmd(hw->hw_spi.spi_periph_clock, ENABLE);
+        RCC_APB2PeriphClockCmd(driver->hw_spi.spi_periph_clock, ENABLE);
         pclk_freq = RCC_ClockStruct.PCLK2_Frequency;
     }
     else
     {
-        RCC_APB1PeriphClockCmd(hw->hw_spi.spi_periph_clock, ENABLE);
+        RCC_APB1PeriphClockCmd(driver->hw_spi.spi_periph_clock, ENABLE);
         pclk_freq = RCC_ClockStruct.PCLK1_Frequency;
     }
-    RCC_APB2PeriphClockCmd(hw->hw_spi.gpio_periph_clock, ENABLE);
+    RCC_APB2PeriphClockCmd(driver->hw_spi.gpio_periph_clock, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
     if (config->cs_active == MR_SPI_CS_ACTIVE_NONE)
@@ -148,69 +148,69 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
     {
         SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
 
-        GPIO_InitStructure.GPIO_Pin = hw->hw_spi.clk_gpio_pin;
+        GPIO_InitStructure.GPIO_Pin = driver->hw_spi.clk_gpio_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
+        GPIO_Init(driver->hw_spi.gpio_port, &GPIO_InitStructure);
 
-        GPIO_InitStructure.GPIO_Pin = hw->hw_spi.miso_gpio_pin;
+        GPIO_InitStructure.GPIO_Pin = driver->hw_spi.miso_gpio_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-        GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
+        GPIO_Init(driver->hw_spi.gpio_port, &GPIO_InitStructure);
 
-        GPIO_InitStructure.GPIO_Pin = hw->hw_spi.mosi_gpio_pin;
+        GPIO_InitStructure.GPIO_Pin = driver->hw_spi.mosi_gpio_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
+        GPIO_Init(driver->hw_spi.gpio_port, &GPIO_InitStructure);
     }
     else
     {
         SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
 
-        GPIO_InitStructure.GPIO_Pin = hw->hw_spi.clk_gpio_pin;
+        GPIO_InitStructure.GPIO_Pin = driver->hw_spi.clk_gpio_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
+        GPIO_Init(driver->hw_spi.gpio_port, &GPIO_InitStructure);
 
-        GPIO_InitStructure.GPIO_Pin = hw->hw_spi.miso_gpio_pin;
+        GPIO_InitStructure.GPIO_Pin = driver->hw_spi.miso_gpio_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
+        GPIO_Init(driver->hw_spi.gpio_port, &GPIO_InitStructure);
 
-        GPIO_InitStructure.GPIO_Pin = hw->hw_spi.mosi_gpio_pin;
+        GPIO_InitStructure.GPIO_Pin = driver->hw_spi.mosi_gpio_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        GPIO_Init(hw->hw_spi.gpio_port, &GPIO_InitStructure);
+        GPIO_Init(driver->hw_spi.gpio_port, &GPIO_InitStructure);
     }
 
     SPI_InitStructure.SPI_BaudRatePrescaler = ch32_spi_baud_rate_prescaler(pclk_freq, config->baud_rate);
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-    SPI_Init(hw->hw_spi.Instance, &SPI_InitStructure);
-    SPI_Cmd(hw->hw_spi.Instance, ENABLE);
+    SPI_Init(driver->hw_spi.Instance, &SPI_InitStructure);
+    SPI_Cmd(driver->hw_spi.Instance, ENABLE);
 
     return MR_ERR_OK;
 }
 
 static mr_uint8_t ch32_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
 {
-    struct ch32_spi *hw = (struct ch32_spi *)spi_bus->device.data;
+    struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
     mr_size_t i = 0;
 
-    while (SPI_I2S_GetFlagStatus(hw->hw_spi.Instance, SPI_I2S_FLAG_TXE) == RESET)
+    while (SPI_I2S_GetFlagStatus(driver->hw_spi.Instance, SPI_I2S_FLAG_TXE) == RESET)
     {
         i++;
         if (i > 200)
         { return 0; }
     }
-    SPI_I2S_SendData(hw->hw_spi.Instance, data);
+    SPI_I2S_SendData(driver->hw_spi.Instance, data);
 
-    while (SPI_I2S_GetFlagStatus(hw->hw_spi.Instance, SPI_I2S_FLAG_RXNE) == RESET)
+    while (SPI_I2S_GetFlagStatus(driver->hw_spi.Instance, SPI_I2S_FLAG_RXNE) == RESET)
     {
         i++;
         if (i > 200)
         { return 0; }
     }
 
-    return SPI_I2S_ReceiveData(hw->hw_spi.Instance);
+    return SPI_I2S_ReceiveData(driver->hw_spi.Instance);
 }
 
 static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state)
@@ -228,7 +228,7 @@ static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_
 mr_err_t ch32_spi_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(hw_spi);
+    mr_size_t count = mr_array_get_length(spi_bus_driver);
     static struct mr_spi_bus_ops ops =
             {
                     ch32_spi_configure,
@@ -238,7 +238,7 @@ mr_err_t ch32_spi_init(void)
 
     while (count--)
     {
-        ret = mr_spi_bus_add(&hw_spi[count], ch32_spi[count].name, &ops, &ch32_spi[count]);
+        ret = mr_spi_bus_add(&spi_bus_driver[count], ch32_spi[count].name, &ops, &ch32_spi[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
