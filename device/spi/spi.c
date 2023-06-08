@@ -10,6 +10,10 @@
 
 #include "device/spi/spi.h"
 
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
+#include "device/pin/pin.h"
+#endif
+
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
 
 static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
@@ -28,12 +32,6 @@ static mr_err_t mr_take_spi_bus(mr_spi_device_t spi_device)
     /* Check if the current spi-device is the owner of the spi-bus */
     if (spi_device->bus->owner != spi_device)
     {
-        /* Stop the chip-select of the last spi-device */
-        if (spi_device->bus->owner != MR_NULL)
-        {
-            spi_device->bus->ops->cs_ctrl(spi_device->bus, spi_device->bus->owner->cs_pin, MR_DISABLE);
-        }
-
         /* If the configuration is different, the spi-bus is reconfigured */
         if (spi_device->config.baud_rate != spi_device->bus->config.baud_rate
             || spi_device->config.host_slave != spi_device->bus->config.host_slave
@@ -149,6 +147,13 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
         case MR_CTRL_ATTACH:
         {
+            /* Detach the spi-bus */
+            if (args == MR_NULL)
+            {
+                spi_device->bus = MR_NULL;
+                return MR_ERR_OK;
+            }
+
             /* Find the spi-bus */
             mr_device_t spi_bus = mr_device_find((char *)args);
             if (spi_bus == MR_NULL)
@@ -336,6 +341,12 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
                     mr_spi_device_read,
                     mr_spi_device_write,
             };
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
+    struct mr_pin_config pin_config = {cs_pin,
+                                       MR_PIN_MODE_OUTPUT};
+    mr_device_t pin = MR_NULL;
+#endif
+
 
     MR_ASSERT(spi_device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
@@ -366,6 +377,17 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
     }
     mr_device_open(spi_bus, MR_OPEN_RDWR);
     spi_device->bus = (mr_spi_bus_t)spi_bus;
+
+#if (MR_CONF_PIN == MR_CONF_ENABLE)
+    /* Configure pin */
+    pin = mr_device_find("pin");
+    if (pin == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+    mr_device_open(pin, MR_OPEN_RDWR);
+    mr_device_ioctl(pin, MR_CTRL_CONFIG, &pin_config);
+#endif
 
     return MR_ERR_OK;
 }
