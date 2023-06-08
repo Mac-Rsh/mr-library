@@ -10,18 +10,6 @@
 
 #include "fifo.h"
 
-static void *fifo_memcpy(void *dst, const void *src, size_t n)
-{
-    char *d = (char *)dst;
-    const char *s = (const char *)src;
-
-    while (n--)
-    {
-        *d++ = *s++;
-    }
-    return dst;
-}
-
 /**
  * @brief This function initialize the fifo.
  *
@@ -133,14 +121,14 @@ size_t fifo_read(fifo_t fifo, void *buffer, size_t size)
     /* Copy the data from the fifo to the buffer */
     if ((fifo->size - fifo->read_index) > size)
     {
-        fifo_memcpy(buf, &fifo->buffer[fifo->read_index], size);
+        memcpy(buf, &fifo->buffer[fifo->read_index], size);
         fifo->read_index += size;
 
         return size;
     }
 
-    fifo_memcpy(buf, &fifo->buffer[fifo->read_index], fifo->size - fifo->read_index);
-    fifo_memcpy(&buf[fifo->size - fifo->read_index], &fifo->buffer[0], size - (fifo->size - fifo->read_index));
+    memcpy(buf, &fifo->buffer[fifo->read_index], fifo->size - fifo->read_index);
+    memcpy(&buf[fifo->size - fifo->read_index], &fifo->buffer[0], size - (fifo->size - fifo->read_index));
 
     fifo->read_mirror = ~fifo->read_mirror;
     fifo->read_index = size - (fifo->size - fifo->read_index);
@@ -188,14 +176,14 @@ size_t fifo_write(fifo_t fifo, const void *buffer, size_t size)
     /* Copy the data from the buffer to the fifo */
     if ((fifo->size - fifo->write_index) > size)
     {
-        fifo_memcpy(&fifo->buffer[fifo->write_index], buf, size);
+        memcpy(&fifo->buffer[fifo->write_index], buf, size);
         fifo->write_index += size;
 
         return size;
     }
 
-    fifo_memcpy(&fifo->buffer[fifo->write_index], buf, fifo->size - fifo->write_index);
-    fifo_memcpy(&fifo->buffer[0], &buf[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
+    memcpy(&fifo->buffer[fifo->write_index], buf, fifo->size - fifo->write_index);
+    memcpy(&fifo->buffer[0], &buf[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
 
     fifo->write_mirror = ~fifo->write_mirror;
     fifo->write_index = size - (fifo->size - fifo->write_index);
@@ -238,7 +226,7 @@ size_t fifo_write_force(fifo_t fifo, const void *buffer, size_t size)
     /* Copy the data from the buffer to the fifo */
     if ((fifo->size - fifo->write_index) > size)
     {
-        fifo_memcpy(&fifo->buffer[fifo->write_index], buf, size);
+        memcpy(&fifo->buffer[fifo->write_index], buf, size);
         fifo->write_index += size;
         if (size > length)
         {
@@ -248,8 +236,8 @@ size_t fifo_write_force(fifo_t fifo, const void *buffer, size_t size)
         return size;
     }
 
-    fifo_memcpy(&fifo->buffer[fifo->write_index], buf, fifo->size - fifo->write_index);
-    fifo_memcpy(&fifo->buffer[0], &buf[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
+    memcpy(&fifo->buffer[fifo->write_index], buf, fifo->size - fifo->write_index);
+    memcpy(&fifo->buffer[0], &buf[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
 
     fifo->write_mirror = ~fifo->write_mirror;
     fifo->write_index = size - (fifo->size - fifo->write_index);

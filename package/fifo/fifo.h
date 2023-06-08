@@ -12,6 +12,7 @@
 #define _FIFO_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #define FIFO_ASSERT(x)
 

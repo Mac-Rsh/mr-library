@@ -32,7 +32,7 @@ typedef struct slist *slist_t;                                      /**< Type fo
     ((type *)((char *)(node) - (unsigned long)(&((type *)0)->member)))
 
 #define list_container_of(node, type, member) \
-    ((type *)((char *)(node) - (unsigned long)(&((type *)0)->member)))
+    slist_container_of(node, type, member)
 
 void slist_init(slist_t list);
 void slist_append(slist_t list, slist_t node);
