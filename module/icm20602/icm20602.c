@@ -56,11 +56,6 @@ mr_err_t icm20602_init(icm20602_t icm20602, const char *name, mr_uint16_t cs_pin
     mr_err_t ret = MR_ERR_OK;
     struct icm20602_config default_config = ICM20602_CONFIG_DEFAULT;
     struct mr_spi_config spi_config = MR_SPI_CONFIG_DEFAULT;
-#if (MR_CONF_PIN == MR_CONF_ENABLE)
-    struct mr_pin_config pin_config = {cs_pin,
-                                       MR_PIN_MODE_OUTPUT};
-    mr_device_t pin = MR_NULL;
-#endif
     mr_size_t count = 0;
 
     MR_ASSERT(icm20602 != MR_NULL);
@@ -78,18 +73,6 @@ mr_err_t icm20602_init(icm20602_t icm20602, const char *name, mr_uint16_t cs_pin
     mr_device_open(&icm20602->spi.device, MR_OPEN_RDWR);
     spi_config.baud_rate = 10 * 1000 * 1000;
     mr_device_ioctl(&icm20602->spi.device, MR_CTRL_CONFIG, &spi_config);
-
-#if (MR_CONF_PIN == MR_CONF_ENABLE)
-    /* Configure pin */
-    pin = mr_device_find("pin");
-    if (pin == MR_NULL)
-    {
-        MR_LOG_E(LOG_TAG, "%s failed to find pin device\r\n", name);
-        return -MR_ERR_NOT_FOUND;
-    }
-    mr_device_open(pin, MR_OPEN_RDWR);
-    mr_device_ioctl(pin, MR_CTRL_CONFIG, &pin_config);
-#endif
 
     /* Configure ICM20602 */
     if (icm20602_self_check(icm20602) == MR_FALSE)

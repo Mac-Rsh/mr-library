@@ -12,7 +12,6 @@
 #define _ICM20602_H_
 
 #include "device/spi/spi.h"
-#include "device/pin/pin.h"
 
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
 
