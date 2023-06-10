@@ -18,14 +18,14 @@
 
 struct fifo
 {
-    uint8_t *buffer;                                                /**< Buffer pool */
+    uint8_t *buffer;                                                /* Buffer pool */
 
-    uint16_t read_mirror: 1;                                        /**< Read mirror flag */
-    uint16_t read_index: 15;                                        /**< Read index */
-    uint16_t write_mirror: 1;                                       /**< Write mirror flag */
-    uint16_t write_index: 15;                                       /**< Write index */
+    uint16_t read_mirror: 1;                                        /* Read mirror flag */
+    uint16_t read_index: 15;                                        /* Read index */
+    uint16_t write_mirror: 1;                                       /* Write mirror flag */
+    uint16_t write_index: 15;                                       /* Write index */
 
-    uint16_t size;                                                  /**< Buffer pool size */
+    uint16_t size;                                                  /* Buffer pool size */
 };
 typedef struct fifo *fifo_t;
 

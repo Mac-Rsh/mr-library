@@ -17,16 +17,16 @@
 
 struct list
 {
-    struct list *next;                                              /**< Point to next node */
-    struct list *prev;                                              /**< Point to prev node */
+    struct list *next;                                              /* Point to next node */
+    struct list *prev;                                              /* Point to prev node */
 };
-typedef struct list *list_t;                                        /**< Type for list */
+typedef struct list *list_t;                                        /* Type for list */
 
 struct slist
 {
-    struct slist *next;                                             /**< Point to next node */
+    struct slist *next;                                             /* Point to next node */
 };
-typedef struct slist *slist_t;                                      /**< Type for slist */
+typedef struct slist *slist_t;                                      /* Type for slist */
 
 #define slist_container_of(node, type, member) \
     ((type *)((char *)(node) - (unsigned long)(&((type *)0)->member)))
