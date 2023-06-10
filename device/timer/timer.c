@@ -183,6 +183,7 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *b
     }
 
     timer->ops->stop(timer);
+    timer->overflow = 0;
     period_reload = mr_timer_timeout_calculate(timer, *send_buffer);
 
     /* When the time is not less than one time, the timer is started */
@@ -285,6 +286,7 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event)
             if (timer->cycles == 0)
             {
                 timer->cycles = timer->reload;
+                timer->overflow = 0;
 
                 if (timer->config.mode == MR_TIMER_MODE_ONE_SHOT)
                 {
