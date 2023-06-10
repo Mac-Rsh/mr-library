@@ -156,7 +156,7 @@ mr_inline mr_uint16_t mr_adc_read(mr_device_t adc, mr_uint16_t channel)
 {
     mr_uint32_t data = 0;
 
-    mr_device_read(adc, 0, &data, sizeof(data));
+    mr_device_read(adc, channel, &data, sizeof(data));
     return data;
 }
 
@@ -167,14 +167,14 @@ mr_inline mr_uint16_t mr_adc_read(mr_device_t adc, mr_uint16_t channel)
 
 mr_inline mr_err_t mr_dac_mode(mr_device_t dac, mr_uint16_t channel, mr_uint8_t state)
 {
-    struct mr_dac_config config = {channel, MR_ENABLE};
+    struct mr_dac_config config = {channel, state};
 
     return mr_device_ioctl(dac, MR_CTRL_CONFIG, &config);
 }
 
 mr_inline void mr_dac_write(mr_device_t dac, mr_uint16_t channel, mr_uint32_t value)
 {
-    mr_device_write(dac, 0, &value, sizeof(value));
+    mr_device_write(dac, channel, &value, sizeof(value));
 }
 
 #endif
