@@ -21,19 +21,20 @@
 
 ### 空格与空行
 
-1. 操作符两边各加一个空格。
+1. 操作符两边各加一个空格，自加自减不加空格。
    例如:
 
    ```c  
    x = 1;  
    a + b;
+   i++;
    ```
 
 2. 逗号`,`后加一个空格。
    例如:
 
    ```c
-   void foo(int a, char b)
+   void foo(int a, char b);
    ```
 
 ### 头文件
@@ -83,21 +84,11 @@
 
 ### 函数与变量
 
-1. 函数命名小写，下划线分隔，硬件相关函数加`hw`标识，中断服务函数加`isr`标识。
+1. 函数命名小写，下划线分隔。
    例如:
 
    ```c
    void do_something(int arg1, char arg2)
-   {
-       ...
-   }
-   
-   mr_err_t mr_hw_serial_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
-   {
-       ...
-   }
-   
-   void mr_hw_serial_isr(mr_serial_t serial, mr_uint32_t event)
    {
        ...
    }
