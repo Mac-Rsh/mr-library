@@ -33,4 +33,8 @@
 #include "drv_dac.h"
 #endif
 
+#if (MR_CONF_I2C == MR_CONF_ENABLE)
+#include "drv_i2c.h"
+#endif
+
 #endif
