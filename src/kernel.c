@@ -212,8 +212,8 @@ void mr_mutex_init(mr_mutex_t mutex)
 {
     MR_ASSERT(mutex != MR_NULL);
 
+    mutex->hold = 0;
     mutex->owner = MR_NULL;
-    mutex->lock = MR_UNLOCK;
 }
 
 /**
@@ -234,7 +234,8 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 
     if (mutex->owner != owner)
     {
-        if (mutex->lock == MR_LOCK)
+        /* Check if the mutex is locked */
+        if (mutex->hold != 0)
         {
             /* Enable interrupt */
             mr_interrupt_enable();
@@ -244,7 +245,9 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
 
         mutex->owner = owner;
     }
-    mutex->lock = MR_LOCK;
+
+    /* Mutex is locked, increment the hold */
+    mutex->hold++;
 
     /* Enable interrupt */
     mr_interrupt_enable();
@@ -268,9 +271,11 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
     /* Disable interrupt */
     mr_interrupt_disable();
 
-    if (mutex->owner == owner)
+    /* Check if the mutex is locked */
+    if (mutex->owner == owner && mutex->hold != 0)
     {
-        mutex->lock = MR_UNLOCK;
+        /* Mutex is unlocked, decrement the hold */
+        mutex->hold--;
 
         /* Enable interrupt */
         mr_interrupt_enable();
