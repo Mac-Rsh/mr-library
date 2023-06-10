@@ -27,7 +27,7 @@ typedef struct i2c_device *i2c_device_t;
 
 struct i2c_bus_ops
 {
-    void (*clk_ctrl)(i2c_bus_t i2c_bus, uint8_t state);
+    void (*scl_ctrl)(i2c_bus_t i2c_bus, uint8_t state);
     void (*sda_ctrl)(i2c_bus_t i2c_bus, uint8_t state);
     uint8_t (*read)(i2c_bus_t i2c_bus);
 };

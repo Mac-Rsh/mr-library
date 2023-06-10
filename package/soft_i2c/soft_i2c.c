@@ -14,29 +14,29 @@
 
 static void i2c_bus_start(i2c_bus_t bus)
 {
-    bus->ops->clk_ctrl(bus, 1);
+    bus->ops->scl_ctrl(bus, 1);
     bus->ops->sda_ctrl(bus, 1);
 
     i2c_delay(I2C_DELAY);
     bus->ops->sda_ctrl(bus, 0);
     i2c_delay(I2C_DELAY);
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
 }
 
 static void i2c_bus_stop(i2c_bus_t bus)
 {
     bus->ops->sda_ctrl(bus, 0);
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
 
     i2c_delay(I2C_DELAY);
-    bus->ops->clk_ctrl(bus, 1);
+    bus->ops->scl_ctrl(bus, 1);
     i2c_delay(I2C_DELAY);
     bus->ops->sda_ctrl(bus, 1);
 }
 
 static void i2c_bus_send_ack(i2c_bus_t bus, uint8_t ack)
 {
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
 
     i2c_delay(I2C_DELAY);
     if (ack)
@@ -48,9 +48,9 @@ static void i2c_bus_send_ack(i2c_bus_t bus, uint8_t ack)
         bus->ops->sda_ctrl(bus, 0);
     }
 
-    bus->ops->clk_ctrl(bus, 1);
+    bus->ops->scl_ctrl(bus, 1);
     i2c_delay(I2C_DELAY);
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
     i2c_delay(I2C_DELAY);
 }
 
@@ -58,14 +58,14 @@ static uint8_t i2c_bus_wait_ack(i2c_bus_t bus)
 {
     uint8_t ack;
 
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
     i2c_delay(I2C_DELAY);
-    bus->ops->clk_ctrl(bus, 1);
+    bus->ops->scl_ctrl(bus, 1);
     i2c_delay(I2C_DELAY);
 
     ack = bus->ops->read(bus);
 
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
     i2c_delay(I2C_DELAY);
 
     return ack;
@@ -88,9 +88,9 @@ static void i2c_bus_write(i2c_bus_t bus, uint8_t data)
         data = data << 1;
 
         i2c_delay(I2C_DELAY);
-        bus->ops->clk_ctrl(bus, 1);
+        bus->ops->scl_ctrl(bus, 1);
         i2c_delay(I2C_DELAY);
-        bus->ops->clk_ctrl(bus, 0);
+        bus->ops->scl_ctrl(bus, 0);
     }
 
     i2c_bus_wait_ack(bus);
@@ -101,16 +101,16 @@ static uint8_t i2c_bus_read(i2c_bus_t bus, uint8_t ack)
     uint8_t data = 0;
     uint8_t count = 8;
 
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
     i2c_delay(I2C_DELAY);
     bus->ops->sda_ctrl(bus, 1);
 
     while (count--)
     {
         i2c_delay(I2C_DELAY);
-        bus->ops->clk_ctrl(bus, 0);
+        bus->ops->scl_ctrl(bus, 0);
         i2c_delay(I2C_DELAY);
-        bus->ops->clk_ctrl(bus, 1);
+        bus->ops->scl_ctrl(bus, 1);
         i2c_delay(I2C_DELAY);
         data = data << 1;
         if (bus->ops->read(bus) == 1)
@@ -119,7 +119,7 @@ static uint8_t i2c_bus_read(i2c_bus_t bus, uint8_t ack)
         }
     }
 
-    bus->ops->clk_ctrl(bus, 0);
+    bus->ops->scl_ctrl(bus, 0);
     i2c_delay(I2C_DELAY);
     i2c_bus_send_ack(bus, ack);
 
@@ -159,7 +159,7 @@ static int release_i2c_bus(i2c_device_t device)
  * @brief This function initialize the i2c bus.
  *
  * @param bus The i2c bus to initialize.
- * @param clk_ctrl The clock control function for i2c bus.
+ * @param scl_ctrl The clock control function for i2c bus.
  * @param sda_ctrl The sda control function for i2c bus.
  * @param read The read sda function for i2c bus.
  * @param data The data for user.
