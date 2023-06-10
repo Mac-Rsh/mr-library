@@ -119,19 +119,19 @@ struct mr_object
 /* 事件服务器 */
 struct mr_event_server
 {
-    struct mr_object object;                                        /**< 事件服务对象 */
+    struct mr_object object;                                        /* 事件服务对象 */
 
-    struct mr_fifo queue;                                           /**< 事件队列 */
-    mr_avl_t list;                                                  /**< 事件链表 */
+    struct mr_fifo queue;                                           /* 事件队列 */
+    mr_avl_t list;                                                  /* 事件链表 */
 };
 
 /* 事件客户端 */
 struct mr_event_client
 {
-    struct mr_avl list;                                             /**< 事件链表 */
+    struct mr_avl list;                                             /* 事件链表 */
 
-    mr_err_t (*cb)(mr_event_server_t server, void *args);           /**< 事件回调函数 */
-    void *args;                                                     /**< 事件回调函数参数 */
+    mr_err_t (*cb)(mr_event_server_t server, void *args);           /* 事件回调函数 */
+    void *args;                                                     /* 事件回调函数参数 */
 };
 ```
 
@@ -148,12 +148,69 @@ struct mr_event_client
 | mr_event_client_create   | 创建事件客户端到事件服务器    |
 | mr_client_delete         | 从事件服务器移除事件客户端    |
 
-### 事件服务使用
+### 事件服务使用示例：
 
-实际开发中，可以将任务拆分后，分成一个一个事件，最终将单一任务事件合并到一个事件服务器中，交由事件服务器分发。
+```c
+/* 定义事件 */
+#define EVENT1                          1
+#define EVENT2                          2
+#define EVENT3                          3
 
-- 裸机编程:将事件服务器放在主函数中运行，可任务异步执行。
-- RTOS:将不同任务的事件服务器放在不同线程中运行，可有效优化代码结构，减少线程数量，加速裸机代码移植。
+/* 定义事件服务器 */
+struct mr_event_server event_server;
+
+mr_err_t event1_cb(mr_event_server_t server, void *args)
+{
+    printf("event1_cb\r\n");
+
+    /* 通知事件服务器事件2发生 */
+    mr_event_server_notify(server, EVENT2);
+
+    return MR_ERR_OK;
+}
+
+mr_err_t event2_cb(mr_event_server_t server, void *args)
+{
+    printf("event2_cb\r\n");
+
+    /* 通知事件服务器事件3发生 */
+    mr_event_server_notify(server, EVENT3);
+
+    return MR_ERR_OK;
+}
+
+mr_err_t event3_cb(mr_event_server_t server, void *args)
+{
+    printf("event3_cb\r\n");
+
+    return MR_ERR_OK;
+}
+
+int main(void)
+{
+	/* 添加事件服务器到内核容器 */
+    mr_event_server_add(&event_server, "server", 4);
+
+	/* 创建事件客户端到事件服务器 */
+    mr_event_client_create(EVENT1, event1_cb, MR_NULL, &event_server);
+    mr_event_client_create(EVENT2, event2_cb, MR_NULL, &event_server);
+    mr_event_client_create(EVENT3, event3_cb, MR_NULL, &event_server);
+
+    /* 通知事件服务器事件1发生 */
+    mr_event_server_notify(&event_server, EVENT1);
+
+    while (1)
+    {
+        mr_event_server_handle(&event_server);
+    }
+}
+```
+现象：
+```c
+event1_cb
+event2_cb
+event3_cb
+```
 
  ----------
 
@@ -240,6 +297,42 @@ struct mr_device_ops
 | mr_device_ioctl | 控制设备      |
 | mr_device_read  | 从设备读取数据   |
 | mr_device_write | 向设备写入数据   |
+
+### GPIO设备使用示例：
+
+```c
+/* 寻找PIN设备 */
+mr_device_t pin_device = mr_device_find("pin");
+
+/* 以可读可写的方式打开PIN设备 */
+mr_device_open(pin_device, MR_OPEN_RDWR);
+
+/* 配置B13引脚为推挽输出模式 */
+struct mr_pin_config pin_config = { 29, MR_PIN_MODE_OUTPUT };
+mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+
+/* 设置B13(编号29)为高电平 */
+mr_uint8_t pin_level = 1;
+mr_device_write(pin_device, 29, &pin_level, sizeof(pin_level));
+
+/* 获取B13电平 */
+mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
+
+/* 定义回调函数 */
+mr_err_t pin_device_cb(mr_device_t device, void *args)
+{
+    mr_int32_t number = *(mr_int32_t *)args;    /* 获取中断源 */
+    
+    /* 判断中断源是B13 */
+    if (number == 29)
+    {
+    	/* Do something */
+    }
+}
+
+/* 绑定PIN函数回调函数 */
+mr_device_ioctl(pin_device, MR_CTRL_SET_RX_CB, pin_device_cb);
+```
 
  ----------
 
