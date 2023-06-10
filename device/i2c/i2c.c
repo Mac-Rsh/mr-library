@@ -12,6 +12,9 @@
 
 #if (MR_CONF_I2C == MR_CONF_ENABLE)
 
+#define _MR_I2C_WRITE   0
+#define _MR_I2C_READ    1
+
 static mr_err_t mr_take_i2c_bus(mr_i2c_device_t i2c_device)
 {
     mr_err_t ret = MR_ERR_OK;
@@ -45,14 +48,61 @@ static mr_err_t mr_take_i2c_bus(mr_i2c_device_t i2c_device)
         i2c_device->bus->owner = i2c_device;
     }
 
+    /* Send the i2c-bus start signal and read cmd */
+    i2c_device->bus->ops->start(i2c_device->bus);
+
     return MR_ERR_OK;
 }
 
 static mr_err_t mr_release_i2c_bus(mr_i2c_device_t i2c_device)
 {
+    mr_err_t ret = MR_ERR_OK;
+
     MR_ASSERT(i2c_device->bus != MR_NULL);
 
-    return mr_mutex_release(&i2c_device->bus->lock, &i2c_device->device.object);
+    /* Release the mutex lock of the i2c-bus */
+    ret = mr_mutex_release(&i2c_device->bus->lock, &i2c_device->device.object);
+    if (ret != MR_ERR_OK)
+    {
+        return ret;
+    }
+
+    /* Send the i2c-bus stop signal */
+    i2c_device->bus->ops->stop(i2c_device->bus);
+
+    return MR_ERR_OK;
+}
+
+static void mr_i2c_bus_send_address(mr_i2c_device_t i2c_device, mr_uint8_t read_or_write)
+{
+    MR_ASSERT(i2c_device->bus != MR_NULL);
+
+    if (read_or_write)
+    {
+        /* Send the read address signal */
+        if (i2c_device->config.address_mode == MR_I2C_ADDRESS_MODE_10)
+        {
+            i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(0xf1 | ((i2c_device->address) >> 8) << 1));
+            i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 2));
+        }
+        else
+        {
+            i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 1 | 0x01));
+        }
+    }
+    else
+    {
+        /* Send the write address signal */
+        if (i2c_device->config.address_mode == MR_I2C_ADDRESS_MODE_10)
+        {
+            i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(0xf0 | ((i2c_device->address) >> 8) << 1));
+            i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 2));
+        }
+        else
+        {
+            i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 1));
+        }
+    }
 }
 
 static mr_err_t mr_i2c_bus_open(mr_device_t device)
@@ -124,6 +174,7 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
 
         case MR_CTRL_ATTACH:
         {
+            /* Detach the i2c-bus */
             if (args == MR_NULL)
             {
                 i2c_device->bus = MR_NULL;
@@ -167,17 +218,16 @@ static mr_ssize_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buf
         return ret;
     }
 
-    /* Send the i2c start signal and read cmd */
-    i2c_device->bus->ops->start(i2c_device->bus);
-    if (i2c_device->config.address_mode == MR_I2C_ADDRESS_MODE_10)
+    /* Send offset */
+    if (pos > 0)
     {
-        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(0xF1 | ((i2c_device->address) >> 8) << 1));
-        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 2));
+        mr_i2c_bus_send_address(i2c_device, _MR_I2C_WRITE);
+        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)pos);
+        i2c_device->bus->ops->start(i2c_device->bus);
     }
-    else
-    {
-        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 1 | 0x01));
-    }
+
+    /* Send the i2c-bus read command */
+    mr_i2c_bus_send_address(i2c_device, _MR_I2C_READ);
 
     for (recv_size = 0; recv_size < size; recv_size++)
     {
@@ -206,16 +256,13 @@ static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const vo
         return ret;
     }
 
-    /* Send the i2c start signal and write cmd */
-    i2c_device->bus->ops->start(i2c_device->bus);
-    if (i2c_device->config.address_mode == MR_I2C_ADDRESS_MODE_10)
+    /* Send the i2c-bus write command */
+    mr_i2c_bus_send_address(i2c_device, _MR_I2C_WRITE);
+
+    /* Send offset */
+    if (pos > 0)
     {
-        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(0xF0 | ((i2c_device->address) >> 8) << 1));
-        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 2));
-    }
-    else
-    {
-        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)(i2c_device->address << 1));
+        i2c_device->bus->ops->write(i2c_device->bus, (mr_uint8_t)pos);
     }
 
     for (send_size = 0; send_size < size; send_size++)
