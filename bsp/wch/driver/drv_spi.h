@@ -15,10 +15,9 @@
 
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
 
-struct ch32_hw_spi
+struct ch32_spi_info
 {
     SPI_TypeDef *Instance;
-
     mr_uint32_t spi_periph_clock;
     mr_uint32_t gpio_periph_clock;
     GPIO_TypeDef *gpio_port;
@@ -31,7 +30,7 @@ struct ch32_spi
 {
     char *name;
 
-    struct ch32_hw_spi hw_spi;
+    struct ch32_spi_info info;
 };
 
 mr_err_t ch32_spi_init(void);

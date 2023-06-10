@@ -33,7 +33,7 @@ mr_err_t ch32_adc_configure(mr_adc_t adc, mr_uint8_t state)
     struct ch32_adc *driver = (struct ch32_adc *)adc->device.data;
     ADC_InitTypeDef ADC_InitStructure = {0};
 
-    RCC_APB2PeriphClockCmd(driver->hw_adc.adc_periph_clock, (FunctionalState)state);
+    RCC_APB2PeriphClockCmd(driver->info.adc_periph_clock, (FunctionalState)state);
     RCC_ADCCLKConfig(RCC_PCLK2_Div2);
 
     ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
@@ -42,8 +42,8 @@ mr_err_t ch32_adc_configure(mr_adc_t adc, mr_uint8_t state)
     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_NbrOfChannel = 1;
-    ADC_Init(driver->hw_adc.Instance, &ADC_InitStructure);
-    ADC_Cmd(driver->hw_adc.Instance, (FunctionalState)state);
+    ADC_Init(driver->info.Instance, &ADC_InitStructure);
+    ADC_Cmd(driver->info.Instance, (FunctionalState)state);
 
     return MR_ERR_OK;
 }
@@ -102,11 +102,11 @@ mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
         return 0;
     }
 
-    ADC_RegularChannelConfig(driver->hw_adc.Instance, channel, 1, ADC_SampleTime_239Cycles5);
-    ADC_SoftwareStartConvCmd(driver->hw_adc.Instance, ENABLE);
-    while (!ADC_GetFlagStatus(driver->hw_adc.Instance, ADC_FLAG_EOC));
-    data = ADC_GetConversionValue(driver->hw_adc.Instance);
-    ADC_ClearFlag(driver->hw_adc.Instance, ADC_FLAG_EOC);
+    ADC_RegularChannelConfig(driver->info.Instance, channel, 1, ADC_SampleTime_239Cycles5);
+    ADC_SoftwareStartConvCmd(driver->info.Instance, ENABLE);
+    while (!ADC_GetFlagStatus(driver->info.Instance, ADC_FLAG_EOC));
+    data = ADC_GetConversionValue(driver->info.Instance);
+    ADC_ClearFlag(driver->info.Instance, ADC_FLAG_EOC);
 
     return data;
 }

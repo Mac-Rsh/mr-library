@@ -15,10 +15,9 @@
 
 #if (MR_CONF_DAC == MR_CONF_ENABLE)
 
-struct ch32_hw_dac
+struct ch32_dac_info
 {
     mr_uint32_t dac_channel;
-
     mr_uint32_t dac_periph_clock;
 };
 
@@ -26,7 +25,7 @@ struct ch32_dac
 {
     char *name;
 
-    struct ch32_hw_dac hw_dac;
+    struct ch32_dac_info info;
 };
 
 mr_err_t ch32_dac_init(void);

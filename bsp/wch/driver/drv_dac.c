@@ -33,9 +33,9 @@ mr_err_t ch32_dac_configure(mr_dac_t dac, mr_uint8_t state)
     struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
     DAC_InitTypeDef DAC_InitType = {0};
 
-    RCC_APB1PeriphClockCmd(driver->hw_dac.dac_periph_clock, (FunctionalState)state);
+    RCC_APB1PeriphClockCmd(driver->info.dac_periph_clock, (FunctionalState)state);
 
-    switch (driver->hw_dac.dac_channel)
+    switch (driver->info.dac_channel)
     {
         case DAC_Channel_1:
             DAC_SetChannel1Data(DAC_Align_12b_R, 0);
@@ -52,8 +52,8 @@ mr_err_t ch32_dac_configure(mr_dac_t dac, mr_uint8_t state)
     DAC_InitType.DAC_WaveGeneration = DAC_WaveGeneration_None;
     DAC_InitType.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
     DAC_InitType.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
-    DAC_Init(driver->hw_dac.dac_channel, &DAC_InitType);
-    DAC_Cmd(driver->hw_dac.dac_channel, (FunctionalState)state);
+    DAC_Init(driver->info.dac_channel, &DAC_InitType);
+    DAC_Cmd(driver->info.dac_channel, (FunctionalState)state);
 
     return MR_ERR_OK;
 }
@@ -65,7 +65,7 @@ mr_err_t ch32_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
-    switch (driver->hw_dac.dac_channel)
+    switch (driver->info.dac_channel)
     {
         case DAC_Channel_1:
             GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
@@ -90,7 +90,7 @@ void ch32_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value)
 {
     struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
 
-    switch (driver->hw_dac.dac_channel)
+    switch (driver->info.dac_channel)
     {
         case DAC_Channel_1:
             DAC_SetChannel1Data(DAC_Align_12b_R, value);

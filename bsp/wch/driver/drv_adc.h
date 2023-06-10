@@ -15,10 +15,9 @@
 
 #if (MR_CONF_ADC == MR_CONF_ENABLE)
 
-struct ch32_hw_adc
+struct ch32_adc_info
 {
     ADC_TypeDef *Instance;
-
     mr_uint32_t adc_periph_clock;
 };
 
@@ -26,7 +25,7 @@ struct ch32_adc
 {
     char *name;
 
-    struct ch32_hw_adc hw_adc;
+    struct ch32_adc_info info;
 };
 
 mr_err_t ch32_adc_init(void);
