@@ -87,6 +87,6 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
                            mr_uint16_t cs_pin,
                            const char *bus_name);
 
-#endif
+#endif /* MR_CONF_SPI */
 
-#endif
+#endif /* _SPI_H_ */

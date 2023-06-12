@@ -15,26 +15,26 @@
 
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
 #include "drv_gpio.h"
-#endif
+#endif /* MR_CONF_PIN */
 
 #if (MR_CONF_SERIAL == MR_CONF_ENABLE)
 #include "drv_uart.h"
-#endif
+#endif /* MR_CONF_SERIAL */
 
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
 #include "drv_spi.h"
-#endif
+#endif /* MR_CONF_SPI */
 
 #if (MR_CONF_ADC == MR_CONF_ENABLE)
 #include "drv_adc.h"
-#endif
+#endif /* MR_CONF_ADC */
 
 #if (MR_CONF_DAC == MR_CONF_ENABLE)
 #include "drv_dac.h"
-#endif
+#endif /* MR_CONF_DAC */
 
 #if (MR_CONF_I2C == MR_CONF_ENABLE)
 #include "drv_i2c.h"
-#endif
+#endif /* MR_CONF_I2C */
 
-#endif
+#endif /* _MR_DRV_H_ */

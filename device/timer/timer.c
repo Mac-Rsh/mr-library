@@ -222,7 +222,7 @@ static mr_uint32_t _err_io_timer_get_count(mr_timer_t timer)
 mr_err_t mr_timer_device_add(mr_timer_t timer,
                              const char *name,
                              struct mr_timer_ops *ops,
-                             struct mr_timer_information *information,
+                             struct mr_timer_info *info,
                              void *data)
 {
     mr_err_t ret = MR_ERR_OK;
@@ -238,9 +238,9 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     MR_ASSERT(timer != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
-    MR_ASSERT(information != MR_NULL);
-    MR_ASSERT(information->max_freq != 0);
-    MR_ASSERT(information->max_cut != 0);
+    MR_ASSERT(info != MR_NULL);
+    MR_ASSERT(info->max_freq != 0);
+    MR_ASSERT(info->max_cut != 0);
 
     /* Add the timer-device to the container */
     ret = mr_device_add(&timer->device, name, MR_DEVICE_TYPE_TIMER, MR_OPEN_RDWR, &device_ops, data);
@@ -251,7 +251,7 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
 
     /* Initialize the timer fields */
     timer->config.freq = 0;
-    timer->information = *information;
+    timer->information = *info;
     timer->reload = 0;
     timer->cycles = 0;
     timer->overflow = 0;

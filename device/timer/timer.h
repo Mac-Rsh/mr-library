@@ -37,7 +37,7 @@ struct mr_timer_config
     mr_uint8_t mode;
 };
 
-struct mr_timer_information
+struct mr_timer_info
 {
     mr_uint32_t max_freq;
     mr_uint32_t max_cut;
@@ -59,7 +59,7 @@ struct mr_timer
     struct mr_device device;
 
     struct mr_timer_config config;
-    struct mr_timer_information information;
+    struct mr_timer_info information;
     mr_uint32_t reload;
     mr_uint32_t cycles;
     mr_uint32_t overflow;
@@ -71,10 +71,10 @@ struct mr_timer
 mr_err_t mr_timer_device_add(mr_timer_t timer,
                              const char *name,
                              struct mr_timer_ops *ops,
-                             struct mr_timer_information *information,
+                             struct mr_timer_info *info,
                              void *data);
 void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event);
 
-#endif
+#endif /* MR_CONF_TIMER */
 
-#endif
+#endif /* _TIMER_H_ */

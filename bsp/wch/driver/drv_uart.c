@@ -140,7 +140,7 @@ static struct ch32_uart ch32_uart[] =
 #endif
         };
 
-static struct mr_serial serial_driver[mr_array_get_length(ch32_uart)];
+static struct mr_serial serial_device[mr_array_get_length(ch32_uart)];
 
 static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
@@ -304,7 +304,7 @@ void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void USART1_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART1_INDEX]);
+    ch32_serial_isr(&serial_device[UART1_INDEX]);
 }
 
 #endif
@@ -314,7 +314,7 @@ void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void USART2_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART2_INDEX]);
+    ch32_serial_isr(&serial_device[UART2_INDEX]);
 }
 
 #endif
@@ -324,7 +324,7 @@ void USART3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void USART3_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART3_INDEX]);
+    ch32_serial_isr(&serial_device[UART3_INDEX]);
 }
 
 #endif
@@ -334,7 +334,7 @@ void UART4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void UART4_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART4_INDEX]);
+    ch32_serial_isr(&serial_device[UART4_INDEX]);
 }
 
 #endif
@@ -344,7 +344,7 @@ void UART5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void UART5_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART5_INDEX]);
+    ch32_serial_isr(&serial_device[UART5_INDEX]);
 }
 
 #endif
@@ -354,7 +354,7 @@ void UART6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void UART6_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART6_INDEX]);
+    ch32_serial_isr(&serial_device[UART6_INDEX]);
 }
 
 #endif
@@ -364,7 +364,7 @@ void UART7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void UART7_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART7_INDEX]);
+    ch32_serial_isr(&serial_device[UART7_INDEX]);
 }
 
 #endif
@@ -374,7 +374,7 @@ void UART8_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 void UART8_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_driver[UART8_INDEX]);
+    ch32_serial_isr(&serial_device[UART8_INDEX]);
 }
 
 #endif
@@ -382,8 +382,8 @@ void UART8_IRQHandler(void)
 mr_err_t ch32_uart_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(serial_driver);
-    static struct mr_serial_ops ops =
+    mr_size_t count = mr_array_get_length(serial_device);
+    static struct mr_serial_ops driver =
             {
                     ch32_serial_configure,
                     ch32_serial_write,
@@ -394,7 +394,7 @@ mr_err_t ch32_uart_init(void)
 
     while (count--)
     {
-        ret = mr_serial_device_add(&serial_driver[count], ch32_uart[count].name, &ops, &ch32_uart[count]);
+        ret = mr_serial_device_add(&serial_device[count], ch32_uart[count].name, &driver, &ch32_uart[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
@@ -402,4 +402,4 @@ mr_err_t ch32_uart_init(void)
 }
 AUTO_INIT_DRIVER_EXPORT(ch32_uart_init);
 
-#endif
+#endif /* MR_CONF_SERIAL */

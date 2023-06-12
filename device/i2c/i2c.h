@@ -76,6 +76,6 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device,
                            mr_uint8_t address,
                            const char *bus_name);
 
-#endif
+#endif /* MR_CONF_I2C */
 
-#endif
+#endif /* _I2C_H_ */

@@ -50,7 +50,7 @@ static struct ch32_spi ch32_spi[] =
 #endif
         };
 
-static struct mr_spi_bus spi_bus_driver[mr_array_get_length(ch32_spi)];
+static struct mr_spi_bus spi_bus_device[mr_array_get_length(ch32_spi)];
 
 static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32_t baud_rate)
 {
@@ -227,8 +227,8 @@ static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_
 mr_err_t ch32_spi_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(spi_bus_driver);
-    static struct mr_spi_bus_ops ops =
+    mr_size_t count = mr_array_get_length(spi_bus_device);
+    static struct mr_spi_bus_ops driver =
             {
                     ch32_spi_configure,
                     ch32_spi_transfer,
@@ -237,7 +237,7 @@ mr_err_t ch32_spi_init(void)
 
     while (count--)
     {
-        ret = mr_spi_bus_add(&spi_bus_driver[count], ch32_spi[count].name, &ops, &ch32_spi[count]);
+        ret = mr_spi_bus_add(&spi_bus_device[count], ch32_spi[count].name, &driver, &ch32_spi[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
@@ -245,4 +245,4 @@ mr_err_t ch32_spi_init(void)
 }
 AUTO_INIT_DRIVER_EXPORT(ch32_spi_init);
 
-#endif
+#endif /* MR_CONF_SPI */

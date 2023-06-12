@@ -270,4 +270,4 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
     return device->ops->write(device, pos, buffer, size);
 }
 
-#endif
+#endif /* MR_CONFIG_DEVICE */

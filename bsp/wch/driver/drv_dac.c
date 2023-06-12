@@ -26,7 +26,7 @@ static struct ch32_dac ch32_dac[] =
 #endif
         };
 
-static struct mr_dac dac_driver[mr_array_get_length(ch32_dac)];
+static struct mr_dac dac_device[mr_array_get_length(ch32_dac)];
 
 mr_err_t ch32_dac_configure(mr_dac_t dac, mr_uint8_t state)
 {
@@ -106,8 +106,8 @@ void ch32_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value)
 mr_err_t ch32_dac_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(dac_driver);
-    static struct mr_dac_ops ops =
+    mr_size_t count = mr_array_get_length(dac_device);
+    static struct mr_dac_ops driver =
             {
                     ch32_dac_configure,
                     ch32_dac_channel_configure,
@@ -116,7 +116,7 @@ mr_err_t ch32_dac_init(void)
 
     while (count--)
     {
-        ret = mr_dac_device_add(&dac_driver[count], ch32_dac[count].name, &ops, &ch32_dac[count]);
+        ret = mr_dac_device_add(&dac_device[count], ch32_dac[count].name, &driver, &ch32_dac[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
@@ -124,4 +124,4 @@ mr_err_t ch32_dac_init(void)
 }
 AUTO_INIT_DRIVER_EXPORT(ch32_dac_init);
 
-#endif
+#endif /* MR_CONF_DAC */

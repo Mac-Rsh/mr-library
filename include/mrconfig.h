@@ -27,6 +27,9 @@
 //<<< Event >>>
 #define MR_CONF_EVENT                   MR_CONF_ENABLE
 
+//<<< Soft-timer >>>
+#define MR_CONF_SOFT_TIMER              MR_CONF_ENABLE
+
 //<<< Device >>>
 #define MR_CONF_DEVICE                  MR_CONF_ENABLE
 #if (MR_CONF_DEVICE == MR_CONF_ENABLE)
@@ -35,6 +38,10 @@
 //< serial >
 #define MR_CONF_SERIAL                  MR_CONF_ENABLE
 #define MR_CONF_SERIAL_BUFSZ            64
+//< console >
+#define MR_CONF_CONSOLE                 MR_CONF_ENABLE
+#define MR_CONF_CONSOLE_BUFSZ           128
+#define MR_CONF_CONSOLE_NAME            "uart1"
 //< spi >
 #define MR_CONF_SPI                     MR_CONF_ENABLE
 //< i2c >
@@ -45,10 +52,8 @@
 #define MR_CONF_DAC                     MR_CONF_ENABLE
 //< timer >
 #define MR_CONF_TIMER                   MR_CONF_ENABLE
-//< console >
-#define MR_CONF_CONSOLE                 MR_CONF_ENABLE
-#define MR_CONF_CONSOLE_BUFSZ           128
-#define MR_CONF_CONSOLE_NAME            "uart1"
-#endif
+//< pwm >
+#define MR_CONF_PWM                     MR_CONF_ENABLE
+#endif /* MR_CONF_DEVICE */
 
-#endif
+#endif /* _MR_CONFIG_H_ */

@@ -270,4 +270,4 @@ mr_inline mr_bool_t mr_list_is_empty(mr_list_t list)
     return (mr_bool_t)(list->next == list);
 }
 
-#endif
+#endif /* _MR_SERVICE_H_ */

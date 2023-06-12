@@ -42,6 +42,6 @@ struct mr_adc
 
 mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, void *data);
 
-#endif
+#endif /* MR_CONF_ADC */
 
-#endif
+#endif /* _ADC_H_ */

@@ -26,7 +26,7 @@ static struct ch32_adc ch32_adc[] =
 #endif
         };
 
-static struct mr_adc adc_driver[mr_array_get_length(ch32_adc)];
+static struct mr_adc adc_device[mr_array_get_length(ch32_adc)];
 
 mr_err_t ch32_adc_configure(mr_adc_t adc, mr_uint8_t state)
 {
@@ -114,8 +114,8 @@ mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
 mr_err_t ch32_adc_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(adc_driver);
-    static struct mr_adc_ops ops =
+    mr_size_t count = mr_array_get_length(adc_device);
+    static struct mr_adc_ops driver =
             {
                     ch32_adc_configure,
                     ch32_adc_channel_configure,
@@ -124,7 +124,7 @@ mr_err_t ch32_adc_init(void)
 
     while (count--)
     {
-        ret = mr_adc_device_add(&adc_driver[count], ch32_adc[count].name, &ops, &ch32_adc[count]);
+        ret = mr_adc_device_add(&adc_device[count], ch32_adc[count].name, &driver, &ch32_adc[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
@@ -132,4 +132,4 @@ mr_err_t ch32_adc_init(void)
 }
 AUTO_INIT_DRIVER_EXPORT(ch32_adc_init);
 
-#endif
+#endif /* MR_CONF_ADC */

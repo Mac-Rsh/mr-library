@@ -59,4 +59,4 @@
 #define BSP_TIMER_3
 #define BSP_TIMER_4
 
-#endif
+#endif /* _MR_BOARD_H_ */

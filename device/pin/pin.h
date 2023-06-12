@@ -53,6 +53,6 @@ struct mr_pin
 mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data);
 void mr_pin_device_isr(mr_pin_t pin, mr_int32_t number);
 
-#endif
+#endif /* MR_CONF_PIN */
 
-#endif
+#endif /* _PIN_H_ */

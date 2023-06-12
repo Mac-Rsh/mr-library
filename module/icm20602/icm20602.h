@@ -69,6 +69,6 @@ mr_err_t icm20602_config(icm20602_t icm20602, const struct icm20602_config *conf
 struct icm20602_3_axis icm20602_read_acc_3_axis(icm20602_t icm20602);
 struct icm20602_3_axis icm20602_read_gyro_3_axis(icm20602_t icm20602);
 
-#endif
+#endif /* MR_CONF_SPI */
 
-#endif
+#endif /* _ICM20602_H_ */

@@ -42,6 +42,6 @@ struct mr_dac
 
 mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data);
 
-#endif
+#endif /* MR_CONF_DAC */
 
-#endif
+#endif /* _DAC_H_ */
