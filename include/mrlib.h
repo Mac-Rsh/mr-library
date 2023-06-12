@@ -51,11 +51,11 @@ mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
-#endif
+#endif /* MR_CONF_DEVICE */
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
- *  Export event functions
+ *  Export event server functions
  */
 mr_event_server_t mr_event_server_find(const char *name);
 mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size_t queue_length);
@@ -68,7 +68,25 @@ mr_err_t mr_event_client_create(mr_uint8_t id,
                                 void *args,
                                 mr_event_server_t server);
 mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server);
-#endif
+#endif /* MR_CONF_EVENT */
+
+#if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
+/**
+ *  Export soft timer server functions
+ */
+mr_soft_timer_server_t mr_soft_timer_server_find(const char *name);
+mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *name);
+mr_err_t mr_soft_timer_server_remove(mr_soft_timer_server_t server);
+void mr_soft_timer_server_update(mr_soft_timer_server_t server, mr_uint32_t time);
+void mr_soft_timer_server_handle(mr_soft_timer_server_t server);
+mr_soft_timer_client_t mr_soft_timer_client_create(mr_uint32_t time,
+                                                   mr_err_t (*cb)(mr_soft_timer_client_t client, void *args),
+                                                   void *args,
+                                                   mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_client_delete(mr_soft_timer_client_t client);
+mr_err_t mr_soft_timer_client_start(mr_soft_timer_client_t client);
+mr_err_t mr_soft_timer_client_stop(mr_soft_timer_client_t client);
+#endif /* MR_CONF_SOFT_TIMER */
 
 /**
  *  Export kservice functions
@@ -102,4 +120,4 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
 
-#endif
+#endif /* _MR_LIB_H_ */

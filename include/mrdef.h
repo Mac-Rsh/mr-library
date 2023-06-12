@@ -115,6 +115,10 @@
 #define MR_UNLOCK                       0                           /* Unlock */
 #define MR_LOCK                         1                           /* Lock */
 
+#define MR_UINT8_MAX                    0xff                        /* Maximum unsigned 8bit integer */
+#define MR_UINT16_MAX                   0xffff                      /* Maximum unsigned 16bit integer */
+#define MR_UINT32_MAX                   0xffffffff                  /* Maximum unsigned 32bit integer */
+
 typedef signed char mr_int8_t;                                      /* Type for 8bit integer */
 typedef signed short mr_int16_t;                                    /* Type for 16bit integer */
 typedef signed int mr_int32_t;                                      /* Type for 32bit integer */
@@ -141,6 +145,7 @@ typedef mr_int8_t mr_lock_t;                                        /* Type for 
  *  Auto-Init
  */
 typedef int (*init_fn_t)(void);
+
 #define AUTO_INIT_EXPORT(fn, level) \
     mr_used const init_fn_t _mr_auto_init_##fn mr_section(".auto_init."level) = fn
 
@@ -293,7 +298,7 @@ struct mr_device
 
     const struct mr_device_ops *ops;                                /* Operations of the device */
 };
-#endif
+#endif /* MR_CONF_DEVICE */
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
@@ -316,6 +321,33 @@ struct mr_event_client
     void *args;                                                     /* Event arguments */
 };
 typedef struct mr_event_client *mr_event_client_t;                  /* Type for event client */
-#endif
+#endif /* MR_CONF_EVENT */
 
-#endif
+#if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
+/**
+ *  Soft-timer server
+ */
+struct mr_soft_timer_server
+{
+    struct mr_object object;                                        /* Soft-timer object */
+
+    mr_uint32_t time;                                               /* Current time */
+    struct mr_list list;                                            /* Soft-timer run list */
+};
+typedef struct mr_soft_timer_server *mr_soft_timer_server_t;        /* Type for soft-timer server */
+
+typedef struct mr_soft_timer_client *mr_soft_timer_client_t;        /* Type for soft-timer client */
+
+struct mr_soft_timer_client
+{
+    struct mr_list list;                                            /* Soft-timer list */
+    mr_soft_timer_server_t server;                                  /* Soft-timer owner server */
+
+    mr_uint32_t interval;                                           /* Soft-timer previous time */
+    mr_uint32_t timeout;                                            /* Soft-timer timeout time */
+    mr_err_t (*cb)(mr_soft_timer_client_t client, void *args);      /* Soft-timer callback */
+    void *args;                                                     /* Soft-timer arguments */
+};
+#endif /* MR_CONF_SOFT_TIMER */
+
+#endif /* _MR_DEF_H_ */
