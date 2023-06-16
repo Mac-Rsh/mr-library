@@ -101,12 +101,6 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
-    /* Check if the object is already registered */
-    if (object->flag & _MR_OBJECT_TYPE_REGISTER)
-    {
-        return -MR_ERR_BUSY;
-    }
-
     /* Check if the object already exists in the container */
     if (mr_object_find(name, type) != MR_NULL)
     {
@@ -124,7 +118,6 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
 
     /* Insert the object into the container's list */
     mr_list_insert_after(&(container->list), &(object->list));
-    object->flag |= _MR_OBJECT_TYPE_REGISTER;
 
     /* Enable interrupt */
     mr_interrupt_enable();
@@ -143,18 +136,11 @@ mr_err_t mr_object_remove(mr_object_t object)
 {
     MR_ASSERT(object != MR_NULL);
 
-    /* Check if the object is registered */
-    if ((object->flag & _MR_OBJECT_TYPE_REGISTER) == 0)
-    {
-        return -MR_ERR_GENERIC;
-    }
-
     /* Disable interrupt */
     mr_interrupt_disable();
 
     /* Remove the object from the container's list */
     mr_list_remove(&(object->list));
-    object->flag &= ~_MR_OBJECT_TYPE_REGISTER;
 
     /* Enable interrupt */
     mr_interrupt_enable();

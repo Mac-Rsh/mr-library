@@ -38,7 +38,6 @@ mr_soft_timer_server_t mr_soft_timer_server_find(const char *name)
 mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *name)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_uint8_t *pool = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
     MR_ASSERT(name != MR_NULL);
@@ -47,8 +46,6 @@ mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *nam
     ret = mr_object_add(&server->object, name, MR_CONTAINER_TYPE_SERVER);
     if (ret != MR_ERR_OK)
     {
-        /* Free the queue memory */
-        mr_free(pool);
         return ret;
     }
 
@@ -133,6 +130,11 @@ void mr_soft_timer_server_handle(mr_soft_timer_server_t server)
     }
 }
 
+static mr_err_t _err_io_soft_timer_client_cb(mr_soft_timer_client_t client, void *args)
+{
+    return -MR_ERR_IO;
+}
+
 /**
  * @brief This function adds a soft-timer client to the server.
  *
@@ -151,7 +153,6 @@ mr_err_t mr_soft_timer_client_add(mr_soft_timer_client_t client,
                                   mr_soft_timer_server_t server)
 {
     MR_ASSERT(client != MR_NULL);
-    MR_ASSERT(cb != MR_NULL);
     MR_ASSERT(server != MR_NULL);
 
     /* Initialize the private fields */
@@ -159,7 +160,7 @@ mr_err_t mr_soft_timer_client_add(mr_soft_timer_client_t client,
     client->server = server;
     client->interval = time;
     client->timeout = 0;
-    client->cb = cb;
+    client->cb = cb ? cb : _err_io_soft_timer_client_cb;
     client->args = args;
 
     return MR_ERR_OK;
@@ -176,63 +177,8 @@ mr_err_t mr_soft_timer_client_remove(mr_soft_timer_client_t client)
 {
     MR_ASSERT(client != MR_NULL);
 
+    /* Remove the client from the server's list */
     mr_soft_timer_client_stop(client);
-
-    return MR_ERR_OK;
-}
-
-/**
- * @brief This function creates a new soft-timer client to the server.
- *
- * @param time The time to be set.
- * @param cb The soft-timer client callback function.
- * @param args The arguments of the callback function.
- * @param server The soft-timer server to which the soft-timer client belong.
- *
- * @return A handle to the created soft-timer client, or MR_NULL if failed.
- */
-mr_soft_timer_client_t mr_soft_timer_client_create(mr_uint32_t time,
-                                                   mr_err_t (*cb)(mr_soft_timer_client_t client, void *args),
-                                                   void *args,
-                                                   mr_soft_timer_server_t server)
-{
-    mr_soft_timer_client_t client = MR_NULL;
-
-    MR_ASSERT(time != 0);
-    MR_ASSERT(cb != MR_NULL);
-    MR_ASSERT(server != MR_NULL);
-
-    /* Allocate the client memory */
-    client = mr_malloc(sizeof(struct mr_soft_timer_client));
-    if (client == MR_NULL)
-    {
-        return MR_NULL;
-    }
-
-    /* Initialize the private fields */
-    mr_list_init(&client->list);
-    client->server = server;
-    client->interval = time;
-    client->timeout = 0;
-    client->cb = cb;
-    client->args = args;
-
-    return client;
-}
-
-/**
- * @brief This function deletes a soft-timer client from the server.
- *
- * @param client The soft-timer client to be deleted.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
- */
-mr_err_t mr_soft_timer_client_delete(mr_soft_timer_client_t client)
-{
-    MR_ASSERT(client != MR_NULL);
-
-    mr_soft_timer_client_stop(client);
-    mr_free(client);
 
     return MR_ERR_OK;
 }
@@ -312,6 +258,30 @@ mr_err_t mr_soft_timer_client_stop(mr_soft_timer_client_t client)
     mr_interrupt_enable();
 
     return MR_ERR_OK;
+}
+
+/**
+ * @brief This function adds a soft-timer client to the server, then starts the soft-timer client.
+ *
+ * @param client The soft-timer client to be added, then started.
+ * @param time The time to be set.
+ * @param cb The soft-timer client callback function.
+ * @param args The arguments of the callback function.
+ * @param server The soft-timer server to which the soft-timer client belong.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_soft_timer_client_add_then_start(mr_soft_timer_client_t client,
+                                             mr_uint32_t time,
+                                             mr_err_t (*cb)(mr_soft_timer_client_t client, void *args),
+                                             void *args,
+                                             mr_soft_timer_server_t server)
+{
+    MR_ASSERT(client != MR_NULL);
+    MR_ASSERT(server != MR_NULL);
+
+    mr_soft_timer_client_add(client, time, cb, args, server);
+    return mr_soft_timer_client_start(client);
 }
 
 #endif /* MR_CONF_SOFT_TIMER */

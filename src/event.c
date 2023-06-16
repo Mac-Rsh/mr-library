@@ -45,6 +45,7 @@ mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(queue_length > 0 && queue_length <= 256);
 
+    /* Allocate the queue memory */
     pool = mr_malloc(queue_length);
     if (pool == MR_NULL)
     {
@@ -166,6 +167,11 @@ mr_event_client_t mr_event_client_find(mr_uint8_t id, mr_event_server_t server)
     return (mr_event_client_t)mr_avl_find(server->list, id);
 }
 
+static mr_err_t _err_io_event_client_cb(mr_event_server_t server, void *args)
+{
+    return -MR_ERR_IO;
+}
+
 /**
  * @brief This function creates a new event client.
  *
@@ -183,7 +189,6 @@ mr_err_t mr_event_client_create(mr_uint8_t id,
 {
     mr_event_client_t client = MR_NULL;
 
-    MR_ASSERT(cb != MR_NULL);
     MR_ASSERT(server != MR_NULL);
 
     /* Check if the client is already exists in the server */
@@ -198,16 +203,17 @@ mr_err_t mr_event_client_create(mr_uint8_t id,
     {
         return -MR_ERR_NO_MEMORY;
     }
+    mr_memset(client, 0, sizeof(struct mr_event_client));
 
     /* Initialize the private fields */
-    client->cb = cb;
-    client->args = args;
     mr_avl_init(&client->list, id);
+    client->cb = cb ? cb : _err_io_event_client_cb;
+    client->args = args;
 
     /* Disable interrupt */
     mr_interrupt_disable();
 
-    /* Insert the agent into the manager's list */
+    /* Insert the client into the manager's list */
     mr_avl_insert(&server->list, &client->list);
 
     /* Enable interrupt */
@@ -240,7 +246,7 @@ mr_err_t mr_client_delete(mr_uint8_t id, mr_event_server_t server)
     /* Disable interrupt */
     mr_interrupt_disable();
 
-    /* Remove the agent from the manager's list */
+    /* Remove the client from the manager's list */
     mr_avl_remove(&server->list, &client->list);
 
     /* Enable interrupt */

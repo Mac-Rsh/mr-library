@@ -79,13 +79,19 @@ mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *nam
 mr_err_t mr_soft_timer_server_remove(mr_soft_timer_server_t server);
 void mr_soft_timer_server_update(mr_soft_timer_server_t server, mr_uint32_t time);
 void mr_soft_timer_server_handle(mr_soft_timer_server_t server);
-mr_soft_timer_client_t mr_soft_timer_client_create(mr_uint32_t time,
-                                                   mr_err_t (*cb)(mr_soft_timer_client_t client, void *args),
-                                                   void *args,
-                                                   mr_soft_timer_server_t server);
-mr_err_t mr_soft_timer_client_delete(mr_soft_timer_client_t client);
+mr_err_t mr_soft_timer_client_add(mr_soft_timer_client_t client,
+                                  mr_uint32_t time,
+                                  mr_err_t (*cb)(mr_soft_timer_client_t client, void *args),
+                                  void *args,
+                                  mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_client_remove(mr_soft_timer_client_t client);
 mr_err_t mr_soft_timer_client_start(mr_soft_timer_client_t client);
 mr_err_t mr_soft_timer_client_stop(mr_soft_timer_client_t client);
+mr_err_t mr_soft_timer_client_add_then_start(mr_soft_timer_client_t client,
+                                             mr_uint32_t time,
+                                             mr_err_t (*cb)(mr_soft_timer_client_t client, void *args),
+                                             void *args,
+                                             mr_soft_timer_server_t server);
 #endif /* MR_CONF_SOFT_TIMER */
 
 /**
