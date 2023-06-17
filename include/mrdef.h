@@ -229,15 +229,10 @@ typedef struct mr_container *mr_container_t;                        /* Type for 
 /**
  *  Object
  */
-#define _MR_OBJECT_TYPE_NONE            0x00
-#define _MR_OBJECT_TYPE_REGISTER        0x10
-
 struct mr_object
 {
-    struct mr_list list;                                            /* Object list */
-
     char name[MR_CONF_NAME_MAX + 1];                                /* Object name */
-    mr_uint8_t flag;                                                /* Object flag */
+    struct mr_list list;                                            /* Object list */
 };
 typedef struct mr_object *mr_object_t;                              /* Type for object */
 
@@ -332,7 +327,7 @@ struct mr_soft_timer_server
     struct mr_object object;                                        /* Soft-timer object */
 
     mr_uint32_t time;                                               /* Current time */
-    struct mr_list list;                                            /* Soft-timer run list */
+    struct mr_list list;                                            /* Soft-timer list */
 };
 typedef struct mr_soft_timer_server *mr_soft_timer_server_t;        /* Type for soft-timer server */
 
@@ -342,9 +337,9 @@ struct mr_soft_timer_client
 {
     struct mr_list list;                                            /* Soft-timer list */
     mr_soft_timer_server_t server;                                  /* Soft-timer owner server */
-
     mr_uint32_t interval;                                           /* Soft-timer previous time */
     mr_uint32_t timeout;                                            /* Soft-timer timeout time */
+
     mr_err_t (*cb)(mr_soft_timer_client_t client, void *args);      /* Soft-timer callback */
     void *args;                                                     /* Soft-timer arguments */
 };
