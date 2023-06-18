@@ -96,18 +96,19 @@ mr_device_ioctl(dac_device, MR_CTRL_CONFIG, &dac_config);
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数         | 描述      |
-|:-----------|:--------|
-| device     | DAC设备句柄 |
-| pos        | 写入位置    |
-| buffer     | 写入数据    |
-| size       | 写入数据大小  |
-| **返回**     |         |
-| 实际写入的数据大小  |         |  
+| 参数        | 描述      |
+|:----------|:--------|
+| device    | DAC设备句柄 |
+| pos       | 写入位置    |
+| buffer    | 写入数据    |
+| size      | 写入数据大小  |
+| **返回**    |         |
+| 实际写入的数据大小 |         |  
 
 **写入位置**:指需要写入数据的通道。
 
 使用示例如下所示:
+
 ```c
 /* 设置DAC1通道3值为1200 */
 mr_uint32_t dac_value = 1200;

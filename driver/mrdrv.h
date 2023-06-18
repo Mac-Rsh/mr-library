@@ -33,6 +33,10 @@
 #include "drv_dac.h"
 #endif /* MR_CONF_DAC */
 
+#if (MR_CONF_TIMER == MR_CONF_ENABLE)
+#include "drv_timer.h"
+#endif /* MR_CONF_TIMER */
+
 #if (MR_CONF_I2C == MR_CONF_ENABLE)
 #include "drv_i2c.h"
 #endif /* MR_CONF_I2C */

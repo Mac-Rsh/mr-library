@@ -80,7 +80,7 @@ static mr_err_t mr_spi_bus_open(mr_device_t device)
     mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
     struct mr_spi_config default_config = MR_SPI_CONFIG_DEFAULT;
 
-    /* Setting spi-bus to default-config */
+    /* Setting spi-bus to default config, if the baud-rate not set */
     if (spi_bus->config.baud_rate == 0)
     {
         spi_bus->config = default_config;
@@ -93,7 +93,7 @@ static mr_err_t mr_spi_bus_close(mr_device_t device)
 {
     mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
 
-    /* Setting spi-bus to close-config */
+    /* Setting spi-bus to close config */
     spi_bus->config.baud_rate = 0;
 
     return spi_bus->ops->configure(spi_bus, &spi_bus->config);
@@ -104,7 +104,7 @@ static mr_err_t mr_spi_device_open(mr_device_t device)
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
     struct mr_spi_config default_config = MR_SPI_CONFIG_DEFAULT;
 
-    /* Setting spi-device to default-config */
+    /* Setting spi-device to default config, if the baud-rate not set */
     if (spi_device->config.baud_rate == 0)
     {
         spi_device->config = default_config;
@@ -117,7 +117,7 @@ static mr_err_t mr_spi_device_close(mr_device_t device)
 {
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
 
-    /* Setting spi-device to close-config */
+    /* Setting spi-device to close config */
     spi_device->config.baud_rate = 0;
 
     /* Disconnect from the spi-bus */
@@ -166,7 +166,11 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
             }
 
             /* Open the spi-bus */
-            mr_device_open(spi_bus, MR_OPEN_RDWR);
+            ret = mr_device_open(spi_bus, MR_OPEN_RDWR);
+            if (ret != MR_ERR_OK)
+            {
+                return ret;
+            }
             spi_device->bus = (mr_spi_bus_t)spi_bus;
             return MR_ERR_OK;
         }
@@ -228,7 +232,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
         spi_device->bus->ops->transfer(spi_device->bus, (mr_uint8_t)pos);
     }
 
-    for (recv_size = 0; recv_size < size; recv_size++)
+    for (recv_size = 0; recv_size < size; recv_size += sizeof(recv_buffer))
     {
         *recv_buffer = spi_device->bus->ops->transfer(spi_device->bus, 0u);
         recv_buffer++;
@@ -237,7 +241,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
     /* Release spi-bus */
     mr_release_spi_bus(spi_device);
 
-    return (mr_ssize_t)size;
+    return (mr_ssize_t)recv_size;
 }
 
 static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
@@ -260,7 +264,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
         spi_device->bus->ops->transfer(spi_device->bus, (mr_uint8_t)pos);
     }
 
-    for (send_size = 0; send_size < size; send_size++)
+    for (send_size = 0; send_size < size; send_size += sizeof(send_buffer))
     {
         spi_device->bus->ops->transfer(spi_device->bus, *send_buffer);
         send_buffer++;
@@ -269,7 +273,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
     /* Release spi-bus */
     mr_release_spi_bus(spi_device);
 
-    return (mr_ssize_t)size;
+    return (mr_ssize_t)send_size;
 }
 
 static mr_err_t _err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
@@ -342,8 +346,7 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
                     mr_spi_device_write,
             };
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
-    struct mr_pin_config pin_config = {cs_pin,
-                                       MR_PIN_MODE_OUTPUT};
+    struct mr_pin_config pin_config = {cs_pin, MR_PIN_MODE_OUTPUT};
     mr_device_t pin = MR_NULL;
 #endif
 
@@ -352,6 +355,23 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(support_flag != MR_OPEN_CLOSED);
     MR_ASSERT(bus_name != MR_NULL);
+
+    /* Attach the spi-device to the spi-bus */
+    mr_device_t spi_bus = mr_device_find(bus_name);
+    if (spi_bus == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+    if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
+    {
+        return -MR_ERR_INVALID;
+    }
+    ret = mr_device_open(spi_bus, MR_OPEN_RDWR);
+    if (ret != MR_ERR_OK)
+    {
+        return ret;
+    }
+    spi_device->bus = (mr_spi_bus_t)spi_bus;
 
     /* Add the spi-device to the container */
     ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, MR_NULL);
@@ -364,19 +384,6 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
     spi_device->config.baud_rate = 0;
     spi_device->bus = MR_NULL;
     spi_device->cs_pin = cs_pin;
-
-    /* Attach the spi-device to the spi-bus */
-    mr_device_t spi_bus = mr_device_find(bus_name);
-    if (spi_bus == MR_NULL)
-    {
-        return -MR_ERR_NOT_FOUND;
-    }
-    if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
-    {
-        return -MR_ERR_INVALID;
-    }
-    mr_device_open(spi_bus, MR_OPEN_RDWR);
-    spi_device->bus = (mr_spi_bus_t)spi_bus;
 
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
     /* Configure pin */

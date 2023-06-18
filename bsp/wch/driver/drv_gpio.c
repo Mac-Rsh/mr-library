@@ -149,34 +149,29 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
-    }
-    else if (config->number == mask[config->number % 16])
+    } else if (config->number == mask[config->number % 16])
     {
         if (config->number % 16 >= 5 && config->number % 16 <= 9)
         {
             if (mask[5] == -1 && mask[6] == -1 && mask[7] == -1 && mask[8] == -1 && mask[9] == -1)
             {
                 EXTI_InitStructure.EXTI_LineCmd = DISABLE;
-            }
-            else
+            } else
             {
                 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
             }
 
-        }
-        else if (config->number % 16 >= 10 && config->number % 16 <= 15)
+        } else if (config->number % 16 >= 10 && config->number % 16 <= 15)
         {
             if (mask[10] == -1 && mask[11] == -1 && mask[12] == -1 && mask[13] == -1 && mask[14] == -1
                 && mask[15] == -1)
             {
                 EXTI_InitStructure.EXTI_LineCmd = DISABLE;
-            }
-            else
+            } else
             {
                 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
             }
-        }
-        else
+        } else
         {
             EXTI_InitStructure.EXTI_LineCmd = DISABLE;
         }

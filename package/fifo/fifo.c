@@ -64,8 +64,7 @@ size_t fifo_get_data_size(fifo_t fifo)
         if (fifo->read_mirror == fifo->write_mirror)
         {
             return 0;
-        }
-        else
+        } else
         {
             return fifo->size;
         }
@@ -74,8 +73,7 @@ size_t fifo_get_data_size(fifo_t fifo)
     if (fifo->write_index > fifo->read_index)
     {
         return fifo->write_index - fifo->read_index;
-    }
-    else
+    } else
     {
         return fifo->size - fifo->read_index + fifo->write_index;
     }

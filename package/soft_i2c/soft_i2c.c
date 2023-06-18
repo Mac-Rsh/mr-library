@@ -42,8 +42,7 @@ static void i2c_bus_send_ack(i2c_bus_t bus, uint8_t ack)
     if (ack)
     {
         bus->ops->sda_ctrl(bus, 1);
-    }
-    else
+    } else
     {
         bus->ops->sda_ctrl(bus, 0);
     }
@@ -80,8 +79,7 @@ static void i2c_bus_write(i2c_bus_t bus, uint8_t data)
         if (data & 0x80)
         {
             bus->ops->sda_ctrl(bus, 1);
-        }
-        else
+        } else
         {
             bus->ops->sda_ctrl(bus, 0);
         }

@@ -23,8 +23,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                ret = pin->ops->configure(pin, args);
-                return ret;
+                return pin->ops->configure(pin, (struct mr_pin_config *)args);
             }
             return -MR_ERR_INVALID;
         }
@@ -44,30 +43,40 @@ static mr_ssize_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr
 {
     mr_pin_t pin = (mr_pin_t)device;
     mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
+    mr_size_t recv_size = 0;
 
     if (size < sizeof(*recv_buffer))
     {
         return -MR_ERR_INVALID;
     }
 
-    *recv_buffer = pin->ops->read(pin, (mr_uint16_t)pos);
+    for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
+    {
+        *recv_buffer = pin->ops->read(pin, (mr_uint16_t)pos);
+        recv_buffer++;
+    }
 
-    return (mr_ssize_t)sizeof(*recv_buffer);
+    return (mr_ssize_t)recv_size;
 }
 
 static mr_ssize_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
     mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
+    mr_size_t send_size = 0;
 
     if (size < sizeof(*send_buffer))
     {
         return -MR_ERR_INVALID;
     }
 
-    pin->ops->write(pin, (mr_uint16_t)pos, *send_buffer);
+    for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
+    {
+        pin->ops->write(pin, (mr_uint16_t)pos, *send_buffer);
+        send_buffer++;
+    }
 
-    return (mr_ssize_t)sizeof(*send_buffer);
+    return (mr_ssize_t)send_size;
 }
 
 static mr_err_t _err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config)

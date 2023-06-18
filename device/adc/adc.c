@@ -63,7 +63,7 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr
         recv_buffer++;
     }
 
-    return (mr_ssize_t)size;
+    return (mr_ssize_t)recv_size;
 }
 
 static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_uint8_t state)

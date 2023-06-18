@@ -57,22 +57,18 @@ mr_err_t ch32_adc_channel_configure(mr_adc_t adc, struct mr_adc_config *config)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
         GPIOx = GPIOA;
-    }
-    else if (config->channel <= 10)
+    } else if (config->channel <= 10)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
         GPIOx = GPIOB;
-    }
-    else if (config->channel <= 15)
+    } else if (config->channel <= 15)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
         GPIOx = GPIOC;
-    }
-    else if (config->channel <= 17)
+    } else if (config->channel <= 17)
     {
         ADC_TempSensorVrefintCmd(ENABLE);
-    }
-    else
+    } else
     {
         return -MR_ERR_INVALID;
     }
@@ -80,8 +76,7 @@ mr_err_t ch32_adc_channel_configure(mr_adc_t adc, struct mr_adc_config *config)
     if (config->state == MR_ENABLE)
     {
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    }
-    else
+    } else
     {
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     }

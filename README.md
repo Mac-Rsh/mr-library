@@ -108,6 +108,7 @@ struct mr_object
 事件服务器是一种异步事件处理机制,它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
 
 事件服务器包含两个主要组件:事件服务器和事件客户端。
+
 - 事件服务器用于接收和分发事件,它内部维护一个事件队列用于存储待处理事件和一个事件列表用于存储注册的事件客户端。
 - 事件客户端用于处理特定类型的事件,它需要注册到事件服务器并提供一个回调函数。
 
@@ -137,16 +138,16 @@ struct mr_event_client
 
 ### 事件服务操作接口
 
-| 接口                       | 描述               |
-|:-------------------------|:-----------------|
-| mr_event_server_find     | 从内核容器查找事件服务器     |
-| mr_event_server_add      | 添加事件服务器到内核容器     |
-| mr_event_server_remove   | 从内核容器移除事件服务器     |
-| mr_event_server_notify   | 通知事件服务器事件发生      |
-| mr_event_server_handle   | 事件服务器分发事件        |
-| mr_event_client_find     | 从事件服务器查找事件客户端    |
-| mr_event_client_create   | 创建事件客户端到事件服务器    |
-| mr_client_delete         | 从事件服务器移除事件客户端    |
+| 接口                     | 描述            |
+|:-----------------------|:--------------|
+| mr_event_server_find   | 从内核容器查找事件服务器  |
+| mr_event_server_add    | 添加事件服务器到内核容器  |
+| mr_event_server_remove | 从内核容器移除事件服务器  |
+| mr_event_server_notify | 通知事件服务器事件发生   |
+| mr_event_server_handle | 事件服务器分发事件     |
+| mr_event_client_find   | 从事件服务器查找事件客户端 |
+| mr_event_client_create | 创建事件客户端到事件服务器 |
+| mr_client_delete       | 从事件服务器移除事件客户端 |
 
 ### 事件服务使用示例：
 
@@ -205,7 +206,9 @@ int main(void)
     }
 }
 ```
+
 现象：
+
 ```c
 event1_cb
 event2_cb

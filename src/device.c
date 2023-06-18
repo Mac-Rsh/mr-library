@@ -60,12 +60,13 @@ mr_err_t mr_device_add(mr_device_t device,
     }
 
     /* Initialize the private fields */
-    device->rx_cb = MR_NULL;
-    device->tx_cb = MR_NULL;
     device->type = type;
     device->support_flag = support_flag;
     device->open_flag = MR_OPEN_CLOSED;
+    device->ref_count = 0;
     device->data = data;
+    device->rx_cb = MR_NULL;
+    device->tx_cb = MR_NULL;
 
     /* Set operations as null-ops if ops is null */
     device->ops = (ops == MR_NULL) ? &null_ops : ops;
@@ -95,12 +96,13 @@ mr_err_t mr_device_remove(mr_device_t device)
     }
 
     /* Initialize the private fields */
-    device->rx_cb = MR_NULL;
-    device->tx_cb = MR_NULL;
     device->type = MR_DEVICE_TYPE_NONE;
     device->support_flag = MR_OPEN_CLOSED;
     device->open_flag = MR_OPEN_CLOSED;
+    device->ref_count = 0;
     device->data = MR_NULL;
+    device->rx_cb = MR_NULL;
+    device->tx_cb = MR_NULL;
 
     /* Set operations as null-ops */
     device->ops = &null_ops;
@@ -139,7 +141,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
     /* Set the device status to active */
     device->open_flag |= MR_OPEN_ACTIVE;
 
-    /* Call the device-open function, if provided */
+    /* Call the open function, if provided */
     if (device->ops->open == MR_NULL)
     {
         return MR_ERR_OK;
@@ -179,7 +181,7 @@ mr_err_t mr_device_close(mr_device_t device)
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 
-    /* Call the device-close function, if provided */
+    /* Call the close function, if provided */
     if (device->ops->close == MR_NULL)
     {
         return MR_ERR_OK;
@@ -201,7 +203,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 {
     MR_ASSERT(device != MR_NULL);
 
-    /* Call the device-ioctl function, if provided */
+    /* Call the ioctl function, if provided */
     if (device->ops->ioctl == MR_NULL)
     {
         return -MR_ERR_UNSUPPORTED;
@@ -231,7 +233,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
         return -MR_ERR_UNSUPPORTED;
     }
 
-    /* Call the device-read function, if provided */
+    /* Call the read function, if provided */
     if (device->ops->read == MR_NULL)
     {
         return -MR_ERR_IO;
@@ -261,7 +263,7 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
         return -MR_ERR_UNSUPPORTED;
     }
 
-    /* Call the device-write function, if provided */
+    /* Call the write function, if provided */
     if (device->ops->write == MR_NULL)
     {
         return -MR_ERR_IO;

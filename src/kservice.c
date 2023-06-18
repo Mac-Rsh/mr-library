@@ -155,8 +155,8 @@ void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size)
     fifo->read_mirror = 0;
     fifo->write_mirror = 0;
 
-    fifo->buffer = pool;
     fifo->size = pool_size;
+    fifo->buffer = pool;
 }
 
 /**
@@ -192,8 +192,7 @@ mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo)
         if (fifo->read_mirror == fifo->write_mirror)
         {
             return 0;
-        }
-        else
+        } else
         {
             return fifo->size;
         }
@@ -202,8 +201,7 @@ mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo)
     if (fifo->write_index > fifo->read_index)
     {
         return fifo->write_index - fifo->read_index;
-    }
-    else
+    } else
     {
         return fifo->size - fifo->read_index + fifo->write_index;
     }
@@ -490,12 +488,10 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
     if (node->value < (*tree)->value)
     {
         mr_avl_insert(&(*tree)->left_child, node);
-    }
-    else if (node->value > (*tree)->value)
+    } else if (node->value > (*tree)->value)
     {
         mr_avl_insert(&(*tree)->right_child, node);
-    }
-    else
+    } else
     {
         return;
     }
@@ -550,8 +546,7 @@ mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value)
     if (value < tree->value)
     {
         return mr_avl_find(tree->left_child, value);
-    }
-    else if (value > tree->value)
+    } else if (value > tree->value)
     {
         return mr_avl_find(tree->right_child, value);
     }

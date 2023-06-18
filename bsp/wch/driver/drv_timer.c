@@ -193,8 +193,11 @@ static mr_uint32_t ch32_timer_get_count(mr_timer_t timer)
 void TIM1_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM1_UP_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER1_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER1_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -202,8 +205,11 @@ void TIM1_UP_IRQHandler(void)
 void TIM2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM2_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER2_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER2_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -211,8 +217,11 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM3_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER3_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER3_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -220,8 +229,11 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM4_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER4_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER4_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -229,8 +241,11 @@ void TIM4_IRQHandler(void)
 void TIM5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM5_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER5_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
+    if(TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER5_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -238,8 +253,11 @@ void TIM5_IRQHandler(void)
 void TIM6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM6_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER6_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
+    if(TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER6_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -247,8 +265,11 @@ void TIM6_IRQHandler(void)
 void TIM7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM7_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER7_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
+    if(TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER7_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -256,8 +277,11 @@ void TIM7_IRQHandler(void)
 void TIM8_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM8_UP_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER8_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM8, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM8, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER8_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM8, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -265,8 +289,11 @@ void TIM8_UP_IRQHandler(void)
 void TIM9_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM9_UP_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER9_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER9_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
+    }
 }
 #endif
 
@@ -274,8 +301,11 @@ void TIM9_UP_IRQHandler(void)
 void TIM10_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM10_UP_IRQHandler(void)
 {
-    mr_timer_device_isr(&timer_device[TIMER10_INDEX], MR_TIMER_EVENT_PIT_INT);
-    TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
+    if (TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET)
+    {
+        mr_timer_device_isr(&timer_device[TIMER10_INDEX], MR_TIMER_EVENT_PIT_INT);
+        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
+    }
 }
 #endif
 

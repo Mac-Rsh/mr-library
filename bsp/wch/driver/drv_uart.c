@@ -266,113 +266,105 @@ static mr_uint8_t ch32_serial_read(mr_serial_t serial)
     return 0;
 }
 
-static void ch32_serial_start_tx(mr_serial_t serial)
-{
-    struct ch32_uart *driver = (struct ch32_uart *)serial->device.data;
-
-    USART_ITConfig(driver->info.Instance, USART_IT_TXE, ENABLE);
-}
-
-static void ch32_serial_stop_tx(mr_serial_t serial)
-{
-    struct ch32_uart *driver = (struct ch32_uart *)serial->device.data;
-
-    USART_ITConfig(driver->info.Instance, USART_IT_TXE, DISABLE);
-}
-
-static void ch32_serial_isr(mr_serial_t serial)
-{
-    struct ch32_uart *driver = (struct ch32_uart *)serial->device.data;
-
-    if (USART_GetITStatus(driver->info.Instance, USART_IT_RXNE) != RESET)
-    {
-        mr_serial_device_isr(serial, MR_SERIAL_EVENT_RX_INT);
-        USART_ClearITPendingBit(driver->info.Instance, USART_IT_RXNE);
-    }
-
-    if (USART_GetITStatus(driver->info.Instance, USART_IT_TXE) != RESET)
-    {
-        mr_serial_device_isr(serial, MR_SERIAL_EVENT_TX_INT);
-        USART_ClearITPendingBit(driver->info.Instance, USART_IT_TXE);
-    }
-}
-
 #ifdef BSP_UART_1
 void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void USART1_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART1_INDEX]);
+    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART1_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_2
 void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void USART2_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART2_INDEX]);
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART2_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(USART2, USART_IT_RXNE);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_3
 void USART3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void USART3_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART3_INDEX]);
+    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART3_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(USART3, USART_IT_RXNE);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_4
 void UART4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void UART4_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART4_INDEX]);
+    if (USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART4_INDEX], MR_SERIAL_EVENT_RX_INT);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_5
 void UART5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void UART5_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART5_INDEX]);
+    if (USART_GetITStatus(UART5, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART5_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(UART5, USART_IT_RXNE);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_6
 void UART6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void UART6_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART6_INDEX]);
+    if (USART_GetITStatus(UART6, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART6_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(UART6, USART_IT_RXNE);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_7
 void UART7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void UART7_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART7_INDEX]);
+    if (USART_GetITStatus(UART7, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART7_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(UART7, USART_IT_RXNE);
+    }
 }
 
 #endif
 
 #ifdef BSP_UART_8
 void UART8_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-
 void UART8_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[UART8_INDEX]);
+    if (USART_GetITStatus(UART8, USART_IT_RXNE) != RESET)
+    {
+        mr_serial_device_isr(&serial_device[UART8_INDEX], MR_SERIAL_EVENT_RX_INT);
+        USART_ClearITPendingBit(UART8, USART_IT_RXNE);
+    }
 }
 
 #endif
@@ -386,8 +378,6 @@ mr_err_t ch32_uart_init(void)
                     ch32_serial_configure,
                     ch32_serial_write,
                     ch32_serial_read,
-                    ch32_serial_start_tx,
-                    ch32_serial_stop_tx,
             };
 
     while (count--)

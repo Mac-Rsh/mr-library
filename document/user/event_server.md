@@ -3,6 +3,7 @@
 事件服务器是一种异步事件处理机制,它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
 
 事件服务器包含两个主要组件:事件服务器和事件客户端。
+
 - 事件服务器用于接收和分发事件,它内部维护一个事件队列用于存储待处理事件和一个事件列表用于存储注册的事件客户端。
 - 事件客户端用于处理特定类型的事件,它需要注册到事件服务器并提供一个回调函数。
 
@@ -74,12 +75,12 @@ mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size
 mr_err_t mr_event_server_remove(mr_event_server_t server);
 ```
 
-| 参数           | 描述    |
-|:-------------|:------|
-| server       | 服务器句柄 |
-| **返回**       |       |
-| MR_ERR_OK    | 移除成功  |
-| 错误码          | 移除失败  |
+| 参数        | 描述    |
+|:----------|:------|
+| server    | 服务器句柄 |
+| **返回**    |       |
+| MR_ERR_OK | 移除成功  |
+| 错误码       | 移除失败  |
 
 ### 通知服务器，事件发生
 
@@ -87,13 +88,13 @@ mr_err_t mr_event_server_remove(mr_event_server_t server);
 mr_err_t mr_event_server_notify(mr_event_server_t server, mr_uint8_t id);
 ```
 
-| 参数           | 描述         |
-|:-------------|:-----------|
-| server       | 服务器句柄      |
-| id           | 发生事件的客户端id |
-| **返回**       |            |
-| MR_ERR_OK    | 通知成功       |
-| 错误码          | 通知失败       |
+| 参数        | 描述         |
+|:----------|:-----------|
+| server    | 服务器句柄      |
+| id        | 发生事件的客户端id |
+| **返回**    |            |
+| MR_ERR_OK | 通知成功       |
+| 错误码       | 通知失败       |
 
 ### 服务器分发事件，唤醒客户端
 
@@ -101,9 +102,9 @@ mr_err_t mr_event_server_notify(mr_event_server_t server, mr_uint8_t id);
 void mr_event_server_handle(mr_event_server_t server);
 ```
 
-| 参数           | 描述    |
-|:-------------|:------|
-| server       | 服务器句柄 |
+| 参数     | 描述    |
+|:-------|:------|
+| server | 服务器句柄 |
 
 ### 查找客户端
 
@@ -111,14 +112,13 @@ void mr_event_server_handle(mr_event_server_t server);
 mr_event_client_t mr_event_client_find(mr_uint8_t id, mr_event_server_t server);
 ```
 
-| 参数       | 描述    |
-|:---------|:------|
-| id       | 客户端id |
-| server   | 服务器句柄 |
-| **返回**   |       |
-| 客户端句柄    | 查找成功  |
-| MR_NULL  | 查找失败  |
-
+| 参数      | 描述    |
+|:--------|:------|
+| id      | 客户端id |
+| server  | 服务器句柄 |
+| **返回**  |       |
+| 客户端句柄   | 查找成功  |
+| MR_NULL | 查找失败  |
 
 ### 创建新客户端
 

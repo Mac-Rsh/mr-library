@@ -13,19 +13,16 @@
 static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
         {
                 {
-                        .type = MR_CONTAINER_TYPE_MISC,
-                        .list = {&mr_kernel_container[MR_CONTAINER_TYPE_MISC].list,
-                                 &mr_kernel_container[MR_CONTAINER_TYPE_MISC].list}
+                        MR_CONTAINER_TYPE_MISC,
+                        {&mr_kernel_container[MR_CONTAINER_TYPE_MISC].list,   &mr_kernel_container[MR_CONTAINER_TYPE_MISC].list}
                 },
                 {
-                        .type = MR_CONTAINER_TYPE_DEVICE,
-                        .list = {&mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list,
-                                 &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
+                        MR_CONTAINER_TYPE_DEVICE,
+                        {&mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list, &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
                 },
                 {
-                        .type = MR_CONTAINER_TYPE_SERVER,
-                        .list = {&mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list,
-                                 &mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list}
+                        MR_CONTAINER_TYPE_SERVER,
+                        {&mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list, &mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list}
                 },
         };
 
@@ -39,6 +36,11 @@ static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
 mr_container_t mr_container_find(enum mr_container_type type)
 {
     MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
+
+    if (type >= _MR_CONTAINER_TYPE_MASK)
+    {
+        return MR_NULL;
+    }
 
     return &mr_kernel_container[type];
 }
@@ -62,6 +64,10 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
 
     /* Get corresponding container */
     container = mr_container_find(type);
+    if (container == MR_NULL)
+    {
+        return MR_NULL;
+    }
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -112,6 +118,10 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_t
 
     /* Find the container for the specified flag */
     container = mr_container_find(type);
+    if (container == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -164,11 +174,7 @@ mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type)
     MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
 
     /* Remove the object from its current container */
-    ret = mr_object_remove(object);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    mr_object_remove(object);
 
     /* Add the object to the new container */
     ret = mr_object_add(object, object->name, type);
@@ -185,6 +191,7 @@ mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type)
 void mr_object_rename(mr_object_t object, char *name)
 {
     MR_ASSERT(object != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
 
     mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
 }

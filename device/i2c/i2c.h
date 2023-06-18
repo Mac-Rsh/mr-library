@@ -32,7 +32,6 @@
 struct mr_i2c_config
 {
     mr_uint32_t baud_rate;
-
     mr_uint8_t host_slave;
     mr_uint8_t address_mode;
 };
@@ -55,7 +54,7 @@ struct mr_i2c_bus_ops
     void (*start)(mr_i2c_bus_t i2c_bus);
     void (*stop)(mr_i2c_bus_t i2c_bus);
     void (*write)(mr_i2c_bus_t i2c_bus, mr_uint8_t data);
-    mr_uint8_t (*read)(mr_i2c_bus_t i2c_bus, mr_state_t ack_state);
+    mr_uint8_t (*read)(mr_i2c_bus_t i2c_bus, mr_uint8_t ack_state);
 };
 
 struct mr_i2c_bus

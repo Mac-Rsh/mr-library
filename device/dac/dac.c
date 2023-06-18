@@ -63,7 +63,7 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buf
         send_buffer++;
     }
 
-    return (mr_ssize_t)size;
+    return (mr_ssize_t)send_size;
 }
 
 static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_uint8_t state)

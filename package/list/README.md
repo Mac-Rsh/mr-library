@@ -6,9 +6,9 @@
 void slist_init(slist_t list);
 ```
 
-| 参数        | 描述     |
-|:----------|:-------|
-| list      | 单链表句柄  |
+| 参数   | 描述    |
+|:-----|:------|
+| list | 单链表句柄 |
 
 ### 向单链表尾部追加节点
 
@@ -16,32 +16,32 @@ void slist_init(slist_t list);
 void slist_append(slist_t list, slist_t node);
 ```
 
-| 参数      | 描述     |
-|:--------|:-------|
-| list    | 单链表句柄  | 
-| node    | 要追加的节点 |  
+| 参数   | 描述     |
+|:-----|:-------|
+| list | 单链表句柄  | 
+| node | 要追加的节点 |  
 
-### 在单链表中节点后插入节点 
+### 在单链表中节点后插入节点
 
 ```c
 void slist_insert_after(slist_t list, slist_t node);
 ```
 
-| 参数     | 描述        |
-|:-------|:----------|
-| list   | 单链表句柄     | 
-| node   | 要插入的节点    |
+| 参数   | 描述     |
+|:-----|:-------|
+| list | 单链表句柄  | 
+| node | 要插入的节点 |
 
-### 从单链表中移除节点 
+### 从单链表中移除节点
 
 ```c
 void slist_remove(slist_t list, slist_t node);
 ```
 
-| 参数     | 描述        |
-|:-------|:----------|
-| list   | 单链表句柄     | 
-| node   | 要移除的节点    |
+| 参数   | 描述     |
+|:-----|:-------|
+| list | 单链表句柄  | 
+| node | 要移除的节点 |
 
 ### 获取单链表长度
 
@@ -49,11 +49,11 @@ void slist_remove(slist_t list, slist_t node);
 size_t slist_get_length(slist_t list);
 ```
 
-| 参数     | 描述       |
-|:-------|:---------| 
-| list   | 单链表句柄    | 
-| **返回** |          |
-| size   | 单链表长度    |
+| 参数     | 描述    |
+|:-------|:------| 
+| list   | 单链表句柄 | 
+| **返回** |       |
+| size   | 单链表长度 |
 
 ### 获取单链表尾节点
 
@@ -67,7 +67,7 @@ slist_t slist_get_tail(slist_t list);
 | **返回** |        |  
 | slist  | 单链表尾节点 | 
 
-### 检查单链表是否为空 
+### 检查单链表是否为空
 
 ```c
 int slist_is_empty(slist_t list);
@@ -85,20 +85,20 @@ int slist_is_empty(slist_t list);
 void list_init(list_t list);
 ```
 
-| 参数     | 描述       |
-|:-------|:---------|
-| list   | 双链表句柄    |
+| 参数   | 描述    |
+|:-----|:------|
+| list | 双链表句柄 |
 
-###  在双链表后插入节点
+### 在双链表后插入节点
 
 ```c
 void list_insert_after(list_t list, list_t node);
 ```
 
-| 参数      | 描述       |
-|:--------|:---------|
-| list    | 双链表句柄    |  
-| node    | 要插入的节点   | 
+| 参数   | 描述     |
+|:-----|:-------|
+| list | 双链表句柄  |  
+| node | 要插入的节点 | 
 
 ### 在双链表前插入节点
 
@@ -106,32 +106,32 @@ void list_insert_after(list_t list, list_t node);
 void list_insert_before(list_t list, list_t node);
 ```
 
-| 参数     | 描述       |
-|:-------|:---------|
-| list   | 双链表句柄    | 
-| node   | 要插入的节点   | 
+| 参数   | 描述     |
+|:-----|:-------|
+| list | 双链表句柄  | 
+| node | 要插入的节点 | 
 
-### 从双链表中移除节点 
+### 从双链表中移除节点
 
 ```c
 void list_remove(list_t node);
 ```
 
-| 参数      | 描述       |
-|:--------|:---------| 
-| node    | 要移除的节点   |
+| 参数   | 描述     |
+|:-----|:-------| 
+| node | 要移除的节点 |
 
-### 获取双链表长度 
+### 获取双链表长度
 
 ```c
 size_t list_get_length(list_t list);
 ```
 
-| 参数     | 描述       |
-|:-------|:---------|
-| list   | 双链表句柄    | 
-| **返回** |          | 
-| size   | 双链表长度    |
+| 参数     | 描述    |
+|:-------|:------|
+| list   | 双链表句柄 | 
+| **返回** |       | 
+| size   | 双链表长度 |
 
 ### 检查双链表是否为空
 
@@ -152,13 +152,13 @@ int list_is_empty(list_t list);
     ((type *)((char *)(node) - (unsigned long)(&((type *)0)->member)))
 ```
 
-| 参数     | 描述              |
-|:-------|:----------------|
-| node   | 结构体中子结构体的指针     |
-| type   | 结构体类型           |
-| member | 子结构体在结构体中的位置    |
-| **返回** |                 |
-| struct | 结构体指针           |
+| 参数     | 描述           |
+|:-------|:-------------|
+| node   | 结构体中子结构体的指针  |
+| type   | 结构体类型        |
+| member | 子结构体在结构体中的位置 |
+| **返回** |              |
+| struct | 结构体指针        |
 
 #### 使用示例：
 

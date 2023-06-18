@@ -7,13 +7,13 @@
 1. 从[仓库](https://gitee.com/MacRsh/mr-library.git)获取最新的代码。
 2. 整理文件仅保留必要的文件：
 
-    | 名称         | 描述   |
-    |:-----------|:-----|
-    | mr_library |      |
-    | -device    | 设备文件 |
-    | -driver    | 驱动文件 |
-    | -include   | 库头文件 |
-    | -src       | 库源文件 |
+   | 名称         | 描述   |
+       |:-----------|:-----|
+   | mr_library |      |
+   | -device    | 设备文件 |
+   | -driver    | 驱动文件 |
+   | -include   | 库头文件 |
+   | -src       | 库源文件 |
 3. 在`mrboard.h`中添加芯片头文件，并为适配的芯片添加支持的宏：BSP_GPIO_x。
 4. 在`driver`目录中新建名为`drv_gpio.c`和`drv_gpio.h`，并添加版权信息：
     ```c
@@ -38,27 +38,28 @@
 
 ## 注册PIN设备
 
-以CH32为例，将前缀修改为适配的型号即可，如果您有关于硬件的信息需要引入，请在`mr_pin_device_add`函数`data`参数中传入（注意使用模板时请去除中文注释）：
+以CH32为例，将前缀修改为适配的型号即可，如果您有关于硬件的信息需要引入，请在`mr_pin_device_add`函数`data`
+参数中传入（注意使用模板时请去除中文注释）：
 
 ```c
 /* 定义pin驱动 */
-static struct mr_pin pin_driver;
+static struct mr_pin pin_device;
 
 /* 注册pin设备 */
 mr_err_t ch32_gpio_init(void)
 {
-    mr_err_t ret = MR_ERR_OK;
-    static struct mr_pin_ops ops =
-            {
-                    ch32_pin_configure,
-                    ch32_pin_write,
-                    ch32_pin_read,
-            };
+mr_err_t ret = MR_ERR_OK;
+static struct mr_pin_ops ops =
+{
+ch32_pin_configure,
+ch32_pin_write,
+ch32_pin_read,
+};
 
-    ret = mr_pin_device_add(&pin_driver, "pin", &ops, MR_NULL);
-    MR_ASSERT(ret == MR_ERR_OK);
+ret = mr_pin_device_add(&pin_device, "pin", &ops, MR_NULL);
+MR_ASSERT(ret == MR_ERR_OK);
 
-    return MR_ERR_OK;
+return MR_ERR_OK;
 }
 /* 导出到驱动自动初始化 */
 AUTO_INIT_DRIVER_EXPORT(ch32_gpio_init);
@@ -128,7 +129,7 @@ struct mr_pin_config
     #define
     MR_PIN_MODE_HIGH                /* 高电平触发 */
     ````
-    注意模式配置时，请定义一个数组，用于存储外部中断源是哪个GPIO，-1代表未被占用。
+  注意模式配置时，请定义一个数组，用于存储外部中断源是哪个GPIO，-1代表未被占用。
     ```c
     static mr_int32_t mask[16] = {-1,
                                   -1,
@@ -147,7 +148,7 @@ struct mr_pin_config
                                   -1,
                                   -1};
     ```
-    
+
 #### write
 
 ```c
@@ -169,6 +170,7 @@ static mr_uint8_t ch32_pin_read(mr_pin_t pin, mr_uint16_t number)
 #### 中断回调函数
 
 以CH32为例，在中断中调用以下函数完成框架对中断的接管：
+
 ```c
 void mr_pin_device_isr(mr_pin_t pin, mr_int32_t number)
 ```
@@ -181,7 +183,7 @@ void EXTI0_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line0) != RESET)
     {
-        mr_pin_device_isr(&pin_driver, mask[0]);
+        mr_pin_device_isr(&pin_device, mask[0]);
         EXTI_ClearITPendingBit(EXTI_Line0);
     }
 }

@@ -43,7 +43,6 @@
 struct mr_spi_config
 {
     mr_uint32_t baud_rate;
-
     mr_uint8_t host_slave;
     mr_uint8_t mode;
     mr_uint8_t bit_order;

@@ -18,9 +18,9 @@ void fifo_init(fifo_t fifo, void *pool, size_t pool_size);
 void fifo_reset(fifo_t fifo);
 ```
 
-| 参数   | 描述       |
-|:-----|:---------|
-| fifo | FIFO句柄   |
+| 参数   | 描述     |
+|:-----|:-------|
+| fifo | FIFO句柄 |
 
 ### 获取FIFO缓存的数据大小
 
@@ -28,11 +28,11 @@ void fifo_reset(fifo_t fifo);
 size_t fifo_get_data_size(fifo_t fifo);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| fifo      | FIFO句柄  |  
-| **返回**    |         |
-| size      | 缓存的数据大小 |
+| 参数     | 描述      |
+|:-------|:--------|
+| fifo   | FIFO句柄  |  
+| **返回** |         |
+| size   | 缓存的数据大小 |
 
 ### 从FIFO缓存读取数据
 
@@ -40,41 +40,41 @@ size_t fifo_get_data_size(fifo_t fifo);
 size_t fifo_read(fifo_t fifo, void *buffer, size_t size);
 ```
 
-| 参数      | 描述               |
-|:--------|:-----------------|
-| fifo    | FIFO句柄           |
-| buffer  | 要从FIFO缓存读取的数据缓冲区 |
-| size    | 读取大小             |
-| **返回**  |                  |
-| size    | 实际读取的数据大小        |
+| 参数     | 描述               |
+|:-------|:-----------------|
+| fifo   | FIFO句柄           |
+| buffer | 要从FIFO缓存读取的数据缓冲区 |
+| size   | 读取大小             |
+| **返回** |                  |
+| size   | 实际读取的数据大小        |
 
-### 向FIFO缓存写入数据 
+### 向FIFO缓存写入数据
 
 ```c
 size_t fifo_write(fifo_t fifo, const void *buffer, size_t size);
 ```
 
-| 参数        | 描述              | 
-|:----------|:----------------|
-| fifo      | FIFO句柄          |
-| buffer    | 要写入FIFO缓存的数据缓冲区 |
-| size      | 写入大小            |
-| **返回**    |                 |
-| size      | 实际写入的数据大小       | 
+| 参数     | 描述              | 
+|:-------|:----------------|
+| fifo   | FIFO句柄          |
+| buffer | 要写入FIFO缓存的数据缓冲区 |
+| size   | 写入大小            |
+| **返回** |                 |
+| size   | 实际写入的数据大小       | 
 
-### 强制向FIFO缓存写入数据 
+### 强制向FIFO缓存写入数据
 
 ```c
 size_t fifo_write_force(fifo_t fifo, const void *buffer, size_t size);
 ```
 
-| 参数      | 描述              | 
-|:--------|:----------------|
-| fifo    | FIFO句柄          |
-| buffer  | 要写入FIFO缓存的数据缓冲区 |
-| size    | 写入大小            |
-| **返回**  |                 | 
-| size    | 实际写入的数据大小       |   
+| 参数     | 描述              | 
+|:-------|:----------------|
+| fifo   | FIFO句柄          |
+| buffer | 要写入FIFO缓存的数据缓冲区 |
+| size   | 写入大小            |
+| **返回** |                 | 
+| size   | 实际写入的数据大小       |   
 
  ----------
 

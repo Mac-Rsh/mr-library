@@ -77,6 +77,7 @@ struct mr_adc_config
 ```
 
 使用示例如下所示:
+
 ```c
 /* 寻找ADC1设备 */    
 mr_device_t adc_device = mr_device_find("adc1");

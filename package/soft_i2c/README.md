@@ -53,11 +53,11 @@ struct i2c_bus_ops
 void i2c_bus_init(i2c_bus_t bus, const struct i2c_bus_ops *ops, void *data);
 ```
 
-| 参数   | 描述     |
-|:-----|:-------|
-| bus  | 总线句柄   |
-| ops  | 总线方法   |
-| data | 总线数据   |
+| 参数   | 描述   |
+|:-----|:-----|
+| bus  | 总线句柄 |
+| ops  | 总线方法 |
+| data | 总线数据 |
 
 ### 初始化I2C设备
 
@@ -65,11 +65,11 @@ void i2c_bus_init(i2c_bus_t bus, const struct i2c_bus_ops *ops, void *data);
 void i2c_device_init(i2c_device_t device, uint8_t addr, i2c_bus_t bus);
 ```
 
-| 参数     | 描述     |
-|:-------|:-------|
-| device | 设备句柄   |
-| addr   | 设备地址   |
-| bus    | 总线句柄   |
+| 参数     | 描述   |
+|:-------|:-----|
+| device | 设备句柄 |
+| addr   | 设备地址 |
+| bus    | 总线句柄 |
 
 ### 向I2C设备寄存器写入数据
 
@@ -89,12 +89,12 @@ void i2c_device_write_reg(i2c_device_t device, uint8_t reg, uint8_t data);
 void i2c_device_write_reg(i2c_device_t device, uint8_t reg, uint8_t data);
 ```
 
-| 参数      | 描述      |
-|:--------|:--------|
-| device  | 设备句柄    |
-| reg     | 寄存器地址   |
-| **返回**  |         |
-| data    | 读取到的数据  |
+| 参数     | 描述     |
+|:-------|:-------|
+| device | 设备句柄   |
+| reg    | 寄存器地址  |
+| **返回** |        |
+| data   | 读取到的数据 |
 
 ### 向I2C设备传输数据（先写入再读取）
 
@@ -106,13 +106,13 @@ void i2c_device_transfer(i2c_device_t device,
                          size_t read_size);
 ```
 
-| 参数              | 描述     |
-|:----------------|:-------|
-| device          | 设备句柄   |
-| write_buffer    | 要写入的数据 |
-| write_size      | 写入数据大小 |
-| read_buffer     | 要读取的数据 |
-| read_size       | 读取数据大小 |
+| 参数           | 描述     |
+|:-------------|:-------|
+| device       | 设备句柄   |
+| write_buffer | 要写入的数据 |
+| write_size   | 写入数据大小 |
+| read_buffer  | 要读取的数据 |
+| read_size    | 读取数据大小 |
 
 ## 使用示例：
 

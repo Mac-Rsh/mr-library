@@ -180,21 +180,20 @@ struct mr_avl
     struct mr_avl *left_child;                                      /* Point to left-child node */
     struct mr_avl *right_child;                                     /* Point to right-child node */
 };
-typedef struct mr_avl *mr_avl_t;                                    /* Type for list-tree */
+typedef struct mr_avl *mr_avl_t;                                    /* Type for avl-tree */
 
 /**
  *  Fifo
  */
 struct mr_fifo
 {
-    mr_uint8_t *buffer;                                             /* Buffer pool */
-
     mr_uint16_t read_mirror: 1;                                     /* Read mirror flag */
     mr_uint16_t read_index: 15;                                     /* Read index */
     mr_uint16_t write_mirror: 1;                                    /* Write mirror flag */
     mr_uint16_t write_index: 15;                                    /* Write index */
 
     mr_uint16_t size;                                               /* Buffer pool size */
+    mr_uint8_t *buffer;                                             /* Buffer pool */
 };
 typedef struct mr_fifo *mr_fifo_t;                                  /* Type for fifo */
 
@@ -220,9 +219,8 @@ enum mr_container_type
 
 struct mr_container
 {
-    struct mr_list list;                                            /* Container list */
-
     enum mr_container_type type;                                    /* Container type */
+    struct mr_list list;                                            /* Container list */
 };
 typedef struct mr_container *mr_container_t;                        /* Type for container */
 
@@ -231,7 +229,7 @@ typedef struct mr_container *mr_container_t;                        /* Type for 
  */
 struct mr_object
 {
-    char name[MR_CONF_NAME_MAX + 1];                                /* Object name */
+    char name[MR_CONF_NAME_MAX];                                    /* Object name */
     struct mr_list list;                                            /* Object list */
 };
 typedef struct mr_object *mr_object_t;                              /* Type for object */

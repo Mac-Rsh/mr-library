@@ -89,8 +89,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
     {
         RCC_APB2PeriphClockCmd(driver->info.spi_periph_clock, ENABLE);
         pclk_freq = RCC_ClockStruct.PCLK2_Frequency;
-    }
-    else
+    } else
     {
         RCC_APB1PeriphClockCmd(driver->info.spi_periph_clock, ENABLE);
         pclk_freq = RCC_ClockStruct.PCLK1_Frequency;
@@ -100,8 +99,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
     if (config->cs_active == MR_SPI_CS_ACTIVE_NONE)
     {
         SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
-    }
-    else
+    } else
     {
         SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
     }
@@ -158,8 +156,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_Init(driver->info.gpio_port, &GPIO_InitStructure);
-    }
-    else
+    } else
     {
         SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
 
@@ -215,8 +212,7 @@ static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_
     if (state == MR_ENABLE)
     {
         GPIO_WriteBit(PIN_STPORT(cs_pin), PIN_STPIN(cs_pin), spi_bus->config.cs_active);
-    }
-    else
+    } else
     {
         GPIO_WriteBit(PIN_STPORT(cs_pin), PIN_STPIN(cs_pin), !spi_bus->config.cs_active);
     }
