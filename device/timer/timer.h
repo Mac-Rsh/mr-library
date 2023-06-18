@@ -18,8 +18,8 @@
 #define MR_TIMER_MODE_PERIOD            0
 #define MR_TIMER_MODE_ONE_SHOT          1
 
-#define _MR_TIMER_CUT_MODE_UP           0
-#define _MR_TIMER_CUT_MODE_DOWN         1
+#define _MR_TIMER_CNT_MODE_UP           0
+#define _MR_TIMER_CNT_MODE_DOWN         1
 
 #define MR_TIMER_EVENT_PIT_INT          0x1000
 #define _MR_TIMER_EVENT_MASK            0xf000
@@ -27,7 +27,7 @@
 /* Default config for mr_timer_config structure */
 #define MR_TIMER_CONFIG_DEFAULT         \
 {                                       \
-    1000,                               \
+    1000000,                            \
     MR_TIMER_MODE_PERIOD,               \
 }
 
@@ -40,8 +40,9 @@ struct mr_timer_config
 struct mr_timer_info
 {
     mr_uint32_t max_freq;
-    mr_uint32_t max_cut;
-    mr_uint8_t cut_mode;
+    mr_uint32_t min_freq;
+    mr_uint32_t max_cnt;
+    mr_uint8_t cnt_mode;
 };
 
 typedef struct mr_timer *mr_timer_t;
@@ -59,7 +60,7 @@ struct mr_timer
     struct mr_device device;
 
     struct mr_timer_config config;
-    struct mr_timer_info information;
+    struct mr_timer_info info;
     mr_uint32_t reload;
     mr_uint32_t cycles;
     mr_uint32_t overflow;
