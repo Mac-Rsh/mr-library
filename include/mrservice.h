@@ -66,6 +66,8 @@
 #define mr_max(a, b)    ((a) > (b)) ? a:b
 #define mr_min(a, b)    ((a) < (b)) ? a:b
 
+#define mr_limit(x, a, b)    do{ x = (x < a) ? a : (x > b) ? b : x; }while(0)
+
 /**
  * @brief This function initialize a single list.
  *
