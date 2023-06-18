@@ -17,6 +17,6 @@
 
 mr_err_t ch32_gpio_init(void);
 
-#endif
+#endif /* MR_CONF_PIN */
 
-#endif
+#endif /* _DRV_GPIO_H_ */

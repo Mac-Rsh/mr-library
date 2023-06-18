@@ -35,6 +35,6 @@ struct ch32_spi
 
 mr_err_t ch32_spi_init(void);
 
-#endif
+#endif /* MR_CONF_SPI */
 
-#endif
+#endif /* _DRV_SPI_H_ */

@@ -30,6 +30,6 @@ struct ch32_dac
 
 mr_err_t ch32_dac_init(void);
 
-#endif
+#endif /* MR_CONF_DAC */
 
-#endif
+#endif /* _DRV_DAC_H_ */

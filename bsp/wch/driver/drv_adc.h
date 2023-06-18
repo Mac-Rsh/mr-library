@@ -30,6 +30,6 @@ struct ch32_adc
 
 mr_err_t ch32_adc_init(void);
 
-#endif
+#endif /* MR_CONF_ADC */
 
-#endif
+#endif /* _DRV_ADC_H_ */

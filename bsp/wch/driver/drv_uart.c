@@ -154,8 +154,7 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
         if (driver->info.Instance == USART1)
         {
             RCC_APB2PeriphClockCmd(driver->info.uart_periph_clock, DISABLE);
-        }
-        else
+        } else
         {
             RCC_APB1PeriphClockCmd(driver->info.uart_periph_clock, DISABLE);
         }
@@ -167,8 +166,7 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
     if (driver->info.Instance == USART1)
     {
         RCC_APB2PeriphClockCmd(driver->info.uart_periph_clock, ENABLE);
-    }
-    else
+    } else
     {
         RCC_APB1PeriphClockCmd(driver->info.uart_periph_clock, ENABLE);
     }

@@ -287,8 +287,7 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event)
                 {
                     timer->device.rx_cb(&timer->device, MR_NULL);
                 }
-            }
-            else
+            } else
             {
                 timer->cycles--;
             }

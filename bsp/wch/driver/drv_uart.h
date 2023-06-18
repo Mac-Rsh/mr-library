@@ -39,6 +39,6 @@ struct ch32_uart
 
 mr_err_t ch32_uart_init(void);
 
-#endif
+#endif /* MR_CONF_SERIAL */
 
-#endif
+#endif /* _DRV_UART_H_ */

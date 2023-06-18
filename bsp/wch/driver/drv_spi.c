@@ -127,7 +127,6 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
         default:
             SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
             SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-            break;
     }
 
     switch (config->bit_order)
@@ -140,7 +139,6 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
             break;
         default:
             SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-            break;
     }
 
     if (config->host_slave == MR_SPI_HOST)
