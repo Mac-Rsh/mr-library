@@ -38,7 +38,6 @@
 #endif
 
 #define MR_SERIAL_EVENT_RX_INT          0x1000
-#define MR_SERIAL_EVENT_TX_INT          0x2000
 #define _MR_SERIAL_EVENT_MASK           0xf000
 
 /* Default config for mr_serial_config structure */
@@ -55,7 +54,6 @@
 struct mr_serial_config
 {
     mr_uint32_t baud_rate;
-
     mr_uint8_t data_bits;
     mr_uint8_t stop_bits;
     mr_uint8_t parity;
@@ -76,8 +74,6 @@ struct mr_serial_ops
     mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
     void (*write)(mr_serial_t serial, mr_uint8_t data);
     mr_uint8_t (*read)(mr_serial_t serial);
-    void (*start_tx)(mr_serial_t serial);
-    void (*stop_tx)(mr_serial_t serial);
 };
 
 struct mr_serial
@@ -87,7 +83,6 @@ struct mr_serial
     struct mr_serial_config config;
     mr_size_t fifo_bufsz;
     void *rx_fifo;
-    void *tx_fifo;
 
     const struct mr_serial_ops *ops;
 };

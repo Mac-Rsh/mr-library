@@ -42,8 +42,7 @@ static size_t serial_fifo_get_data_size(struct serial_fifo *fifo)
         if (fifo->read_mirror == fifo->write_mirror)
         {
             return 0;
-        }
-        else
+        } else
         {
             return fifo->size;
         }
@@ -52,8 +51,7 @@ static size_t serial_fifo_get_data_size(struct serial_fifo *fifo)
     if (fifo->write_index > fifo->read_index)
     {
         return fifo->write_index - fifo->read_index;
-    }
-    else
+    } else
     {
         return fifo->size - fifo->read_index + fifo->write_index;
     }
@@ -241,8 +239,7 @@ int serial_init(serial_t serial, size_t fifo_bufsz, struct serial_ops *ops, void
     if (fifo_bufsz < SERIAL_FIFO_BUFSZ_MIN)
     {
         serial->fifo_bufsz = SERIAL_FIFO_BUFSZ_MIN;
-    }
-    else
+    } else
     {
         serial->fifo_bufsz = fifo_bufsz;
     }
