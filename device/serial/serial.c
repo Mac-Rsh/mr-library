@@ -98,7 +98,10 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
     mr_size_t recv_size = 0;
 
     /* Read data from fifo */
-    recv_size = mr_fifo_read(&fifo->fifo, recv_buffer, size);
+    do
+    {
+        recv_size = mr_fifo_read(&fifo->fifo, recv_buffer, size);
+    } while (recv_size == 0);
 
     return (mr_ssize_t)recv_size;
 }
