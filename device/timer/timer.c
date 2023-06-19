@@ -115,7 +115,6 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
                 {
                     timer->config = *(struct mr_timer_config *)args;
                 }
-
                 return ret;
             }
             return -MR_ERR_INVALID;
@@ -144,6 +143,7 @@ static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, 
 {
     mr_timer_t timer = (mr_timer_t)device;
     mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
+    mr_size_t recv_size = 0;
     mr_uint32_t cnt = 0;
 
     if (size < sizeof(*recv_buffer))
@@ -151,22 +151,26 @@ static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, 
         return -MR_ERR_INVALID;
     }
 
-    /* Get the count */
-    cnt = timer->ops->get_count(timer);
-    if (timer->info.cnt_mode == _MR_TIMER_CNT_MODE_DOWN)
+    for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
     {
-        cnt = timer->timeout / (1000000 / timer->config.freq) - cnt;
+        cnt = timer->ops->get_count(timer);
+        if (timer->info.cnt_mode == _MR_TIMER_CNT_MODE_DOWN)
+        {
+            cnt = timer->timeout / (1000000 / timer->config.freq) - cnt;
+        }
+
+        *recv_buffer = timer->overflow * timer->timeout + cnt * (1000000 / timer->config.freq);
+        recv_buffer++;
     }
 
-    *recv_buffer = timer->overflow * timer->timeout + cnt * (1000000 / timer->config.freq);
-
-    return sizeof(*recv_buffer);
+    return (mr_ssize_t)recv_size;
 }
 
 static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_timer_t timer = (mr_timer_t)device;
     mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
+    mr_size_t send_size = 0;
     mr_uint32_t period_reload = 0;
 
     if (size < sizeof(*send_buffer))
@@ -174,18 +178,22 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *b
         return -MR_ERR_INVALID;
     }
 
-    timer->ops->stop(timer);
-    timer->overflow = 0;
-    period_reload = mr_timer_timeout_calculate(timer, *send_buffer);
-
-    /* When the time is not less than one time, the timer is started */
-    if (timer->cycles != 0)
+    for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
     {
-        return -MR_ERR_INVALID;
-    }
-    timer->ops->start(timer, period_reload);
+        timer->ops->stop(timer);
+        timer->overflow = 0;
+        period_reload = mr_timer_timeout_calculate(timer, *send_buffer);
+        send_buffer++;
 
-    return sizeof(*send_buffer);
+        /* When the time is not less than one time, the timer is started */
+        if (timer->cycles != 0)
+        {
+            return -MR_ERR_INVALID;
+        }
+        timer->ops->start(timer, period_reload);
+    }
+
+    return (mr_ssize_t)send_size;
 }
 
 static mr_err_t _err_io_timer_configure(mr_timer_t timer, struct mr_timer_config *config)
