@@ -127,7 +127,7 @@ static mr_uint32_t _err_io_pwm_read(mr_pwm_t pwm, mr_uint8_t channel)
     return 0;
 }
 
-mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *ops, void *data)
+mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *ops, struct mr_pwm_info *info, void *data)
 {
     mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
@@ -142,6 +142,8 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
     MR_ASSERT(pwm != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
+    MR_ASSERT(info->max_freq != 0);
+    MR_ASSERT(info->min_freq != 0);
 
     /* Add the pwm-device to the container */
     ret = mr_device_add(&pwm->device, name, MR_DEVICE_TYPE_PWM, MR_OPEN_RDWR, &device_ops, data);
@@ -149,6 +151,10 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
     {
         return ret;
     }
+
+    /* Initialize the timer fields */
+    pwm->config.freq = 0;
+    pwm->info = *info;
 
     /* Set pwm operations as protect functions if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_pwm_configure;

@@ -51,6 +51,12 @@ struct mr_pwm
     const struct mr_pwm_ops *ops;
 };
 
+mr_err_t mr_pwm_device_add(mr_pwm_t pwm,
+                           const char *name,
+                           struct mr_pwm_ops *ops,
+                           struct mr_pwm_info *info,
+                           void *data);
+
 #endif /* MR_CONF_PWM */
 
 #endif /* _PWM_H_ */
