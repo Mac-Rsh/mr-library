@@ -46,16 +46,16 @@ struct mr_pwm
     struct mr_device device;
 
     struct mr_pwm_config config;
-    struct mr_pwm_info info;
+    struct mr_pwm_info *info;
 
     const struct mr_pwm_ops *ops;
 };
 
 mr_err_t mr_pwm_device_add(mr_pwm_t pwm,
                            const char *name,
+                           void *data,
                            struct mr_pwm_ops *ops,
-                           struct mr_pwm_info *info,
-                           void *data);
+                           struct mr_pwm_info *info);
 
 #endif /* MR_CONF_PWM */
 

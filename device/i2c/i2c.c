@@ -304,9 +304,8 @@ static mr_uint8_t _err_io_i2c_read(mr_i2c_bus_t i2c_bus, mr_uint8_t ack_state)
     return 0;
 }
 
-mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bus_ops *ops, void *data)
+mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, void *data, struct mr_i2c_bus_ops *ops)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_i2c_bus_open,
@@ -320,19 +319,16 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
-    /* Add the i2c-bus to the container */
-    ret = mr_device_add(&i2c_bus->device, name, MR_DEVICE_TYPE_I2C_BUS, MR_OPEN_RDWR, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    i2c_bus->device.type = MR_DEVICE_TYPE_I2C_BUS;
+    i2c_bus->device.data = data;
+    i2c_bus->device.ops = &device_ops;
 
-    /* Initialize the i2c-bus fields */
     i2c_bus->config.baud_rate = 0;
     i2c_bus->owner = MR_NULL;
     mr_mutex_init(&i2c_bus->lock);
 
-    /* Set i2c-bus operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_i2c_configure;
     ops->start = ops->start ? ops->start : _err_io_i2c_start;
     ops->stop = ops->stop ? ops->stop : _err_io_i2c_stop;
@@ -340,16 +336,12 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
     ops->read = ops->read ? ops->read : _err_io_i2c_read;
     i2c_bus->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&i2c_bus->device, name, MR_OPEN_RDWR);
 }
 
-mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device,
-                           const char *name,
-                           mr_uint16_t support_flag,
-                           mr_uint8_t address,
-                           const char *bus_name)
+mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint8_t address)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     .open = mr_i2c_device_open,
@@ -361,39 +353,18 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device,
 
     MR_ASSERT(i2c_device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(support_flag != MR_OPEN_CLOSED);
-    MR_ASSERT(bus_name != MR_NULL);
 
-    /* Attach the i2c-device to the i2c-bus */
-    mr_device_t i2c_bus = mr_device_find(bus_name);
-    if (i2c_bus == MR_NULL)
-    {
-        return -MR_ERR_NOT_FOUND;
-    }
-    if (i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
-    {
-        return -MR_ERR_INVALID;
-    }
-    ret = mr_device_open(i2c_bus, MR_OPEN_RDWR);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
-    i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
+    /* Initialize the private fields */
+    i2c_device->device.type = MR_DEVICE_TYPE_I2C;
+    i2c_device->device.data = MR_NULL;
+    i2c_device->device.ops = &device_ops;
 
-    /* Add the i2c-device to the container */
-    ret = mr_device_add(&i2c_device->device, name, MR_DEVICE_TYPE_I2C, support_flag, &device_ops, MR_NULL);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
-
-    /* Initialize the i2c-device fields */
     i2c_device->config.baud_rate = 0;
     i2c_device->bus = MR_NULL;
     i2c_device->address = address;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&i2c_device->device, name, MR_OPEN_RDWR);
 }
 
-#endif
+#endif /* MR_CONF_I2C */

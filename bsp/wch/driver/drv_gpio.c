@@ -304,7 +304,7 @@ mr_err_t ch32_gpio_init(void)
                     ch32_pin_read,
             };
 
-    ret = mr_pin_device_add(&pin_device, "pin", &driver, MR_NULL);
+    ret = mr_pin_device_add(&pin_device, "pin", MR_NULL, &driver);
     MR_ASSERT(ret == MR_ERR_OK);
 
     return MR_ERR_OK;

@@ -50,8 +50,8 @@ struct mr_pin
     const struct mr_pin_ops *ops;
 };
 
-mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data);
-void mr_pin_device_isr(mr_pin_t pin, mr_int32_t number);
+mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, void *data, struct mr_pin_ops *ops);
+void mr_pin_device_isr(mr_pin_t pin, mr_uint32_t number);
 
 #endif /* MR_CONF_PIN */
 

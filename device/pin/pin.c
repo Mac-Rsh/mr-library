@@ -96,9 +96,8 @@ static mr_uint8_t _err_io_pin_read(mr_pin_t pin, mr_uint16_t number)
     return 0;
 }
 
-mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data)
+mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, void *data, struct mr_pin_ops *ops)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     MR_NULL,
@@ -112,23 +111,22 @@ mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *op
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
-    /* Add the pin-device to the container */
-    ret = mr_device_add(&pin->device, name, MR_DEVICE_TYPE_PIN, MR_OPEN_RDWR, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    pin->device.type = MR_DEVICE_TYPE_PIN;
+    pin->device.data = data;
+    pin->device.ops = &device_ops;
 
-    /* Set pin operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_pin_configure;
     ops->write = ops->write ? ops->write : _err_io_pin_write;
     ops->read = ops->read ? ops->read : _err_io_pin_read;
     pin->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&pin->device, name, MR_OPEN_RDWR);
 }
 
-void mr_pin_device_isr(mr_pin_t pin, mr_int32_t number)
+void mr_pin_device_isr(mr_pin_t pin, mr_uint32_t number)
 {
     MR_ASSERT(pin != MR_NULL);
 
@@ -139,4 +137,4 @@ void mr_pin_device_isr(mr_pin_t pin, mr_int32_t number)
     }
 }
 
-#endif
+#endif /* MR_CONF_PIN */

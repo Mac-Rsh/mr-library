@@ -79,12 +79,8 @@ struct mr_spi_bus
     const struct mr_spi_bus_ops *ops;
 };
 
-mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data);
-mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
-                           const char *name,
-                           mr_uint16_t support_flag,
-                           mr_uint16_t cs_pin,
-                           const char *bus_name);
+mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, void *data, struct mr_spi_bus_ops *ops);
+mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_uint16_t cs_pin);
 
 #endif /* MR_CONF_SPI */
 

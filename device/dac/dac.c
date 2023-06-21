@@ -83,9 +83,8 @@ static void _err_io_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t val
     MR_ASSERT(0);
 }
 
-mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data)
+mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, void *data, struct mr_dac_ops *ops)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_dac_open,
@@ -99,20 +98,19 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *op
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
-    /* Add the dac-device to the container */
-    ret = mr_device_add(&dac->device, name, MR_DEVICE_TYPE_DAC, MR_OPEN_WRONLY, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    dac->device.type = MR_DEVICE_TYPE_DAC;
+    dac->device.data = data;
+    dac->device.ops = &device_ops;
 
-    /* Set dac operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_dac_configure;
     ops->channel_configure = ops->channel_configure ? ops->channel_configure : _err_io_dac_channel_configure;
     ops->write = ops->write ? ops->write : _err_io_dac_write;
     dac->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&dac->device, name, MR_OPEN_WRONLY);
 }
 
-#endif
+#endif /* MR_CONF_DAC */

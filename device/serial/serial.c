@@ -138,9 +138,8 @@ static mr_uint8_t _err_io_serial_read(mr_serial_t serial)
     return 0;
 }
 
-mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_serial_ops *ops, void *data)
+mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, void *data, struct mr_serial_ops *ops)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_serial_open,
@@ -154,28 +153,26 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
-    /* Add the serial-device to the container */
-    ret = mr_device_add(&serial->device, name, MR_DEVICE_TYPE_SERIAL, MR_OPEN_RDWR, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    serial->device.type = MR_DEVICE_TYPE_SERIAL;
+    serial->device.data = data;
+    serial->device.ops = &device_ops;
 
-    /* Initialize the serial fields */
     serial->config.baud_rate = 0;
     serial->fifo_bufsz = MR_CONF_SERIAL_BUFSZ;
     serial->rx_fifo = MR_NULL;
 
-    /* Set serial operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_serial_configure;
     ops->write = ops->write ? ops->write : _err_io_serial_write;
     ops->read = ops->read ? ops->read : _err_io_serial_read;
     serial->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&serial->device, name, MR_OPEN_RDWR);
 }
 
-void mr_serial_device_isr(mr_serial_t serial, mr_int32_t event)
+void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
 {
     struct mr_serial_fifo *rx_fifo = MR_NULL;
     mr_size_t length = 0;
@@ -207,4 +204,4 @@ void mr_serial_device_isr(mr_serial_t serial, mr_int32_t event)
     }
 }
 
-#endif
+#endif /* MR_CONF_SERIAL */

@@ -24,7 +24,7 @@ static mr_err_t mr_pwm_open(mr_device_t device)
     }
 
     /* Check the frequency */
-    mr_limit(pwm->config.freq, pwm->info.min_freq, pwm->info.max_freq);
+    mr_limit(pwm->config.freq, pwm->info->min_freq, pwm->info->max_freq);
 
     return pwm->ops->configure(pwm, &pwm->config);
 }
@@ -52,7 +52,7 @@ static mr_err_t mr_pwm_ioctl(mr_device_t device, int cmd, void *args)
             if (args)
             {
                 /* Check the frequency */
-                mr_limit(config->freq, pwm->info.min_freq, pwm->info.max_freq);
+                mr_limit(config->freq, pwm->info->min_freq, pwm->info->max_freq);
 
                 ret = pwm->ops->configure(pwm, (struct mr_pwm_config *)args);
                 if (ret == MR_ERR_OK)
@@ -127,9 +127,8 @@ static mr_uint32_t _err_io_pwm_read(mr_pwm_t pwm, mr_uint8_t channel)
     return 0;
 }
 
-mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *ops, struct mr_pwm_info *info, void *data)
+mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, void *data, struct mr_pwm_ops *ops, struct mr_pwm_info *info)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_pwm_open,
@@ -142,27 +141,26 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
     MR_ASSERT(pwm != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
-    MR_ASSERT(info->max_freq != 0);
-    MR_ASSERT(info->min_freq != 0);
+    MR_ASSERT(info != MR_NULL);
+    MR_ASSERT(info->min_freq > 0);
+    MR_ASSERT(info->max_freq > info->min_freq);
 
-    /* Add the pwm-device to the container */
-    ret = mr_device_add(&pwm->device, name, MR_DEVICE_TYPE_PWM, MR_OPEN_RDWR, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    pwm->device.type = MR_DEVICE_TYPE_PWM;
+    pwm->device.data = data;
+    pwm->device.ops = &device_ops;
 
-    /* Initialize the timer fields */
     pwm->config.freq = 0;
-    pwm->info = *info;
+    pwm->info = info;
 
-    /* Set pwm operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_pwm_configure;
     ops->write = ops->write ? ops->write : _err_io_pwm_write;
     ops->read = ops->read ? ops->read : _err_io_pwm_read;
     pwm->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&pwm->device, name, MR_OPEN_RDWR);
 }
 
 #endif /* MR_CONF_PWM */

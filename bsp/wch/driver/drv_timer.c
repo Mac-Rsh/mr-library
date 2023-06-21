@@ -311,7 +311,7 @@ void TIM10_UP_IRQHandler(void)
 
 mr_err_t ch32_timer_init(void)
 {
-    mr_err_t ret;
+    mr_err_t ret = MR_ERR_OK;
     mr_size_t count = mr_array_get_length(timer_device);
     static struct mr_timer_ops driver =
             {
@@ -325,9 +325,9 @@ mr_err_t ch32_timer_init(void)
     {
         ret = mr_timer_device_add(&timer_device[count],
                                   ch32_timer[count].name,
+                                  &ch32_timer[count],
                                   &driver,
-                                  &timer_device_info,
-                                  &ch32_timer[count]);
+                                  &timer_device_info);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

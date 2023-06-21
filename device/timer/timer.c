@@ -222,11 +222,10 @@ static mr_uint32_t _err_io_timer_get_count(mr_timer_t timer)
 
 mr_err_t mr_timer_device_add(mr_timer_t timer,
                              const char *name,
+                             void *data,
                              struct mr_timer_ops *ops,
-                             struct mr_timer_info *info,
-                             void *data)
+                             struct mr_timer_info *info)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_timer_open,
@@ -240,18 +239,15 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
     MR_ASSERT(info != MR_NULL);
-    MR_ASSERT(info->max_freq != 0);
-    MR_ASSERT(info->min_freq != 0);
-    MR_ASSERT(info->max_cnt != 0);
+    MR_ASSERT(info->min_freq > 0);
+    MR_ASSERT(info->max_freq > info->min_freq);
+    MR_ASSERT(info->max_cnt > 0);
 
-    /* Add the timer-device to the container */
-    ret = mr_device_add(&timer->device, name, MR_DEVICE_TYPE_TIMER, MR_OPEN_RDWR, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    timer->device.type = MR_DEVICE_TYPE_TIMER;
+    timer->device.data = data;
+    timer->device.ops = &device_ops;
 
-    /* Initialize the timer fields */
     timer->config.freq = 0;
     timer->info = *info;
     timer->reload = 0;
@@ -259,17 +255,18 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     timer->overflow = 0;
     timer->timeout = 0;
 
-    /* Set timer operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_timer_configure;
     ops->start = ops->start ? ops->start : _err_io_timer_start;
     ops->stop = ops->stop ? ops->stop : _err_io_timer_stop;
     ops->get_count = ops->get_count ? ops->get_count : _err_io_timer_get_count;
     timer->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&timer->device, name, MR_OPEN_RDWR);
 }
 
-void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event)
+void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
 {
     MR_ASSERT(timer != MR_NULL);
 
@@ -306,4 +303,4 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event)
     }
 }
 
-#endif
+#endif /* MR_CONF_TIMER */

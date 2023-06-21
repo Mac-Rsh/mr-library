@@ -11,7 +11,9 @@
 #include "device/spi/spi.h"
 
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
+
 #include "device/pin/pin.h"
+
 #endif
 
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
@@ -293,9 +295,8 @@ static void _err_io_spi_cs_ctrl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uin
     MR_ASSERT(0);
 }
 
-mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bus_ops *ops, void *data)
+mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, void *data, struct mr_spi_bus_ops *ops)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_spi_bus_open,
@@ -309,34 +310,27 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
-    /* Add the spi-bus to the container */
-    ret = mr_device_add(&spi_bus->device, name, MR_DEVICE_TYPE_SPI_BUS, MR_OPEN_RDWR, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    spi_bus->device.type = MR_DEVICE_TYPE_SPI_BUS;
+    spi_bus->device.data = data;
+    spi_bus->device.ops = &device_ops;
 
-    /* Initialize the spi-bus fields */
     spi_bus->config.baud_rate = 0;
     spi_bus->owner = MR_NULL;
     mr_mutex_init(&spi_bus->lock);
 
-    /* Set spi-bus operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_spi_configure;
     ops->transfer = ops->transfer ? ops->transfer : _err_io_spi_transfer;
     ops->cs_ctrl = ops->cs_ctrl ? ops->cs_ctrl : _err_io_spi_cs_ctrl;
     spi_bus->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&spi_bus->device, name, MR_OPEN_RDWR);
 }
 
-mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
-                           const char *name,
-                           mr_uint16_t support_flag,
-                           mr_uint16_t cs_pin,
-                           const char *bus_name)
+mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_uint16_t cs_pin)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_spi_device_open,
@@ -348,39 +342,16 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
     struct mr_pin_config pin_config = {cs_pin, MR_PIN_MODE_OUTPUT};
     mr_device_t pin = MR_NULL;
-#endif
-
+#endif /* MR_CONF_PIN */
 
     MR_ASSERT(spi_device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(support_flag != MR_OPEN_CLOSED);
-    MR_ASSERT(bus_name != MR_NULL);
 
-    /* Attach the spi-device to the spi-bus */
-    mr_device_t spi_bus = mr_device_find(bus_name);
-    if (spi_bus == MR_NULL)
-    {
-        return -MR_ERR_NOT_FOUND;
-    }
-    if (spi_bus->type != MR_DEVICE_TYPE_SPI_BUS)
-    {
-        return -MR_ERR_INVALID;
-    }
-    ret = mr_device_open(spi_bus, MR_OPEN_RDWR);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
-    spi_device->bus = (mr_spi_bus_t)spi_bus;
+    /* Initialize the private fields */
+    spi_device->device.type = MR_DEVICE_TYPE_SPI;
+    spi_device->device.data = MR_NULL;
+    spi_device->device.ops = &device_ops;
 
-    /* Add the spi-device to the container */
-    ret = mr_device_add(&spi_device->device, name, MR_DEVICE_TYPE_SPI, support_flag, &device_ops, MR_NULL);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
-
-    /* Initialize the spi-device fields */
     spi_device->config.baud_rate = 0;
     spi_device->bus = MR_NULL;
     spi_device->cs_pin = cs_pin;
@@ -394,9 +365,10 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device,
     }
     mr_device_open(pin, MR_OPEN_RDWR);
     mr_device_ioctl(pin, MR_CTRL_CONFIG, &pin_config);
-#endif
+#endif /* MR_CONF_PIN */
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&spi_device->device, name, MR_OPEN_RDWR);
 }
 
-#endif
+#endif /* MR_CONF_SPI */

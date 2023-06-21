@@ -382,7 +382,7 @@ mr_err_t ch32_uart_init(void)
 
     while (count--)
     {
-        ret = mr_serial_device_add(&serial_device[count], ch32_uart[count].name, &driver, &ch32_uart[count]);
+        ret = mr_serial_device_add(&serial_device[count], ch32_uart[count].name, &ch32_uart[count], &driver);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

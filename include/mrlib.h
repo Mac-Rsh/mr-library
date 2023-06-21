@@ -15,22 +15,14 @@
 #include "mrservice.h"
 
 /**
- *  Export container functions
+ *  Export kernel functions
  */
-mr_container_t mr_container_find(enum mr_container_type type);
-
-/**
- *  Export object functions
- */
-mr_object_t mr_object_find(const char *name, enum mr_container_type type);
-mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type type);
+mr_container_t mr_container_find(mr_uint8_t type);
+mr_object_t mr_object_find(const char *name, mr_uint8_t type);
+mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type);
 mr_err_t mr_object_remove(mr_object_t object);
-mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type);
+mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type);
 void mr_object_rename(mr_object_t object, char *name);
-
-/**
- *  Export mutex functions
- */
 void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
@@ -40,12 +32,7 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
  *  Export device functions
  */
 mr_device_t mr_device_find(const char *name);
-mr_err_t mr_device_add(mr_device_t device,
-                       const char *name,
-                       enum mr_device_type type,
-                       mr_uint16_t support_flag,
-                       const struct mr_device_ops *ops,
-                       void *data);
+mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags);
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
@@ -95,7 +82,7 @@ mr_err_t mr_soft_timer_client_add_then_start(mr_soft_timer_client_t client,
 #endif /* MR_CONF_SOFT_TIMER */
 
 /**
- *  Export kservice functions
+ *  Export kernel service functions
  */
 void mr_auto_init(void);
 mr_size_t mr_printf(const char *fmt, ...);

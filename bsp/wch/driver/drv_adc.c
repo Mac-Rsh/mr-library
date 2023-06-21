@@ -119,7 +119,7 @@ mr_err_t ch32_adc_init(void)
 
     while (count--)
     {
-        ret = mr_adc_device_add(&adc_device[count], ch32_adc[count].name, &driver, &ch32_adc[count]);
+        ret = mr_adc_device_add(&adc_device[count], ch32_adc[count].name, &ch32_adc[count], &driver);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

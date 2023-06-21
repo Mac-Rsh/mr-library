@@ -40,7 +40,7 @@ struct mr_adc
     const struct mr_adc_ops *ops;
 };
 
-mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, void *data);
+mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, void *data, struct mr_adc_ops *ops);
 
 #endif /* MR_CONF_ADC */
 

@@ -40,7 +40,7 @@ struct mr_dac
     const struct mr_dac_ops *ops;
 };
 
-mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *ops, void *data);
+mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, void *data, struct mr_dac_ops *ops);
 
 #endif /* MR_CONF_DAC */
 

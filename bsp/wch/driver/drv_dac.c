@@ -116,7 +116,7 @@ mr_err_t ch32_dac_init(void)
 
     while (count--)
     {
-        ret = mr_dac_device_add(&dac_device[count], ch32_dac[count].name, &driver, &ch32_dac[count]);
+        ret = mr_dac_device_add(&dac_device[count], ch32_dac[count].name, &ch32_dac[count], &driver);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

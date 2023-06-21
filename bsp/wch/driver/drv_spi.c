@@ -231,7 +231,7 @@ mr_err_t ch32_spi_init(void)
 
     while (count--)
     {
-        ret = mr_spi_bus_add(&spi_bus_device[count], ch32_spi[count].name, &driver, &ch32_spi[count]);
+        ret = mr_spi_bus_add(&spi_bus_device[count], ch32_spi[count].name, &ch32_spi[count], &driver);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

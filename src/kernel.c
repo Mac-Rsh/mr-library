@@ -10,57 +10,62 @@
 
 #include "mrlib.h"
 
-static struct mr_container mr_kernel_container[_MR_CONTAINER_TYPE_MASK] =
+static struct mr_container mr_kernel_container[_MR_OBJECT_TYPE_MASK] =
         {
                 {
-                        MR_CONTAINER_TYPE_MISC,
-                        {&mr_kernel_container[MR_CONTAINER_TYPE_MISC].list,   &mr_kernel_container[MR_CONTAINER_TYPE_MISC].list}
+                        MR_OBJECT_TYPE_NULL,
+                        {&mr_kernel_container[MR_OBJECT_TYPE_NULL].list,   &mr_kernel_container[MR_OBJECT_TYPE_NULL].list}
                 },
                 {
-                        MR_CONTAINER_TYPE_DEVICE,
-                        {&mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list, &mr_kernel_container[MR_CONTAINER_TYPE_DEVICE].list}
+                        MR_OBJECT_TYPE_DEVICE,
+                        {&mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list, &mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list}
                 },
                 {
-                        MR_CONTAINER_TYPE_SERVER,
-                        {&mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list, &mr_kernel_container[MR_CONTAINER_TYPE_SERVER].list}
+                        MR_OBJECT_TYPE_SERVER,
+                        {&mr_kernel_container[MR_OBJECT_TYPE_SERVER].list, &mr_kernel_container[MR_OBJECT_TYPE_SERVER].list}
                 },
         };
 
 /**
  * @brief This function find the container.
  *
- * @param type The flag of the container.
+ * @param type The type of the container.
  *
  * @return A handle to the find container, or MR_NULL if not find.
  */
-mr_container_t mr_container_find(enum mr_container_type type)
+mr_container_t mr_container_find(mr_uint8_t type)
 {
-    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
+    mr_size_t count = 0;
 
-    if (type >= _MR_CONTAINER_TYPE_MASK)
+    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
+
+    for (count = 0; count < _MR_OBJECT_TYPE_MASK; count++)
     {
-        return MR_NULL;
+        if (mr_kernel_container[count].type == type)
+        {
+            return &mr_kernel_container[count];
+        }
     }
 
-    return &mr_kernel_container[type];
+    return MR_NULL;
 }
 
 /**
  * @brief This function find the object.
  *
  * @param name The name of the object.
- * @param type The container flag to which the object belongs.
+ * @param type The type of the object.
  *
  * @return A handle to the find object, or MR_NULL if not find.
  */
-mr_object_t mr_object_find(const char *name, enum mr_container_type type)
+mr_object_t mr_object_find(const char *name, mr_uint8_t type)
 {
     mr_list_t list = MR_NULL;
     mr_container_t container = MR_NULL;
     mr_object_t object = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
+    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
 
     /* Get corresponding container */
     container = mr_container_find(type);
@@ -95,33 +100,34 @@ mr_object_t mr_object_find(const char *name, enum mr_container_type type)
  *
  * @param object The object to be added.
  * @param name The name of the object.
- * @param type The target container flag.
+ * @param type The type of the object.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_container_type type)
+mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type)
 {
     mr_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
+    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
 
-    /* Check if the object already exists in the container */
-    if (mr_object_find(name, type) != MR_NULL)
-    {
-        return -MR_ERR_GENERIC;
-    }
-
-    /* Copy the specified name to the object name */
-    mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
-
-    /* Find the container for the specified flag */
+    /* Find the container for the specified type */
     container = mr_container_find(type);
     if (container == MR_NULL)
     {
         return -MR_ERR_NOT_FOUND;
     }
+
+    /* Check if the object already exists in the container */
+    if (mr_object_find(name, type) != MR_NULL)
+    {
+        return -MR_ERR_BUSY;
+    }
+
+    /* Initialize the private fields */
+    mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
+    object->type = type;
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -146,6 +152,12 @@ mr_err_t mr_object_remove(mr_object_t object)
 {
     MR_ASSERT(object != MR_NULL);
 
+    /* Check if the object already exists in the container */
+    if (mr_object_find(object->name, object->type) == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+
     /* Disable interrupt */
     mr_interrupt_disable();
 
@@ -159,25 +171,48 @@ mr_err_t mr_object_remove(mr_object_t object)
 }
 
 /**
- * @brief This function move object to specified container.
+ * @brief This function change the type of the object.
  *
- * @param object The object to be moved.
- * @param type The target container flag.
+ * @param object The object to be changed.
+ * @param type The type of the object.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_move(mr_object_t object, enum mr_container_type type)
+mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type)
 {
     mr_err_t ret = MR_ERR_OK;
+    mr_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
-    MR_ASSERT(type < _MR_CONTAINER_TYPE_MASK);
+    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
 
-    /* Remove the object from its current container */
-    mr_object_remove(object);
+    /* Find the container for the specified type */
+    container = mr_container_find(type);
+    if (container == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
 
-    /* Add the object to the new container */
-    ret = mr_object_add(object, object->name, type);
+    /* Check if the object already exists in the container */
+    if (mr_object_find(object->name, object->type) == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+
+    /* Change the object type */
+    object->type = type;
+
+    /* Disable interrupt */
+    mr_interrupt_disable();
+
+    /* Remove the object from the old container's list */
+    mr_list_remove(&(object->list));
+
+    /* Insert the object into the new container's list */
+    mr_list_insert_after(&(container->list), &(object->list));
+
+    /* Enable interrupt */
+    mr_interrupt_enable();
 
     return ret;
 }

@@ -209,17 +209,9 @@ typedef struct mr_message *mr_message_t;                            /* Type for 
 /**
  *  Container
  */
-enum mr_container_type
-{
-    MR_CONTAINER_TYPE_MISC,                                         /* Miscellaneous container */
-    MR_CONTAINER_TYPE_DEVICE,                                       /* Device container */
-    MR_CONTAINER_TYPE_SERVER,                                       /* Server container */
-    _MR_CONTAINER_TYPE_MASK,                                        /* Mask for getting container type */
-};
-
 struct mr_container
 {
-    enum mr_container_type type;                                    /* Container type */
+    mr_uint8_t type;                                                /* Object type */
     struct mr_list list;                                            /* Container list */
 };
 typedef struct mr_container *mr_container_t;                        /* Type for container */
@@ -227,9 +219,18 @@ typedef struct mr_container *mr_container_t;                        /* Type for 
 /**
  *  Object
  */
+enum mr_object_type
+{
+    MR_OBJECT_TYPE_NULL = 0,                                        /* Miscellaneous object */
+    MR_OBJECT_TYPE_DEVICE,                                          /* Device object */
+    MR_OBJECT_TYPE_SERVER,                                          /* Server object */
+    _MR_OBJECT_TYPE_MASK,                                           /* Mask for getting object type */
+};
+
 struct mr_object
 {
     char name[MR_CONF_NAME_MAX];                                    /* Object name */
+    mr_uint8_t type;                                                /* Object type */
     struct mr_list list;                                            /* Object list */
 };
 typedef struct mr_object *mr_object_t;                              /* Type for object */

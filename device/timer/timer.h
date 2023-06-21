@@ -71,10 +71,10 @@ struct mr_timer
 
 mr_err_t mr_timer_device_add(mr_timer_t timer,
                              const char *name,
+                             void *data,
                              struct mr_timer_ops *ops,
-                             struct mr_timer_info *info,
-                             void *data);
-void mr_timer_device_isr(mr_timer_t timer, mr_uint16_t event);
+                             struct mr_timer_info *info);
+void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event);
 
 #endif /* MR_CONF_TIMER */
 

@@ -84,9 +84,8 @@ static mr_uint32_t _err_io_adc_read(mr_adc_t adc, mr_uint16_t channel)
     return 0;
 }
 
-mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *ops, void *data)
+mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, void *data, struct mr_adc_ops *ops)
 {
-    mr_err_t ret = MR_ERR_OK;
     const static struct mr_device_ops device_ops =
             {
                     mr_adc_open,
@@ -100,20 +99,19 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *op
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
-    /* Add the adc-device to the container */
-    ret = mr_device_add(&adc->device, name, MR_DEVICE_TYPE_ADC, MR_OPEN_RDONLY, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
+    /* Initialize the private fields */
+    adc->device.type = MR_DEVICE_TYPE_ADC;
+    adc->device.data = data;
+    adc->device.ops = &device_ops;
 
-    /* Set adc operations as protect functions if ops is null */
+    /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_adc_configure;
     ops->channel_configure = ops->channel_configure ? ops->channel_configure : _err_io_adc_channel_configure;
     ops->read = ops->read ? ops->read : _err_io_adc_read;
     adc->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add to the container */
+    return mr_device_add(&adc->device, name, MR_OPEN_RDONLY);
 }
 
 #endif

@@ -24,7 +24,7 @@ mr_device_t mr_device_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the device object from the device container */
-    return (mr_device_t)mr_object_find(name, MR_CONTAINER_TYPE_DEVICE);
+    return (mr_device_t)mr_object_find(name, MR_OBJECT_TYPE_DEVICE);
 }
 
 /**
@@ -32,44 +32,38 @@ mr_device_t mr_device_find(const char *name)
  *
  * @param device The device to be added.
  * @param name The name of the device.
- * @param type The flag of the device.
- * @param support_flag The open flags supported by the device.
- * @param ops The operations of the device.
- * @param data The data of the device.
+ * @param flags The open flags supported by the device.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_device_add(mr_device_t device,
-                       const char *name,
-                       enum mr_device_type type,
-                       mr_uint16_t support_flag,
-                       const struct mr_device_ops *ops,
-                       void *data)
+mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
 {
     mr_err_t ret = MR_ERR_OK;
     static struct mr_device_ops null_ops = {MR_NULL};
 
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(flags != MR_OPEN_CLOSED);
 
     /* Add the object to the container */
-    ret = mr_object_add(&device->object, name, MR_CONTAINER_TYPE_DEVICE);
+    ret = mr_object_add(&device->object, name, MR_OBJECT_TYPE_DEVICE);
     if (ret != MR_ERR_OK)
     {
         return ret;
     }
 
     /* Initialize the private fields */
-    device->type = type;
-    device->support_flag = support_flag;
+    device->support_flag = flags;
     device->open_flag = MR_OPEN_CLOSED;
     device->ref_count = 0;
-    device->data = data;
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 
     /* Set operations as null-ops if ops is null */
-    device->ops = (ops == MR_NULL) ? &null_ops : ops;
+    if (device->ops == MR_NULL)
+    {
+        device->ops = &null_ops;
+    }
 
     return MR_ERR_OK;
 }
@@ -84,9 +78,9 @@ mr_err_t mr_device_add(mr_device_t device,
 mr_err_t mr_device_remove(mr_device_t device)
 {
     mr_err_t ret = MR_ERR_OK;
-    static struct mr_device_ops null_ops = {MR_NULL};
 
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
     /* Remove the object from the container */
     ret = mr_object_remove(&device->object);
@@ -95,17 +89,11 @@ mr_err_t mr_device_remove(mr_device_t device)
         return ret;
     }
 
-    /* Initialize the private fields */
-    device->type = MR_DEVICE_TYPE_NONE;
-    device->support_flag = MR_OPEN_CLOSED;
+    /* Reset the private fields */
     device->open_flag = MR_OPEN_CLOSED;
     device->ref_count = 0;
-    device->data = MR_NULL;
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
-
-    /* Set operations as null-ops */
-    device->ops = &null_ops;
 
     return MR_ERR_OK;
 }
@@ -121,6 +109,7 @@ mr_err_t mr_device_remove(mr_device_t device)
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 {
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
     /* Check if the specified open flags are supported by the device */
     if (flags != (flags & device->support_flag))
@@ -160,6 +149,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 mr_err_t mr_device_close(mr_device_t device)
 {
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
     /* Check if the device is already closed */
     if (device->open_flag == MR_OPEN_CLOSED)
@@ -202,6 +192,7 @@ mr_err_t mr_device_close(mr_device_t device)
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 {
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
     /* Call the ioctl function, if provided */
     if (device->ops->ioctl == MR_NULL)
@@ -225,6 +216,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
@@ -255,6 +247,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
