@@ -5,56 +5,72 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2023-05-23     MacRsh       first version
+ * 2023-07-03     MacRsh       first version
  */
 
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
 #include "stdint.h"
+#include "malloc.h"
+#include "string.h"
 
-#define EVENT_QUEUE_SIZE                16
+#define EVENT_ASSERT(x)
 
-struct event
+struct event_fifo
 {
-    uint32_t id;
+    uint16_t read_mirror: 1;
+    uint16_t read_index: 15;
+    uint16_t write_mirror: 1;
+    uint16_t write_index: 15;
 
-    void (*cb)(void *args);
+    uint16_t size;
+    uint8_t *buffer;
+};
+typedef struct event_fifo *event_fifo_t;
+
+struct event_avl
+{
+    int8_t height;
+    uint32_t value;
+
+    struct event_avl *left_child;
+    struct event_avl *right_child;
+};
+typedef struct event_avl *event_avl_t;
+
+struct event_server
+{
+    struct event_fifo queue;
+    event_avl_t list;
+};
+typedef struct event_server *event_server_t;
+
+struct event_client
+{
+    struct event_avl list;
+
+    int (*cb)(event_server_t server, void *args);
     void *args;
 };
+typedef struct event_client *event_client_t;
 
-#define EVENT_ERR_OK                    0
-#define EVENT_ERR_QUEUE_FULL            1
+#define EVENT_ERR_OK                 0
+#define EVENT_ERR_GENERIC            1
+#define EVENT_ERR_NO_MEMORY          2
+#define EVENT_ERR_IO                 3
+#define EVENT_ERR_BUSY               5
+#define EVENT_ERR_NOT_FOUND          6
 
-#if defined(__ARMCC_VERSION)
-#define event_section(x)              	__attribute__((section(x)))
-#define event_used                    	__attribute__((used))
+int event_server_init(event_server_t server, size_t queue_length);
+int event_server_uninit(event_server_t server);
+int event_server_notify(event_server_t server, uint8_t id);
+void event_server_handle(event_server_t server);
+event_client_t event_client_find(uint8_t id, event_server_t server);
+int event_client_create(uint8_t id,
+                        int (*cb)(event_server_t server, void *args),
+                        void *args,
+                        event_server_t server);
+int client_delete(uint8_t id, event_server_t server);
 
-#elif defined (__IAR_SYSTEMS_ICC__)
-#define event_section(x)               	@ x
-#define event_used                     	__root
-
-#elif defined (__GNUC__)
-#define event_section(x)                __attribute__((section(x)))
-#define event_used                      __attribute__((used))
-
-#elif defined (__ADSPBLACKFIN__)
-#define event_section(x)               	__attribute__((section(x)))
-#define event_used                     	__attribute__((used))
-
-#elif defined (_MSC_VER)
-#define event_section(x)
-#define event_used
-
-#elif defined (__TASKING__)
-#define event_section(x)               	__attribute__((section(x)))
-#define event_used                     	__attribute__((used, protect))
-#endif
-
-#define EVENT_EXPORT(id, fn, args) \
-    event_used const struct event event_section(".event") _event_##id = {id, fn, args}
-
-int event_notify(uint32_t id);
-void event_handle(void);
-
-#endif
+#endif /* _EVENT_H_ */
