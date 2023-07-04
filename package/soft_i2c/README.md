@@ -37,15 +37,15 @@ struct i2c_bus *bus;
 ```c
 struct i2c_bus_ops
 {
-    void (*clk_ctrl)(i2c_bus_t i2c_bus, uint8_t state);
-    void (*sda_ctrl)(i2c_bus_t i2c_bus, uint8_t state);
-    uint8_t (*read)(i2c_bus_t i2c_bus);
+    void (*clk_write)(i2c_bus_t i2c_bus, uint8_t state);
+    void (*sda_write)(i2c_bus_t i2c_bus, uint8_t state);
+    uint8_t (*sda_read)(i2c_bus_t i2c_bus);
 };
 ```
 
-- clk_ctrl：控制时钟线。
-- sda_ctrl：控制数据线。
-- read：读取数据线。
+- clk_write：控制时钟线。
+- sda_write：控制数据线。
+- sda_read：读取数据线。
 
 ### 初始化I2C总线
 
@@ -124,16 +124,16 @@ struct i2c_device i2c_device1;
 struct i2c_device i2c_device2;
 
 /* 适配I2C总线接口 */
-void clk_ctrl(i2c_bus_t i2c_bus, uint8_t state)
+void clk_write(i2c_bus_t i2c_bus, uint8_t state)
 {
     GPIO_WriteBit(GPIOA, GPIO_Pin_0, state);
 }
-void sda_ctrl(i2c_bus_t i2c_bus, uint8_t state)
+void sda_write(i2c_bus_t i2c_bus, uint8_t state)
 {
     GPIO_WriteBit(GPIOA, GPIO_Pin_1, state);
 }
 
-uint8_t read(i2c_bus_t i2c_bus)
+uint8_t sda_read(i2c_bus_t i2c_bus)
 {
     return GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_1);
 }
@@ -141,9 +141,9 @@ uint8_t read(i2c_bus_t i2c_bus)
 /* 定义I2C总线方法 */
 struct i2c_bus_ops i2c_ops =
 {
-    clk_ctrl,
-    sda_ctrl,
-    read
+    clk_write,
+    sda_write,
+    sda_read
 };
 
 int main(void)
