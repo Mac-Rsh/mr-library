@@ -15,10 +15,10 @@
 /* 事件服务器 */
 struct mr_event_server
 {
-  struct mr_object object;                                        /* 事件服务对象 */
-  
-  struct mr_fifo queue;                                           /* 事件队列 */
-  mr_avl_t list;                                                  /* 事件链表 */
+    struct mr_object object;                                        /* 事件服务对象 */
+    
+    struct mr_fifo queue;                                           /* 事件队列 */
+    mr_avl_t list;                                                  /* 事件链表 */
 };
 ```
 
@@ -26,14 +26,14 @@ struct mr_event_server
 - queue:事件队列(用于存储要唤醒的客户端ID)。
 - list:服务器链表(用于存储客户端)。
 
-```
+```c
 /* 事件客户端 */
 struct mr_event_client
 {
-  struct mr_avl list;                                             /* 事件链表 */
-  
-  mr_err_t (*cb)(mr_event_server_t server, void *args);           /* 事件回调函数 */
-  void *args;                                                     /* 事件回调函数参数 */
+    struct mr_avl list;                                             /* 事件链表 */
+    
+    mr_err_t (*cb)(mr_event_server_t server, void *args);           /* 事件回调函数 */
+    void *args;                                                     /* 事件回调函数参数 */
 };
 ```
 

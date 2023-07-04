@@ -24,7 +24,7 @@ mr_event_server_t mr_event_server_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the event server object from the server container */
-    return (mr_event_server_t)mr_object_find(name, MR_CONTAINER_TYPE_SERVER);
+    return (mr_event_server_t)mr_object_find(name, MR_OBJECT_TYPE_SERVER);
 }
 
 /**
@@ -53,7 +53,7 @@ mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size
     }
 
     /* Add the object to the container */
-    ret = mr_object_add(&server->object, name, MR_CONTAINER_TYPE_SERVER);
+    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SERVER);
     if (ret != MR_ERR_OK)
     {
         /* Free the queue memory */
