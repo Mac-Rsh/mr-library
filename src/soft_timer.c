@@ -24,7 +24,7 @@ mr_soft_timer_server_t mr_soft_timer_server_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the soft-timer server object from the server container */
-    return (mr_soft_timer_server_t)mr_object_find(name, MR_CONTAINER_TYPE_SERVER);
+    return (mr_soft_timer_server_t)mr_object_find(name, MR_OBJECT_TYPE_SERVER);
 }
 
 /**
@@ -43,7 +43,7 @@ mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *nam
     MR_ASSERT(name != MR_NULL);
 
     /* Add the object to the container */
-    ret = mr_object_add(&server->object, name, MR_CONTAINER_TYPE_SERVER);
+    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SERVER);
     if (ret != MR_ERR_OK)
     {
         return ret;
@@ -115,18 +115,21 @@ void mr_soft_timer_server_handle(mr_soft_timer_server_t server)
         /* Get the client from the list */
         client = mr_container_of(list, struct mr_soft_timer_client, list);
 
-        if ((server->time - client->timeout) < MR_UINT32_MAX / 2)
+        /* Without client timeout */
+        if ((server->time - client->timeout) >= MR_UINT32_MAX / 2)
         {
-            /* Go back to the previous client */
-            list = list->prev;
-
-            /* Restart the client */
-            mr_list_remove(&client->list);
-            mr_soft_timer_client_start(client);
-
-            /* Call the client callback */
-            client->cb(client, client->args);
+            break;
         }
+
+        /* Go back to the previous client */
+        list = list->prev;
+
+        /* Restart the client */
+        mr_list_remove(&client->list);
+        mr_soft_timer_client_start(client);
+
+        /* Call the client callback */
+        client->cb(client, client->args);
     }
 }
 
@@ -155,6 +158,12 @@ mr_err_t mr_soft_timer_client_add(mr_soft_timer_client_t client,
     MR_ASSERT(client != MR_NULL);
     MR_ASSERT(server != MR_NULL);
 
+    /* Check client has not been added */
+    if(client->server != MR_NULL)
+    {
+        return -MR_ERR_BUSY;
+    }
+
     /* Initialize the private fields */
     mr_list_init(&client->list);
     client->server = server;
@@ -179,6 +188,7 @@ mr_err_t mr_soft_timer_client_remove(mr_soft_timer_client_t client)
 
     /* Remove the client from the server's list */
     mr_soft_timer_client_stop(client);
+    client->server = MR_NULL;
 
     return MR_ERR_OK;
 }
