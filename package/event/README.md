@@ -20,7 +20,6 @@ struct event_server
 };
 ```
 
-- object:对象(用于将事件服务器添加到容器中)。
 - queue:事件队列(用于存储要唤醒的客户端ID)。
 - list:服务器链表(用于存储客户端)。
 
@@ -83,7 +82,7 @@ int event_server_notify(event_server_t server, uint8_t id);
 ### 服务器分发事件，唤醒客户端
 
 ```c
-void event_server_handle(event_server_t server);；
+void event_server_handle(event_server_t server);
 ```
 
 | 参数     | 描述    |

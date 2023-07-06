@@ -48,28 +48,13 @@
 ```c
 struct mr_container
 {
+    mr_uint8_t type;                                                /* 容器类型 */
     struct mr_list list;                                            /* 容器链表 */
-
-    enum mr_container_type type;                                    /* 容器类型 */
 };
 ```
-
-- 容器链表:所有注册到容器的对象都将链接到容器链表上，当对象被移除容器时也将从容器链表上移除。
 
 - 容器类型:指定容器类型用以存放指定类型对象。
-
-### 容器类型
-
-内核维护了以下几类容器:
-
-```c
-enum mr_container_type
-{
-    MR_CONTAINER_TYPE_MISC,                                         /* 杂类容器 */
-    MR_CONTAINER_TYPE_DEVICE,                                       /* 设备容器 */
-    MR_CONTAINER_TYPE_SERVER,                                       /* 服务容器 */
-};
-```
+- 容器链表:所有注册到容器的对象都将链接到容器链表上，当对象被移除容器时也将从容器链表上移除。
 
 ## 对象
 
@@ -78,28 +63,38 @@ enum mr_container_type
 ```c
 struct mr_object
 {
-    struct mr_list list;                                            /* 对象链表 */
-
-    char name[MR_CONF_NAME_MAX + 1];                                /* 对象名 */
-    mr_uint8_t flag;                                                /* 对象标志 */
+    char name[MR_CONF_NAME_MAX];                                /* 对象名 */
+    mr_uint8_t type;                                            /* 对象类型 */
+    struct mr_list list;                                        /* 对象链表 */
 };
 ```
 
-- 对象链表:用于将对象注册到容器中。
-
 - 对象名:对象的名称，同一容器不允许出现同名对象，不同容器允许对象重名。
+- 对象链表:用于将对象注册到容器中。
+- 对象类型:用于标记对象类型。
 
-- 对象标志:用于标记对象状态。
+### 对象类型
+
+内核维护了以下几类对象的容器:
+
+```c
+enum mr_object_type
+{
+    MR_OBJECT_TYPE_NULL,                                         /* 杂类对象 */
+    MR_OBJECT_TYPE_DEVICE,                                       /* 设备对象 */
+    MR_OBJECT_TYPE_SERVER,                                       /* 服务对象 */
+};
+```
 
 ### 对象操作接口
 
-| 接口               | 描述        |
-|:-----------------|:----------|
-| mr_object_find   | 从内核容器查找对象 |
-| mr_object_add    | 添加对象到内核容器 |
-| mr_object_remove | 从内核容器移除对象 |
-| mr_object_move   | 移动对象      |
-| mr_object_rename | 重命名对象     |
+| 接口                    | 描述        |
+|:----------------------|:----------|
+| mr_object_find        | 从内核容器查找对象 |
+| mr_object_add         | 添加对象到内核容器 |
+| mr_object_remove      | 从内核容器移除对象 |
+| mr_object_change_type | 更改对象类型    |
+| mr_object_rename      | 重命名对象     |
 
 ## 服务
 
@@ -276,7 +271,7 @@ struct mr_device_ops
     mr_err_t (*open)(mr_device_t device);
     mr_err_t (*close)(mr_device_t device);
     mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*sda_read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
     mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 };
 ```
@@ -324,7 +319,7 @@ mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
 /* 定义回调函数 */
 mr_err_t pin_device_cb(mr_device_t device, void *args)
 {
-    mr_int32_t number = *(mr_int32_t *)args;    /* 获取中断源 */
+    mr_uint32_t number = *(mr_uint32_t *)args;    /* 获取中断源 */
     
     /* 判断中断源是B13 */
     if (number == 29)
