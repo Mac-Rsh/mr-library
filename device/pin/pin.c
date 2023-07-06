@@ -15,7 +15,6 @@
 static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_pin_t pin = (mr_pin_t)device;
-    mr_err_t ret = MR_ERR_OK;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
