@@ -112,7 +112,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
     mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
     mr_size_t send_size = 0;
 
-    for (send_size = 0; send_size < size; send_size += sizeof(send_buffer))
+    for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
     {
         serial->ops->write(serial, *send_buffer);
         send_buffer++;
