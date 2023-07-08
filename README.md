@@ -96,6 +96,129 @@ enum mr_object_type
 | mr_object_change_type | 更改对象类型    |
 | mr_object_rename      | 重命名对象     |
 
+
+ ----------
+
+# 设备
+
+硬件抽象成设备，通过统一的设备操作接口进行交互。
+
+## 设备原型
+
+```c
+struct mr_device
+{
+    struct mr_object object;                                        /* 设备对象基类 */
+
+    enum mr_device_type type;                                       /* 设备类型 */
+    mr_uint16_t support_flag;                                       /* 设备支持的打开方式 */
+    mr_uint16_t open_flag;                                          /* 设备状态 */
+    mr_size_t ref_count;                                            /* 设备被引用次数 */
+    void *data;                                                     /* 设备数据 */
+
+    mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* 设备接收回调函数 */
+    mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* 设备发送回调函数 */
+
+    const struct mr_device_ops *ops;                                /* 设备操作方法 */
+};
+```
+
+- 设备支持的打开方式:设备只能以支持的打开方式打开。
+- 设备被引用次数:设备每被打开一次，引用+1，设备引用次数为0时设备关闭。
+- 设备数据:设备运行所需的数据。
+
+### 设备类型
+
+```c
+enum mr_device_type
+{
+    MR_DEVICE_TYPE_NONE,                                            /* 无类型设备 */
+    MR_DEVICE_TYPE_PIN,                                             /* GPIO设备 */
+    MR_DEVICE_TYPE_SPI_BUS,                                         /* SPI总线设备 */
+    MR_DEVICE_TYPE_SPI,                                             /* SPI设备 */
+    MR_DEVICE_TYPE_I2C_BUS,                                         /* I2C总线设备 */
+    MR_DEVICE_TYPE_I2C,                                             /* I2C设备 */
+    MR_DEVICE_TYPE_SERIAL,                                          /* UART设备*/
+    MR_DEVICE_TYPE_ADC,                                             /* ADC设备 */
+    MR_DEVICE_TYPE_DAC,                                             /* DAC设备 */
+    MR_DEVICE_TYPE_PWM,                                             /* PWM设备 */
+    MR_DEVICE_TYPE_TIMER,                                           /* TIMER设备 */
+    MR_DEVICE_TYPE_FLASH,                                           /* FLASH设备 */
+    /* ... */
+};
+```
+
+### 设备操作方法
+
+设备通过设备操作接口，最终会调用设备数据块中的设备操作方法。设备仅需实现设备打开方式所必须的方法即可。
+
+```c
+struct mr_device_ops
+{
+    mr_err_t (*open)(mr_device_t device);
+    mr_err_t (*close)(mr_device_t device);
+    mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
+    mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+};
+```
+
+| 方法    | 描述                                                       |
+|:------|:---------------------------------------------------------|
+| open  | 打开设备，同时完成设备配置。仅当设备为首次被打开时，会调用此方法打开设备。                    |
+| close | 关闭设备。仅当设备被所有用户关闭时（设备引用次数为0），会调用此方法关闭设备。                  |
+| ioctl | 控制设备。根据cmd命令控制设备。                                        |
+| read  | 从设备读取数据，pos是设备读取位置（不同设备所表示意义不同，请查看设备详细手册），size为设备读取字节大小。 |
+| write | 向设备写入数据，pos是设备写入位置（不同设备所表示意义不同，请查看设备详细手册），size为设备写入字节大小。 |
+
+### 设备操作接口
+
+| 接口              | 描述        |
+|:----------------|:----------|
+| mr_device_add   | 添加设备到内核容器 |
+| mr_device_find  | 从内核容器查找设备 |
+| mr_device_open  | 打开设备      |
+| mr_device_close | 关闭设备      |
+| mr_device_ioctl | 控制设备      |
+| mr_device_read  | 从设备读取数据   |
+| mr_device_write | 向设备写入数据   |
+
+### GPIO设备使用示例：
+
+```c
+/* 寻找PIN设备 */
+mr_device_t pin_device = mr_device_find("pin");
+
+/* 以可读可写的方式打开PIN设备 */
+mr_device_open(pin_device, MR_OPEN_RDWR);
+
+/* 配置B13引脚为推挽输出模式 */
+struct mr_pin_config pin_config = { 29, MR_PIN_MODE_OUTPUT };
+mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+
+/* 设置B13(编号29)为高电平 */
+mr_uint8_t pin_level = 1;
+mr_device_write(pin_device, 29, &pin_level, sizeof(pin_level));
+
+/* 获取B13电平 */
+mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
+
+/* 定义回调函数 */
+mr_err_t pin_device_cb(mr_device_t device, void *args)
+{
+    mr_uint32_t number = *(mr_uint32_t *)args;    /* 获取中断源 */
+    
+    /* 判断中断源是B13 */
+    if (number == 29)
+    {
+    	/* Do something */
+    }
+}
+
+/* 绑定PIN函数回调函数 */
+mr_device_ioctl(pin_device, MR_CTRL_SET_RX_CB, pin_device_cb);
+```
+
 ## 服务
 
 ### 事件服务
@@ -212,124 +335,102 @@ event3_cb
 
  ----------
 
-# 设备
+### 软件定时器服务
 
-硬件抽象成设备，通过统一的设备操作接口进行交互。
+软件定时器是一种在软件层面实现计时功能的机制，通过软件定时器，可以在特定时间点或时间间隔触发特定的事件。软件定时器常用于实现周期性任务、超时处理、定时器中断等功能。
 
-## 设备原型
+软件定时器包含两个主要组件:定时服务器和定时客户端。
 
-```c
-struct mr_device
-{
-    struct mr_object object;                                        /* 设备对象基类 */
+- 定时服务器用于时间管理和定时器处理。
+- 定时客户端用于处理特定的超时处理,它需要注册到定时服务器并提供一个回调函数。
 
-    enum mr_device_type type;                                       /* 设备类型 */
-    mr_uint16_t support_flag;                                       /* 设备支持的打开方式 */
-    mr_uint16_t open_flag;                                          /* 设备状态 */
-    mr_size_t ref_count;                                            /* 设备被引用次数 */
-    void *data;                                                     /* 设备数据 */
+软件定时器支持多时基信号和无限扩展定时器。
 
-    mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* 设备接收回调函数 */
-    mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* 设备发送回调函数 */
-
-    const struct mr_device_ops *ops;                                /* 设备操作方法 */
-};
-```
-
-- 设备支持的打开方式:设备只能以支持的打开方式打开。
-- 设备被引用次数:设备每被打开一次，引用+1，设备引用次数为0时设备关闭。
-- 设备数据:设备运行所需的数据。
-
-### 设备类型
+### 软件定时器服务原型
 
 ```c
-enum mr_device_type
+/* 定时服务器 */
+struct mr_soft_timer_server
 {
-    MR_DEVICE_TYPE_NONE,                                            /* 无类型设备 */
-    MR_DEVICE_TYPE_PIN,                                             /* GPIO设备 */
-    MR_DEVICE_TYPE_SPI_BUS,                                         /* SPI总线设备 */
-    MR_DEVICE_TYPE_SPI,                                             /* SPI设备 */
-    MR_DEVICE_TYPE_I2C_BUS,                                         /* I2C总线设备 */
-    MR_DEVICE_TYPE_I2C,                                             /* I2C设备 */
-    MR_DEVICE_TYPE_SERIAL,                                          /* UART设备*/
-    MR_DEVICE_TYPE_ADC,                                             /* ADC设备 */
-    MR_DEVICE_TYPE_DAC,                                             /* DAC设备 */
-    MR_DEVICE_TYPE_PWM,                                             /* PWM设备 */
-    MR_DEVICE_TYPE_TIMER,                                           /* TIMER设备 */
-    MR_DEVICE_TYPE_FLASH,                                           /* FLASH设备 */
-    /* ... */
-};
-```
-
-### 设备操作方法
-
-设备通过设备操作接口，最终会调用设备数据块中的设备操作方法。设备仅需实现设备打开方式所必须的方法即可。
-
-```c
-struct mr_device_ops
-{
-    mr_err_t (*open)(mr_device_t device);
-    mr_err_t (*close)(mr_device_t device);
-    mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*sda_read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-    mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
-};
-```
-
-| 方法    | 描述                                                       |
-|:------|:---------------------------------------------------------|
-| open  | 打开设备，同时完成设备配置。仅当设备为首次被打开时，会调用此方法打开设备。                    |
-| close | 关闭设备。仅当设备被所有用户关闭时（设备引用次数为0），会调用此方法关闭设备。                  |
-| ioctl | 控制设备。根据cmd命令控制设备。                                        |
-| read  | 从设备读取数据，pos是设备读取位置（不同设备所表示意义不同，请查看设备详细手册），size为设备读取字节大小。 |
-| write | 向设备写入数据，pos是设备写入位置（不同设备所表示意义不同，请查看设备详细手册），size为设备写入字节大小。 |
-
-### 设备操作接口
-
-| 接口              | 描述        |
-|:----------------|:----------|
-| mr_device_add   | 添加设备到内核容器 |
-| mr_device_find  | 从内核容器查找设备 |
-| mr_device_open  | 打开设备      |
-| mr_device_close | 关闭设备      |
-| mr_device_ioctl | 控制设备      |
-| mr_device_read  | 从设备读取数据   |
-| mr_device_write | 向设备写入数据   |
-
-### GPIO设备使用示例：
-
-```c
-/* 寻找PIN设备 */
-mr_device_t pin_device = mr_device_find("pin");
-
-/* 以可读可写的方式打开PIN设备 */
-mr_device_open(pin_device, MR_OPEN_RDWR);
-
-/* 配置B13引脚为推挽输出模式 */
-struct mr_pin_config pin_config = { 29, MR_PIN_MODE_OUTPUT };
-mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
-
-/* 设置B13(编号29)为高电平 */
-mr_uint8_t pin_level = 1;
-mr_device_write(pin_device, 29, &pin_level, sizeof(pin_level));
-
-/* 获取B13电平 */
-mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
-
-/* 定义回调函数 */
-mr_err_t pin_device_cb(mr_device_t device, void *args)
-{
-    mr_uint32_t number = *(mr_uint32_t *)args;    /* 获取中断源 */
+    struct mr_object object;                                        /* 软件定时器服务对象 */
     
-    /* 判断中断源是B13 */
-    if (number == 29)
-    {
-    	/* Do something */
-    }
+    uint32_t time;                                                  /* 当前时间 */
+    struct mr_list list;                                            /* 定时器链表 */
+};
+
+/* 定时客户端 */
+struct mr_soft_timer_client
+{
+    struct mr_list list;                                            /* 定时器链表 */
+    mr_soft_timer_server server;                                    /* 所属的服务器 */
+    uint32_t interval;                                              /* 定时间隔时间 */
+    uint32_t timeout;                                               /* 下次超时时间 */
+    
+    int (*cb)(mr_soft_timer_client client, void *args);             /* 超时回调函数 */
+    void *args;                                                     /* 超时回调函数参数 */
+};
+```
+
+### 软件定时器服务操作接口
+
+| 接口                                  | 描述               |
+|:------------------------------------|:-----------------|
+| mr_soft_timer_server_find           | 从内核容器查找定时服务器     |
+| mr_soft_timer_server_add            | 添加定时服务器到内核容器     |
+| mr_soft_timer_server_remove         | 从内核容器移除定时服务器     |
+| mr_soft_timer_server_update         | 定时服务器时基信号更新      |
+| mr_soft_timer_server_handle         | 定时服务器处理定时器       |
+| mr_event_client_find                | 从定时服务器查找定时客户端    |
+| mr_soft_timer_client_add            | 添加定时客户端到定时服务器    |
+| mr_soft_timer_client_remove         | 从定时服务器移除定时客户端    |
+| mr_soft_timer_client_start          | 启动定时客户端          |
+| mr_soft_timer_client_stop           | 暂停定时客户端          |
+| mr_soft_timer_client_add_then_start | 添加定时客户端到定时服务器并启动 |
+
+### 软件定时器服务使用示例：
+```c
+/* 定义定时器服务器和客户端 */
+struct mr_soft_timer_server server;
+struct mr_soft_timer_client timer1, timer2, timer3;
+
+mr_err_t timer1_callback(mr_soft_timer_client client, void *args)
+{
+    printf("timer1_callback\r\n");
+    return MR_ERR_OK;
 }
 
-/* 绑定PIN函数回调函数 */
-mr_device_ioctl(pin_device, MR_CTRL_SET_RX_CB, pin_device_cb);
+mr_err_t timer2_callback(mr_soft_timer_client client, void *args)
+{
+    printf("timer2_callback\r\n");
+    return MR_ERR_OK;
+}
+
+mr_err_t timer3_callback(mr_soft_timer_client client, void *args)
+{
+    printf("timer3_callback\r\n");
+    soft_timer_client_stop(client);
+    return MR_ERR_OK;
+}
+
+int main(void)
+{
+    /* 添加服务器 */
+    mr_soft_timer_server_add(&server, "soft-timer");
+    
+    /* 添加客户端到服务器并启动 */
+    mr_soft_timer_client_add_then_start(&timer1, 5, timer1_callback, NULL, &server);
+    mr_soft_timer_client_add_then_start(&timer2, 10, timer2_callback, NULL, &server);
+    mr_soft_timer_client_add_then_start(&timer3, 15, timer3_callback, NULL, &server);
+            
+    while (1)
+    {
+        /* 更新服务器时钟 */
+        mr_soft_timer_server_update(&server, 1);
+        
+        /* 服务器处理客户端超时（放在哪里，回调就将在哪里被调用） */
+        mr_soft_timer_server_handle(&server);
+    }
+}
 ```
 
  ----------

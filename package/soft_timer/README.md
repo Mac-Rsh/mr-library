@@ -163,20 +163,20 @@ struct soft_timer_client timer1, timer2, timer3;
 int timer1_callback(soft_timer_client_t client, void *args)
 {
     printf("timer1_callback\r\n");
-    return MR_ERR_OK;
+    return SOFT_TIMER_ERR_OK;
 }
 
 int timer2_callback(soft_timer_client_t client, void *args)
 {
     printf("timer2_callback\r\n");
-    return MR_ERR_OK;
+    return SOFT_TIMER_ERR_OK;
 }
 
 int timer3_callback(soft_timer_client_t client, void *args)
 {
     printf("timer3_callback\r\n");
     soft_timer_client_stop(client);
-    return MR_ERR_OK;
+    return SOFT_TIMER_ERR_OK;
 }
 
 int main(void)
