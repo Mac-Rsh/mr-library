@@ -176,7 +176,7 @@ static void event_avl_left_rotate(event_avl_t *node)
     right_child->left_child = (*node);
 
     (*node)->height = max(event_avl_get_height((*node)->left_child), event_avl_get_height((*node)->right_child)) +
-                                                                                                                       1;
+                                                                                                                 1;
     right_child->height =
                     max(event_avl_get_height(right_child->left_child),
                         event_avl_get_height(right_child->right_child)) + 1;
@@ -194,7 +194,7 @@ static void event_avl_right_rotate(event_avl_t *node)
     left_child->right_child = (*node);
 
     (*node)->height = max(event_avl_get_height((*node)->left_child), event_avl_get_height((*node)->right_child)) +
-                                                                                                                       1;
+                                                                                                                 1;
     left_child->height =
                     max(event_avl_get_height(left_child->left_child),
                         event_avl_get_height(left_child->right_child)) + 1;
@@ -233,7 +233,7 @@ static void event_avl_insert(event_avl_t *tree, event_avl_t node)
     }
 
     (*tree)->height = max(event_avl_get_height((*tree)->left_child), event_avl_get_height((*tree)->right_child)) +
-                                                                                                                       1;
+                                                                                                                 1;
 
     balance = event_avl_get_balance((*tree));
     if (balance > 1 && node->value < (*tree)->left_child->value)
@@ -317,7 +317,7 @@ static size_t event_avl_get_length(event_avl_t tree)
  * @brief This function init a event server.
  *
  * @param server The event server to be inited.
- * @param queue_length The length of the client queue.
+ * @param queue_length The length of the queue.
  *
  * @return EVENT_ERR_OK on success, otherwise an error code.
  */
@@ -372,28 +372,6 @@ int event_server_uninit(event_server_t server)
 }
 
 /**
- * @brief This function notify the event server to wake up a client.
- *
- * @param server The event server to be notified.
- *
- * @param id The id of the client to be wake up.
- *
- * @return EVENT_ERR_OK on success, otherwise an error code.
- */
-int event_server_notify(event_server_t server, uint8_t id)
-{
-    EVENT_ASSERT(server != NULL);
-
-    /* Write the event id to the queue */
-    if (!event_fifo_write(&server->queue, &id, sizeof(id)))
-    {
-        return -EVENT_ERR_NO_MEMORY;
-    }
-
-    return EVENT_ERR_OK;
-}
-
-/**
  * @brief This function handle the event server.
  *
  * @param server The event server to be handled.
@@ -402,7 +380,7 @@ void event_server_handle(event_server_t server)
 {
     uint8_t id = 0;
     event_avl_t node = NULL;
-    event_client_t client = NULL;
+    event_t event = NULL;
 
     EVENT_ASSERT(server != NULL);
 
@@ -415,105 +393,89 @@ void event_server_handle(event_server_t server)
             continue;
         }
 
-        /* Get the client from the list */
-        client = container_of(node, struct event_client, list);
+        /* Get the event from the list */
+        event = container_of(node, struct event, list);
 
-        /* Call the client callback */
-        client->cb(server, client->args);
+        /* Call the event callback */
+        event->cb(server, event->args);
     }
 }
 
 /**
- * @brief This function find the event client.
+ * @brief This function creates a new event.
  *
- * @param id The id of the event client.
- * @param server The event server to which the event client belongs.
- *
- * @return A handle to the found event client, or NULL if not found.
- */
-event_client_t event_client_find(uint8_t id, event_server_t server)
-{
-    EVENT_ASSERT(server != NULL);
-
-    /* Find the event client from the server */
-    return (event_client_t)event_avl_find(server->list, id);
-}
-
-static int _err_io_event_client_cb(event_server_t server, void *args)
-{
-    return -EVENT_ERR_IO;
-}
-
-/**
- * @brief This function creates a new event client.
- *
- * @param id The id of the event client.
- * @param cb The event client callback function.
+ * @param id The id of the event.
+ * @param cb The event callback function.
  * @param args The arguments of the callback function.
- * @param server The event server to which the event client belong.
+ * @param server The event server to which the event belong.
  *
  * @return EVENT_ERR_OK on success, otherwise an error code.
  */
-int event_client_create(uint8_t id,
-                        int (*cb)(event_server_t server, void *args),
-                        void *args,
-                        event_server_t server)
+int event_create(uint8_t id,
+                 int (*cb)(event_server_t server, void *args),
+                 void *args,
+                 event_server_t server)
 {
-    event_client_t client = NULL;
+    event_t event = NULL;
 
+    EVENT_ASSERT(cb != NULL);
     EVENT_ASSERT(server != NULL);
 
-    /* Check if the client is already exists in the server */
+    /* Check if the event is already exists in the server */
     if (event_avl_find(server->list, id) != NULL)
     {
         return -EVENT_ERR_GENERIC;
     }
 
-    /* Allocate the client object */
-    client = (event_client_t)malloc(sizeof(struct event_client));
-    if (client == NULL)
+    /* Allocate the event object */
+    event = (event_t)malloc(sizeof(struct event));
+    if (event == NULL)
     {
         return -EVENT_ERR_NO_MEMORY;
     }
-    memset(client, 0, sizeof(struct event_client));
+    memset(event, 0, sizeof(struct event));
 
     /* Initialize the private fields */
-    event_avl_init(&client->list, id);
-    client->cb = cb ? cb : _err_io_event_client_cb;
-    client->args = args;
+    event_avl_init(&event->list, id);
+    event->cb = cb;
+    event->args = args;
 
-    /* Insert the client into the manager's list */
-    event_avl_insert(&server->list, &client->list);
+    /* Insert the event into the server's list */
+    event_avl_insert(&server->list, &event->list);
 
     return EVENT_ERR_OK;
 }
 
 /**
- * @brief This function delete an event client.
+ * @brief This function delete an event.
  *
- * @param id The id of the event client.
- * @param server The event server to which the event client belongs.
+ * @param id The id of the event.
+ * @param server The event server to which the event belongs.
  *
  * @return EVENT_ERR_OK on success, otherwise an error code.
  */
-int client_delete(uint8_t id, event_server_t server)
+int event_delete(uint8_t id, event_server_t server)
 {
-    event_client_t client = NULL;
+    event_avl_t node = NULL;
+    event_t event = NULL;
 
     EVENT_ASSERT(server != NULL);
 
-    /* Find the event client from the server */
-    client = event_client_find(id, server);
-    if (client == NULL)
+    /* Find the event from the server */
+    node = event_avl_find(server->list, id);
+    if (node == NULL)
     {
         return -EVENT_ERR_NOT_FOUND;
     }
 
-    /* Remove the client from the manager's list */
-    event_avl_remove(&server->list, &client->list);
+    /* Get the event from the list */
+    event = container_of(node, struct event, list);
 
-    /* Free the client */
-    free(client);
+    /* Remove the event from the server's list */
+    event_avl_remove(&server->list, &event->list);
+
+    /* Free the event */
+    free(event);
 
     return EVENT_ERR_OK;
 }

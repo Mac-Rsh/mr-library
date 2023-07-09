@@ -46,31 +46,29 @@ struct event_server
 };
 typedef struct event_server *event_server_t;
 
-struct event_client
+struct event
 {
     struct event_avl list;
 
     int (*cb)(event_server_t server, void *args);
     void *args;
 };
-typedef struct event_client *event_client_t;
+typedef struct event *event_t;
 
 #define EVENT_ERR_OK                 0
 #define EVENT_ERR_GENERIC            1
 #define EVENT_ERR_NO_MEMORY          2
-#define EVENT_ERR_IO                 3
 #define EVENT_ERR_BUSY               5
 #define EVENT_ERR_NOT_FOUND          6
 
 int event_server_init(event_server_t server, size_t queue_length);
 int event_server_uninit(event_server_t server);
-int event_server_notify(event_server_t server, uint8_t id);
 void event_server_handle(event_server_t server);
-event_client_t event_client_find(uint8_t id, event_server_t server);
-int event_client_create(uint8_t id,
-                        int (*cb)(event_server_t server, void *args),
-                        void *args,
-                        event_server_t server);
-int client_delete(uint8_t id, event_server_t server);
+int event_create(uint8_t id,
+                 int (*cb)(event_server_t server, void *args),
+                 void *args,
+                 event_server_t server);
+int event_delete(uint8_t id, event_server_t server);
+int event_notify(uint8_t id, event_server_t server);
 
 #endif /* _EVENT_H_ */

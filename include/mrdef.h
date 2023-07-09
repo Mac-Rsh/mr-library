@@ -302,21 +302,22 @@ struct mr_device
  */
 struct mr_event_server
 {
-    struct mr_object object;                                        /* Event object */
+    struct mr_object object;                                        /* Event server object */
 
-    struct mr_fifo queue;                                           /* Event queue */
-    mr_avl_t list;                                                  /* Event list */
+    struct mr_fifo queue;                                           /* Event server queue */
+    mr_avl_t list;                                                  /* Event server list */
 };
 typedef struct mr_event_server *mr_event_server_t;                  /* Type for event server */
 
-struct mr_event_client
+typedef struct mr_event *mr_event_t;                                /* Type for event */
+
+struct mr_event
 {
     struct mr_avl list;                                             /* Event list */
 
     mr_err_t (*cb)(mr_event_server_t server, void *args);           /* Event callback */
     void *args;                                                     /* Event arguments */
 };
-typedef struct mr_event_client *mr_event_client_t;                  /* Type for event client */
 #endif /* MR_CONF_EVENT */
 
 #if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
@@ -325,24 +326,24 @@ typedef struct mr_event_client *mr_event_client_t;                  /* Type for 
  */
 struct mr_soft_timer_server
 {
-    struct mr_object object;                                        /* Soft-timer object */
+    struct mr_object object;                                        /* Soft-timer server object */
 
     mr_uint32_t time;                                               /* Current time */
-    struct mr_list list;                                            /* Soft-timer list */
+    struct mr_list list;                                            /* Soft-timer server list */
 };
 typedef struct mr_soft_timer_server *mr_soft_timer_server_t;        /* Type for soft-timer server */
 
-typedef struct mr_soft_timer_client *mr_soft_timer_client_t;        /* Type for soft-timer client */
+typedef struct mr_soft_timer *mr_soft_timer_t;                      /* Type for soft-timer */
 
-struct mr_soft_timer_client
+struct mr_soft_timer
 {
-    struct mr_list list;                                            /* Soft-timer list */
-    mr_soft_timer_server_t server;                                  /* Soft-timer owner server */
-    mr_uint32_t interval;                                           /* Soft-timer previous time */
-    mr_uint32_t timeout;                                            /* Soft-timer timeout time */
+    struct mr_list list;                                            /* Timer list */
+    mr_soft_timer_server_t server;                                  /* Timer owner server */
+    mr_uint32_t interval;                                           /* Timer interval time */
+    mr_uint32_t timeout;                                            /* Timer timeout time */
 
-    mr_err_t (*cb)(mr_soft_timer_client_t client, void *args);      /* Soft-timer callback */
-    void *args;                                                     /* Soft-timer arguments */
+    mr_err_t (*cb)(mr_soft_timer_t timer, void *args);              /* Timer callback */
+    void *args;                                                     /* Timer arguments */
 };
 #endif /* MR_CONF_SOFT_TIMER */
 
@@ -356,10 +357,18 @@ enum mr_at_command_state
     MR_AT_COMMAND_STATE_DATA,                                       /* Data state */
     MR_AT_COMMAND_STATE_END,                                        /* End state */
 };
+
+enum mr_at_command_server_type
+{
+    MR_AT_COMMAND_SERVER_TYPE_HOST,                                 /* Host command server */
+    MR_AT_COMMAND_SERVER_TYPE_SLAVE,                                /* Slave command server */
+};
+
 struct mr_at_command_server
 {
     struct mr_object object;                                        /* At-command object */
 
+    mr_uint8_t type;                                                /* At-command server type */
     mr_avl_t list;                                                  /* At-command list */
     void *buffer;                                                   /* At-command buffer */
     size_t queue_size;                                              /* At-command queue size */

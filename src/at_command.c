@@ -34,7 +34,11 @@ mr_at_command_server_t mr_at_command_server_find(const char *name)
     return (mr_at_command_server_t)mr_object_find(name, MR_OBJECT_TYPE_SERVER);
 }
 
-mr_err_t mr_at_command_server_add(mr_at_command_server_t server, const char *name, mr_size_t queue_length)
+mr_err_t mr_at_command_server_add(mr_at_command_server_t server,
+                                  const char *name,
+                                  mr_uint8_t type,
+                                  mr_size_t queue_length,
+                                  void (*write)(mr_at_command_server_t server, mr_uint8_t *buffer, mr_size_t length))
 {
     mr_err_t ret = MR_ERR_OK;
     mr_uint8_t *pool = MR_NULL;
@@ -52,6 +56,7 @@ mr_err_t mr_at_command_server_add(mr_at_command_server_t server, const char *nam
     mr_memset(pool, 0, queue_length * (MR_CONF_AT_COMMAND_BUFSZ + MR_AT_COMMAND_CMD_BLOCK_SIZE));
     server->buffer = pool;
     server->queue_size = queue_length;
+    server->type = type;
 
     /* Add the object to the container */
     ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SERVER);
@@ -267,7 +272,7 @@ mr_err_t mr_at_command_client_create(const char *at_command,
     MR_ASSERT(at_command != MR_NULL);
     MR_ASSERT(cb != MR_NULL);
     MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(at_command[0] == 'A' && at_command[1] == 'T' && at_command[2] == '+');
+    MR_ASSERT((at_command[0] == 'A' && at_command[1] == 'T' && at_command[2] == '+') || (at_command[0] == '+'));
     MR_ASSERT(mr_strlen(at_command) - 3 < MR_CONF_AT_COMMAND_BUFSZ + MR_AT_COMMAND_CMD_BLOCK_SIZE);
 
     cmd = mr_str2hash(at_command + 3, mr_strlen(at_command) - 3);
@@ -309,7 +314,7 @@ mr_err_t mr_at_command_client_delete(const char *at_command, mr_at_command_serve
 
     MR_ASSERT(at_command != MR_NULL);
     MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(at_command[0] == 'A' && at_command[1] == 'T' && at_command[2] == '+');
+    MR_ASSERT((at_command[0] == 'A' && at_command[1] == 'T' && at_command[2] == '+') || (at_command[0] == '+'));
 
     /* Find the at-command client from the server */
     client = mr_at_command_client_find(at_command, server);

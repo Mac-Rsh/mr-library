@@ -76,178 +76,175 @@ void soft_timer_server_update(soft_timer_server_t server, uint32_t time)
 void soft_timer_server_handle(soft_timer_server_t server)
 {
     soft_timer_list_t list = NULL;
-    soft_timer_client_t client = NULL;
+    soft_timer_t timer = NULL;
 
     SOFT_TIMER_ASSERT(server != NULL);
 
     for (list = server->list.next; list != &server->list; list = list->next)
     {
-        /* Get the client from the list */
-        client = container_of(list, struct soft_timer_client, list);
+        /* Get the timer from the list */
+        timer = container_of(list, struct soft_timer, list);
 
-        /* Without client timeout */
-        if ((server->time - client->timeout) >= UINT32_MAX / 2)
+        /* Without timer timeout */
+        if ((server->time - timer->timeout) >= UINT32_MAX / 2)
         {
             break;
         }
 
-        /* Go back to the previous client */
+        /* Go back to the previous timer */
         list = list->prev;
 
-        /* Restart the client */
-        soft_timer_list_remove(&client->list);
-        soft_timer_client_start(client);
+        /* Restart the timer */
+        soft_timer_list_remove(&timer->list);
+        soft_timer_start(timer);
 
-        /* Call the client callback */
-        client->cb(client, client->args);
+        /* Call the timer callback */
+        timer->cb(timer, timer->args);
     }
 }
 
-static int _err_io_soft_timer_client_cb(soft_timer_client_t client, void *args)
-{
-    return -SOFT_TIMER_ERR_IO;
-}
-
 /**
- * @brief This function adds a soft-timer client to the server.
+ * @brief This function adds a soft-timer to the server.
  *
- * @param client The soft-timer client to be added.
+ * @param timer The soft-timer to be added.
  * @param time The time to be set.
- * @param cb The soft-timer client callback function.
+ * @param cb The soft-timer callback function.
  * @param args The arguments of the callback function.
- * @param server The soft-timer server to which the soft-timer client belong.
+ * @param server The soft-timer server to which the soft-timer belong.
  *
- * @return ERR_OK on success, otherwise an error code.
+ * @return SOFT_TIMER_ERR_OK on success, otherwise an error code.
  */
-int soft_timer_client_add(soft_timer_client_t client,
-                          uint32_t time,
-                          int (*cb)(soft_timer_client_t client, void *args),
-                          void *args,
-                          soft_timer_server_t server)
+int soft_timer_add(soft_timer_t timer,
+                   uint32_t time,
+                   int (*cb)(soft_timer_t timer, void *args),
+                   void *args,
+                   soft_timer_server_t server)
 {
-    SOFT_TIMER_ASSERT(client != NULL);
+    SOFT_TIMER_ASSERT(timer != NULL);
+    SOFT_TIMER_ASSERT(time != 0);
+    SOFT_TIMER_ASSERT(cb != NULL);
     SOFT_TIMER_ASSERT(server != NULL);
 
-    /* Check client has not been added */
-    if (client->server != NULL)
+    /* Check timer has not been added */
+    if (timer->server != NULL)
     {
         return -SOFT_TIMER_ERR_BUSY;
     }
 
     /* Initialize the private fields */
-    soft_timer_list_init(&client->list);
-    client->server = server;
-    client->interval = time;
-    client->timeout = 0;
-    client->cb = cb ? cb : _err_io_soft_timer_client_cb;
-    client->args = args;
+    soft_timer_list_init(&timer->list);
+    timer->server = server;
+    timer->interval = time;
+    timer->timeout = 0;
+    timer->cb = cb;
+    timer->args = args;
 
     return SOFT_TIMER_ERR_OK;
 }
 
 /**
- * @brief This function removes a soft-timer client from the server.
+ * @brief This function removes a soft-timer from the server.
  *
- * @param client The soft-timer client to be removed.
+ * @param timer The soft-timer to be removed.
  *
  * @return ERR_OK on success, otherwise an error code.
  */
-int soft_timer_client_remove(soft_timer_client_t client)
+int soft_timer_remove(soft_timer_t timer)
 {
-    SOFT_TIMER_ASSERT(client != NULL);
+    SOFT_TIMER_ASSERT(timer != NULL);
 
-    /* Remove the client from the server's list */
-    soft_timer_client_stop(client);
-    client->server = NULL;
+    /* Remove the timer from the server's list */
+    soft_timer_stop(timer);
+    timer->server = NULL;
 
     return SOFT_TIMER_ERR_OK;
 }
 
 /**
- * @brief This function starts a soft-timer client.
+ * @brief This function starts a soft-timer.
  *
- * @param client The soft-timer client to be started.
+ * @param timer The soft-timer to be started.
  *
  * @return ERR_OK on success, otherwise an error code.
  */
-int soft_timer_client_start(soft_timer_client_t client)
+int soft_timer_start(soft_timer_t timer)
 {
     soft_timer_list_t list = NULL;
-    soft_timer_client_t be_insert_client = NULL;
+    soft_timer_t be_insert_timer = NULL;
 
-    SOFT_TIMER_ASSERT(client != NULL);
+    SOFT_TIMER_ASSERT(timer != NULL);
 
-    /* Check if the client is already running */
-    if (!soft_timer_list_is_empty(&client->list))
+    /* Check if the timer is already running */
+    if (!soft_timer_list_is_empty(&timer->list))
     {
         return SOFT_TIMER_ERR_OK;
     }
 
-    client->timeout = client->server->time + client->interval;
+    timer->timeout = timer->server->time + timer->interval;
 
-    /* Find the client to be inserted */
-    for (list = client->server->list.next; list != &client->server->list; list = list->next)
+    /* Find the timer to be inserted */
+    for (list = timer->server->list.next; list != &timer->server->list; list = list->next)
     {
-        be_insert_client = container_of(list, struct soft_timer_client, list);
-        if (client->timeout < be_insert_client->timeout)
+        be_insert_timer = container_of(list, struct soft_timer, list);
+        if (timer->timeout < be_insert_timer->timeout)
         {
-            soft_timer_list_insert_before(&be_insert_client->list, &client->list);
+            soft_timer_list_insert_before(&be_insert_timer->list, &timer->list);
             break;
         }
     }
 
-    /* The client to be inserted was not found, insert before server */
-    if (soft_timer_list_is_empty(&client->list))
+    /* The timer to be inserted was not found, insert before server */
+    if (soft_timer_list_is_empty(&timer->list))
     {
-        soft_timer_list_insert_before(&client->server->list, &client->list);
+        soft_timer_list_insert_before(&timer->server->list, &timer->list);
     }
 
     return SOFT_TIMER_ERR_OK;
 }
 
 /**
- * @brief This function stops a soft-timer client.
+ * @brief This function stops a soft-timer.
  *
- * @param client The soft-timer client to be stopped.
+ * @param timer The soft-timer to be stopped.
  *
  * @return ERR_OK on success, otherwise an error code.
  */
-int soft_timer_client_stop(soft_timer_client_t client)
+int soft_timer_stop(soft_timer_t timer)
 {
-    SOFT_TIMER_ASSERT(client != NULL);
+    SOFT_TIMER_ASSERT(timer != NULL);
 
-    /* Check if the client is already running */
-    if (soft_timer_list_is_empty(&client->list))
+    /* Check if the timer is already running */
+    if (soft_timer_list_is_empty(&timer->list))
     {
         return SOFT_TIMER_ERR_OK;
     }
 
-    /* Remove the client from the list */
-    soft_timer_list_remove(&client->list);
+    /* Remove the timer from the list */
+    soft_timer_list_remove(&timer->list);
 
     return SOFT_TIMER_ERR_OK;
 }
 
 /**
- * @brief This function adds a soft-timer client to the server, then starts the soft-timer client.
+ * @brief This function adds a soft-timer to the server, then start.
  *
- * @param client The soft-timer client to be added, then started.
+ * @param timer The soft-timer to be added, then start.
  * @param time The time to be set.
- * @param cb The soft-timer client callback function.
+ * @param cb The soft-timer callback function.
  * @param args The arguments of the callback function.
- * @param server The soft-timer server to which the soft-timer client belong.
+ * @param server The soft-timer server to which the soft-timer belong.
  *
  * @return ERR_OK on success, otherwise an error code.
  */
-int soft_timer_client_add_then_start(soft_timer_client_t client,
-                                     uint32_t time,
-                                     int (*cb)(soft_timer_client_t client, void *args),
-                                     void *args,
-                                     soft_timer_server_t server)
+int soft_timer_add_then_start(soft_timer_t timer,
+                              uint32_t time,
+                              int (*cb)(soft_timer_t client, void *args),
+                              void *args,
+                              soft_timer_server_t server)
 {
-    SOFT_TIMER_ASSERT(client != NULL);
+    SOFT_TIMER_ASSERT(timer != NULL);
     SOFT_TIMER_ASSERT(server != NULL);
 
-    soft_timer_client_add(client, time, cb, args, server);
-    return soft_timer_client_start(client);
+    soft_timer_add(timer, time, cb, args, server);
+    return soft_timer_start(timer);
 }
