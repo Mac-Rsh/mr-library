@@ -133,11 +133,6 @@ void mr_soft_timer_server_handle(mr_soft_timer_server_t server)
     }
 }
 
-static mr_err_t _err_io_soft_timer_client_cb(mr_soft_timer_client_t client, void *args)
-{
-    return -MR_ERR_IO;
-}
-
 /**
  * @brief This function adds a soft-timer client to the server.
  *
@@ -156,10 +151,12 @@ mr_err_t mr_soft_timer_client_add(mr_soft_timer_client_t client,
                                   mr_soft_timer_server_t server)
 {
     MR_ASSERT(client != MR_NULL);
+    MR_ASSERT(time != 0);
+    MR_ASSERT(cb != MR_NULL);
     MR_ASSERT(server != MR_NULL);
 
     /* Check client has not been added */
-    if(client->server != MR_NULL)
+    if (client->server != MR_NULL)
     {
         return -MR_ERR_BUSY;
     }
@@ -169,7 +166,7 @@ mr_err_t mr_soft_timer_client_add(mr_soft_timer_client_t client,
     client->server = server;
     client->interval = time;
     client->timeout = 0;
-    client->cb = cb ? cb : _err_io_soft_timer_client_cb;
+    client->cb = cb;
     client->args = args;
 
     return MR_ERR_OK;
