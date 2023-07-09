@@ -278,8 +278,6 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size)
         mr_memcpy(buf, &fifo->buffer[fifo->read_index], size);
         fifo->read_index += size;
 
-        /* Enable interrupt */
-        mr_interrupt_enable();
         return size;
     }
 
@@ -388,9 +386,6 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size
         {
             fifo->read_index = fifo->write_index;
         }
-
-        /* Enable interrupt */
-        mr_interrupt_enable();
 
         return size;
     }
@@ -574,4 +569,18 @@ mr_size_t mr_avl_get_length(mr_avl_t tree)
     }
 
     return length;
+}
+
+mr_uint32_t mr_str2hash(const char *str, mr_size_t length)
+{
+    mr_uint32_t hash = 2166136261u;
+    mr_size_t count = 0;
+
+    for (count = 0; count < length; count++)
+    {
+        hash ^= (mr_uint32_t)str[count];
+        hash *= 16777619u;
+    }
+
+    return hash;
 }
