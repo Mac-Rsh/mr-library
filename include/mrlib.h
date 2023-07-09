@@ -81,6 +81,20 @@ mr_err_t mr_soft_timer_client_add_then_start(mr_soft_timer_client_t client,
                                              mr_soft_timer_server_t server);
 #endif /* MR_CONF_SOFT_TIMER */
 
+#if (MR_CONF_AT_COMMAND == MR_CONF_ENABLE)
+mr_at_command_server_t mr_at_command_server_find(const char *name);
+mr_err_t mr_at_command_server_add(mr_at_command_server_t server, const char *name, mr_size_t queue_length);
+mr_err_t mr_at_command_remove(mr_at_command_server_t server);
+void mr_at_command_server_handle(mr_at_command_server_t server);
+void mr_at_command_server_isr(mr_at_command_server_t server, mr_uint8_t data);
+mr_at_command_client_t mr_at_command_client_find(const char *at_command, mr_at_command_server_t server);
+mr_err_t mr_at_command_client_create(const char *at_command,
+                                     mr_err_t (*cb)(mr_at_command_client_t client, void *args),
+                                     mr_at_command_server_t server);
+mr_err_t mr_at_command_client_delete(const char *at_command, mr_at_command_server_t server);
+#define mr_at_command_get_args      mr_sscanf
+#endif /* MR_CONF_AT_COMMAND */
+
 /**
  *  Export kernel service functions
  */
@@ -112,5 +126,6 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
 void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
+mr_uint32_t mr_str2hash(const char *str, mr_size_t length);
 
 #endif /* _MR_LIB_H_ */

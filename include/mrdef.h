@@ -25,6 +25,8 @@
 #define mr_strncpy                      strncpy
 #define mr_memset                       memset
 #define mr_memcpy                       memcpy
+#define mr_strlen                       strlen
+#define mr_sscanf                       sscanf
 
 /* mr-library version information */
 #define MR_LIBRARY_VERSION              "0.0.2"
@@ -343,5 +345,37 @@ struct mr_soft_timer_client
     void *args;                                                     /* Soft-timer arguments */
 };
 #endif /* MR_CONF_SOFT_TIMER */
+
+#if (MR_CONF_AT_COMMAND == MR_CONF_ENABLE)
+enum mr_at_command_state
+{
+    MR_AT_COMMAND_STATE_NONE = 0,                                   /* No command */
+    MR_AT_COMMAND_STATE_START,                                      /* Start state */
+    MR_AT_COMMAND_STATE_FLAG,                                       /* Flag state */
+    MR_AT_COMMAND_STATE_CMD,                                        /* Command state */
+    MR_AT_COMMAND_STATE_DATA,                                       /* Data state */
+    MR_AT_COMMAND_STATE_END,                                        /* End state */
+};
+struct mr_at_command_server
+{
+    struct mr_object object;                                        /* At-command object */
+
+    mr_avl_t list;                                                  /* At-command list */
+    void *buffer;                                                   /* At-command buffer */
+    size_t queue_size;                                              /* At-command queue size */
+};
+typedef struct mr_at_command_server *mr_at_command_server_t;        /* Type for at-command server */
+
+typedef struct mr_at_command_client *mr_at_command_client_t;        /* Type for at-command client */
+
+struct mr_at_command_client
+{
+    struct mr_avl list;                                             /* At-command list */
+    mr_at_command_server_t server;                                  /* At-command owner server */
+    const char *cmd;                                                /* At-command command */
+
+    mr_err_t (*cb)(mr_at_command_client_t client, void *args);      /* At-command callback */
+};
+#endif /* MR_CONF_AT_COMMAND */
 
 #endif /* _MR_DEF_H_ */

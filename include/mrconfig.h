@@ -24,11 +24,17 @@
 #define MR_CONF_ASSERT                  MR_CONF_ENABLE
 #define MR_CONF_DEBUG_LEVEL             MR_CONF_DEBUG_DEBUG
 
-//<<< Event >>>
+//<<< Server >>>
+#define MR_CONF_SERVER                  MR_CONF_ENABLE
+#if (MR_CONF_SERVER == MR_CONF_ENABLE)
+//< event >
 #define MR_CONF_EVENT                   MR_CONF_ENABLE
-
-//<<< Soft-timer >>>
+//< soft-timer >
 #define MR_CONF_SOFT_TIMER              MR_CONF_ENABLE
+//< at-command >
+#define MR_CONF_AT_COMMAND              MR_CONF_ENABLE
+#define MR_CONF_AT_COMMAND_BUFSZ        32
+#endif /* MR_CONF_SERVER */
 
 //<<< Device >>>
 #define MR_CONF_DEVICE                  MR_CONF_ENABLE
