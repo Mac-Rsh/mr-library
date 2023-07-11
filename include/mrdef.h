@@ -201,14 +201,14 @@ struct mr_fifo
 };
 typedef struct mr_fifo *mr_fifo_t;                                  /* Type for fifo */
 
-struct mr_message
+struct mr_transfer
 {
-    void *data;                                                     /* Message data */
-    mr_size_t size;                                                 /* Message size */
+    void *data;                                                     /* Transfer data */
+    mr_size_t size;                                                 /* Transfer size */
 
-    struct mr_message *next;                                        /* Point to next node */
+    struct mr_transfer *next;                                       /* Point to next transfer */
 };
-typedef struct mr_message *mr_message_t;                            /* Type for message */
+typedef struct mr_transfer *mr_transfer_t;                          /* Type for transfer */
 
 /**
  *  Container
@@ -350,6 +350,9 @@ struct mr_soft_timer
 #endif /* MR_CONF_SOFT_TIMER */
 
 #if (MR_CONF_AT_COMMAND == MR_CONF_ENABLE)
+/**
+ *  At-command server
+ */
 enum mr_at_command_state
 {
     MR_AT_COMMAND_STATE_NONE = 0,                                   /* No command */

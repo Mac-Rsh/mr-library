@@ -11,9 +11,7 @@
 #include "device/spi/spi.h"
 
 #if (MR_CONF_PIN == MR_CONF_ENABLE)
-
 #include "device/pin/pin.h"
-
 #endif
 
 #if (MR_CONF_SPI == MR_CONF_ENABLE)
@@ -190,16 +188,16 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
                 do
                 {
-                    buffer = (mr_uint8_t *)((mr_message_t)args)->data;
+                    buffer = (mr_uint8_t *)((mr_transfer_t)args)->data;
 
-                    for (size = 0; size < ((mr_message_t)args)->size; size++)
+                    for (size = 0; size < ((mr_transfer_t)args)->size; size++)
                     {
                         *buffer = spi_device->bus->ops->transfer(spi_device->bus, *buffer);
                         buffer++;
                     }
 
-                    /* Get the next message */
-                    args = ((mr_message_t)args)->next;
+                    /* Get the next transfer */
+                    args = ((mr_transfer_t)args)->next;
                 } while (args != MR_NULL);
 
                 /* Release spi-bus */

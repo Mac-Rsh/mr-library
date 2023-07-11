@@ -62,10 +62,17 @@ mr_err_t icm20602_init(icm20602_t icm20602, const char *name, mr_uint16_t cs_pin
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(spi_bus_name != MR_NULL);
 
-    ret = mr_spi_device_add(&icm20602->spi, name, MR_OPEN_RDWR, cs_pin, spi_bus_name);
+    ret = mr_spi_device_add(&icm20602->spi, name, cs_pin);
     if (ret != MR_ERR_OK)
     {
         MR_LOG_E(LOG_TAG, "%s failed to add SPI device\r\n", name);
+        return ret;
+    }
+
+    ret = mr_device_ioctl((mr_device_t)&icm20602->spi, MR_CTRL_ATTACH,(char *)spi_bus_name);
+    if (ret != MR_ERR_OK)
+    {
+        MR_LOG_E(LOG_TAG, "%s failed to attach SPI bus\r\n", name);
         return ret;
     }
 
