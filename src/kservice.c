@@ -68,45 +68,43 @@ mr_err_t mr_printf_init(void)
 }
 AUTO_INIT_DEVICE_EXPORT(mr_printf_init);
 
-mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t length)
+mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t size)
 {
     return 0;
 }
 
-mr_size_t mr_printf(const char *fmt, ...)
+mr_size_t mr_printf(const char *format, ...)
 {
     char str_buffer[MR_CONF_CONSOLE_BUFSZ];
-    mr_size_t length = 0;
+    va_list args = MR_NULL;
+    mr_size_t size = 0;
 
-    va_list args;
-    va_start(args, fmt);
-    length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, args);
+    va_start(args, format);
+    size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    mr_device_write(console_device, 0, str_buffer, length);
+    mr_device_write(console_device, 0, str_buffer, size);
 #else
-    mr_printf_output(str_buffer, length);
+    mr_printf_output(str_buffer, size);
 #endif
     va_end(args);
 
-    return length;
+    return size;
 }
 
-void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...)
+void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
 {
     char str_buffer[MR_CONF_CONSOLE_BUFSZ];
-    mr_size_t length = 0;
-    va_list args;
+    va_list args = MR_NULL;
+    mr_size_t size = 0;
 
-    va_start(args, fmt);
-
+    va_start(args, format);
     mr_printf("[%s/%s]: ", debug_level_name[level], tag);
-    length = vsnprintf(str_buffer, sizeof(str_buffer) - 1, fmt, args);
+    size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    mr_device_write(console_device, 0, str_buffer, length);
+    mr_device_write(console_device, 0, str_buffer, size);
 #else
-    mr_printf_output(str_buffer, length);
+    mr_printf_output(str_buffer, size);
 #endif
-
     va_end(args);
 }
 

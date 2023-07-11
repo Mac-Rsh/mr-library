@@ -26,6 +26,8 @@
 #define mr_memset                       memset
 #define mr_memcpy                       memcpy
 #define mr_strlen                       strlen
+#define mr_vsnprintf                    vsnprintf
+#define mr_snprintf                     snprintf
 #define mr_sscanf                       sscanf
 
 /* mr-library version information */
@@ -360,30 +362,31 @@ enum mr_at_command_state
 
 enum mr_at_command_server_type
 {
+    MR_AT_COMMAND_SERVER_TYPE_NONE,                                 /* No command server */
     MR_AT_COMMAND_SERVER_TYPE_HOST,                                 /* Host command server */
     MR_AT_COMMAND_SERVER_TYPE_SLAVE,                                /* Slave command server */
 };
 
 struct mr_at_command_server
 {
-    struct mr_object object;                                        /* At-command object */
+    struct mr_object object;                                        /* At-command server object */
 
     mr_uint8_t type;                                                /* At-command server type */
-    mr_avl_t list;                                                  /* At-command list */
-    void *buffer;                                                   /* At-command buffer */
-    size_t queue_size;                                              /* At-command queue size */
+    mr_avl_t list;                                                  /* At-command server list */
+    void *buffer;                                                   /* At-command server buffer */
+    size_t queue_size;                                              /* At-command server queue size */
 };
 typedef struct mr_at_command_server *mr_at_command_server_t;        /* Type for at-command server */
 
-typedef struct mr_at_command_client *mr_at_command_client_t;        /* Type for at-command client */
+typedef struct mr_at_command *mr_at_command_t;                      /* Type for at-command */
 
-struct mr_at_command_client
+struct mr_at_command
 {
     struct mr_avl list;                                             /* At-command list */
     mr_at_command_server_t server;                                  /* At-command owner server */
     const char *cmd;                                                /* At-command command */
 
-    mr_err_t (*cb)(mr_at_command_client_t client, void *args);      /* At-command callback */
+    mr_err_t (*cb)(mr_at_command_t at_command, void *args);         /* At-command callback */
 };
 #endif /* MR_CONF_AT_COMMAND */
 

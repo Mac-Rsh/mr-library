@@ -85,25 +85,27 @@ mr_at_command_server_t mr_at_command_server_find(const char *name);
 mr_err_t mr_at_command_server_add(mr_at_command_server_t server,
                                   const char *name,
                                   mr_uint8_t type,
-                                  mr_size_t queue_length,
-                                  void (*write)(mr_at_command_server_t server, mr_uint8_t *buffer, mr_size_t length));
-mr_err_t mr_at_command_remove(mr_at_command_server_t server);
+                                  mr_size_t queue_length);
+mr_err_t mr_at_command_server_remove(mr_at_command_server_t server);
 void mr_at_command_server_handle(mr_at_command_server_t server);
-void mr_at_command_server_isr(mr_at_command_server_t server, mr_uint8_t data);
-mr_at_command_client_t mr_at_command_client_find(const char *at_command, mr_at_command_server_t server);
-mr_err_t mr_at_command_client_create(const char *at_command,
-                                     mr_err_t (*cb)(mr_at_command_client_t client, void *args),
-                                     mr_at_command_server_t server);
-mr_err_t mr_at_command_client_delete(const char *at_command, mr_at_command_server_t server);
-#define mr_at_command_get_args      mr_sscanf
+void mr_at_command_server_parse(mr_at_command_server_t server, mr_uint8_t data);
+mr_err_t mr_at_command_create(const char *command,
+                              mr_err_t (*cb)(mr_at_command_t at_command, void *args),
+                              mr_at_command_server_t server);
+mr_err_t mr_at_command_delete(const char *command, mr_at_command_server_t server);
+const char* mr_at_command_get_cmd(mr_at_command_t at_command);
+#define mr_at_command_get_args  mr_sscanf
+#define mr_at_command_set_response  mr_snprintf
+#define mr_at_command_set_response_ok(buffer, bufsz)  mr_snprintf(buffer, bufsz, "OK\r\n")
+#define mr_at_command_set_response_error(buffer, bufsz)  mr_snprintf(buffer, bufsz, "ERROR\r\n")
 #endif /* MR_CONF_AT_COMMAND */
 
 /**
  *  Export kernel service functions
  */
 void mr_auto_init(void);
-mr_size_t mr_printf(const char *fmt, ...);
-void mr_log_output(mr_base_t level, const char *tag, const char *fmt, ...);
+mr_size_t mr_printf(const char *format, ...);
+void mr_log_output(mr_base_t level, const char *tag, const char *format, ...);
 mr_weak void mr_assert_handle(void);
 mr_weak void mr_interrupt_disable(void);
 mr_weak void mr_interrupt_enable(void);
