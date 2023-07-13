@@ -14,30 +14,30 @@
 #include "mrdef.h"
 
 #if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_ASSERT && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_LOG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_DEBUG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
 #else
-#define MR_LOG_A(TAG, FORMAT, ...)
+#define MR_DEBUG_A(TAG, FORMAT, ...)
 #endif
 #if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_ERROR && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_LOG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ERROR, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_DEBUG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ERROR, TAG, FORMAT, ##__VA_ARGS__)
 #else
-#define MR_LOG_E(TAG, FORMAT, ...)
+#define MR_DEBUG_E(TAG, FORMAT, ...)
 #endif
 #if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_WARNING && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_LOG_W(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_WARNING, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_DEBUG_W(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_WARNING, TAG, FORMAT, ##__VA_ARGS__)
 #else
-#define MR_LOG_W(TAG, FORMAT, ...)
+#define MR_DEBUG_W(TAG, FORMAT, ...)
 #endif
 #if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_INFO && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_LOG_I(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_INFO, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_DEBUG_I(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_INFO, TAG, FORMAT, ##__VA_ARGS__)
 #else
-#define MR_LOG_I(TAG, FORMAT, ...)
+#define MR_DEBUG_I(TAG, FORMAT, ...)
 #endif
 
 #if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_DEBUG && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_LOG_D(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
+#define MR_DEBUG_D(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
 #else
-#define MR_LOG_D(TAG, FORMAT, ...)
+#define MR_DEBUG_D(TAG, FORMAT, ...)
 #endif
 
 #if (MR_CONF_ASSERT == MR_CONF_ENABLE)
@@ -45,7 +45,7 @@
     do{                                       \
         if (!(EX))                            \
         {                                     \
-          MR_LOG_A(__FUNCTION__,              \
+          MR_DEBUG_A(__FUNCTION__,            \
                    "File: %s, Line: %d\r\n",  \
                    __FILE__,                  \
                    __LINE__);                 \
@@ -63,10 +63,10 @@
 
 #define mr_align_down(size, align)    (size & (~(align - 1)))
 
-#define mr_max(a, b)    ((a) > (b)) ? a:b
-#define mr_min(a, b)    ((a) < (b)) ? a:b
+#define mr_max(a, b)    ((a) > (b)) ? (a):(b)
+#define mr_min(a, b)    ((a) < (b)) ? (a):(b)
 
-#define mr_limit(x, a, b)    do{ x = (x < a) ? a : (x > b) ? b : x; }while(0)
+#define mr_limit(x, a, b)    do{ (x) = ((x) < (a)) ? (a) : ((x) > (b)) ? (b) : (x); }while(0)
 
 /**
  * @brief This function initialize a single list.
