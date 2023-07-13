@@ -24,10 +24,12 @@ struct ch32_timer_info
 
 struct ch32_timer
 {
-    char *name;
+    const char *name;
 
     struct ch32_timer_info info;
 };
+
+mr_err_t ch32_timer_init(void);
 
 #endif /* MR_CONF_TIMER */
 

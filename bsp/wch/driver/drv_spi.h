@@ -28,7 +28,7 @@ struct ch32_spi_info
 
 struct ch32_spi
 {
-    char *name;
+    const char *name;
 
     struct ch32_spi_info info;
 };

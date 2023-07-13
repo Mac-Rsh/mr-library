@@ -32,7 +32,7 @@ struct ch32_uart_info
 
 struct ch32_uart
 {
-    char *name;
+    const char *name;
 
     struct ch32_uart_info info;
 };

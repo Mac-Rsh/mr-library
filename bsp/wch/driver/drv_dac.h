@@ -23,7 +23,7 @@ struct ch32_dac_info
 
 struct ch32_dac
 {
-    char *name;
+    const char *name;
 
     struct ch32_dac_info info;
 };

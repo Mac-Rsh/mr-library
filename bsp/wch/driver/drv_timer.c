@@ -138,8 +138,6 @@ static mr_err_t ch32_timer_configure(mr_timer_t timer, struct mr_timer_config *c
             TIM_TimeBaseInitStructure.TIM_Prescaler = (pclk_freq / config->freq) - 1;
     }
 
-    printf("%d,%d\r\n", TIM_TimeBaseInitStructure.TIM_Prescaler, pclk_freq);
-
     NVIC_InitStructure.NVIC_IRQChannel = driver->info.irqno;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
