@@ -479,6 +479,7 @@ mr_err_t mr_at_command_create(const char *command,
 mr_err_t mr_at_command_delete(const char *command, mr_at_command_server_t server)
 {
     mr_avl_t node = MR_NULL;
+    mr_uint8_t index = 0;
     mr_at_command_t at_command = MR_NULL;
 
     MR_ASSERT(command != MR_NULL);
@@ -488,8 +489,26 @@ mr_err_t mr_at_command_delete(const char *command, mr_at_command_server_t server
                (server->type == MR_AT_COMMAND_SERVER_TYPE_SLAVE && mr_strncmp("AT+", command, mr_strlen("AT+")) == 0)));
     MR_ASSERT(mr_strlen(command) < MR_CONF_AT_COMMAND_BUFSZ + MR_AT_COMMAND_CMD_BLOCK_SIZE);
 
+    switch (server->type)
+    {
+        case MR_AT_COMMAND_SERVER_TYPE_HOST:
+        {
+            index = 1;
+            break;
+        }
+
+        case MR_AT_COMMAND_SERVER_TYPE_SLAVE:
+        {
+            index = 3;
+            break;
+        }
+
+        default:
+            break;
+    }
+
     /* Find the at-command from the server */
-    node = mr_avl_find(server->list, mr_str2hash(command + 3, mr_strlen(command) - 3));
+    node = mr_avl_find(server->list, mr_str2hash(command + index, mr_strlen(command) - index));
     if (node == MR_NULL)
     {
         return -MR_ERR_NOT_FOUND;
@@ -514,6 +533,53 @@ mr_err_t mr_at_command_delete(const char *command, mr_at_command_server_t server
 }
 
 /**
+ * @brief This function edit an at-command.
+ *
+ * @param command The command to be edited.
+ * @param new_command The new command.
+ * @param server The at-command server to which the at-command belongs.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_at_command_edit(const char *command, const char *new_command, mr_at_command_server_t server)
+{
+    mr_avl_t node = MR_NULL;
+    mr_at_command_t at_command = MR_NULL;
+    mr_err_t (*cb)(mr_at_command_t at_command, void *args);
+
+    MR_ASSERT(command != MR_NULL);
+    MR_ASSERT(new_command != MR_NULL);
+    MR_ASSERT(server != MR_NULL);
+
+    /* Find the at-command from the server */
+    node = mr_avl_find(server->list, mr_str2hash(command + 3, mr_strlen(command) - 3));
+    if (node == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+
+    /* Get the at-command from the list */
+    at_command = mr_container_of(node, struct mr_at_command, list);
+
+    /* Disable interrupt */
+    mr_interrupt_disable();
+
+    /* Remove the at_command from the server's list */
+    mr_avl_remove(&server->list, &at_command->list);
+
+    /* Enable interrupt */
+    mr_interrupt_enable();
+
+    /* Get the callback function */
+    cb = at_command->cb;
+
+    /* Free the at_command */
+    mr_free(at_command);
+
+    return mr_at_command_create(new_command, cb, server);
+}
+
+/**
  * @brief This function get the command from the at-command.
  *
  * @param at_command The at-command to be get.
@@ -527,4 +593,4 @@ const char *mr_at_command_get_cmd(mr_at_command_t at_command)
     return at_command->cmd;
 }
 
-#endif
+#endif /* MR_CONF_AT_COMMAND */
