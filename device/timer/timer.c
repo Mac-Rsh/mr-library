@@ -130,6 +130,11 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
         {
             timer->overflow = 0;
             timer->cycles = timer->reload;
+            /* When the time is not less than one time, the timer is started */
+            if (timer->cycles == 0)
+            {
+                return -MR_ERR_INVALID;
+            }
             timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
             return MR_ERR_OK;
         }
@@ -186,7 +191,7 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *b
         send_buffer++;
 
         /* When the time is not less than one time, the timer is started */
-        if (timer->cycles != 0)
+        if (timer->cycles == 0)
         {
             return -MR_ERR_INVALID;
         }
