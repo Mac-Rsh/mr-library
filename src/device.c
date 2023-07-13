@@ -12,6 +12,8 @@
 
 #if (MR_CONF_DEVICE == MR_CONF_ENABLE)
 
+#define DEBUG_TAG "device"
+
 /**
  * @brief This function finds a device.
  *
@@ -39,7 +41,7 @@ mr_device_t mr_device_find(const char *name)
 mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
 {
     mr_err_t ret = MR_ERR_OK;
-    static struct mr_device_ops null_ops = {MR_NULL};
+    static const struct mr_device_ops null_ops = {MR_NULL};
 
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
@@ -49,6 +51,7 @@ mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
     ret = mr_object_add(&device->object, name, MR_OBJECT_TYPE_DEVICE);
     if (ret != MR_ERR_OK)
     {
+        MR_DEBUG_D(DEBUG_TAG, "device add failed: %d\r\n", ret);
         return ret;
     }
 
@@ -86,6 +89,7 @@ mr_err_t mr_device_remove(mr_device_t device)
     ret = mr_object_remove(&device->object);
     if (ret != MR_ERR_OK)
     {
+        MR_DEBUG_D(DEBUG_TAG, "device remove failed: %d\r\n", ret);
         return ret;
     }
 
@@ -114,6 +118,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
     /* Check if the specified open flags are supported by the device */
     if (flags != (flags & device->support_flag))
     {
+        MR_DEBUG_D(DEBUG_TAG, "device unsupported open flags: 0x%x\r\n", flags);
         return -MR_ERR_UNSUPPORTED;
     }
 
@@ -197,6 +202,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
     /* Call the ioctl function, if provided */
     if (device->ops->ioctl == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "device unsupported ioctl\r\n");
         return -MR_ERR_UNSUPPORTED;
     }
 
@@ -222,12 +228,14 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
     /* Check if the device is closed or unsupported */
     if ((device->ref_count == 0) || !(device->open_flag & MR_OPEN_RDONLY))
     {
+        MR_DEBUG_D(DEBUG_TAG, "device unsupported read\r\n");
         return -MR_ERR_UNSUPPORTED;
     }
 
     /* Call the read function, if provided */
     if (device->ops->read == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "device unprovided read operation\r\n");
         return -MR_ERR_IO;
     }
 
@@ -253,12 +261,14 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
     /* Check if the device is closed or unsupported */
     if ((device->ref_count == 0) || !(device->open_flag & MR_OPEN_WRONLY))
     {
+        MR_DEBUG_D(DEBUG_TAG, "device unsupported write\r\n");
         return -MR_ERR_UNSUPPORTED;
     }
 
     /* Call the write function, if provided */
     if (device->ops->write == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "device unprovided write operation\r\n");
         return -MR_ERR_IO;
     }
 
