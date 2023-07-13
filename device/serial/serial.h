@@ -32,13 +32,14 @@
 #define MR_SERIAL_NRZ_NORMAL            0
 #define MR_SERIAL_NRZ_INVERTED          1
 
-#define MR_SERIAL_BUFSZ_MIN             32
-#if MR_CONF_SERIAL_BUFSZ < MR_SERIAL_BUFSZ_MIN
-#define MR_CONF_SERIAL_BUFSZ         	MR_SERIAL_BUFSZ_MIN
-#endif
+#define MR_SERIAL_EVENT_RX_INT          0x10000000
+#define MR_SERIAL_EVENT_TX_INT          0x20000000
+#define MR_SERIAL_EVENT_RX_DMA          0x40000000
+#define MR_SERIAL_EVENT_TX_DMA          0x80000000
+#define _MR_SERIAL_EVENT_MASK           0xf0000000
 
-#define MR_SERIAL_EVENT_RX_INT          0x1000
-#define _MR_SERIAL_EVENT_MASK           0xf000
+#define _MR_SERIAL_STATE_IDLE           0x00
+#define _MR_SERIAL_STATE_RUNNING        0x10
 
 /* Default config for mr_serial_config structure */
 #define MR_SERIAL_CONFIG_DEFAULT        \
@@ -61,12 +62,6 @@ struct mr_serial_config
     mr_uint8_t invert;
 };
 
-struct mr_serial_fifo
-{
-    struct mr_fifo fifo;
-    mr_uint8_t pool[];
-};
-
 typedef struct mr_serial *mr_serial_t;
 
 struct mr_serial_ops
@@ -74,6 +69,14 @@ struct mr_serial_ops
     mr_err_t (*configure)(mr_serial_t serial, struct mr_serial_config *config);
     void (*write)(mr_serial_t serial, mr_uint8_t data);
     mr_uint8_t (*read)(mr_serial_t serial);
+
+    /* Interrupt */
+    void (*start_tx)(mr_serial_t serial);
+    void (*stop_tx)(mr_serial_t serial);
+
+    /* DMA */
+    void (*start_dma_tx)(mr_serial_t serial, mr_uint8_t *buffer, mr_size_t size);
+    void (*stop_dma_tx)(mr_serial_t serial);
 };
 
 struct mr_serial
@@ -81,8 +84,15 @@ struct mr_serial
     struct mr_device device;
 
     struct mr_serial_config config;
-    mr_size_t fifo_bufsz;
-    void *rx_fifo;
+    mr_size_t rx_bufsz;
+    mr_size_t tx_bufsz;
+    struct mr_fifo rx_fifo;
+    struct mr_fifo tx_fifo;
+    mr_uint8_t rx_state;
+    mr_uint8_t tx_state;
+
+    mr_uint8_t rx_dma[MR_CONF_SERIAL_RX_DMA_BUFS];
+    mr_uint8_t tx_dma[MR_CONF_SERIAL_TX_DMA_BUFS];
 
     const struct mr_serial_ops *ops;
 };
