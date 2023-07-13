@@ -103,9 +103,11 @@
 #define MR_CTRL_CONFIG                  0x1000                      /* Configure */
 #define MR_CTRL_SET_RX_CB               0x2000                      /* Set receive callback */
 #define MR_CTRL_SET_TX_CB               0x3000                      /* Set transmit callback */
-#define MR_CTRL_ATTACH                  0x4000                      /* Attach the bus */
-#define MR_CTRL_TRANSFER                0x5000                      /* Transfer */
-#define MR_CTRL_REBOOT                  0x6000                      /* Reboot */
+#define MR_CTRL_SET_RX_BUFSZ            0x4000                      /* Set receive buffer size */
+#define MR_CTRL_SET_TX_BUFSZ            0x5000                      /* Set transmit buffer size */
+#define MR_CTRL_ATTACH                  0x6000                      /* Attach the bus */
+#define MR_CTRL_TRANSFER                0x7000                      /* Transfer */
+#define MR_CTRL_REBOOT                  0x8000                      /* Reboot */
 #define _MR_CTRL_FLAG_MASK              0xf000                      /* Mask for getting control flag */
 
 /* mr-library basic data type definitions */

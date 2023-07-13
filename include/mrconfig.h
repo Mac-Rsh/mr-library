@@ -43,7 +43,10 @@
 #define MR_CONF_PIN                     MR_CONF_ENABLE
 //< serial >
 #define MR_CONF_SERIAL                  MR_CONF_ENABLE
-#define MR_CONF_SERIAL_BUFSZ            64
+#define MR_CONF_SERIAL_RX_BUFSZ         32
+#define MR_CONF_SERIAL_TX_BUFSZ         0
+#define MR_CONF_SERIAL_RX_DMA_BUFS      0
+#define MR_CONF_SERIAL_TX_DMA_BUFS      0
 //< console >
 #define MR_CONF_CONSOLE                 MR_CONF_ENABLE
 #define MR_CONF_CONSOLE_BUFSZ           128

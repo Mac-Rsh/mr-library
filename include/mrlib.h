@@ -54,6 +54,7 @@ mr_err_t mr_event_create(mr_uint8_t id,
                          mr_event_server_t server);
 mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server);
 mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server);
+mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server);
 #endif /* MR_CONF_EVENT */
 
 #if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
@@ -93,6 +94,7 @@ mr_err_t mr_at_command_create(const char *command,
                               mr_err_t (*cb)(mr_at_command_t at_command, void *args),
                               mr_at_command_server_t server);
 mr_err_t mr_at_command_delete(const char *command, mr_at_command_server_t server);
+mr_err_t mr_at_command_edit(const char *command, const char *new_command, mr_at_command_server_t server);
 const char* mr_at_command_get_cmd(mr_at_command_t at_command);
 #define mr_at_command_get_args  mr_sscanf
 #define mr_at_command_set_response  mr_snprintf
@@ -104,12 +106,13 @@ const char* mr_at_command_get_cmd(mr_at_command_t at_command);
  *  Export kernel service functions
  */
 void mr_auto_init(void);
+mr_size_t mr_printf_output(const char *str, mr_size_t size);
 mr_size_t mr_printf(const char *format, ...);
 void mr_log_output(mr_base_t level, const char *tag, const char *format, ...);
-mr_weak void mr_assert_handle(void);
-mr_weak void mr_interrupt_disable(void);
-mr_weak void mr_interrupt_enable(void);
-mr_weak void mr_delay_ms(mr_uint32_t ms);
+void mr_assert_handle(void);
+void mr_interrupt_disable(void);
+void mr_interrupt_enable(void);
+void mr_delay_ms(mr_uint32_t ms);
 
 /**
  *  Export fifo functions

@@ -12,13 +12,13 @@
 
 static mr_device_t console_device = MR_NULL;
 
-static char *debug_level_name[] =
+static const char *debug_level_name[] =
         {
-                "debug-a",
-                "debug-e",
-                "debug-w",
-                "debug-i",
-                "debug-d",
+                "Debug-assert",
+                "Debug-error",
+                "Debug-warning",
+                "Debug-info",
+                "Debug-debug",
         };
 
 static int start(void)
@@ -63,6 +63,7 @@ mr_err_t mr_printf_init(void)
     MR_ASSERT(console_device != MR_NULL);
     return mr_device_open(console_device, MR_OPEN_RDWR);
 #else
+    console_device = MR_NULL;
     return MR_ERR_OK;
 #endif
 }
@@ -82,7 +83,10 @@ mr_size_t mr_printf(const char *format, ...)
     va_start(args, format);
     size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    mr_device_write(console_device, 0, str_buffer, size);
+    if(console_device != MR_NULL)
+    {
+        mr_device_write(console_device, 0, str_buffer, size);
+    }
 #else
     mr_printf_output(str_buffer, size);
 #endif
@@ -101,7 +105,10 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
     mr_printf("[%s/%s]: ", debug_level_name[level], tag);
     size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    mr_device_write(console_device, 0, str_buffer, size);
+    if(console_device != MR_NULL)
+    {
+        mr_device_write(console_device, 0, str_buffer, size);
+    }
 #else
     mr_printf_output(str_buffer, size);
 #endif
@@ -130,9 +137,9 @@ mr_weak void mr_delay_ms(mr_uint32_t ms)
 {
     volatile mr_size_t count = 0, i = 0;
 
-    for (count = 0; count < ms; count++)
+    for (count = 0; count < ms * BSP_SYSCLK_FREQ / 1000;)
     {
-        for (i = 0; i < 1000; i++);
+        count++;
     }
 }
 
@@ -146,7 +153,7 @@ mr_weak void mr_delay_ms(mr_uint32_t ms)
 void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size)
 {
     MR_ASSERT(fifo != MR_NULL);
-    MR_ASSERT(pool != MR_NULL);
+    MR_ASSERT((pool != MR_NULL || pool_size == 0));
 
     fifo->read_index = 0;
     fifo->write_index = 0;
@@ -521,7 +528,64 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
 
 void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
 {
+    if (*tree == MR_NULL)
+    {
+        return;
+    }
 
+    if (node->value < (*tree)->value)
+    {
+        mr_avl_remove(&(*tree)->left_child, node);
+    } else if (node->value > (*tree)->value)
+    {
+        mr_avl_remove(&(*tree)->right_child, node);
+    } else
+    {
+        if ((*tree)->left_child == MR_NULL)
+        {
+            mr_avl_t temp = (*tree)->right_child;
+            (*tree)->right_child = MR_NULL;
+            (*tree) = temp;
+            return;
+        } else if ((*tree)->right_child == MR_NULL)
+        {
+            mr_avl_t temp = (*tree)->left_child;
+            (*tree)->left_child = MR_NULL;
+            (*tree) = temp;
+            return;
+        }
+
+        mr_avl_t temp = (*tree)->right_child->left_child;
+        (*tree)->value = temp->value;
+        mr_avl_remove(&(*tree)->right_child, temp);
+        return;
+    }
+
+    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+
+    mr_int8_t balance = mr_avl_get_balance(*tree);
+
+    if (balance > 1 && mr_avl_get_balance((*tree)->left_child) >= 0)
+    {
+        mr_avl_right_rotate(tree);
+    }
+
+    if (balance > 1 && mr_avl_get_balance((*tree)->left_child) < 0)
+    {
+        mr_avl_left_rotate(&(*tree)->left_child);
+        mr_avl_right_rotate(tree);
+    }
+
+    if (balance < -1 && mr_avl_get_balance((*tree)->right_child) <= 0)
+    {
+        mr_avl_left_rotate(tree);
+    }
+
+    if (balance < -1 && mr_avl_get_balance((*tree)->right_child) > 0)
+    {
+        mr_avl_right_rotate(&(*tree)->right_child);
+        mr_avl_left_rotate(tree);
+    }
 }
 
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value)
