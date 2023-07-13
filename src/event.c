@@ -241,4 +241,36 @@ mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server)
     return MR_ERR_OK;
 }
 
+/**
+ * @brief This function trigger an event.
+ *
+ * @param id The id of the event to be triggered.
+ * @param server The event server to which the event belongs.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ *
+ * @note The callback function will wake up immediately, please note that it is only used for very short or high priority event processing.
+ */
+mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server)
+{
+    mr_avl_t node = MR_NULL;
+    mr_event_t event = MR_NULL;
+
+    MR_ASSERT(server != MR_NULL);
+
+    node = mr_avl_find(server->list, id);
+    if (node == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+
+    /* Get the event from the list */
+    event = mr_container_of(node, struct mr_event, list);
+
+    /* Call the event callback */
+    event->cb(server, event->args);
+
+    return MR_ERR_OK;
+}
+
 #endif /* MR_CONF_EVENT */
