@@ -59,4 +59,15 @@
 #define BSP_TIMER_9
 #define BSP_TIMER_10
 
+//<--------------------------- BSP-PWM ------------------------------------>
+//<<< Bsp using PWMx >>>
+#define BSP_PWM_1
+#define BSP_PWM_2
+#define BSP_PWM_3
+#define BSP_PWM_4
+#define BSP_PWM_5
+#define BSP_PWM_8
+#define BSP_PWM_9
+#define BSP_PWM_10
+
 #endif /* _MR_BOARD_H_ */
