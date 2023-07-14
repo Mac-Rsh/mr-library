@@ -77,7 +77,7 @@ mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t size)
 mr_size_t mr_printf(const char *format, ...)
 {
     char str_buffer[MR_CONF_CONSOLE_BUFSZ];
-    va_list args = MR_NULL;
+    va_list args;
     mr_size_t size = 0;
 
     va_start(args, format);
@@ -98,7 +98,7 @@ mr_size_t mr_printf(const char *format, ...)
 void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
 {
     char str_buffer[MR_CONF_CONSOLE_BUFSZ];
-    va_list args = MR_NULL;
+    va_list args;
     mr_size_t size = 0;
 
     va_start(args, format);
@@ -135,7 +135,7 @@ mr_weak void mr_interrupt_enable(void)
 
 mr_weak void mr_delay_ms(mr_uint32_t ms)
 {
-    volatile mr_size_t count = 0, i = 0;
+    volatile mr_size_t count = 0;
 
     for (count = 0; count < ms * BSP_SYSCLK_FREQ / 1000;)
     {
