@@ -96,6 +96,7 @@
 #define MR_OPEN_RDWR                    0x3000                      /* Read and write */
 #define MR_OPEN_NONBLOCKING             0x4000                      /* Non-blocking */
 #define MR_OPEN_ACTIVE                  0x8000                      /* Active */
+#define MR_OPEN_DMA                     0x0100                      /* DMA */
 #define _MR_OPEN_FLAG_MASK              0xf000                      /* Mask for getting open flag */
 
 /* mr-library basic control flag definitions */
