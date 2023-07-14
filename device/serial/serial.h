@@ -88,8 +88,6 @@ struct mr_serial
     mr_size_t tx_bufsz;
     struct mr_fifo rx_fifo;
     struct mr_fifo tx_fifo;
-    mr_uint8_t rx_state;
-    mr_uint8_t tx_state;
 
     mr_uint8_t rx_dma[MR_CONF_SERIAL_RX_DMA_BUFS];
     mr_uint8_t tx_dma[MR_CONF_SERIAL_TX_DMA_BUFS];

@@ -172,7 +172,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
 
     if (serial->rx_bufsz == 0)
     {
-        /* Block read */
+        /* Blocking read */
         for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
         {
             *recv_buffer = serial->ops->read(serial);
@@ -183,7 +183,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
         /* Interrupt read */
         for (recv_size = 0; recv_size < size;)
         {
-            recv_size += mr_fifo_read(&serial->rx_fifo, recv_buffer, size);
+            recv_size += mr_fifo_read(&serial->rx_fifo, recv_buffer + recv_size, size - recv_size);
         }
     }
 
@@ -197,9 +197,9 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
     mr_size_t send_size = 0;
     mr_size_t dma_size = 0;
 
-    if (serial->tx_bufsz == 0)
+    if (serial->tx_bufsz == 0 || (device->open_flag & MR_OPEN_NONBLOCKING) == 0)
     {
-        /* Block write */
+        /* Blocking write */
         for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
         {
             serial->ops->write(serial, *send_buffer);
@@ -207,25 +207,23 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
         }
     } else
     {
-        /* Non-block write */
+        /* Non-blocking write */
         for (send_size = 0; send_size < size;)
         {
-            send_size += mr_fifo_write(&serial->tx_fifo, send_buffer, size);
+            send_size += mr_fifo_write(&serial->tx_fifo, send_buffer + send_size, size - send_size);
 
-            if (serial->tx_state == _MR_SERIAL_STATE_IDLE)
+            if (mr_fifo_get_data_size(&serial->tx_fifo) == 0)
             {
-                if((device->open_flag & MR_OPEN_NONBLOCKING) == 0)
+                if((device->open_flag & MR_OPEN_DMA) == 0)
                 {
                     /* Interrupt write */
                     serial->ops->start_tx(serial);
-                    serial->tx_state = _MR_SERIAL_STATE_RUNNING;
                 }
                 else
                 {
                     /* DMA write */
                     dma_size = mr_fifo_read(&serial->tx_fifo, serial->tx_dma, sizeof(serial->tx_dma));
                     serial->ops->start_dma_tx(serial, serial->tx_dma, dma_size);
-                    serial->tx_state = _MR_SERIAL_STATE_RUNNING;
                 }
             }
         }
@@ -296,8 +294,6 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, void *data, 
     serial->tx_bufsz = MR_CONF_SERIAL_TX_BUFSZ;
     mr_fifo_init(&serial->rx_fifo, MR_NULL, 0);
     mr_fifo_init(&serial->tx_fifo, MR_NULL, 0);
-    serial->rx_state = _MR_SERIAL_STATE_IDLE;
-    serial->tx_state = _MR_SERIAL_STATE_IDLE;
 
     /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_serial_configure;
@@ -344,7 +340,6 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
             if (length == 0)
             {
                 serial->ops->stop_tx(serial);
-                serial->tx_state = _MR_SERIAL_STATE_IDLE;
 
                 /* Invoke the tx-cb function */
                 if (serial->device.tx_cb != MR_NULL)
@@ -380,7 +375,6 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
             if (length == 0)
             {
                 serial->ops->stop_dma_tx(serial);
-                serial->tx_state = _MR_SERIAL_STATE_IDLE;
 
                 /* Invoke the tx-cb function */
                 if (serial->device.tx_cb != MR_NULL)
