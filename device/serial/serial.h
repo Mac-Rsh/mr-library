@@ -84,11 +84,14 @@ struct mr_serial
     struct mr_device device;
 
     struct mr_serial_config config;
+
+    /* Interrupt */
     mr_size_t rx_bufsz;
-    mr_size_t tx_bufsz;
     struct mr_fifo rx_fifo;
+    mr_size_t tx_bufsz;
     struct mr_fifo tx_fifo;
 
+    /* DMA */
     mr_uint8_t rx_dma[MR_CONF_SERIAL_RX_DMA_BUFS];
     mr_uint8_t tx_dma[MR_CONF_SERIAL_TX_DMA_BUFS];
 
