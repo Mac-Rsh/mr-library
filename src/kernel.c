@@ -316,3 +316,15 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
 
     return -MR_ERR_GENERIC;
 }
+
+/**
+ * @brief This function get the owner of the mutex.
+ * @param mutex The mutex to get the owner.
+ * @return A handle to the owner of the mutex, or MR_NULL if without owner.
+ */
+mr_object_t mr_mutex_get_owner(mr_mutex_t mutex)
+{
+    MR_ASSERT(mutex != MR_NULL);
+
+    return mutex->owner;
+}

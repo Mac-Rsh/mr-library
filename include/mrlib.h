@@ -26,6 +26,7 @@ void mr_object_rename(mr_object_t object, char *name);
 void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
+mr_object_t mr_mutex_get_owner(mr_mutex_t mutex);
 
 #if (MR_CONF_DEVICE == MR_CONF_ENABLE)
 /**
