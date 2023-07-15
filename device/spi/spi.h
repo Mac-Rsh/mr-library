@@ -30,6 +30,15 @@
 #define MR_SPI_CS_ACTIVE_HIGH           1
 #define MR_SPI_CS_ACTIVE_NONE           2
 
+#define MR_SPI_BUS_EVENT_RX_INT          0x10000000
+#define MR_SPI_BUS_EVENT_TX_INT          0x20000000
+#define MR_SPI_BUS_EVENT_RX_DMA          0x40000000
+#define MR_SPI_BUS_EVENT_TX_DMA          0x80000000
+#define _MR_SPI_BUS_EVENT_MASK           0xf0000000
+
+#define _MR_SPI_BUS_STATE_IDLE           0x00
+#define _MR_SPI_BUS_STATE_RUNNING        0x10
+
 /* Default config for mr_spi_config structure */
 #define MR_SPI_CONFIG_DEFAULT           \
 {                                       \
@@ -58,14 +67,27 @@ struct mr_spi_device
     struct mr_spi_config config;
     struct mr_spi_bus *bus;
     mr_uint16_t cs_pin;
+
+    struct mr_list tx_list;
+    mr_size_t tx_count;
 };
 typedef struct mr_spi_device *mr_spi_device_t;
 
 struct mr_spi_bus_ops
 {
     mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
-    mr_uint8_t (*transfer)(mr_spi_bus_t spi_bus, mr_uint8_t data);
+    void (*write)(mr_spi_bus_t spi_bus, mr_uint8_t data);
+    mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
     void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state);
+
+    /* Interrupt */
+    mr_uint8_t (*cs_read)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin);
+    void (*start_tx)(mr_spi_bus_t spi_bus);
+    void (*stop_tx)(mr_spi_bus_t spi_bus);
+
+    /* DMA */
+    void (*start_dma_tx)(mr_spi_bus_t spi_bus, mr_uint8_t *buffer, mr_size_t size);
+    void (*stop_dma_tx)(mr_spi_bus_t spi_bus);
 };
 
 struct mr_spi_bus
@@ -76,11 +98,23 @@ struct mr_spi_bus
     struct mr_spi_device *owner;
     struct mr_mutex lock;
 
+    /* Interrupt */
+    mr_size_t rx_bufsz;
+    struct mr_fifo rx_fifo;
+    mr_size_t tx_bufsz;
+    struct mr_fifo tx_fifo;
+    struct mr_list tx_list;
+
+    /* DMA */
+    mr_uint8_t rx_dma[MR_CONF_SERIAL_RX_DMA_BUFS];
+    mr_uint8_t tx_dma[MR_CONF_SERIAL_TX_DMA_BUFS];
+
     const struct mr_spi_bus_ops *ops;
 };
 
 mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, void *data, struct mr_spi_bus_ops *ops);
 mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_uint16_t cs_pin);
+void mr_spi_bus_isr(mr_spi_bus_t spi_bus, mr_uint32_t event);
 
 #endif /* MR_CONF_SPI */
 
