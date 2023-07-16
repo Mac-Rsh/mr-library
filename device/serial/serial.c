@@ -16,22 +16,23 @@ static mr_err_t mr_serial_rx_fifo_init(mr_serial_t serial, mr_size_t rx_bufsz)
 {
     mr_uint8_t *buffer = MR_NULL;
 
-    if (serial->rx_fifo.buffer)
+    if (serial->rx_fifo.fifo.buffer)
     {
-        mr_free(serial->rx_fifo.buffer);
-        mr_fifo_init(&serial->rx_fifo, MR_NULL, 0);
+        mr_free(serial->rx_fifo.fifo.buffer);
+        mr_fifo_init(&serial->rx_fifo.fifo, MR_NULL, 0);
     }
 
-    serial->rx_bufsz = rx_bufsz;
+    serial->rx_fifo.bufsz = rx_bufsz;
 
-    if (serial->rx_bufsz != 0)
+    if (serial->rx_fifo.bufsz != 0)
     {
-        buffer = mr_malloc(serial->rx_bufsz);
+        buffer = mr_malloc(serial->rx_fifo.bufsz);
         if (buffer == MR_NULL)
         {
+            serial->rx_fifo.bufsz = 0;
             return -MR_ERR_NO_MEMORY;
         }
-        mr_fifo_init(&serial->rx_fifo, buffer, serial->rx_bufsz);
+        mr_fifo_init(&serial->rx_fifo.fifo, buffer, serial->rx_fifo.bufsz);
     }
 
     return MR_ERR_OK;
@@ -41,22 +42,23 @@ static mr_err_t mr_serial_tx_fifo_init(mr_serial_t serial, mr_size_t tx_bufsz)
 {
     mr_uint8_t *buffer = MR_NULL;
 
-    if (serial->tx_fifo.buffer)
+    if (serial->tx_fifo.fifo.buffer)
     {
-        mr_free(serial->tx_fifo.buffer);
-        mr_fifo_init(&serial->tx_fifo, MR_NULL, 0);
+        mr_free(serial->tx_fifo.fifo.buffer);
+        mr_fifo_init(&serial->tx_fifo.fifo, MR_NULL, 0);
     }
 
-    serial->tx_bufsz = tx_bufsz;
+    serial->tx_fifo.bufsz = tx_bufsz;
 
-    if (serial->tx_bufsz != 0)
+    if (serial->tx_fifo.bufsz != 0)
     {
-        buffer = mr_malloc(serial->tx_bufsz);
+        buffer = mr_malloc(serial->tx_fifo.bufsz);
         if (buffer == MR_NULL)
         {
+            serial->tx_fifo.bufsz = 0;
             return -MR_ERR_NO_MEMORY;
         }
-        mr_fifo_init(&serial->tx_fifo, buffer, serial->tx_bufsz);
+        mr_fifo_init(&serial->tx_fifo.fifo, buffer, serial->tx_fifo.bufsz);
     }
 
     return MR_ERR_OK;
@@ -65,16 +67,16 @@ static mr_err_t mr_serial_tx_fifo_init(mr_serial_t serial, mr_size_t tx_bufsz)
 static mr_err_t mr_serial_open(mr_device_t device)
 {
     mr_serial_t serial = (mr_serial_t)device;
-    mr_err_t ret = MR_ERR_OK;
     struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
+    mr_err_t ret = MR_ERR_OK;
 
     /* Allocate the fifo buffer */
-    ret = mr_serial_rx_fifo_init(serial, serial->rx_bufsz);
+    ret = mr_serial_rx_fifo_init(serial, serial->rx_fifo.bufsz);
     if (ret != MR_ERR_OK)
     {
         return ret;
     }
-    ret = mr_serial_tx_fifo_init(serial, serial->tx_bufsz);
+    ret = mr_serial_tx_fifo_init(serial, serial->tx_fifo.bufsz);
     if (ret != MR_ERR_OK)
     {
         return ret;
@@ -105,8 +107,8 @@ static mr_err_t mr_serial_close(mr_device_t device)
     {
         return ret;
     }
-    serial->rx_bufsz = MR_CONF_SERIAL_RX_BUFSZ;
-    serial->tx_bufsz = MR_CONF_SERIAL_TX_BUFSZ;
+    serial->rx_fifo.bufsz = MR_CONF_SERIAL_RX_BUFSZ;
+    serial->tx_fifo.bufsz = MR_CONF_SERIAL_TX_BUFSZ;
 
     /* Setting serial to close config */
     serial->config.baud_rate = 0;
@@ -141,6 +143,12 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
             return MR_ERR_OK;
         }
 
+        case MR_CTRL_SET_TX_CB:
+        {
+            device->tx_cb = args;
+            return MR_ERR_OK;
+        }
+
         case MR_CTRL_SET_RX_BUFSZ:
         {
             if (args)
@@ -170,7 +178,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
     mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
     mr_size_t recv_size = 0;
 
-    if (serial->rx_bufsz == 0)
+    if (serial->rx_fifo.bufsz == 0)
     {
         /* Blocking read */
         for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
@@ -183,7 +191,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
         /* Non-blocking read */
         for (recv_size = 0; recv_size < size;)
         {
-            recv_size += mr_fifo_read(&serial->rx_fifo, recv_buffer + recv_size, size - recv_size);
+            recv_size += mr_fifo_read(&serial->rx_fifo.fifo, recv_buffer + recv_size, size - recv_size);
         }
     }
 
@@ -197,7 +205,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
     mr_size_t send_size = 0;
     mr_size_t dma_size = 0;
 
-    if (serial->tx_bufsz == 0 || (device->open_flag & MR_OPEN_NONBLOCKING) == 0)
+    if (serial->tx_fifo.bufsz == 0 || (device->open_flag & MR_OPEN_NONBLOCKING) == 0)
     {
         /* Blocking write */
         for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
@@ -211,12 +219,12 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
         for (send_size = 0; send_size < size;)
         {
             /* If this is the first write, start sending */
-            if (mr_fifo_get_data_size(&serial->tx_fifo) != 0)
+            if (mr_fifo_get_data_size(&serial->tx_fifo.fifo) != 0)
             {
-                send_size += mr_fifo_write(&serial->tx_fifo, send_buffer + send_size, size - send_size);
+                send_size += mr_fifo_write(&serial->tx_fifo.fifo, send_buffer + send_size, size - send_size);
             } else
             {
-                send_size += mr_fifo_write(&serial->tx_fifo, send_buffer + send_size, size - send_size);
+                send_size += mr_fifo_write(&serial->tx_fifo.fifo, send_buffer + send_size, size - send_size);
 
                 if ((device->open_flag & MR_OPEN_DMA) == 0)
                 {
@@ -225,7 +233,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
                 } else
                 {
                     /* DMA write */
-                    dma_size = mr_fifo_read(&serial->tx_fifo, serial->tx_dma, sizeof(serial->tx_dma));
+                    dma_size = mr_fifo_read(&serial->tx_fifo.fifo, serial->tx_dma, sizeof(serial->tx_dma));
                     serial->ops->start_dma_tx(serial, serial->tx_dma, dma_size);
                 }
             }
@@ -293,10 +301,10 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, void *data, 
     serial->device.ops = &device_ops;
 
     serial->config.baud_rate = 0;
-    serial->rx_bufsz = MR_CONF_SERIAL_RX_BUFSZ;
-    mr_fifo_init(&serial->rx_fifo, MR_NULL, 0);
-    serial->tx_bufsz = MR_CONF_SERIAL_TX_BUFSZ;
-    mr_fifo_init(&serial->tx_fifo, MR_NULL, 0);
+    serial->rx_fifo.bufsz = MR_CONF_SERIAL_RX_BUFSZ;
+    mr_fifo_init(&serial->rx_fifo.fifo, MR_NULL, 0);
+    serial->rx_fifo.bufsz = MR_CONF_SERIAL_TX_BUFSZ;
+    mr_fifo_init(&serial->tx_fifo.fifo, MR_NULL, 0);
 
     /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_serial_configure;
@@ -309,11 +317,7 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, void *data, 
     serial->ops = ops;
 
     /* Add to the container */
-#if (MR_CONF_SERIAL_TX_BUFSZ > 0)
     return mr_device_add(&serial->device, name, MR_OPEN_RDWR | MR_OPEN_NONBLOCKING);
-#else
-    return mr_device_add(&serial->device, name, MR_OPEN_RDWR);
-#endif
 }
 
 void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
@@ -330,12 +334,12 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
         {
             /* Read data into the fifo */
             data = serial->ops->read(serial);
-            mr_fifo_write_force(&serial->rx_fifo, &data, sizeof(data));
+            mr_fifo_write_force(&serial->rx_fifo.fifo, &data, sizeof(data));
 
             /* Invoke the rx-cb function */
             if (serial->device.rx_cb != MR_NULL)
             {
-                length = mr_fifo_get_data_size(&serial->rx_fifo);
+                length = mr_fifo_get_data_size(&serial->rx_fifo.fifo);
                 serial->device.rx_cb(&serial->device, &length);
             }
             break;
@@ -343,7 +347,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
 
         case MR_SERIAL_EVENT_TX_INT:
         {
-            length = mr_fifo_get_data_size(&serial->tx_fifo);
+            length = mr_fifo_get_data_size(&serial->tx_fifo.fifo);
             if (length == 0)
             {
                 serial->ops->stop_tx(serial);
@@ -357,7 +361,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
             }
 
             /* Write data from the fifo */
-            mr_fifo_read(&serial->tx_fifo, &data, sizeof(data));
+            mr_fifo_read(&serial->tx_fifo.fifo, &data, sizeof(data));
             serial->ops->write(serial, data);
             break;
         }
@@ -365,12 +369,12 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
         case MR_SERIAL_EVENT_RX_DMA:
         {
             dma_size = (event >> 16) & 0xffff;
-            mr_fifo_write_force(&serial->rx_fifo, serial->rx_dma, dma_size);
+            mr_fifo_write_force(&serial->rx_fifo.fifo, serial->rx_dma, dma_size);
 
             /* Invoke the rx-cb function */
             if (serial->device.rx_cb != MR_NULL)
             {
-                length = mr_fifo_get_data_size(&serial->rx_fifo);
+                length = mr_fifo_get_data_size(&serial->rx_fifo.fifo);
                 serial->device.rx_cb(&serial->device, &length);
             }
             break;
@@ -378,7 +382,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
 
         case MR_SERIAL_EVENT_TX_DMA:
         {
-            length = mr_fifo_get_data_size(&serial->tx_fifo);
+            length = mr_fifo_get_data_size(&serial->tx_fifo.fifo);
             if (length == 0)
             {
                 serial->ops->stop_dma_tx(serial);
@@ -392,7 +396,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
             }
 
             /* Write data from the fifo to the dma */
-            dma_size = mr_fifo_read(&serial->tx_fifo, serial->tx_dma, sizeof(serial->tx_dma));
+            dma_size = mr_fifo_read(&serial->tx_fifo.fifo, serial->tx_dma, sizeof(serial->tx_dma));
             serial->ops->start_dma_tx(serial, serial->tx_dma, dma_size);
             break;
         }
