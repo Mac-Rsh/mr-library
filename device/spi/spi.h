@@ -58,6 +58,12 @@ struct mr_spi_config
     mr_uint8_t cs_active;
 };
 
+struct mr_spi_fifo
+{
+    mr_size_t bufsz;
+    struct mr_fifo fifo;
+};
+
 typedef struct mr_spi_bus *mr_spi_bus_t;
 
 struct mr_spi_device
@@ -80,12 +86,10 @@ struct mr_spi_bus_ops
     mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
     void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state);
 
-    /* Interrupt */
     mr_uint8_t (*cs_read)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin);
     void (*start_tx)(mr_spi_bus_t spi_bus);
     void (*stop_tx)(mr_spi_bus_t spi_bus);
 
-    /* DMA */
     void (*start_dma_tx)(mr_spi_bus_t spi_bus, mr_uint8_t *buffer, mr_size_t size);
     void (*stop_dma_tx)(mr_spi_bus_t spi_bus);
 };
@@ -97,17 +101,11 @@ struct mr_spi_bus
     struct mr_spi_config config;
     struct mr_spi_device *owner;
     struct mr_mutex lock;
-
-    /* Interrupt */
-    mr_size_t rx_bufsz;
-    struct mr_fifo rx_fifo;
-    mr_size_t tx_bufsz;
-    struct mr_fifo tx_fifo;
+    struct mr_spi_fifo rx_fifo;
+    struct mr_spi_fifo tx_fifo;
     struct mr_list tx_list;
-
-    /* DMA */
-    mr_uint8_t rx_dma[MR_CONF_SERIAL_RX_DMA_BUFS];
-    mr_uint8_t tx_dma[MR_CONF_SERIAL_TX_DMA_BUFS];
+    mr_uint8_t rx_dma[MR_CONF_SPI_RX_DMA_BUFS];
+    mr_uint8_t tx_dma[MR_CONF_SPI_TX_DMA_BUFS];
 
     const struct mr_spi_bus_ops *ops;
 };
