@@ -16,6 +16,19 @@
 #define PIN_STPORT(pin)     ((GPIO_TypeDef *)(GPIOA_BASE + (0x400u * PIN_PORT(pin))))
 #define PIN_STPIN(pin)      ((uint16_t)(1u << (mr_uint8_t)(pin & 0x0Fu)))
 
+enum
+{
+#ifdef BSP_SPI_1
+    SPI1_INDEX,
+#endif
+#ifdef BSP_SPI_2
+    SPI2_INDEX,
+#endif
+#ifdef BSP_SPI_3
+    SPI3_INDEX,
+#endif
+};
+
 static struct ch32_spi ch32_spi[] =
         {
 #ifdef BSP_SPI_1
@@ -26,7 +39,8 @@ static struct ch32_spi ch32_spi[] =
                   GPIOA,
                   GPIO_Pin_5,
                   GPIO_Pin_6,
-                  GPIO_Pin_7}},
+                  GPIO_Pin_7,
+                  SPI1_IRQn}},
 #endif
 #ifdef BSP_SPI_2
                 {"spi2",
@@ -36,7 +50,8 @@ static struct ch32_spi ch32_spi[] =
                   GPIOB,
                   GPIO_Pin_13,
                   GPIO_Pin_14,
-                  GPIO_Pin_15}},
+                  GPIO_Pin_15,
+                  SPI2_IRQn}},
 #endif
 #ifdef BSP_SPI_3
                 {"spi3",
@@ -46,7 +61,8 @@ static struct ch32_spi ch32_spi[] =
                   GPIOB,
                   GPIO_Pin_3,
                   GPIO_Pin_4,
-                  GPIO_Pin_5}},
+                  GPIO_Pin_5,
+                  SPI3_IRQn}},
 #endif
         };
 
@@ -57,21 +73,37 @@ static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32
     mr_uint16_t psc = pclk_freq / baud_rate;
 
     if (psc >= 256)
-    { return SPI_BaudRatePrescaler_256; }
+    {
+        return SPI_BaudRatePrescaler_256;
+    }
     else if (psc >= 128)
-    { return SPI_BaudRatePrescaler_128; }
+    {
+        return SPI_BaudRatePrescaler_128;
+    }
     else if (psc >= 64)
-    { return SPI_BaudRatePrescaler_64; }
+    {
+        return SPI_BaudRatePrescaler_64;
+    }
     else if (psc >= 32)
-    { return SPI_BaudRatePrescaler_32; }
+    {
+        return SPI_BaudRatePrescaler_32;
+    }
     else if (psc >= 16)
-    { return SPI_BaudRatePrescaler_16; }
+    {
+        return SPI_BaudRatePrescaler_16;
+    }
     else if (psc >= 8)
-    { return SPI_BaudRatePrescaler_8; }
+    {
+        return SPI_BaudRatePrescaler_8;
+    }
     else if (psc >= 4)
-    { return SPI_BaudRatePrescaler_4; }
+    {
+        return SPI_BaudRatePrescaler_4;
+    }
     else if (psc >= 2)
-    { return SPI_BaudRatePrescaler_2; }
+    {
+        return SPI_BaudRatePrescaler_2;
+    }
     return SPI_BaudRatePrescaler_2;
 }
 
@@ -79,6 +111,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
 {
     struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
+    NVIC_InitTypeDef NVIC_InitStructure = {0};
     SPI_InitTypeDef SPI_InitStructure = {0};
     RCC_ClocksTypeDef RCC_ClockStruct = {0};
     mr_uint32_t pclk_freq = 0;
@@ -174,6 +207,19 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
         GPIO_Init(driver->info.gpio_port, &GPIO_InitStructure);
     }
 
+    NVIC_InitStructure.NVIC_IRQChannel = driver->info.irqno;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    if(config->host_slave == MR_SPI_HOST)
+    {
+        SPI_I2S_ITConfig(driver->info.Instance, SPI_I2S_IT_RXNE, DISABLE);
+    }else
+    {
+        SPI_I2S_ITConfig(driver->info.Instance, SPI_I2S_IT_RXNE, ENABLE);
+    }
+
     SPI_InitStructure.SPI_BaudRatePrescaler = ch32_spi_baud_rate_prescaler(pclk_freq, config->baud_rate);
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
@@ -184,7 +230,7 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
     return MR_ERR_OK;
 }
 
-static mr_uint8_t ch32_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
+static void ch32_spi_write(mr_spi_bus_t spi_bus, mr_uint8_t data)
 {
     struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
     mr_size_t i = 0;
@@ -193,15 +239,25 @@ static mr_uint8_t ch32_spi_transfer(mr_spi_bus_t spi_bus, mr_uint8_t data)
     {
         i++;
         if (i > 200)
-        { return 0; }
+        {
+            return;
+        }
     }
     SPI_I2S_SendData(driver->info.Instance, data);
+}
+
+static mr_uint8_t ch32_spi_read(mr_spi_bus_t spi_bus)
+{
+    struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
+    mr_size_t i = 0;
 
     while (SPI_I2S_GetFlagStatus(driver->info.Instance, SPI_I2S_FLAG_RXNE) == RESET)
     {
         i++;
         if (i > 200)
-        { return 0; }
+        {
+            return 0;
+        }
     }
 
     return SPI_I2S_ReceiveData(driver->info.Instance);
@@ -218,6 +274,66 @@ static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_
     }
 }
 
+static mr_uint8_t ch32_spi_cs_read(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin)
+{
+    return GPIO_ReadOutputDataBit(PIN_STPORT(cs_pin), PIN_STPIN(cs_pin));
+}
+
+static void ch32_spi_start_tx(mr_spi_bus_t spi_bus)
+{
+    struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
+
+    SPI_I2S_ITConfig(driver->info.Instance, SPI_I2S_IT_TXE, ENABLE);
+}
+
+static void ch32_spi_stop_tx(mr_spi_bus_t spi_bus)
+{
+    struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
+
+    SPI_I2S_ITConfig(driver->info.Instance, SPI_I2S_IT_TXE, DISABLE);
+}
+
+static void ch32_spi_isr(mr_spi_bus_t spi_bus)
+{
+    struct ch32_spi *driver = (struct ch32_spi *)spi_bus->device.data;
+
+    if (SPI_I2S_GetITStatus(driver->info.Instance, SPI_I2S_IT_RXNE) != RESET)
+    {
+        mr_spi_bus_isr(spi_bus, MR_SPI_BUS_EVENT_RX_INT);
+        SPI_I2S_ClearITPendingBit(driver->info.Instance, SPI_I2S_IT_RXNE);
+    }
+
+    if (SPI_I2S_GetITStatus(driver->info.Instance, SPI_I2S_IT_TXE) != RESET)
+    {
+        mr_spi_bus_isr(spi_bus, MR_SPI_BUS_EVENT_TX_INT);
+        SPI_I2S_ClearITPendingBit(driver->info.Instance, SPI_I2S_IT_TXE);
+    }
+}
+
+#ifdef BSP_SPI_1
+void SPI1_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI1_IRQHandler(void)
+{
+    ch32_spi_isr(&spi_bus_device[SPI1_INDEX]);
+}
+#endif
+
+#ifdef BSP_SPI_2
+void SPI2_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI2_IRQHandler(void)
+{
+    ch32_spi_isr(&spi_bus_device[SPI2_INDEX]);
+}
+#endif
+
+#ifdef BSP_SPI_3
+void SPI3_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI3_IRQHandler(void)
+{
+    ch32_spi_isr(&spi_bus_device[SPI3_INDEX]);
+}
+#endif
+
 mr_err_t ch32_spi_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
@@ -225,8 +341,12 @@ mr_err_t ch32_spi_init(void)
     static struct mr_spi_bus_ops driver =
             {
                     ch32_spi_configure,
-                    ch32_spi_transfer,
+                    ch32_spi_write,
+                    ch32_spi_read,
                     ch32_spi_cs_crtl,
+                    ch32_spi_cs_read,
+                    ch32_spi_start_tx,
+                    ch32_spi_stop_tx,
             };
 
     while (count--)

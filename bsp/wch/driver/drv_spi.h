@@ -24,6 +24,7 @@ struct ch32_spi_info
     mr_uint16_t clk_gpio_pin;
     mr_uint16_t miso_gpio_pin;
     mr_uint16_t mosi_gpio_pin;
+    IRQn_Type irqno;
 };
 
 struct ch32_spi
