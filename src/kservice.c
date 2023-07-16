@@ -61,7 +61,7 @@ mr_err_t mr_printf_init(void)
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
     console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
     MR_ASSERT(console_device != MR_NULL);
-    return mr_device_open(console_device, MR_OPEN_RDWR);
+    return mr_device_open(console_device, MR_OPEN_RDWR | MR_OPEN_NONBLOCKING);
 #else
     console_device = MR_NULL;
     return MR_ERR_OK;
