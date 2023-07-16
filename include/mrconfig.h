@@ -55,6 +55,8 @@
 #define MR_CONF_SPI                     MR_CONF_ENABLE
 #define MR_CONF_SPI_RX_BUFSZ            32
 #define MR_CONF_SPI_TX_BUFSZ            0
+#define MR_CONF_SPI_RX_DMA_BUFS         0
+#define MR_CONF_SPI_TX_DMA_BUFS         0
 //< i2c >
 #define MR_CONF_I2C                     MR_CONF_ENABLE
 //< adc >
