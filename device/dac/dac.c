@@ -46,7 +46,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_dac_t dac = (mr_dac_t)device;
     mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
@@ -59,14 +59,14 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buf
 
     for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
     {
-        dac->ops->write(dac, (mr_uint16_t)pos, *send_buffer);
+        dac->ops->write(dac, pos, *send_buffer);
         send_buffer++;
     }
 
     return (mr_ssize_t)send_size;
 }
 
-static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_uint8_t state)
+static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_state_t state)
 {
     MR_ASSERT(0);
     return -MR_ERR_IO;
@@ -78,7 +78,7 @@ static mr_err_t _err_io_dac_channel_configure(mr_dac_t dac, struct mr_dac_config
     return -MR_ERR_IO;
 }
 
-static void _err_io_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value)
+static void _err_io_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
 {
     MR_ASSERT(0);
 }
@@ -113,4 +113,4 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, void *data, struct mr
     return mr_device_add(&dac->device, name, MR_OPEN_WRONLY);
 }
 
-#endif /* MR_CONF_DAC */
+#endif  /* MR_CONF_DAC */

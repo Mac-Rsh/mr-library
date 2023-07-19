@@ -77,12 +77,12 @@ static mr_err_t ch32_pwm_configure(mr_pwm_t pwm, struct mr_pwm_config *config)
 
 }
 
-static mr_err_t ch32_pwm_write(mr_pwm_t pwm, mr_uint8_t channel, mr_uint32_t duty)
+static mr_err_t ch32_pwm_write(mr_pwm_t pwm, mr_pos_t channel, mr_uint32_t duty)
 {
 
 }
 
-static mr_uint32_t ch32_pwm_read(mr_pwm_t pwm, mr_uint8_t channel)
+static mr_uint32_t ch32_pwm_read(mr_pwm_t pwm, mr_pos_t channel)
 {
 
 }

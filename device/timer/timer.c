@@ -18,7 +18,7 @@ static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t time
     mr_uint32_t i = 0, reload_min = 0, reload_max = 0, error = 0, error_min = 0, reload_best = 0;
 
     /* Calculate the timer-period and timeout total count */
-    timer_period = 1000000 / timer->config.freq;
+    timer_period = 1000000u / timer->config.freq;
     count = timeout / timer_period;
 
     if (count == 0)
@@ -135,7 +135,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
             {
                 return -MR_ERR_INVALID;
             }
-            timer->ops->start(timer, timer->timeout / (1000000 / timer->config.freq));
+            timer->ops->start(timer, timer->timeout / (1000000u / timer->config.freq));
             return MR_ERR_OK;
         }
 
@@ -144,7 +144,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_timer_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_timer_t timer = (mr_timer_t)device;
     mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
@@ -161,17 +161,17 @@ static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, 
         cnt = timer->ops->get_count(timer);
         if (timer->info.cnt_mode == _MR_TIMER_CNT_MODE_DOWN)
         {
-            cnt = timer->timeout / (1000000 / timer->config.freq) - cnt;
+            cnt = timer->timeout / (1000000u / timer->config.freq) - cnt;
         }
 
-        *recv_buffer = timer->overflow * timer->timeout + cnt * (1000000 / timer->config.freq);
+        *recv_buffer = timer->overflow * timer->timeout + cnt * (1000000u / timer->config.freq);
         recv_buffer++;
     }
 
     return (mr_ssize_t)recv_size;
 }
 
-static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_timer_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_timer_t timer = (mr_timer_t)device;
     mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
@@ -308,4 +308,4 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
     }
 }
 
-#endif /* MR_CONF_TIMER */
+#endif  /* MR_CONF_TIMER */

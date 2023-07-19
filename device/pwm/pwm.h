@@ -37,8 +37,8 @@ typedef struct mr_pwm *mr_pwm_t;
 struct mr_pwm_ops
 {
     mr_err_t (*configure)(mr_pwm_t pwm, struct mr_pwm_config *config);
-    mr_err_t (*write)(mr_pwm_t pwm, mr_uint8_t channel, mr_uint32_t duty);
-    mr_uint32_t (*read)(mr_pwm_t pwm, mr_uint8_t channel);
+    mr_err_t (*write)(mr_pwm_t pwm, mr_pos_t channel, mr_uint32_t duty);
+    mr_uint32_t (*read)(mr_pwm_t pwm, mr_pos_t channel);
 };
 
 struct mr_pwm
@@ -57,6 +57,6 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm,
                            struct mr_pwm_ops *ops,
                            struct mr_pwm_info *info);
 
-#endif /* MR_CONF_PWM */
+#endif  /* MR_CONF_PWM */
 
-#endif /* _PWM_H_ */
+#endif  /* _PWM_H_ */

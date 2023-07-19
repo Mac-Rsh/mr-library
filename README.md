@@ -158,8 +158,8 @@ struct mr_device_ops
     mr_err_t (*open)(mr_device_t device);
     mr_err_t (*close)(mr_device_t device);
     mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-    mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+    mr_ssize_t (*read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*write)(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 };
 ```
 

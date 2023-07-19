@@ -46,7 +46,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_adc_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_adc_t adc = (mr_adc_t)device;
     mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
@@ -59,14 +59,14 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr
 
     for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
     {
-        *recv_buffer = adc->ops->read(adc, (mr_uint16_t)pos);
+        *recv_buffer = adc->ops->read(adc, pos);
         recv_buffer++;
     }
 
     return (mr_ssize_t)recv_size;
 }
 
-static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_uint8_t state)
+static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_state_t state)
 {
     MR_ASSERT(0);
     return -MR_ERR_IO;
@@ -78,7 +78,7 @@ static mr_err_t _err_io_adc_channel_configure(mr_adc_t adc, struct mr_adc_config
     return -MR_ERR_IO;
 }
 
-static mr_uint32_t _err_io_adc_read(mr_adc_t adc, mr_uint16_t channel)
+static mr_uint32_t _err_io_adc_read(mr_adc_t adc, mr_pos_t channel)
 {
     MR_ASSERT(0);
     return 0;
@@ -114,4 +114,4 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, void *data, struct mr
     return mr_device_add(&adc->device, name, MR_OPEN_RDONLY);
 }
 
-#endif
+#endif  /* MR_CONF_ADC */

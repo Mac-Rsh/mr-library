@@ -28,7 +28,7 @@ static struct ch32_dac ch32_dac[] =
 
 static struct mr_dac dac_device[mr_array_get_length(ch32_dac)];
 
-mr_err_t ch32_dac_configure(mr_dac_t dac, mr_uint8_t state)
+mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
 {
     struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
     DAC_InitTypeDef DAC_InitType = {0};
@@ -86,7 +86,7 @@ mr_err_t ch32_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
     return MR_ERR_OK;
 }
 
-void ch32_dac_write(mr_dac_t dac, mr_uint16_t channel, mr_uint32_t value)
+void ch32_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
 {
     struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
 

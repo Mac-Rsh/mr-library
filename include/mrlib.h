@@ -37,8 +37,8 @@ mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags);
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
-mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
+mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 #endif /* MR_CONF_DEVICE */
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
@@ -113,6 +113,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...);
 void mr_assert_handle(void);
 void mr_interrupt_disable(void);
 void mr_interrupt_enable(void);
+void mr_delay_us(mr_uint32_t us);
 void mr_delay_ms(mr_uint32_t ms);
 
 /**

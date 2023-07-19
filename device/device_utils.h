@@ -147,7 +147,7 @@ mr_inline mr_uint8_t mr_spi_read_reg(mr_device_t spi_device, mr_uint8_t reg)
 
 #include <adc/adc.h>
 
-mr_inline mr_err_t mr_adc_mode(mr_device_t adc, mr_uint16_t channel, mr_uint8_t state)
+mr_inline mr_err_t mr_adc_mode(mr_device_t adc, mr_pos_t channel, mr_state_t state)
 {
     struct mr_adc_config config = {channel,
                                    state};
@@ -169,7 +169,7 @@ mr_inline mr_uint16_t mr_adc_read(mr_device_t adc, mr_uint16_t channel)
 
 #include <dac/dac.h>
 
-mr_inline mr_err_t mr_dac_mode(mr_device_t dac, mr_uint16_t channel, mr_uint8_t state)
+mr_inline mr_err_t mr_dac_mode(mr_device_t dac, mr_pos_t channel, mr_state_t state)
 {
     struct mr_dac_config config = {channel, state};
 

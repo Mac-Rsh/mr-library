@@ -17,6 +17,7 @@
 #define I2C_DELAY                        100
 
 typedef struct i2c_bus *i2c_bus_t;
+
 struct i2c_device
 {
     uint8_t addr;

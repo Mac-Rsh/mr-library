@@ -76,6 +76,6 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
                              struct mr_timer_info *info);
 void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event);
 
-#endif /* MR_CONF_TIMER */
+#endif  /* MR_CONF_TIMER */
 
-#endif /* _TIMER_H_ */
+#endif  /* _TIMER_H_ */

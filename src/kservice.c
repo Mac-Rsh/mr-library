@@ -27,11 +27,11 @@ static int start(void)
 }
 AUTO_INIT_EXPORT(start, "0");
 
-static int driver_state(void)
+static int driver_start(void)
 {
     return 0;
 }
-AUTO_INIT_EXPORT(driver_state, "0.end");
+AUTO_INIT_EXPORT(driver_start, "0.end");
 
 static int driver_end(void)
 {
@@ -133,14 +133,19 @@ mr_weak void mr_interrupt_enable(void)
 
 }
 
-mr_weak void mr_delay_ms(mr_uint32_t ms)
+mr_weak void mr_delay_us(mr_size_t us)
 {
     volatile mr_size_t count = 0;
 
-    for (count = 0; count < ms * BSP_SYSCLK_FREQ / 1000;)
+    for (count = 0; count < us * (BSP_SYSCLK_FREQ / 1000000u); count++)
     {
-        count++;
+        asm("nop");
     }
+}
+
+mr_weak void mr_delay_ms(mr_size_t ms)
+{
+    mr_delay_us(ms * 1000u);
 }
 
 /**

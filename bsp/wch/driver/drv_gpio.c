@@ -101,21 +101,21 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
             break;
         }
 
-        case MR_PIN_MODE_RISING:
+        case MR_PIN_MODE_IRQ_RISING:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
             EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
             break;
         }
 
-        case MR_PIN_MODE_FALLING:
+        case MR_PIN_MODE_IRQ_FALLING:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
             EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
             break;
         }
 
-        case MR_PIN_MODE_EDGE:
+        case MR_PIN_MODE_IRQ_EDGE:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
             EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
@@ -126,7 +126,7 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
             return -MR_ERR_GENERIC;
     }
 
-    if (config->mode >= MR_PIN_MODE_RISING)
+    if (config->mode >= MR_PIN_MODE_IRQ_RISING)
     {
         if ((mask[config->number % 16] != -1 && mask[config->number % 16] != config->number))
         {
@@ -190,12 +190,12 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
     return MR_ERR_OK;
 }
 
-static void ch32_pin_write(mr_pin_t pin, mr_uint16_t number, mr_uint8_t value)
+static void ch32_pin_write(mr_pin_t pin, mr_pos_t number, mr_uint8_t value)
 {
     GPIO_WriteBit(PIN_STPORT(number), PIN_STPIN(number), value);
 }
 
-static mr_uint8_t ch32_pin_read(mr_pin_t pin, mr_uint16_t number)
+static mr_uint8_t ch32_pin_read(mr_pin_t pin, mr_pos_t number)
 {
     return GPIO_ReadInputDataBit(PIN_STPORT(number), PIN_STPIN(number));
 }

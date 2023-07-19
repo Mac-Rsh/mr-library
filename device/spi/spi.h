@@ -36,9 +36,6 @@
 #define MR_SPI_BUS_EVENT_TX_DMA          0x80000000
 #define _MR_SPI_BUS_EVENT_MASK           0xf0000000
 
-#define _MR_SPI_BUS_STATE_IDLE           0x00
-#define _MR_SPI_BUS_STATE_RUNNING        0x10
-
 /* Default config for mr_spi_config structure */
 #define MR_SPI_CONFIG_DEFAULT           \
 {                                       \
@@ -84,9 +81,9 @@ struct mr_spi_bus_ops
     mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
     void (*write)(mr_spi_bus_t spi_bus, mr_uint8_t data);
     mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
-    void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state);
+    void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_pos_t cs_pin, mr_state_t state);
 
-    mr_uint8_t (*cs_read)(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin);
+    mr_uint8_t (*cs_read)(mr_spi_bus_t spi_bus, mr_pos_t cs_pin);
     void (*start_tx)(mr_spi_bus_t spi_bus);
     void (*stop_tx)(mr_spi_bus_t spi_bus);
 
@@ -114,6 +111,6 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, void *data, stru
 mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_uint16_t cs_pin);
 void mr_spi_bus_isr(mr_spi_bus_t spi_bus, mr_uint32_t event);
 
-#endif /* MR_CONF_SPI */
+#endif  /* MR_CONF_SPI */
 
-#endif /* _SPI_H_ */
+#endif  /* _SPI_H_ */

@@ -38,9 +38,6 @@
 #define MR_SERIAL_EVENT_TX_DMA          0x80000000
 #define _MR_SERIAL_EVENT_MASK           0xf0000000
 
-#define _MR_SERIAL_STATE_IDLE           0x00
-#define _MR_SERIAL_STATE_RUNNING        0x10
-
 /* Default config for mr_serial_config structure */
 #define MR_SERIAL_CONFIG_DEFAULT        \
 {                                       \
@@ -101,6 +98,6 @@ struct mr_serial
 mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, void *data, struct mr_serial_ops *ops);
 void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event);
 
-#endif /* MR_CONF_SERIAL */
+#endif  /* MR_CONF_SERIAL */
 
-#endif /* _SERIAL_H_ */
+#endif  /* _SERIAL_H_ */

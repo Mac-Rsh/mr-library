@@ -93,7 +93,7 @@ mr_device_ioctl(dac_device, MR_CTRL_CONFIG, &dac_config);
 ## 设置DAC通道值
 
 ```c
-mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 ```
 
 | 参数        | 描述      |

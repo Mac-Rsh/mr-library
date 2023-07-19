@@ -172,7 +172,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_serial_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_serial_t serial = (mr_serial_t)device;
     mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
@@ -198,7 +198,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
     return (mr_ssize_t)recv_size;
 }
 
-static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_serial_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_serial_t serial = (mr_serial_t)device;
     mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
@@ -406,4 +406,4 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
     }
 }
 
-#endif /* MR_CONF_SERIAL */
+#endif  /* MR_CONF_SERIAL */

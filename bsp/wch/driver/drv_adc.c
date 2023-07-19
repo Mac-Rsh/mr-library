@@ -28,7 +28,7 @@ static struct ch32_adc ch32_adc[] =
 
 static struct mr_adc adc_device[mr_array_get_length(ch32_adc)];
 
-mr_err_t ch32_adc_configure(mr_adc_t adc, mr_uint8_t state)
+mr_err_t ch32_adc_configure(mr_adc_t adc, mr_state_t state)
 {
     struct ch32_adc *driver = (struct ch32_adc *)adc->device.data;
     ADC_InitTypeDef ADC_InitStructure = {0};
@@ -87,7 +87,7 @@ mr_err_t ch32_adc_channel_configure(mr_adc_t adc, struct mr_adc_config *config)
     return MR_ERR_OK;
 }
 
-mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_uint16_t channel)
+mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_pos_t channel)
 {
     struct ch32_adc *driver = (struct ch32_adc *)adc->device.data;
     mr_uint32_t data = 0;

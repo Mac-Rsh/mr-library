@@ -78,7 +78,7 @@ mr_object_t mr_object_find(const char *name, mr_uint8_t type)
     mr_interrupt_disable();
 
     /* Walk through the container looking for objects */
-    for (list = (container->list).next; list != &(container->list); list = list->next)
+    for (list = container->list.next; list != &container->list; list = list->next)
     {
         object = mr_container_of(list, struct mr_object, list);
         if (mr_strncmp(object->name, name, MR_CONF_NAME_MAX) == 0)
@@ -133,7 +133,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type)
     mr_interrupt_disable();
 
     /* Insert the object into the container's list */
-    mr_list_insert_after(&(container->list), &(object->list));
+    mr_list_insert_before(&(container->list), &(object->list));
 
     /* Enable interrupt */
     mr_interrupt_enable();

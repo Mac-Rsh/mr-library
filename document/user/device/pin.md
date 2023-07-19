@@ -119,7 +119,7 @@ mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
 ## 设置引脚电平
 
 ```c
-mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 ```
 
 | 参数        | 描述      |
@@ -144,7 +144,7 @@ mr_device_write(pin_device, 29, &pin_level, sizeof(pin_level));
 ## 获取引脚电平
 
 ```c
-mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 ```
 
 | 参数        | 描述      |

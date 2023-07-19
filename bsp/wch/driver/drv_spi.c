@@ -263,7 +263,7 @@ static mr_uint8_t ch32_spi_read(mr_spi_bus_t spi_bus)
     return SPI_I2S_ReceiveData(driver->info.Instance);
 }
 
-static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_t state)
+static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_pos_t cs_pin, mr_state_t state)
 {
     if (state == MR_ENABLE)
     {
@@ -274,7 +274,7 @@ static void ch32_spi_cs_crtl(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin, mr_uint8_
     }
 }
 
-static mr_uint8_t ch32_spi_cs_read(mr_spi_bus_t spi_bus, mr_uint16_t cs_pin)
+static mr_uint8_t ch32_spi_cs_read(mr_spi_bus_t spi_bus, mr_pos_t cs_pin)
 {
     return GPIO_ReadOutputDataBit(PIN_STPORT(cs_pin), PIN_STPIN(cs_pin));
 }

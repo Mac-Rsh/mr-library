@@ -142,10 +142,10 @@ typedef unsigned int mr_ubase_t;                                    /* Type for 
 typedef mr_ubase_t mr_size_t;                                       /* Type for size number */
 typedef mr_base_t mr_ssize_t;                                       /* Type for signed size number */
 typedef mr_base_t mr_err_t;                                         /* Type for error number */
-typedef mr_base_t mr_off_t;                                         /* Type for offset */
+typedef mr_base_t mr_pos_t;                                         /* Type for position */
 typedef mr_int8_t mr_bool_t;                                        /* Type for boolean */
 typedef mr_int8_t mr_level_t;                                       /* Type for level */
-typedef mr_int8_t mr_state_t;                                       /* Type for state */
+typedef mr_uint8_t mr_state_t;                                       /* Type for state */
 typedef mr_int8_t mr_lock_t;                                        /* Type for lock */
 
 /**
@@ -280,8 +280,8 @@ struct mr_device_ops
     mr_err_t (*open)(mr_device_t device);
     mr_err_t (*close)(mr_device_t device);
     mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
-    mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
+    mr_ssize_t (*read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*write)(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 };
 
 struct mr_device

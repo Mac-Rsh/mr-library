@@ -69,7 +69,7 @@ static mr_err_t mr_pwm_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_err_t mr_pwm_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+static mr_err_t mr_pwm_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_pwm_t pwm = (mr_pwm_t)device;
     mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
@@ -82,14 +82,14 @@ static mr_err_t mr_pwm_read(mr_device_t device, mr_off_t pos, void *buffer, mr_s
 
     for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
     {
-        *recv_buffer = pwm->ops->read(pwm, (mr_uint8_t)pos);
+        *recv_buffer = pwm->ops->read(pwm, pos);
         recv_buffer++;
     }
 
     return (mr_ssize_t)recv_size;
 }
 
-static mr_err_t mr_pwm_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+static mr_err_t mr_pwm_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_pwm_t pwm = (mr_pwm_t)device;
     mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
@@ -102,7 +102,7 @@ static mr_err_t mr_pwm_write(mr_device_t device, mr_off_t pos, const void *buffe
 
     for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
     {
-        pwm->ops->write(pwm, (mr_uint8_t)pos, *send_buffer);
+        pwm->ops->write(pwm, pos, *send_buffer);
         send_buffer++;
     }
 
@@ -115,13 +115,13 @@ static mr_err_t _err_io_pwm_configure(mr_pwm_t pwm, struct mr_pwm_config *config
     return -MR_ERR_IO;
 }
 
-static mr_err_t _err_io_pwm_write(mr_pwm_t pwm, mr_uint8_t channel, mr_uint32_t duty)
+static mr_err_t _err_io_pwm_write(mr_pwm_t pwm, mr_pos_t channel, mr_uint32_t duty)
 {
     MR_ASSERT(0);
     return -MR_ERR_IO;
 }
 
-static mr_uint32_t _err_io_pwm_read(mr_pwm_t pwm, mr_uint8_t channel)
+static mr_uint32_t _err_io_pwm_read(mr_pwm_t pwm, mr_pos_t channel)
 {
     MR_ASSERT(0);
     return 0;
@@ -163,4 +163,4 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, void *data, struct mr
     return mr_device_add(&pwm->device, name, MR_OPEN_RDWR);
 }
 
-#endif /* MR_CONF_PWM */
+#endif  /* MR_CONF_PWM */
