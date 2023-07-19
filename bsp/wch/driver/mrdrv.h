@@ -25,6 +25,10 @@
 #include "drv_spi.h"
 #endif /* MR_CONF_SPI */
 
+#if (MR_CONF_I2C == MR_CONF_ENABLE)
+#include "drv_i2c.h"
+#endif /* MR_CONF_I2C */
+
 #if (MR_CONF_ADC == MR_CONF_ENABLE)
 #include "drv_adc.h"
 #endif /* MR_CONF_ADC */

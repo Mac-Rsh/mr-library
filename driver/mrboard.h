@@ -40,6 +40,7 @@
 //<<< Bsp using I2Cx >>>
 #define BSP_I2C_1
 #define BSP_I2C_2
+#define BSP_I2C_3
 
 //<--------------------------- BSP-ADC -------------------------------------->
 //<<< Bsp using ADCx >>>
