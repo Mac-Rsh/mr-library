@@ -12,6 +12,8 @@
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 
+#define DEBUG_TAG   "event"
+
 /**
  * @brief This function find the event server object.
  *
@@ -49,6 +51,7 @@ mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size
     pool = mr_malloc(queue_length * sizeof(mr_uint8_t));
     if (pool == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d.\r\n", server->object.name, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
 
@@ -58,6 +61,8 @@ mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size
     {
         /* Free the queue memory */
         mr_free(pool);
+
+        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d.\r\n", server->object.name, ret);
         return ret;
     }
 
@@ -80,12 +85,13 @@ mr_err_t mr_event_server_remove(mr_event_server_t server)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->list != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SERVER);
 
     /* Remove the object from the container */
     ret = mr_object_remove(&server->object);
     if (ret != MR_ERR_OK)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d.\r\n", server->object.name, ret);
         return ret;
     }
 
@@ -121,10 +127,8 @@ void mr_event_server_handle(mr_event_server_t server)
             continue;
         }
 
-        /* Get the event from the list */
-        event = mr_container_of(node, struct mr_event, list);
-
         /* Call the event callback */
+        event = mr_container_of(node, struct mr_event, list);
         event->cb(server, event->args);
     }
 }
@@ -152,13 +156,15 @@ mr_err_t mr_event_create(mr_uint8_t id,
     /* Check if the event is already exists in the server */
     if (mr_avl_find(server->list, id) != MR_NULL)
     {
-        return -MR_ERR_GENERIC;
+        MR_DEBUG_D(DEBUG_TAG, "%d already exists in %s.\r\n", id, server->object.name);
+        return -MR_ERR_BUSY;
     }
 
     /* Allocate the event object */
     event = (mr_event_t)mr_malloc(sizeof(struct mr_event));
     if (event == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%d create failed: %d.\r\n", id, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
     mr_memset(event, 0, sizeof(struct mr_event));
@@ -199,6 +205,7 @@ mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%d not found in %s.\r\n", id, server->object.name);
         return -MR_ERR_NOT_FOUND;
     }
 
@@ -235,6 +242,7 @@ mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server)
     /* Write the event id to the queue */
     if (!mr_fifo_write(&server->queue, &id, sizeof(id)))
     {
+        MR_DEBUG_D(DEBUG_TAG, "%s notify failed: %d.\r\n", server->object.name, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
 
@@ -261,13 +269,12 @@ mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%d not found in %s.\r\n", id, server->object.name);
         return -MR_ERR_NOT_FOUND;
     }
 
-    /* Get the event from the list */
-    event = mr_container_of(node, struct mr_event, list);
-
     /* Call the event callback */
+    event = mr_container_of(node, struct mr_event, list);
     event->cb(server, event->args);
 
     return MR_ERR_OK;
