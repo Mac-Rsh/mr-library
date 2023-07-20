@@ -8,9 +8,7 @@
  * 2023-07-08     MacRsh       first version
  */
 
-#include "mrlib.h"
-
-#if (MR_CONF_AT_COMMAND == MR_CONF_ENABLE)
+#include "at_command.h"
 
 #define MR_AT_COMMAND_CMD_BLOCK_SIZE    5
 
@@ -592,5 +590,3 @@ const char *mr_at_command_get_cmd(mr_at_command_t at_command)
 
     return at_command->cmd;
 }
-
-#endif /* MR_CONF_AT_COMMAND */
