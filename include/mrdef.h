@@ -352,48 +352,4 @@ struct mr_soft_timer
 };
 #endif /* MR_CONF_SOFT_TIMER */
 
-#if (MR_CONF_AT_COMMAND == MR_CONF_ENABLE)
-/**
- *  At-command server
- */
-enum mr_at_command_state
-{
-    MR_AT_COMMAND_STATE_NONE = 0,                                   /* No command */
-    MR_AT_COMMAND_STATE_START,                                      /* Start state */
-    MR_AT_COMMAND_STATE_FLAG,                                       /* Flag state */
-    MR_AT_COMMAND_STATE_CMD,                                        /* Command state */
-    MR_AT_COMMAND_STATE_DATA,                                       /* Data state */
-    MR_AT_COMMAND_STATE_END,                                        /* End state */
-};
-
-enum mr_at_command_server_type
-{
-    MR_AT_COMMAND_SERVER_TYPE_NONE,                                 /* No command server */
-    MR_AT_COMMAND_SERVER_TYPE_HOST,                                 /* Host command server */
-    MR_AT_COMMAND_SERVER_TYPE_SLAVE,                                /* Slave command server */
-};
-
-struct mr_at_command_server
-{
-    struct mr_object object;                                        /* At-command server object */
-
-    mr_uint8_t type;                                                /* At-command server type */
-    mr_avl_t list;                                                  /* At-command server list */
-    void *buffer;                                                   /* At-command server buffer */
-    size_t queue_size;                                              /* At-command server queue size */
-};
-typedef struct mr_at_command_server *mr_at_command_server_t;        /* Type for at-command server */
-
-typedef struct mr_at_command *mr_at_command_t;                      /* Type for at-command */
-
-struct mr_at_command
-{
-    struct mr_avl list;                                             /* At-command list */
-    mr_at_command_server_t server;                                  /* At-command owner server */
-    const char *cmd;                                                /* At-command command */
-
-    mr_err_t (*cb)(mr_at_command_t at_command, void *args);         /* At-command callback */
-};
-#endif /* MR_CONF_AT_COMMAND */
-
 #endif /* _MR_DEF_H_ */

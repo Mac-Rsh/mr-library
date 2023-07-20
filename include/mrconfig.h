@@ -31,9 +31,6 @@
 #define MR_CONF_EVENT                   MR_CONF_ENABLE
 //< soft-timer >
 #define MR_CONF_SOFT_TIMER              MR_CONF_ENABLE
-//< at-command >
-#define MR_CONF_AT_COMMAND              MR_CONF_ENABLE
-#define MR_CONF_AT_COMMAND_BUFSZ        32
 #endif /* MR_CONF_SERVER */
 
 //<<< Device >>>

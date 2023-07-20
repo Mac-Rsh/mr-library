@@ -82,31 +82,10 @@ mr_err_t mr_soft_timer_add_then_start(mr_soft_timer_t timer,
                                       mr_soft_timer_server_t server);
 #endif /* MR_CONF_SOFT_TIMER */
 
-#if (MR_CONF_AT_COMMAND == MR_CONF_ENABLE)
-mr_at_command_server_t mr_at_command_server_find(const char *name);
-mr_err_t mr_at_command_server_add(mr_at_command_server_t server,
-                                  const char *name,
-                                  mr_uint8_t type,
-                                  mr_size_t queue_length);
-mr_err_t mr_at_command_server_remove(mr_at_command_server_t server);
-void mr_at_command_server_handle(mr_at_command_server_t server);
-void mr_at_command_server_parse(mr_at_command_server_t server, mr_uint8_t data);
-mr_err_t mr_at_command_create(const char *command,
-                              mr_err_t (*cb)(mr_at_command_t at_command, void *args),
-                              mr_at_command_server_t server);
-mr_err_t mr_at_command_delete(const char *command, mr_at_command_server_t server);
-mr_err_t mr_at_command_edit(const char *command, const char *new_command, mr_at_command_server_t server);
-const char* mr_at_command_get_cmd(mr_at_command_t at_command);
-#define mr_at_command_get_args  mr_sscanf
-#define mr_at_command_set_response  mr_snprintf
-#define mr_at_command_set_response_ok(buffer, bufsz)  mr_snprintf(buffer, bufsz, "OK\r\n")
-#define mr_at_command_set_response_error(buffer, bufsz)  mr_snprintf(buffer, bufsz, "ERROR\r\n")
-#endif /* MR_CONF_AT_COMMAND */
-
 /**
  *  Export kernel service functions
  */
-void mr_auto_init(void);
+int mr_auto_init(void);
 mr_size_t mr_printf_output(const char *str, mr_size_t size);
 mr_size_t mr_printf(const char *format, ...);
 void mr_log_output(mr_base_t level, const char *tag, const char *format, ...);
