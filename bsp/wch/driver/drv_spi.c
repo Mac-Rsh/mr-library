@@ -75,32 +75,25 @@ static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32
     if (psc >= 256)
     {
         return SPI_BaudRatePrescaler_256;
-    }
-    else if (psc >= 128)
+    } else if (psc >= 128)
     {
         return SPI_BaudRatePrescaler_128;
-    }
-    else if (psc >= 64)
+    } else if (psc >= 64)
     {
         return SPI_BaudRatePrescaler_64;
-    }
-    else if (psc >= 32)
+    } else if (psc >= 32)
     {
         return SPI_BaudRatePrescaler_32;
-    }
-    else if (psc >= 16)
+    } else if (psc >= 16)
     {
         return SPI_BaudRatePrescaler_16;
-    }
-    else if (psc >= 8)
+    } else if (psc >= 8)
     {
         return SPI_BaudRatePrescaler_8;
-    }
-    else if (psc >= 4)
+    } else if (psc >= 4)
     {
         return SPI_BaudRatePrescaler_4;
-    }
-    else if (psc >= 2)
+    } else if (psc >= 2)
     {
         return SPI_BaudRatePrescaler_2;
     }
@@ -212,10 +205,10 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *c
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-    if(config->host_slave == MR_SPI_HOST)
+    if (config->host_slave == MR_SPI_HOST)
     {
         SPI_I2S_ITConfig(driver->info.Instance, SPI_I2S_IT_RXNE, DISABLE);
-    }else
+    } else
     {
         SPI_I2S_ITConfig(driver->info.Instance, SPI_I2S_IT_RXNE, ENABLE);
     }

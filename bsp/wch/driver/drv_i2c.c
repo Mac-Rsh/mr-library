@@ -34,7 +34,7 @@ static struct ch32_soft_i2c ch32_soft_i2c[] =
                 {"i2c2", {RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_0, GPIO_Pin_1}},
 #endif
 #ifdef BSP_I2C_3
-                {"i2c3",{RCC_APB2Periph_GPIOC, GPIOC,GPIO_Pin_0,GPIO_Pin_1}},
+                {"i2c3", {RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_0, GPIO_Pin_1}},
 #endif
         };
 

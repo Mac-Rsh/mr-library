@@ -139,6 +139,20 @@ mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server);
 | MR_ERR_OK | 通知成功   |
 | 错误码       | 通知失败   |
 
+### 触发事件
+
+```c
+mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server);
+```
+
+| 参数        | 描述     |
+|:----------|:-------|
+| id        | 事件id   |
+| server    | 服务器句柄  |
+| **返回**    |        |
+| MR_ERR_OK | 通知成功   |
+| 错误码       | 通知失败   |
+
 ## 使用示例：
 
 ```c
