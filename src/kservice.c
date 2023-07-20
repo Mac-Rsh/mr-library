@@ -45,7 +45,12 @@ static int end(void)
 }
 AUTO_INIT_EXPORT(end, "3.end");
 
-void mr_auto_init(void)
+/**
+ * @brief This function is auto initialization macro derived functions.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+int mr_auto_init(void)
 {
     volatile const init_fn_t *fn_ptr;
 
@@ -54,6 +59,8 @@ void mr_auto_init(void)
     {
         (*fn_ptr)();
     }
+
+    return MR_ERR_OK;
 }
 
 mr_err_t mr_printf_init(void)
@@ -82,14 +89,13 @@ mr_size_t mr_printf(const char *format, ...)
 
     va_start(args, format);
     size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
-#if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    if(console_device != MR_NULL)
+    if (console_device != MR_NULL)
     {
         mr_device_write(console_device, 0, str_buffer, size);
+    } else
+    {
+        mr_printf_output(str_buffer, size);
     }
-#else
-    mr_printf_output(str_buffer, size);
-#endif
     va_end(args);
 
     return size;
@@ -105,12 +111,12 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
     mr_printf("[%s/%s]: ", debug_level_name[level], tag);
     size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    if(console_device != MR_NULL)
+    if (console_device != MR_NULL)
     {
         mr_device_write(console_device, 0, str_buffer, size);
     }
 #else
-    mr_printf_output(str_buffer, size);
+        mr_printf_output(str_buffer, size);
 #endif
     va_end(args);
 }
