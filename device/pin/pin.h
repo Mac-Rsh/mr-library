@@ -39,8 +39,8 @@ typedef struct mr_pin *mr_pin_t;
 struct mr_pin_ops
 {
     mr_err_t (*configure)(mr_pin_t pin, struct mr_pin_config *config);
-    void (*write)(mr_pin_t pin, mr_pos_t number, mr_uint8_t value);
-    mr_uint8_t (*read)(mr_pin_t pin, mr_pos_t number);
+    void (*write)(mr_pin_t pin, mr_pos_t number, mr_level_t level);
+    mr_level_t (*read)(mr_pin_t pin, mr_pos_t number);
 };
 
 struct mr_pin

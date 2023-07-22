@@ -190,12 +190,12 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
     return MR_ERR_OK;
 }
 
-static void ch32_pin_write(mr_pin_t pin, mr_pos_t number, mr_uint8_t value)
+static void ch32_pin_write(mr_pin_t pin, mr_pos_t number, mr_level_t level)
 {
-    GPIO_WriteBit(PIN_STPORT(number), PIN_STPIN(number), value);
+    GPIO_WriteBit(PIN_STPORT(number), PIN_STPIN(number), level);
 }
 
-static mr_uint8_t ch32_pin_read(mr_pin_t pin, mr_pos_t number)
+static mr_level_t ch32_pin_read(mr_pin_t pin, mr_pos_t number)
 {
     return GPIO_ReadInputDataBit(PIN_STPORT(number), PIN_STPIN(number));
 }

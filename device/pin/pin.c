@@ -41,7 +41,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 static mr_ssize_t mr_pin_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
-    mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
+    mr_level_t *recv_buffer = (mr_level_t *)buffer;
     mr_size_t recv_size = 0;
 
     if (size < sizeof(*recv_buffer))
@@ -61,7 +61,7 @@ static mr_ssize_t mr_pin_read(mr_device_t device, mr_pos_t pos, void *buffer, mr
 static mr_ssize_t mr_pin_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
-    mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
+    mr_level_t *send_buffer = (mr_level_t *)buffer;
     mr_size_t send_size = 0;
 
     if (size < sizeof(*send_buffer))
@@ -84,12 +84,12 @@ static mr_err_t _err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config
     return -MR_ERR_IO;
 }
 
-static void _err_io_pin_write(mr_pin_t pin, mr_pos_t number, mr_uint8_t value)
+static void _err_io_pin_write(mr_pin_t pin, mr_pos_t number, mr_level_t level)
 {
     MR_ASSERT(0);
 }
 
-static mr_uint8_t _err_io_pin_read(mr_pin_t pin, mr_pos_t number)
+static mr_level_t _err_io_pin_read(mr_pin_t pin, mr_pos_t number)
 {
     MR_ASSERT(0);
     return 0;
