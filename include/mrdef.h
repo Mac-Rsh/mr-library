@@ -145,7 +145,7 @@ typedef mr_base_t mr_err_t;                                         /* Type for 
 typedef mr_base_t mr_pos_t;                                         /* Type for position */
 typedef mr_int8_t mr_bool_t;                                        /* Type for boolean */
 typedef mr_int8_t mr_level_t;                                       /* Type for level */
-typedef mr_uint8_t mr_state_t;                                       /* Type for state */
+typedef mr_int8_t mr_state_t;                                       /* Type for state */
 typedef mr_int8_t mr_lock_t;                                        /* Type for lock */
 
 /**
@@ -204,6 +204,9 @@ struct mr_fifo
 };
 typedef struct mr_fifo *mr_fifo_t;                                  /* Type for fifo */
 
+/**
+ *  Transfer
+ */
 struct mr_transfer
 {
     void *data;                                                     /* Transfer data */
@@ -228,10 +231,10 @@ typedef struct mr_container *mr_container_t;                        /* Type for 
  */
 enum mr_object_type
 {
-    MR_OBJECT_TYPE_NULL = 0,                                        /* Miscellaneous object */
+    MR_OBJECT_TYPE_NONE,                                            /* No object */
     MR_OBJECT_TYPE_DEVICE,                                          /* Device object */
-    MR_OBJECT_TYPE_SERVER,                                          /* Server object */
-    _MR_OBJECT_TYPE_MASK,                                           /* Mask for getting object type */
+    MR_OBJECT_TYPE_EVENT,                                           /* Event object */
+    MR_OBJECT_TYPE_SOFT_TIMER,                                      /* Soft timer object */
 };
 
 struct mr_object

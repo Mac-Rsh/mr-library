@@ -26,7 +26,7 @@ mr_event_server_t mr_event_server_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the event server object from the server container */
-    return (mr_event_server_t)mr_object_find(name, MR_OBJECT_TYPE_SERVER);
+    return (mr_event_server_t)mr_object_find(name, MR_OBJECT_TYPE_EVENT);
 }
 
 /**
@@ -56,7 +56,7 @@ mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size
     }
 
     /* Add the object to the container */
-    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SERVER);
+    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_EVENT);
     if (ret != MR_ERR_OK)
     {
         /* Free the queue memory */
@@ -85,7 +85,7 @@ mr_err_t mr_event_server_remove(mr_event_server_t server)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SERVER);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
     /* Remove the object from the container */
     ret = mr_object_remove(&server->object);
@@ -117,6 +117,7 @@ void mr_event_server_handle(mr_event_server_t server)
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
     /* Read the event id from the queue */
     while (mr_fifo_read(&server->queue, &id, sizeof(id)))
@@ -152,6 +153,7 @@ mr_err_t mr_event_create(mr_uint8_t id,
 
     MR_ASSERT(cb != MR_NULL);
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
     /* Check if the event is already exists in the server */
     if (mr_avl_find(server->list, id) != MR_NULL)
@@ -200,6 +202,7 @@ mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server)
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
     /* Find the event from the server */
     node = mr_avl_find(server->list, id);
@@ -238,6 +241,7 @@ mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server)
 mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server)
 {
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
     /* Write the event id to the queue */
     if (!mr_fifo_write(&server->queue, &id, sizeof(id)))
@@ -265,6 +269,7 @@ mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server)
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)

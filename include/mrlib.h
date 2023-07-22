@@ -86,7 +86,7 @@ mr_err_t mr_soft_timer_add_then_start(mr_soft_timer_t timer,
  *  Export kernel service functions
  */
 int mr_auto_init(void);
-mr_size_t mr_printf_output(const char *str, mr_size_t size);
+mr_size_t mr_printf_output(const char *buffer, mr_size_t size);
 mr_size_t mr_printf(const char *format, ...);
 void mr_log_output(mr_base_t level, const char *tag, const char *format, ...);
 void mr_assert_handle(void);
@@ -115,6 +115,6 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
 void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
-mr_uint32_t mr_str2hash(const char *str, mr_size_t length);
+mr_uint32_t mr_str2hash(const char *string, mr_size_t length);
 
 #endif /* _MR_LIB_H_ */

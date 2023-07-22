@@ -10,20 +10,30 @@
 
 #include "mrlib.h"
 
-static struct mr_container mr_kernel_container[_MR_OBJECT_TYPE_MASK] =
+static struct mr_container mr_kernel_container[] =
         {
                 {
-                        MR_OBJECT_TYPE_NULL,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_NULL].list,   &mr_kernel_container[MR_OBJECT_TYPE_NULL].list}
+                        MR_OBJECT_TYPE_NONE,
+                        {&mr_kernel_container[MR_OBJECT_TYPE_NONE].list, &mr_kernel_container[MR_OBJECT_TYPE_NONE].list}
                 },
+#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
                 {
                         MR_OBJECT_TYPE_DEVICE,
                         {&mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list, &mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list}
                 },
+#endif
+#if (MR_CONF_EVENT == MR_CONF_ENABLE)
                 {
-                        MR_OBJECT_TYPE_SERVER,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_SERVER].list, &mr_kernel_container[MR_OBJECT_TYPE_SERVER].list}
+                        MR_OBJECT_TYPE_EVENT,
+                        {&mr_kernel_container[MR_OBJECT_TYPE_EVENT].list, &mr_kernel_container[MR_OBJECT_TYPE_EVENT].list}
                 },
+#endif
+#if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
+                {
+                        MR_OBJECT_TYPE_SOFT_TIMER,
+                        {&mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list, &mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list}
+                },
+#endif
         };
 
 /**
@@ -37,9 +47,7 @@ mr_container_t mr_container_find(mr_uint8_t type)
 {
     mr_size_t count = 0;
 
-    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
-
-    for (count = 0; count < _MR_OBJECT_TYPE_MASK; count++)
+    for (count = 0; count < mr_array_get_length(mr_kernel_container); count++)
     {
         if (mr_kernel_container[count].type == type)
         {
@@ -65,7 +73,7 @@ mr_object_t mr_object_find(const char *name, mr_uint8_t type)
     mr_object_t object = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
+    MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
 
     /* Get corresponding container */
     container = mr_container_find(type);
@@ -110,7 +118,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type)
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
+    MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
 
     /* Find the container for the specified type */
     container = mr_container_find(type);
@@ -184,7 +192,7 @@ mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type)
     mr_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
-    MR_ASSERT(type < _MR_OBJECT_TYPE_MASK);
+    MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
 
     /* Find the container for the specified type */
     container = mr_container_find(type);

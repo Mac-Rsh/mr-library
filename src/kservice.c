@@ -63,7 +63,12 @@ int mr_auto_init(void)
     return MR_ERR_OK;
 }
 
-mr_err_t mr_printf_init(void)
+/**
+ * @brief This function initialize the console.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_console_init(void)
 {
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
     console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
@@ -74,27 +79,35 @@ mr_err_t mr_printf_init(void)
     return MR_ERR_OK;
 #endif
 }
-AUTO_INIT_DEVICE_EXPORT(mr_printf_init);
+AUTO_INIT_DEVICE_EXPORT(mr_console_init);
 
-mr_weak mr_size_t mr_printf_output(const char *str, mr_size_t size)
+/**
+ * @brief This function print the output.
+ *
+ * @param buffer The buffer to print.
+ * @param size The size of the buffer.
+ *
+ * @return The size of the actual write.
+ */
+mr_weak mr_size_t mr_printf_output(const char *buffer, mr_size_t size)
 {
     return 0;
 }
 
 mr_size_t mr_printf(const char *format, ...)
 {
-    char str_buffer[MR_CONF_CONSOLE_BUFSZ];
+    char buffer[MR_CONF_CONSOLE_BUFSZ];
     va_list args;
     mr_size_t size = 0;
 
     va_start(args, format);
-    size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
+    size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
     if (console_device != MR_NULL)
     {
-        mr_device_write(console_device, 0, str_buffer, size);
+        mr_device_write(console_device, 0, buffer, size);
     } else
     {
-        mr_printf_output(str_buffer, size);
+        mr_printf_output(buffer, size);
     }
     va_end(args);
 
@@ -103,24 +116,27 @@ mr_size_t mr_printf(const char *format, ...)
 
 void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
 {
-    char str_buffer[MR_CONF_CONSOLE_BUFSZ];
+    char buffer[MR_CONF_CONSOLE_BUFSZ];
     va_list args;
     mr_size_t size = 0;
 
     va_start(args, format);
     mr_printf("[%s/%s]: ", debug_level_name[level], tag);
-    size = mr_vsnprintf(str_buffer, sizeof(str_buffer) - 1, format, args);
+    size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
 #if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
     if (console_device != MR_NULL)
     {
-        mr_device_write(console_device, 0, str_buffer, size);
+        mr_device_write(console_device, 0, buffer, size);
     }
 #else
-        mr_printf_output(str_buffer, size);
+        mr_printf_output(buffer, size);
 #endif
     va_end(args);
 }
 
+/**
+ * @brief This function assert the handle.
+ */
 mr_weak void mr_assert_handle(void)
 {
     while (1)
@@ -129,16 +145,27 @@ mr_weak void mr_assert_handle(void)
     }
 }
 
+/**
+ * @brief This function disable the interrupt.
+ */
 mr_weak void mr_interrupt_disable(void)
 {
 
 }
 
+/**
+ * @brief This function enable the interrupt.
+ */
 mr_weak void mr_interrupt_enable(void)
 {
 
 }
 
+/**
+ * @brief This function delay the us.
+ *
+ * @param us The us to delay.
+ */
 mr_weak void mr_delay_us(mr_size_t us)
 {
     volatile mr_size_t count = 0;
@@ -149,6 +176,11 @@ mr_weak void mr_delay_us(mr_size_t us)
     }
 }
 
+/**
+ * @brief This function delay the ms.
+ *
+ * @param ms The ms to delay.
+ */
 mr_weak void mr_delay_ms(mr_size_t ms)
 {
     mr_delay_us(ms * 1000u);
@@ -477,6 +509,12 @@ static void mr_avl_right_rotate(mr_avl_t *node)
     (*node) = left_child;
 }
 
+/**
+ * @brief This function initialize the avl tree.
+ *
+ * @param node The node to be initialized.
+ * @param value The value to be initialized.
+ */
 void mr_avl_init(mr_avl_t node, mr_uint32_t value)
 {
     MR_ASSERT(node != MR_NULL);
@@ -487,6 +525,12 @@ void mr_avl_init(mr_avl_t node, mr_uint32_t value)
     node->right_child = MR_NULL;
 }
 
+/**
+ * @brief This function insert the node in the avl tree.
+ *
+ * @param tree The tree to be inserted.
+ * @param node The node to insert.
+ */
 void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
 {
     mr_int8_t balance = 0;
@@ -537,6 +581,12 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
     }
 }
 
+/**
+ * @brief This function remove the node from the avl tree.
+ *
+ * @param tree The tree to be removed.
+ * @param node The node to be removed.
+ */
 void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
 {
     if (*tree == MR_NULL)
@@ -599,6 +649,14 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
     }
 }
 
+/**
+ * @brief This function find the node in the avl tree.
+ *
+ * @param tree The tree to be searched.
+ * @param value The value to be searched.
+ *
+ * @return A handle to the found node, or MR_NULL if not found.
+ */
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value)
 {
     if (tree == MR_NULL)
@@ -622,6 +680,13 @@ mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value)
     return MR_NULL;
 }
 
+/**
+ * @brief This function get the length of the avl tree.
+ *
+ * @param tree The tree to be searched.
+ *
+ * @return The length of the avl tree.
+ */
 mr_size_t mr_avl_get_length(mr_avl_t tree)
 {
     mr_size_t length = 1;
@@ -644,14 +709,22 @@ mr_size_t mr_avl_get_length(mr_avl_t tree)
     return length;
 }
 
-mr_uint32_t mr_str2hash(const char *str, mr_size_t length)
+/**
+ * @brief This function get the hash of the avl tree.
+ *
+ * @param string The string to be hashed.
+ * @param length The length of the string.
+ *
+ * @return The hash of the string.
+ */
+mr_uint32_t mr_str2hash(const char *string, mr_size_t length)
 {
     mr_uint32_t hash = 2166136261u;
     mr_size_t count = 0;
 
     for (count = 0; count < length; count++)
     {
-        hash ^= (mr_uint32_t)str[count];
+        hash ^= (mr_uint32_t)string[count];
         hash *= 16777619u;
     }
 
