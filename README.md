@@ -1,7 +1,7 @@
 ﻿# 简介
 
-**mr-library** 是一个面向嵌入式系统的轻量级框架，提供了统一的底层驱动设备模型以及基础服务功能，具有模块化设计、可配置性和扩展性的特点，
-可以帮助开发者快速搭建嵌入式应用程序。
+**mr-library** 是一个面向嵌入式系统的轻量级框架，提供统一的底层驱动设备模型以及基础服务功能，具有模块化设计、可配置性和扩展性的特点，
+可帮助开发者快速构建嵌入式应用程序。
 
 **mr-library** 框架支持互斥锁、对象管理等基础内核功能。集成异步事件驱动框架（event）、多时基软件定时器(soft-timer)
 等服务。提供串口、SPI、I2C、ADC/DAC等常见外设的驱动设备模型，通过统一的驱动接口（open、close、ioctl、read、write）访问底层硬件设备，解耦底层驱动和应用。
@@ -16,7 +16,7 @@
 
 # 驱动设备框架
 
-开发者能够以面向对象的方式访问外设，简化驱动逻辑的开发流程。框架实现了常用外设的通用驱动模板，开发者可以快速移植到不同的硬件平台。
+开发者能以面向对象的方式访问外设，简化驱动逻辑的开发流程。框架实现了常用外设的通用驱动模板，开发者可以快速移植到不同的硬件平台。
 
 驱动设备框架支持普通设备的通用接口、总线设备自动总线控制、多种设备的中断接管。
 
@@ -24,15 +24,15 @@
 
 设备驱动框架提供统一的操作接口，设备的所有操作都需要通过以下接口实现：
 
-| 接口              | 描述        |
-|:----------------|:----------|
-| mr_device_add   | 添加设备到内核容器 |
-| mr_device_find  | 从内核容器查找设备 |
-| mr_device_open  | 打开设备      |
-| mr_device_close | 关闭设备      |
-| mr_device_ioctl | 控制设备      |
-| mr_device_read  | 从设备读取数据   |
-| mr_device_write | 向设备写入数据   |
+| 接口              | 描述      |
+|:----------------|:--------|
+| mr_device_add   | 添加设备    |
+| mr_device_find  | 从查找设备   |
+| mr_device_open  | 打开设备    |
+| mr_device_close | 关闭设备    |
+| mr_device_ioctl | 控制设备    |
+| mr_device_read  | 从设备读取数据 |
+| mr_device_write | 向设备写入数据 |
 
 ### SPI设备使用示例：
 
@@ -77,19 +77,19 @@ mr_device_close(spi1_device);
 
 # 服务框架
 
-**mr-library** 框架集成了轻量级的服务框架，用于构建嵌入式开发中的应用服务，支持事件监听，软件定时器等。
+**mr-library** 框架集成了轻量级的服务框架，用于构建嵌入式开发中的应用服务，支持异步事件监听，多时基软件定时器等。
 通过服务框架完成对应用层不同应用间的解耦，实现应用程序的模块化，可裁剪，业务逻辑清晰，开发快速，代码高度复用。
 
 ## 事件服务
 
-事件服务器是一种异步事件处理机制,它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
+事件服务是一种异步事件处理机制,它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
 
-事件服务器包含两个部分:事件服务器和事件。
+事件服务包含两个部分:事件服务器和事件。
 
-- 事件服务器用于接收和分发事件,它内部维护一个事件队列用于存储待处理事件和一个事件列表用于存储注册的事件。
-- 事件需要注册到事件服务器并提供一个回调函数。
+- 事件服务器用于接收和分发事件，其内部维护一个事件队列用于存储待处理事件和一个事件列表用于存储已创建事件。
+- 事件需要创建到事件服务器并提供一个回调函数。
 
-当事件发生时,事件服务器会将事件插入到其事件队列中进行缓存。事件服务器会周期性地从事件队列中取出事件进行分发,找到对应的事件回调进行事件处理。
+当事件发生时,事件服务器会将事件插入到事件队列中进行缓存。事件服务器会周期性地从事件队列中取出事件进行分发,找到对应的事件回调进行事件处理。
 
 ### 事件服务操作接口
 
@@ -121,7 +121,6 @@ mr_err_t event1_cb(mr_event_server_t server, void *args)
     
     /* 通知事件服务器事件2发生 */
     mr_event_notify(EVENT2, server);
-    
     return MR_ERR_OK;
 }
 
@@ -130,15 +129,13 @@ mr_err_t event2_cb(mr_event_server_t server, void *args)
     printf("event2_cb\r\n");
 
     /* 通知事件服务器事件3发生 */
-    mr_event_notify(EVENT3, server);
-    
+    mr_event_notify(EVENT3, server)
     return MR_ERR_OK;
 }
 
 mr_err_t event3_cb(mr_event_server_t server, void *args)
 {
     printf("event3_cb\r\n");
-    
     return MR_ERR_OK;
 }
 
@@ -227,9 +224,9 @@ int main(void)
     mr_soft_timer_server_add(&server, "soft-timer");
 
     /* 添加定时器并启动 */
-    mr_soft_timer_add_then_start(&timer1, 5, timer1_callback, NULL, &server);
-    mr_soft_timer_add_then_start(&timer2, 10, timer2_callback, NULL, &server);
-    mr_soft_timer_add_then_start(&timer3, 15, timer3_callback, NULL, &server);
+    mr_soft_timer_add_then_start(&timer1, 5, timer1_callback, MR_NULL, &server);
+    mr_soft_timer_add_then_start(&timer2, 10, timer2_callback, MR_NULL, &server);
+    mr_soft_timer_add_then_start(&timer3, 15, timer3_callback, MR_NULL, &server);
 
     while (1)
     {
