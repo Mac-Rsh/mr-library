@@ -368,7 +368,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
 
         case MR_SERIAL_EVENT_RX_DMA:
         {
-            dma_size = (event >> 16) & 0xffff;
+            dma_size = (event >> 16) & MR_UINT16_MAX;
             mr_fifo_write_force(&serial->rx_fifo.fifo, serial->rx_dma, dma_size);
 
             /* Invoke the rx-cb function */

@@ -245,7 +245,7 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     MR_ASSERT(ops != MR_NULL);
     MR_ASSERT(info != MR_NULL);
     MR_ASSERT(info->min_freq > 0);
-    MR_ASSERT(info->max_freq > info->min_freq);
+    MR_ASSERT(info->max_freq >= info->min_freq);
     MR_ASSERT(info->max_cnt > 0);
 
     /* Initialize the private fields */

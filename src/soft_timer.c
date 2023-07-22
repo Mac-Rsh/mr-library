@@ -12,6 +12,8 @@
 
 #if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
 
+#define DEBUG_TAG   "soft_timer"
+
 /**
  * @brief This function finds a soft-timer server object.
  *
@@ -24,7 +26,7 @@ mr_soft_timer_server_t mr_soft_timer_server_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the soft-timer server object from the server container */
-    return (mr_soft_timer_server_t)mr_object_find(name, MR_OBJECT_TYPE_SERVER);
+    return (mr_soft_timer_server_t)mr_object_find(name, MR_OBJECT_TYPE_SOFT_TIMER);
 }
 
 /**
@@ -43,9 +45,10 @@ mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *nam
     MR_ASSERT(name != MR_NULL);
 
     /* Add the object to the container */
-    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SERVER);
+    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SOFT_TIMER);
     if (ret != MR_ERR_OK)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d.\r\n", server->object.name, ret);
         return ret;
     }
 
@@ -68,12 +71,14 @@ mr_err_t mr_soft_timer_server_remove(mr_soft_timer_server_t server)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
     MR_ASSERT(mr_list_is_empty(&server->list));
 
     /* Remove the object from the container */
     ret = mr_object_remove(&server->object);
     if (ret != MR_ERR_OK)
     {
+        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d.\r\n", server->object.name, ret);
         return ret;
     }
 
@@ -93,6 +98,7 @@ mr_err_t mr_soft_timer_server_remove(mr_soft_timer_server_t server)
 void mr_soft_timer_server_update(mr_soft_timer_server_t server, mr_uint32_t time)
 {
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
     MR_ASSERT(time != 0);
 
     server->time += time;
@@ -109,6 +115,7 @@ void mr_soft_timer_server_handle(mr_soft_timer_server_t server)
     mr_soft_timer_t timer = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
 
     for (list = server->list.next; list != &server->list; list = list->next)
     {
@@ -154,10 +161,12 @@ mr_err_t mr_soft_timer_add(mr_soft_timer_t timer,
     MR_ASSERT(time != 0);
     MR_ASSERT(cb != MR_NULL);
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
 
     /* Check timer has not been added */
     if (timer->server != MR_NULL)
     {
+        MR_DEBUG_D(DEBUG_TAG, "soft-timer has been added.\r\n");
         return -MR_ERR_BUSY;
     }
 
@@ -287,6 +296,7 @@ mr_err_t mr_soft_timer_add_then_start(mr_soft_timer_t timer,
 {
     MR_ASSERT(timer != MR_NULL);
     MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
 
     mr_soft_timer_add(timer, time, cb, args, server);
     return mr_soft_timer_start(timer);
