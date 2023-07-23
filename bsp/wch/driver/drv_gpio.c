@@ -37,22 +37,22 @@ static IRQn_Type irqno[] =
                 EXTI15_10_IRQn,
         };
 
-static mr_int32_t mask[16] = {-1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              -1};
+static mr_pos_t mask[16] = {-1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1,
+                            -1};
 
 static struct mr_pin pin_device;
 
