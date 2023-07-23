@@ -52,9 +52,17 @@ enum mr_device_type
 设备只能以支持的打开方式打开，定义如下：
 
 ```c
-#define MR_OPEN_RDONLY                  0x1000                      /* 只读打开 */
-#define MR_OPEN_WRONLY                  0x2000                      /* 只写打开 */
-#define MR_OPEN_RDWR                    0x3000                      /* 可读可写 */
+MR_OPEN_RDONLY                          0x1000                      /* 只读打开 */
+MR_OPEN_WRONLY                          0x2000                      /* 只写打开 */
+MR_OPEN_RDWR                            0x3000                      /* 可读可写 */
+MR_OPEN_NONBLOCKING                     0x4000                      /* 非阻塞 */
+MR_OPEN_DMA                             0x0100                      /* DMA */
+```
+
+打开方式可或使用，例如：
+
+```c
+(MR_OPEN_RDWR | MR_OPEN_NONBLOCKING)                                /* 非阻塞可读可写 */
 ```
 
 ### 设备操作方法
@@ -72,47 +80,65 @@ struct mr_device_ops
 };
 ```
 
-| 接口    | 描述                                                          |
-|:------|:------------------------------------------------------------|
-| open  | 打开设备，同时完成设备配置。只有当设备首次被打开时，才会调用此方法来打开设备。                     |
-| close | 关闭设备。只有当设备被所有用户关闭时（设备引用次数为 0），才会调用此方法来关闭设备。                 |
-| ioctl | 控制设备。根据 cmd 命令控制设备                                          |
-| sda_read  | 从设备读取数据。pos 是设备读取位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备读取字节大小。 |
-| write | 向设备写入数据。pos 是设备写入位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备写入字节大小。 |
+| 接口       | 描述                                                          |
+|:---------|:------------------------------------------------------------|
+| open     | 打开设备，同时完成设备配置。只有当设备首次被打开时，才会调用此方法来打开设备。                     |
+| close    | 关闭设备。只有当设备被所有用户关闭时（设备引用次数为 0），才会调用此方法来关闭设备。                 |
+| ioctl    | 控制设备。根据 cmd 命令控制设备                                          |
+| sda_read | 从设备读取数据。pos 是设备读取位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备读取字节大小。 |
+| write    | 向设备写入数据。pos 是设备写入位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备写入字节大小。 |
 
-## 访问设备
+## 操作设备
 
-应用程序通过设备操作接口来访问硬件设备，具体如下：
+应用程序通过设备操作接口来操作硬件设备，具体如下：
 
-| 接口              | 描述          |
-|:----------------|:------------|
-| mr_device_add   | 将设备添加到内核容器中 |
-| mr_device_find  | 在内核容器中查找设备  |
-| mr_device_open  | 打开设备        |
-| mr_device_close | 关闭设备        |
-| mr_device_ioctl | 控制设备        |
-| mr_device_read  | 从设备读取数据     |
-| mr_device_write | 向设备写入数据     |
+| 接口              | 描述      |
+|:----------------|:--------|
+| mr_device_add   | 添加设备    |
+| mr_device_find  | 查找设备    |
+| mr_device_open  | 打开设备    |
+| mr_device_close | 关闭设备    |
+| mr_device_ioctl | 控制设备    |
+| mr_device_read  | 从设备读取数据 |
+| mr_device_write | 向设备写入数据 |
 
-### 设备操作示例
+### 设备操作示例:
 
-下面是一个以 PIN 设备为例的设备操作示例：
+下面是一个以 SPI 设备为例的设备操作示例：
 
 ```c
-/* 寻找PIN设备 */
-mr_device_t pin_device = mr_device_find("pin");
+/* 定义SPI设备 */
+#define SPI_DEVICE0_CS_PIN              10
+#define SPI_DEVICE1_CS_PIN              20
+struct mr_spi_device spi_device0, spi_device1;
 
-/* 以可读可写的方式打开PIN设备 */
-mr_device_open(pin_device, MR_OPEN_RDWR);
+/* 添加SPI设备 */
+mr_spi_device_add(&spi_device0, "spi10", SPI_DEVICE0_CS_PIN);
+mr_spi_device_add(&spi_device1, "spi11", SPI_DEVICE1_CS_PIN);
 
-/* 配置B13引脚为推挽输出模式 */
-struct mr_pin_config pin_config = { 29, MR_PIN_MODE_OUTPUT };
-mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+/* 查找SPI设备 */
+mr_device_t spi0_device = mr_device_find("spi10");
+mr_device_t spi1_device = mr_device_find("spi11");
 
-/* 设置B13为高电平 */
-mr_uint8_t pin_level = 1;
-mr_device_write(pin_device, 29, &pin_level, sizeof(pin_level));
+/* 挂载总线 */
+mr_device_ioctl(spi0_device, MR_CTRL_ATTACH, "spi1");
+mr_device_ioctl(spi1_device, MR_CTRL_ATTACH, "spi1");
 
-/* 获取B13电平 */
-mr_device_read(pin_device, 29, &pin_level, sizeof(pin_level));
+/* 以可读可写的方式打开SPI设备 */
+mr_device_open(spi0_device, MR_OPEN_RDWR);
+mr_device_open(spi1_device, MR_OPEN_RDWR);
+
+/* 发送数据 */
+char buffer0[] = "hello";
+char buffer1[] = "world";
+mr_device_write(spi0_device, 0, buffer0, sizeof(buffer0) - 1);
+mr_device_write(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
+
+/* 读取数据 */
+mr_device_read(spi0_device, 0, buffer0, sizeof(buffer0) - 1);
+mr_device_read(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
+
+/* 关闭设备 */
+mr_device_close(spi0_device);
+mr_device_close(spi1_device);
 ```
