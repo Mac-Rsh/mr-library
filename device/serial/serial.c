@@ -322,7 +322,7 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, void *data, 
 
 void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
 {
-    mr_uint32_t length = 0;
+    mr_size_t length = 0;
     mr_uint8_t data = 0;
     mr_size_t dma_size = 0;
 
