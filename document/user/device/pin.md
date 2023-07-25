@@ -6,15 +6,15 @@
 
 GPIO（通用目的输入/输出）是一种可以通过软件进行配置和控制的硬件接口，广泛用于嵌入式系统中外设的连接和控制。
 
- ----------
+----------
 
 ## 准备工作
 
 1. 引用 `mrdrv.h` 头文件以使用驱动部分。
 2. 调用PIN设备初始化函数（如果实现了自动初始化,则无需调用）。
-3. 打开 `mrconfig.h` 头文件中PIN宏开关。
+3. 使能 `mrconfig.h` 头文件中PIN宏开关。
 
- ----------
+----------
 
 ## 查找PIN设备
 
@@ -29,7 +29,7 @@ mr_device_t mr_device_find(const char *name);
 | PIN句柄   | 查找设备成功 |
 | MR_NULL | 查找设备失败 |
 
- ----------
+----------
 
 ## 打开PIN设备
 
@@ -53,7 +53,7 @@ MR_OPEN_WRONLY                                                      /* 只写 */
 MR_OPEN_RDWR                                                        /* 可读可写 */
 ```
 
- ----------
+----------
 
 ## 控制PIN设备
 
@@ -164,7 +164,7 @@ mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
 mr_device_ioctl(pin_device, MR_CTRL_SET_RX_CB, pin_device_cb);
 ```
 
- ----------
+----------
 
 ## 读取PIN设备IO电平
 
@@ -205,7 +205,7 @@ mr_level_t pin_level = MR_LOW;
 mr_device_read(pin_device, PIN_NUMBER, &pin_level, sizeof(pin_level));
 ```
 
- ----------
+----------
 
 ## 写入PIN设备IO电平
 

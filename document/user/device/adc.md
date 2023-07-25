@@ -12,9 +12,9 @@ ADC（模数转换器）是一种可以将连续的模拟信号转换为离散�
 
 1. 引用 `mrdrv.h` 头文件以使用驱动部分。
 2. 调用ADC设备初始化函数（如果实现了自动初始化,则无需调用）。
-3. 打开 `mrconfig.h` 头文件中ADC宏开关。
+3. 使能 `mrconfig.h` 头文件中ADC宏开关。
 
- ----------
+----------
 
 ## 查找ADC设备
 
@@ -29,7 +29,7 @@ mr_device_t mr_device_find(const char *name);
 | ADC句柄   | 查找设备成功 |
 | MR_NULL | 查找设备失败 |
 
- ----------
+----------
 
 ## 打开ADC设备
 
@@ -51,7 +51,7 @@ ADC设备支持以下打开方式：
 MR_OPEN_RDONLY                                                      /* 只读 */
 ```
 
- ----------
+----------
 
 ## 控制ADC设备
 
@@ -105,14 +105,14 @@ mr_device_t adc_device = mr_device_find("adc1");
 /* 以只读方式打开ADC1设备 */
 mr_device_open(adc_device, MR_OPEN_RDONLY);
 
-/* 配置ADC1通道5并使能 */
+/* 打开ADC1通道5 */
 struct mr_adc_config adc_config;
 adc_config.channel = ADC_CHANNEL;
 adc_config.state = MR_ADC_STATE_ENABLE;
 mr_device_ioctl(adc_device, MR_CTRL_CONFIG, &adc_config);
 ```
 
- ----------
+----------
 
 ## 读取ADC设备通道输入值
 
@@ -143,13 +143,13 @@ mr_device_t adc_device = mr_device_find("adc1");
 /* 以只读方式打开ADC1设备 */
 mr_device_open(adc_device, MR_OPEN_RDONLY);
 
-/* 配置ADC1通道5并使能 */
+/* 打开ADC1通道5 */
 struct mr_adc_config adc_config;
 adc_config.channel = ADC_CHANNEL;
 adc_config.state = MR_ADC_STATE_ENABLE;
 mr_device_ioctl(adc_device, MR_CTRL_CONFIG, &adc_config);
 
-/* 读取ADC1通道5数值 */
+/* 读取ADC1通道5输入值 */
 mr_uint32_t adc_value = 0;
 mr_device_read(adc_device, ADC_CHANNEL, &adc_value, sizeof(adc_value));
 ```

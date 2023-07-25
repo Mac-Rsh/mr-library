@@ -4,7 +4,7 @@
 
 ## 设备模型
 
-设备对象定义如下:
+设备对象定义如下：
 
 ```c
 struct mr_device
@@ -75,18 +75,18 @@ struct mr_device_ops
     mr_err_t (*open)(mr_device_t device);
     mr_err_t (*close)(mr_device_t device);
     mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*sda_read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
     mr_ssize_t (*write)(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 };
 ```
 
-| 接口       | 描述                                                          |
-|:---------|:------------------------------------------------------------|
-| open     | 打开设备，同时完成设备配置。只有当设备首次被打开时，才会调用此方法来打开设备。                     |
-| close    | 关闭设备。只有当设备被所有用户关闭时（设备引用次数为 0），才会调用此方法来关闭设备。                 |
-| ioctl    | 控制设备。根据 cmd 命令控制设备                                          |
-| sda_read | 从设备读取数据。pos 是设备读取位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备读取字节大小。 |
-| write    | 向设备写入数据。pos 是设备写入位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备写入字节大小。 |
+| 接口    | 描述                                                         |
+|:------|:-----------------------------------------------------------|
+| open  | 打开设备，同时完成设备配置。只有当设备首次被打开时，才会调用此方法来打开设备                     |
+| close | 关闭设备。只有当设备被所有用户关闭时（设备引用次数为 0），才会调用此方法来关闭设备                 |
+| ioctl | 控制设备。根据 cmd 命令控制设备                                         |
+| read  | 从设备读取数据。pos 是设备读取位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备读取字节大小 |
+| write | 向设备写入数据。pos 是设备写入位置（不同设备所表示的意义不同，请查看设备详细手册），size 是设备写入字节大小 |
 
 ## 操作设备
 
@@ -102,7 +102,7 @@ struct mr_device_ops
 | mr_device_read  | 从设备读取数据 |
 | mr_device_write | 向设备写入数据 |
 
-### 设备操作示例:
+### 设备操作示例：
 
 下面是一个以 SPI 设备为例的设备操作示例：
 
