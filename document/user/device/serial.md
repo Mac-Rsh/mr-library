@@ -205,14 +205,14 @@ mr_device_ioctl(serial_device, MR_CTRL_SET_TX_BUFSZ, &bufsz);
 mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | PIN设备句柄 |
-| pos       | 读取位置    |
-| buffer    | 读取数据    |
-| size      | 读取数据大小  |
-| **返回**    |         |
-| 实际读取的数据大小 |         |
+| 参数        | 描述           |
+|:----------|:-------------|
+| device    | SERIAL设备句柄   |
+| pos       | 读取位置         |
+| buffer    | 读取数据         |
+| size      | 读取数据大小       |
+| **返回**    |              |
+| 实际读取的数据大小 |              |
 
 使用示例：
 
@@ -237,14 +237,14 @@ mr_device_write(serial_device, 0, buffer, sizeof(buffer));
 mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | PIN设备句柄 |
-| pos       | 写入位置    |
-| buffer    | 写入数据    |
-| size      | 写入数据大小  |
-| **返回**    |         |
-| 实际写入的数据大小 |         |
+| 参数        | 描述         |
+|:----------|:-----------|
+| device    | SERIAL设备句柄 |
+| pos       | 写入位置       |
+| buffer    | 写入数据       |
+| size      | 写入数据大小     |
+| **返回**    |            |
+| 实际写入的数据大小 |            |
 
 使用示例：
 
