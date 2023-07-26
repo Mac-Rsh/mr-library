@@ -71,45 +71,82 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 DAC设备支持以下命令：
 
 ```c
-MR_CTRL_CONFIG                                                      /* 配置命令 */
+MR_CTRL_SET_CONFIG                                                  /* 设置参数 */
+MR_CTRL_GET_CONFIG                                                  /* 获取参数 */
 ```
 
-### 配置DAC设备通道
+### 设置DAC设备通道
 
 DAC控制参数原型如下：
 
 ```c
-struct mr_dac_config  
-{  
-    mr_pos_t channel;                                               /* 通道 */  
-    mr_state_t state;                                               /* 状态 */  
+struct mr_dac_config
+{
+    union
+    {
+        struct
+        {
+            mr_pos_t channel0: 1;
+            mr_pos_t channel1: 1;
+            mr_pos_t channel2: 1;
+            mr_pos_t channel3: 1;
+            mr_pos_t channel4: 1;
+            mr_pos_t channel5: 1;
+            mr_pos_t channel6: 1;
+            mr_pos_t channel7: 1;
+            mr_pos_t channel8: 1;
+            mr_pos_t channel9: 1;
+            mr_pos_t channel10: 1;
+            mr_pos_t channel11: 1;
+            mr_pos_t channel12: 1;
+            mr_pos_t channel13: 1;
+            mr_pos_t channel14: 1;
+            mr_pos_t channel15: 1;
+            mr_pos_t channel16: 1;
+            mr_pos_t channel17: 1;
+            mr_pos_t channel18: 1;
+            mr_pos_t channel19: 1;
+            mr_pos_t channel20: 1;
+            mr_pos_t channel21: 1;
+            mr_pos_t channel22: 1;
+            mr_pos_t channel23: 1;
+            mr_pos_t channel24: 1;
+            mr_pos_t channel25: 1;
+            mr_pos_t channel26: 1;
+            mr_pos_t channel27: 1;
+            mr_pos_t channel28: 1;
+            mr_pos_t channel29: 1;
+            mr_pos_t channel30: 1;
+            mr_pos_t channel31: 1;
+        };
+        mr_pos_t _channel_mask;
+    };
 };
 ```
 
 - 通道：DAC支持的通道数,和芯片相关。
-- 状态：支持打开和关闭DAC通道。
 
 ```c
-#define MR_DAC_STATE_DISABLE            0                           /* 关闭通道 */
-#define MR_DAC_STATE_ENABLE             1                           /* 打开通道 */
+#define MR_DAC_CHANNEL_DISABLE          0                           /* 失能通道 */
+#define MR_DAC_CHANNEL_ENABLE           1                           /* 使能通道 */
 ```
 
 使用示例：
 
 ```c
-#define DAC_CHANNEL                     3
-
-/* 寻找DAC1设备 */
+/* 查找DAC1设备 */
 mr_device_t dac_device = mr_device_find("dac1");
 
-/* 以只写方式打开DAC1设备 */
+/* 以只写方式打开 */
 mr_device_open(dac_device, MR_OPEN_WRONLY);
 
-/* 打开DAC1通道3 */
+/* 获取参数 */
 struct mr_dac_config dac_config;
-dac_config.channel = DAC_CHANNEL;
-dac_config.state = MR_ADC_STATE_ENABLE;
-mr_device_ioctl(dac_device, MR_CTRL_CONFIG, &dac_config);
+mr_device_ioctl(dac_device, MR_CTRL_GET_CONFIG, &dac_config);
+
+/* 使能通道1 */
+dac_config.channel1 = MR_DAC_CHANNEL_ENABLE;
+mr_device_ioctl(dac_device, MR_CTRL_SET_CONFIG, &dac_config);
 ```
 
 ----------
@@ -135,21 +172,19 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 使用示例：
 
 ```c
-#define DAC_CHANNEL                     3
+#define DAC_CHANNEL                     1
 
-/* 寻找DAC1设备 */
+/* 查找DAC1设备 */
 mr_device_t dac_device = mr_device_find("dac1");
 
-/* 以只写方式打开DAC1设备 */
+/* 以只写方式打开 */
 mr_device_open(dac_device, MR_OPEN_WRONLY);
 
-/* 打开DAC1通道3 */
-struct mr_dac_config dac_config;
-dac_config.channel = DAC_CHANNEL;
-dac_config.state = MR_ADC_STATE_ENABLE;
-mr_device_ioctl(dac_device, MR_CTRL_CONFIG, &dac_config);
+/* 使能通道1 */
+dac_config.channel1 = MR_DAC_CHANNEL_ENABLE;
+mr_device_ioctl(dac_device, MR_CTRL_SET_CONFIG, &dac_config);
 
-/* 写入DAC1通道3输出值为1200 */
+/* 写入通道1输出值 */
 mr_uint32_t dac_value = 1200;
 mr_device_write(dac_device, DAC_CHANNEL, &dac_value, sizeof(dac_value));
 ```

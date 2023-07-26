@@ -71,45 +71,82 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 ADC设备支持以下命令：
 
 ```c
-MR_CTRL_CONFIG                                                      /* 配置命令 */
+MR_CTRL_SET_CONFIG                                                  /* 设置参数 */
+MR_CTRL_GET_CONFIG                                                  /* 获取参数 */
 ```
 
-### 配置ADC设备通道
+### 设置ADC设备通道
 
 ADC控制参数原型如下：
 
 ```c
-struct mr_adc_config  
-{  
-    mr_pos_t channel;                                               /* 通道 */  
-    mr_state_t state;                                               /* 状态 */
+struct mr_adc_config
+{
+    union
+    {
+        struct
+        {
+            mr_pos_t channel0: 1;
+            mr_pos_t channel1: 1;
+            mr_pos_t channel2: 1;
+            mr_pos_t channel3: 1;
+            mr_pos_t channel4: 1;
+            mr_pos_t channel5: 1;
+            mr_pos_t channel6: 1;
+            mr_pos_t channel7: 1;
+            mr_pos_t channel8: 1;
+            mr_pos_t channel9: 1;
+            mr_pos_t channel10: 1;
+            mr_pos_t channel11: 1;
+            mr_pos_t channel12: 1;
+            mr_pos_t channel13: 1;
+            mr_pos_t channel14: 1;
+            mr_pos_t channel15: 1;
+            mr_pos_t channel16: 1;
+            mr_pos_t channel17: 1;
+            mr_pos_t channel18: 1;
+            mr_pos_t channel19: 1;
+            mr_pos_t channel20: 1;
+            mr_pos_t channel21: 1;
+            mr_pos_t channel22: 1;
+            mr_pos_t channel23: 1;
+            mr_pos_t channel24: 1;
+            mr_pos_t channel25: 1;
+            mr_pos_t channel26: 1;
+            mr_pos_t channel27: 1;
+            mr_pos_t channel28: 1;
+            mr_pos_t channel29: 1;
+            mr_pos_t channel30: 1;
+            mr_pos_t channel31: 1;
+        };
+        mr_pos_t _channel_mask;
+    };
 };
 ```
 
 - 通道：ADC支持的通道数，和芯片相关。
-- 状态：支持打开和关闭ADC通道。
 
 ```c
-MR_ADC_STATE_DISABLE                    0                           /* 关闭通道 */
-MR_ADC_STATE_ENABLE                     1                           /* 打开通道 */
+MR_ADC_CHANNEL_DISABLE                  0                           /* 失能通道 */
+MR_ADC_CHANNEL_ENABLE                   1                           /* 使能通道 */
 ```
 
 使用示例：
 
 ```c
-#define ADC_CHANNEL                     5
-
 /* 查找ADC1设备 */    
 mr_device_t adc_device = mr_device_find("adc1");
 
-/* 以只读方式打开ADC1设备 */
+/* 以只读方式打开 */
 mr_device_open(adc_device, MR_OPEN_RDONLY);
 
-/* 打开ADC1通道5 */
+/* 获取参数 */
 struct mr_adc_config adc_config;
-adc_config.channel = ADC_CHANNEL;
-adc_config.state = MR_ADC_STATE_ENABLE;
-mr_device_ioctl(adc_device, MR_CTRL_CONFIG, &adc_config);
+mr_device_ioctl(adc_device, MR_CTRL_GET_CONFIG, &adc_config);
+
+/* 使能通道5 */
+adc_config.channel5 = MR_ADC_CHANNEL_ENABLE;
+mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
 ```
 
 ----------
@@ -130,7 +167,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 | 实际读取的数据大小 |         |
 
 - 读取位置：需要读取数据的通道。
-- 读取数据：ADC设备采集的原始值。
+- 读取数据：ADC设备采集的输入值。
 
 使用示例：
 
@@ -140,16 +177,15 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 /* 查找ADC1设备 */    
 mr_device_t adc_device = mr_device_find("adc1");
 
-/* 以只读方式打开ADC1设备 */
+/* 以只读方式打开 */
 mr_device_open(adc_device, MR_OPEN_RDONLY);
 
-/* 打开ADC1通道5 */
+/* 使能通道5 */
 struct mr_adc_config adc_config;
-adc_config.channel = ADC_CHANNEL;
-adc_config.state = MR_ADC_STATE_ENABLE;
-mr_device_ioctl(adc_device, MR_CTRL_CONFIG, &adc_config);
+adc_config.channel5 = MR_ADC_CHANNEL_ENABLE;
+mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
 
-/* 读取ADC1通道5输入值 */
+/* 读取通道5输入值 */
 mr_uint32_t adc_value = 0;
 mr_device_read(adc_device, ADC_CHANNEL, &adc_value, sizeof(adc_value));
 ```

@@ -74,7 +74,8 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 SERIAL设备支持以下命令：
 
 ```c
-MR_CTRL_CONFIG                                                      /* 配置命令 */
+MR_CTRL_SET_CONFIG                                                  /* 设置参数 */
+MR_CTRL_GET_CONFIG                                                  /* 获取参数 */
 MR_CTRL_SET_RX_CB                                                   /* 设置接收（接收中断）回调函数 */
 MR_CTRL_SET_TX_CB                                                   /* 设置发送（发送完成中断）回调函数 */     
 MR_CTRL_SET_RX_BUFSZ                                                /* 设置接收缓冲区大小 */
@@ -87,11 +88,11 @@ MR_CTRL_SET_TX_BUFSZ                                                /* 设置发
 struct mr_serial_config
 {
     mr_uint32_t baud_rate;                                          /* 波特率 */
-    mr_uint8_t data_bits;                                           /* 数据位 */
-    mr_uint8_t stop_bits;                                           /* 停止位 */
-    mr_uint8_t parity;                                              /* 奇偶校验 */
-    mr_uint8_t bit_order;                                           /* 高低位 */
-    mr_uint8_t invert;                                              /* 模式 */
+    mr_uint8_t data_bits: 2;                                        /* 数据位 */
+    mr_uint8_t stop_bits: 2;                                        /* 停止位 */
+    mr_uint8_t parity: 2;                                           /* 奇偶校验 */
+    mr_uint8_t bit_order: 1;                                        /* 高低位 */
+    mr_uint8_t invert: 1;                                           /* 模式 */
 };
 ```
 
@@ -139,12 +140,15 @@ MR_SERIAL_NRZ_INVERTED                                              /* 电平翻
 /* 查找SERIAL1设备 */    
 mr_device_t serial_device = mr_device_find("uart1");
 
-/* 以默认参数配置SERIAL1设备 */
+/* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;
-mr_device_ioctl(serial_device, MR_CTRL_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_CTRL_SET_CONFIG, &serial_config);
+
+/* 获取参数 */
+mr_device_ioctl(serial_device, MR_CTRL_GET_CONFIG, &serial_config);
 ```
 
-注：如未手动修改SERIAL设备配置，则默认使用默认参数配置。
+注：如未手动修改SERIAL设备参数，则默认使用默认参数。
 
 ### 设置SERIAL设备接收（发送完成）回调函数
 
@@ -171,7 +175,7 @@ mr_err_t serial_device_tx_cb(mr_device_t device, void *args)
 /* 查找SERIAL1设备 */    
 mr_device_t serial_device = mr_device_find("uart1");
 
-/* 设置SERIAL1设备接收（发送完成）回调函数 */
+/* 设置接收（发送完成）回调函数 */
 mr_device_ioctl(serial_device, MR_CTRL_SET_RX_CB, serial_device_rx_cb);
 mr_device_ioctl(serial_device, MR_CTRL_SET_TX_CB, serial_device_tx_cb);
 ```
@@ -184,7 +188,7 @@ mr_device_ioctl(serial_device, MR_CTRL_SET_TX_CB, serial_device_tx_cb);
 /* 查找SERIAL1设备 */    
 mr_device_t serial_device = mr_device_find("uart1");
 
-/* 设置SERIAL1设备接收（发送）缓冲区大小 */
+/* 设置接收（发送）缓冲区大小 */
 mr_size_t bufsz = 64;
 mr_device_ioctl(serial_device, MR_CTRL_SET_RX_BUFSZ, &bufsz);
 mr_device_ioctl(serial_device, MR_CTRL_SET_TX_BUFSZ, &bufsz);
@@ -220,9 +224,12 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 /* 查找SERIAL1设备 */    
 mr_device_t serial_device = mr_device_find("uart1");
 
-/* 以默认参数配置SERIAL1设备 */
+/* 以可读可写方式打开 */
+mr_device_open(serial_device, MR_OPEN_RDWR);
+
+/* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;
-mr_device_ioctl(serial_device, MR_CTRL_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_CTRL_SET_CONFIG, &serial_config);
 
 /* 读取数据 */
 char buffer[5] = {0};
@@ -252,9 +259,12 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 /* 查找SERIAL1设备 */    
 mr_device_t serial_device = mr_device_find("uart1");
 
-/* 以默认参数配置SERIAL1设备 */
+/* 以可读可写方式打开 */
+mr_device_open(serial_device, MR_OPEN_RDWR);
+
+/* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;
-mr_device_ioctl(serial_device, MR_CTRL_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_CTRL_SET_CONFIG, &serial_config);
 
 /* 写入数据 */
 char buffer[] = "hello";

@@ -124,7 +124,7 @@ mr_device_t spi1_device = mr_device_find("spi11");
 mr_device_ioctl(spi0_device, MR_CTRL_ATTACH, "spi1");
 mr_device_ioctl(spi1_device, MR_CTRL_ATTACH, "spi1");
 
-/* 以可读可写的方式打开SPI设备 */
+/* 以可读可写的方式打开 */
 mr_device_open(spi0_device, MR_OPEN_RDWR);
 mr_device_open(spi1_device, MR_OPEN_RDWR);
 

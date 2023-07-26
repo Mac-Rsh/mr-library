@@ -4,7 +4,7 @@
 
 ## 概述
 
-GPIO（通用目的输入/输出）是一种可以通过软件进行配置和控制的硬件接口，广泛用于嵌入式系统中外设的连接和控制。
+GPIO（通用目的输入/输出）是一种可以通过软件进行控制的硬件接口，广泛用于嵌入式系统中外设的连接和控制。
 
 ----------
 
@@ -73,11 +73,11 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 PIN设备支持以下命令：
 
 ```c
-MR_CTRL_CONFIG                                                      /* 配置命令 */
+MR_CTRL_SET_CONFIG                                                  /* 设置参数 */
 MR_CTRL_SET_RX_CB                                                   /* 设置接收（外部中断）回调函数 */
 ```
 
-### 配置PIN设备IO
+### 设置PIN设备IO
 
 PIN控制参数原型如下：
 
@@ -90,7 +90,7 @@ struct mr_pin_config
 ```
 
 - 编号：由底层驱动定义，推荐编号规则为编号 = port * 16 + pin，例如B13 = 1 * 16 + 13 = 29。
-- 模式：支持对GPIO进行普通和中断模式配置。
+- 模式：GPIO普通和中断模式。
 
 ```c
 /* GPIO普通模式 */
@@ -117,17 +117,17 @@ MR_PIN_MODE_IRQ_HIGH                                                /* 高电平
 /* 查找PIN设备 */
 mr_device_t pin_device = mr_device_find("pin");
 
-/* 以可读可写的方式打开PIN设备 */
+/* 以可读可写的方式打开 */
 mr_device_open(pin_device, MR_OPEN_RDWR);
 
-/* 配置B13引脚为推挽输出模式 */
+/* 设置B13引脚为推挽输出模式 */
 struct mr_pin_config pin_config;
 pin_config.number = PIN_NUMBER;
 pin_config.mode = MR_PIN_MODE_OUTPUT;
-mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+mr_device_ioctl(pin_device, MR_CTRL_SET_CONFIG, &pin_config);
 ```
 
-### 配置PIN设备IO外部中断并绑定回调函数
+### 设置PIN设备IO外部中断并绑定回调函数
 
 - 回调函数：device为触发回调设备，args传入中断来源。
 
@@ -151,16 +151,16 @@ mr_err_t pin_device_cb(mr_device_t device, void *args)
 /* 查找PIN设备 */
 mr_device_t pin_device = mr_device_find("pin");
 
-/* 以可读可写的方式打开PIN设备 */
+/* 以可读可写的方式打开 */
 mr_device_open(pin_device, MR_OPEN_RDWR);
 
-/* 配置B13引脚为上升沿触发模式 */
+/* 设置B13引脚为上升沿触发模式 */
 struct mr_pin_config pin_config;
 pin_config.number = PIN_NUMBER;
 pin_config.mode = MR_PIN_MODE_IRQ_RISING;
-mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+mr_device_ioctl(pin_device, MR_CTRL_SET_CONFIG, &pin_config);
 
-/* 绑定PIN函数回调函数 */
+/* 设置回调函数 */
 mr_device_ioctl(pin_device, MR_CTRL_SET_RX_CB, pin_device_cb);
 ```
 
@@ -191,14 +191,14 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 /* 查找PIN设备 */
 mr_device_t pin_device = mr_device_find("pin");
 
-/* 以可读可写的方式打开PIN设备 */
+/* 以可读可写的方式打开 */
 mr_device_open(pin_device, MR_OPEN_RDWR);
 
-/* 配置B13引脚为浮空输入模式 */
+/* 设置B13引脚为浮空输入模式 */
 struct mr_pin_config pin_config;
 pin_config.number = PIN_NUMBER;
 pin_config.mode = MR_PIN_MODE_INPUT;
-mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+mr_device_ioctl(pin_device, MR_CTRL_SET_CONFIG, &pin_config);
 
 /* 获取B13电平 */
 mr_level_t pin_level = MR_LOW;
@@ -232,14 +232,14 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 /* 查找PIN设备 */
 mr_device_t pin_device = mr_device_find("pin");
 
-/* 以可读可写的方式打开PIN设备 */
+/* 以可读可写的方式打开 */
 mr_device_open(pin_device, MR_OPEN_RDWR);
 
-/* 配置B13引脚为推挽输出模式 */
+/* 设置B13引脚为推挽输出模式 */
 struct mr_pin_config pin_config;
 pin_config.number = PIN_NUMBER;
 pin_config.mode = MR_PIN_MODE_OUTPUT;
-mr_device_ioctl(pin_device, MR_CTRL_CONFIG, &pin_config);
+mr_device_ioctl(pin_device, MR_CTRL_SET_CONFIG, &pin_config);
 
 /* 设置B13为高电平 */
 mr_level_t pin_level = MR_HIGH;
