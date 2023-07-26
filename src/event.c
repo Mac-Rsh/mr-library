@@ -112,6 +112,7 @@ mr_err_t mr_event_server_remove(mr_event_server_t server)
  */
 void mr_event_server_handle(mr_event_server_t server)
 {
+    mr_size_t count = 0;
     mr_uint8_t id = 0;
     mr_avl_t node = MR_NULL;
     mr_event_t event = MR_NULL;
@@ -119,8 +120,11 @@ void mr_event_server_handle(mr_event_server_t server)
     MR_ASSERT(server != MR_NULL);
     MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
 
-    /* Read the event id from the queue */
-    while (mr_fifo_read(&server->queue, &id, sizeof(id)))
+    /* Get the number of the ready event */
+    count = mr_fifo_get_data_size(&server->queue);
+
+    /* Handle the event */
+    while (count--)
     {
         node = mr_avl_find(server->list, id);
         if (node == MR_NULL)
