@@ -52,37 +52,34 @@ mr_err_t ch32_adc_channel_configure(mr_adc_t adc, struct mr_adc_config *config)
 {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     GPIO_TypeDef *GPIOx = {0};
+    mr_size_t count = 0;
 
-    if (config->channel <= 7)
+    for (count = 0; count <= 17; count++)
     {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-        GPIOx = GPIOA;
-    } else if (config->channel <= 10)
-    {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-        GPIOx = GPIOB;
-    } else if (config->channel <= 15)
-    {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-        GPIOx = GPIOC;
-    } else if (config->channel <= 17)
-    {
-        ADC_TempSensorVrefintCmd(ENABLE);
-    } else
-    {
-        return -MR_ERR_INVALID;
+        if ((1 << count) & config->_channel_mask)
+        {
+            if (count <= 7)
+            {
+                RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+                GPIOx = GPIOA;
+            } else if (count <= 10)
+            {
+                RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+                GPIOx = GPIOB;
+            } else if (count <= 15)
+            {
+                RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+                GPIOx = GPIOC;
+            } else if (count <= 17)
+            {
+                ADC_TempSensorVrefintCmd(ENABLE);
+            }
+
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+            GPIO_InitStructure.GPIO_Pin = (1 << count);
+            GPIO_Init(GPIOx, &GPIO_InitStructure);
+        }
     }
-
-    if (config->state == MR_ENABLE)
-    {
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    } else
-    {
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    }
-
-    GPIO_InitStructure.GPIO_Pin = (1 << config->channel);
-    GPIO_Init(GPIOx, &GPIO_InitStructure);
 
     return MR_ERR_OK;
 }
