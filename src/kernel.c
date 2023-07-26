@@ -19,19 +19,22 @@ static struct mr_container mr_kernel_container[] =
 #if (MR_CONF_DEVICE == MR_CONF_ENABLE)
                 {
                         MR_OBJECT_TYPE_DEVICE,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list, &mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list}
+                        {&mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list,
+                         &mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list}
                 },
 #endif
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
                 {
                         MR_OBJECT_TYPE_EVENT,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_EVENT].list, &mr_kernel_container[MR_OBJECT_TYPE_EVENT].list}
+                        {&mr_kernel_container[MR_OBJECT_TYPE_EVENT].list,
+                         &mr_kernel_container[MR_OBJECT_TYPE_EVENT].list}
                 },
 #endif
 #if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
                 {
                         MR_OBJECT_TYPE_SOFT_TIMER,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list, &mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list}
+                        {&mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list,
+                         &mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list}
                 },
 #endif
         };

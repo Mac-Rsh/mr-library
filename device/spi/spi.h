@@ -49,10 +49,10 @@
 struct mr_spi_config
 {
     mr_uint32_t baud_rate;
-    mr_uint8_t host_slave;
-    mr_uint8_t mode;
-    mr_uint8_t bit_order;
-    mr_uint8_t cs_active;
+    mr_uint8_t host_slave: 1;
+    mr_uint8_t mode: 2;
+    mr_uint8_t bit_order: 1;
+    mr_uint8_t cs_active: 2;
 };
 
 struct mr_spi_fifo
@@ -69,7 +69,7 @@ struct mr_spi_device
 
     struct mr_spi_config config;
     struct mr_spi_bus *bus;
-    mr_uint16_t cs_pin;
+    mr_pos_t cs_number;
 
     struct mr_list tx_list;
     mr_size_t tx_count;
@@ -81,9 +81,9 @@ struct mr_spi_bus_ops
     mr_err_t (*configure)(mr_spi_bus_t spi_bus, struct mr_spi_config *config);
     void (*write)(mr_spi_bus_t spi_bus, mr_uint8_t data);
     mr_uint8_t (*read)(mr_spi_bus_t spi_bus);
-    void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_pos_t cs_pin, mr_state_t state);
+    void (*cs_ctrl)(mr_spi_bus_t spi_bus, mr_pos_t cs_number, mr_state_t state);
 
-    mr_uint8_t (*cs_read)(mr_spi_bus_t spi_bus, mr_pos_t cs_pin);
+    mr_uint8_t (*cs_read)(mr_spi_bus_t spi_bus, mr_pos_t cs_number);
     void (*start_tx)(mr_spi_bus_t spi_bus);
     void (*stop_tx)(mr_spi_bus_t spi_bus);
 

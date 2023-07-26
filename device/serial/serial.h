@@ -52,11 +52,11 @@
 struct mr_serial_config
 {
     mr_uint32_t baud_rate;
-    mr_uint8_t data_bits;
-    mr_uint8_t stop_bits;
-    mr_uint8_t parity;
-    mr_uint8_t bit_order;
-    mr_uint8_t invert;
+    mr_uint8_t data_bits: 2;
+    mr_uint8_t stop_bits: 2;
+    mr_uint8_t parity: 2;
+    mr_uint8_t bit_order: 1;
+    mr_uint8_t invert: 1;
 };
 
 struct mr_serial_fifo

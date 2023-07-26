@@ -82,9 +82,9 @@ struct mr_soft_i2c_bus
     const struct mr_soft_i2c_ops *ops;
 };
 
+mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint8_t address);
 mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, void *data, struct mr_i2c_bus_ops *ops);
 mr_err_t mr_soft_i2c_bus_add(mr_soft_i2c_bus_t i2c_bus, const char *name, void *data, struct mr_soft_i2c_ops *ops);
-mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint8_t address);
 
 #endif  /* MR_CONF_I2C */
 

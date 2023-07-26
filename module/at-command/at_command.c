@@ -230,7 +230,7 @@ mr_at_command_server_t mr_at_command_server_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the at-command server object from the server container */
-    return (mr_at_command_server_t)mr_object_find(name, MR_OBJECT_TYPE_SERVER);
+    return (mr_at_command_server_t)mr_object_find(name, MR_OBJECT_TYPE_NONE);
 }
 
 /**
@@ -265,7 +265,7 @@ mr_err_t mr_at_command_server_add(mr_at_command_server_t server,
     mr_memset(pool, 0, queue_length * (MR_CONF_AT_COMMAND_BUFSZ + MR_AT_COMMAND_CMD_BLOCK_SIZE));
 
     /* Add the object to the container */
-    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SERVER);
+    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_NONE);
     if (ret != MR_ERR_OK)
     {
         /* Free the queue memory */

@@ -98,24 +98,35 @@ static mr_err_t mr_timer_close(mr_device_t device)
 static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_timer_t timer = (mr_timer_t)device;
+    struct mr_timer_config *config = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
-    struct mr_timer_config *config = (struct mr_timer_config *)args;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
-        case MR_CTRL_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args)
             {
                 /* Check the frequency */
+                config = (struct mr_timer_config *)args;
                 mr_limit(config->freq, timer->info.min_freq, timer->info.max_freq);
-
                 ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
                 if (ret == MR_ERR_OK)
                 {
                     timer->config = *(struct mr_timer_config *)args;
                 }
                 return ret;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_CTRL_GET_CONFIG:
+        {
+            if (args)
+            {
+                config = (struct mr_timer_config *)args;
+                *config = timer->config;
+                return MR_ERR_OK;
             }
             return -MR_ERR_INVALID;
         }

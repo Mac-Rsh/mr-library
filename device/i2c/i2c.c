@@ -74,7 +74,7 @@ mr_inline mr_err_t mr_i2c_device_release_bus(mr_i2c_device_t i2c_device)
     return MR_ERR_OK;
 }
 
-mr_inline void mr_i2c_bus_send_address(mr_i2c_device_t i2c_device, mr_state_t rw)
+mr_inline void mr_i2c_device_send_address(mr_i2c_device_t i2c_device, mr_state_t rw)
 {
     mr_i2c_bus_t i2c_bus = i2c_device->bus;
 
@@ -85,6 +85,187 @@ mr_inline void mr_i2c_bus_send_address(mr_i2c_device_t i2c_device, mr_state_t rw
     {
         i2c_bus->ops->write(i2c_bus, (mr_uint8_t)(i2c_device->address << 1 | 0x01));
     }
+}
+
+static mr_err_t mr_i2c_device_open(mr_device_t device)
+{
+    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
+    struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
+
+    /* Setting i2c-device to default config, if the baud-rate not set */
+    if (i2c_device->config.baud_rate == 0)
+    {
+        i2c_device->config = default_config;
+    }
+
+    return MR_ERR_OK;
+}
+
+static mr_err_t mr_i2c_device_close(mr_device_t device)
+{
+    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
+
+    /* Setting i2c-device to close config */
+    i2c_device->config.baud_rate = 0;
+
+    /* Disconnect from the i2c-bus */
+    i2c_device->bus = MR_NULL;
+
+    return MR_ERR_OK;
+}
+
+static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
+{
+    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
+    struct mr_i2c_config *config = MR_NULL;
+    mr_device_t i2c_bus = MR_NULL;
+    mr_err_t ret = MR_ERR_OK;
+
+    switch (cmd & _MR_CTRL_FLAG_MASK)
+    {
+        case MR_CTRL_SET_CONFIG:
+        {
+            if (args)
+            {
+                config = (struct mr_i2c_config *)args;
+                i2c_device->config = *config;
+                return MR_ERR_OK;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_CTRL_GET_CONFIG:
+        {
+            if (args)
+            {
+                config = (struct mr_i2c_config *)args;
+                *config = i2c_device->config;
+                return MR_ERR_OK;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_CTRL_ATTACH:
+        {
+            /* Detach the i2c-bus */
+            if (args == MR_NULL)
+            {
+                i2c_device->bus = MR_NULL;
+                return MR_ERR_OK;
+            }
+
+            /* Find the i2c-bus */
+            i2c_bus = mr_device_find((char *)args);
+            if (i2c_bus == MR_NULL || i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
+            {
+                return -MR_ERR_NOT_FOUND;
+            }
+
+            /* Open the i2c-bus */
+            ret = mr_device_open(i2c_bus, MR_OPEN_RDWR);
+            if (ret != MR_ERR_OK)
+            {
+                return ret;
+            }
+            i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
+            return MR_ERR_OK;
+        }
+
+        default:
+            return -MR_ERR_UNSUPPORTED;
+    }
+}
+
+static mr_ssize_t mr_i2c_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+{
+    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
+    mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
+    mr_i2c_bus_t i2c_bus = MR_NULL;
+    mr_size_t recv_size = 0;
+    mr_err_t ret = MR_ERR_OK;
+
+    /* Take i2c-bus */
+    ret = mr_i2c_device_take_bus(i2c_device);
+    if (ret != MR_ERR_OK)
+    {
+        return ret;
+    }
+    i2c_bus = i2c_device->bus;
+
+    if (i2c_device->config.host_slave == MR_I2C_HOST)
+    {
+        /* Send position */
+        if (pos != 0)
+        {
+            i2c_bus->ops->start(i2c_bus);
+            mr_i2c_device_send_address(i2c_device, _MR_I2C_WR);
+            i2c_bus->ops->write(i2c_bus, (mr_uint8_t)pos);
+        }
+
+        /* Start and send the read command */
+        i2c_bus->ops->start(i2c_bus);
+        mr_i2c_device_send_address(i2c_device, _MR_I2C_RD);
+
+        /* Blocking read */
+        for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
+        {
+            *recv_buffer = i2c_bus->ops->read(i2c_bus, (mr_state_t)(recv_size < (size - sizeof(*recv_buffer))));
+            recv_buffer++;
+        }
+
+        /* Stop read */
+        i2c_bus->ops->stop(i2c_bus);
+    }
+
+    /* Release i2c-bus */
+    mr_i2c_device_release_bus(i2c_device);
+
+    return (mr_ssize_t)recv_size;
+}
+
+static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+{
+    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
+    mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
+    mr_i2c_bus_t i2c_bus = MR_NULL;
+    mr_size_t send_size = 0;
+    mr_err_t ret = MR_ERR_OK;
+
+    /* Take i2c-bus */
+    ret = mr_i2c_device_take_bus(i2c_device);
+    if (ret != MR_ERR_OK)
+    {
+        return ret;
+    }
+    i2c_bus = i2c_device->bus;
+
+    if (i2c_device->config.host_slave == MR_I2C_HOST)
+    {
+        /* Start and send the write command */
+        i2c_bus->ops->start(i2c_bus);
+        mr_i2c_device_send_address(i2c_device, _MR_I2C_WR);
+
+        /* Send position */
+        if (pos != 0)
+        {
+            i2c_bus->ops->write(i2c_bus, (mr_uint8_t)pos);
+        }
+
+        /* Blocking write */
+        for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
+        {
+            i2c_bus->ops->write(i2c_bus, *send_buffer);
+            send_buffer++;
+        }
+
+        /* Stop write */
+        i2c_bus->ops->stop(i2c_bus);
+    }
+
+    /* Release i2c-bus */
+    mr_i2c_device_release_bus(i2c_device);
+
+    return (mr_ssize_t)send_size;
 }
 
 static mr_err_t mr_i2c_bus_open(mr_device_t device)
@@ -109,20 +290,6 @@ static mr_err_t mr_i2c_bus_close(mr_device_t device)
     i2c_bus->config.baud_rate = 0;
 
     return i2c_bus->ops->configure(i2c_bus, &i2c_bus->config);
-}
-
-static mr_err_t mr_i2c_device_open(mr_device_t device)
-{
-    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-    struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
-
-    /* Setting i2c-device to default config, if the baud-rate not set */
-    if (i2c_device->config.baud_rate == 0)
-    {
-        i2c_device->config = default_config;
-    }
-
-    return MR_ERR_OK;
 }
 
 static mr_uint8_t mr_soft_i2c_bus_wait_ack(mr_soft_i2c_bus_t soft_i2c_bus)
@@ -250,159 +417,6 @@ static mr_uint8_t mr_soft_i2c_bus_read(mr_i2c_bus_t i2c_bus, mr_state_t ack)
     return data;
 }
 
-static mr_err_t mr_i2c_device_close(mr_device_t device)
-{
-    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-
-    /* Setting i2c-device to close config */
-    i2c_device->config.baud_rate = 0;
-
-    /* Disconnect from the i2c-bus */
-    i2c_device->bus = MR_NULL;
-
-    return MR_ERR_OK;
-}
-
-static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
-{
-    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-    mr_err_t ret = MR_ERR_OK;
-
-    switch (cmd & _MR_CTRL_FLAG_MASK)
-    {
-        case MR_CTRL_CONFIG:
-        {
-            if (args)
-            {
-                i2c_device->config = *(struct mr_i2c_config *)args;
-                return MR_ERR_OK;
-            }
-            return -MR_ERR_INVALID;
-        }
-
-        case MR_CTRL_ATTACH:
-        {
-            /* Detach the i2c-bus */
-            if (args == MR_NULL)
-            {
-                i2c_device->bus = MR_NULL;
-                return MR_ERR_OK;
-            }
-
-            /* Find the i2c-bus */
-            mr_device_t i2c_bus = mr_device_find((char *)args);
-            if (i2c_bus == MR_NULL || i2c_bus->type != MR_DEVICE_TYPE_I2C_BUS)
-            {
-                return -MR_ERR_NOT_FOUND;
-            }
-
-            /* Open the i2c-bus */
-            ret = mr_device_open(i2c_bus, MR_OPEN_RDWR);
-            if (ret != MR_ERR_OK)
-            {
-                return ret;
-            }
-            i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
-            return MR_ERR_OK;
-        }
-
-        default:
-            return -MR_ERR_UNSUPPORTED;
-    }
-}
-
-static mr_ssize_t mr_i2c_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
-{
-    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-    mr_uint8_t *recv_buffer = (mr_uint8_t *)buffer;
-    mr_i2c_bus_t i2c_bus = MR_NULL;
-    mr_size_t recv_size = 0;
-    mr_err_t ret = MR_ERR_OK;
-
-    /* Take i2c-bus */
-    ret = mr_i2c_device_take_bus(i2c_device);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
-    i2c_bus = i2c_device->bus;
-
-    if (i2c_device->config.host_slave == MR_I2C_HOST)
-    {
-        /* Send position */
-        if (pos != 0)
-        {
-            i2c_bus->ops->start(i2c_bus);
-            mr_i2c_bus_send_address(i2c_device, _MR_I2C_WR);
-            i2c_bus->ops->write(i2c_bus, (mr_uint8_t)pos);
-        }
-
-        /* Start and send the read command */
-        i2c_bus->ops->start(i2c_bus);
-        mr_i2c_bus_send_address(i2c_device, _MR_I2C_RD);
-
-        /* Blocking read */
-        for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
-        {
-            *recv_buffer = i2c_bus->ops->read(i2c_bus, (recv_size < (size - sizeof(*recv_buffer))));
-            recv_buffer++;
-        }
-
-        /* Stop read */
-        i2c_bus->ops->stop(i2c_bus);
-    }
-
-    /* Release i2c-bus */
-    mr_i2c_device_release_bus(i2c_device);
-
-    return (mr_ssize_t)recv_size;
-}
-
-static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
-{
-    mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
-    mr_uint8_t *send_buffer = (mr_uint8_t *)buffer;
-    mr_i2c_bus_t i2c_bus = MR_NULL;
-    mr_size_t send_size = 0;
-    mr_err_t ret = MR_ERR_OK;
-
-    /* Take i2c-bus */
-    ret = mr_i2c_device_take_bus(i2c_device);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
-    i2c_bus = i2c_device->bus;
-
-    if (i2c_device->config.host_slave == MR_I2C_HOST)
-    {
-        /* Start and send the write command */
-        i2c_bus->ops->start(i2c_bus);
-        mr_i2c_bus_send_address(i2c_device, _MR_I2C_WR);
-
-        /* Send position */
-        if (pos != 0)
-        {
-            i2c_bus->ops->write(i2c_bus, (mr_uint8_t)pos);
-        }
-
-        /* Blocking write */
-        for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
-        {
-            i2c_bus->ops->write(i2c_bus, *send_buffer);
-            send_buffer++;
-        }
-
-        /* Stop write */
-        i2c_bus->ops->stop(i2c_bus);
-    }
-
-    /* Release i2c-bus */
-    mr_i2c_device_release_bus(i2c_device);
-
-    return (mr_ssize_t)send_size;
-}
-
 static mr_err_t _err_io_i2c_configure(mr_i2c_bus_t i2c_bus, struct mr_i2c_config *config)
 {
     MR_ASSERT(0);
@@ -450,6 +464,33 @@ static mr_uint8_t _err_io_soft_i2c_sda_read(mr_soft_i2c_bus_t i2c_bus)
 {
     MR_ASSERT(0);
     return 0;
+}
+
+mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint8_t address)
+{
+    const static struct mr_device_ops device_ops =
+            {
+                    mr_i2c_device_open,
+                    mr_i2c_device_close,
+                    mr_i2c_device_ioctl,
+                    mr_i2c_device_read,
+                    mr_i2c_device_write,
+            };
+
+    MR_ASSERT(i2c_device != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+
+    /* Initialize the private fields */
+    i2c_device->device.type = MR_DEVICE_TYPE_I2C;
+    i2c_device->device.data = MR_NULL;
+    i2c_device->device.ops = &device_ops;
+
+    i2c_device->config.baud_rate = 0;
+    i2c_device->bus = MR_NULL;
+    i2c_device->address = address;
+
+    /* Add to the container */
+    return mr_device_add(&i2c_device->device, name, MR_OPEN_RDWR);
 }
 
 mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, void *data, struct mr_i2c_bus_ops *ops)
@@ -519,33 +560,6 @@ mr_err_t mr_soft_i2c_bus_add(mr_soft_i2c_bus_t i2c_bus, const char *name, void *
     i2c_bus->ops = ops;
 
     return MR_ERR_OK;
-}
-
-mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint8_t address)
-{
-    const static struct mr_device_ops device_ops =
-            {
-                    mr_i2c_device_open,
-                    mr_i2c_device_close,
-                    mr_i2c_device_ioctl,
-                    mr_i2c_device_read,
-                    mr_i2c_device_write,
-            };
-
-    MR_ASSERT(i2c_device != MR_NULL);
-    MR_ASSERT(name != MR_NULL);
-
-    /* Initialize the private fields */
-    i2c_device->device.type = MR_DEVICE_TYPE_I2C;
-    i2c_device->device.data = MR_NULL;
-    i2c_device->device.ops = &device_ops;
-
-    i2c_device->config.baud_rate = 0;
-    i2c_device->bus = MR_NULL;
-    i2c_device->address = address;
-
-    /* Add to the container */
-    return mr_device_add(&i2c_device->device, name, MR_OPEN_RDWR);
 }
 
 #endif  /* MR_CONF_I2C */

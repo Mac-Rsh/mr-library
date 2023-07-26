@@ -119,20 +119,33 @@ static mr_err_t mr_serial_close(mr_device_t device)
 static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_serial_t serial = (mr_serial_t)device;
+    struct mr_serial_config *config = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
-        case MR_CTRL_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args)
             {
-                ret = serial->ops->configure(serial, (struct mr_serial_config *)args);
+                config = (struct mr_serial_config *)args;
+                ret = serial->ops->configure(serial, config);
                 if (ret == MR_ERR_OK)
                 {
-                    serial->config = *(struct mr_serial_config *)args;
+                    serial->config = *config;
                 }
                 return ret;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_CTRL_GET_CONFIG:
+        {
+            if (args)
+            {
+                config = (struct mr_serial_config *)args;
+                *config = serial->config;
+                return MR_ERR_OK;
             }
             return -MR_ERR_INVALID;
         }

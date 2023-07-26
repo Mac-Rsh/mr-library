@@ -15,14 +15,16 @@
 static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_pin_t pin = (mr_pin_t)device;
+    struct mr_pin_config *config = MR_NULL;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
-        case MR_CTRL_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args)
             {
-                return pin->ops->configure(pin, (struct mr_pin_config *)args);
+                config = (struct mr_pin_config *)args;
+                return pin->ops->configure(pin, config);
             }
             return -MR_ERR_INVALID;
         }

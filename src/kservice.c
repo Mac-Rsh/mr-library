@@ -172,7 +172,7 @@ mr_weak void mr_delay_us(mr_size_t us)
 
     for (count = 0; count < us * (BSP_SYSCLK_FREQ / 1000000u); count++)
     {
-        asm("nop");
+
     }
 }
 
