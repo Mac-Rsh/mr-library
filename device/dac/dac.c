@@ -16,27 +16,49 @@ static mr_err_t mr_dac_open(mr_device_t device)
 {
     mr_dac_t dac = (mr_dac_t)device;
 
-    return dac->ops->configure(dac, MR_DAC_STATE_ENABLE);
+    return dac->ops->configure(dac, MR_ENABLE);
 }
 
 static mr_err_t mr_dac_close(mr_device_t device)
 {
     mr_dac_t dac = (mr_dac_t)device;
 
-    return dac->ops->configure(dac, MR_DAC_STATE_DISABLE);
+    /* Disable all channel */
+    dac->config._channel_mask = 0;
+
+    return dac->ops->configure(dac, MR_DISABLE);
 }
 
 static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_dac_t dac = (mr_dac_t)device;
+    struct mr_dac_config *config = MR_NULL;
+    mr_err_t ret = MR_ERR_OK;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
-        case MR_CTRL_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args)
             {
-                return dac->ops->channel_configure(dac, (struct mr_dac_config *)args);
+                config = (struct mr_dac_config *)args;
+                ret = dac->ops->channel_configure(dac, config);
+                if (ret == MR_ERR_OK)
+                {
+                    dac->config = *config;
+                }
+                return ret;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_CTRL_GET_CONFIG:
+        {
+            if (args)
+            {
+                config = (struct mr_dac_config *)args;
+                *config = dac->config;
+                return MR_ERR_OK;
             }
             return -MR_ERR_INVALID;
         }
@@ -53,6 +75,12 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buf
     mr_size_t send_size = 0;
 
     if (size < sizeof(*send_buffer))
+    {
+        return -MR_ERR_INVALID;
+    }
+
+    /* Check whether the channel is enabled */
+    if (!((1 << pos) & dac->config._channel_mask))
     {
         return -MR_ERR_INVALID;
     }
@@ -102,6 +130,8 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, void *data, struct mr
     dac->device.type = MR_DEVICE_TYPE_DAC;
     dac->device.data = data;
     dac->device.ops = &device_ops;
+
+    dac->config._channel_mask = 0;
 
     /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_dac_configure;

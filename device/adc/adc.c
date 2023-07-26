@@ -16,27 +16,49 @@ static mr_err_t mr_adc_open(mr_device_t device)
 {
     mr_adc_t adc = (mr_adc_t)device;
 
-    return adc->ops->configure(adc, MR_ADC_STATE_ENABLE);
+    return adc->ops->configure(adc, MR_ENABLE);
 }
 
 static mr_err_t mr_adc_close(mr_device_t device)
 {
     mr_adc_t adc = (mr_adc_t)device;
 
-    return adc->ops->configure(adc, MR_ADC_STATE_DISABLE);
+    /* Disable all channel */
+    adc->config._channel_mask = 0;
+
+    return adc->ops->configure(adc, MR_DISABLE);
 }
 
 static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_adc_t adc = (mr_adc_t)device;
+    struct mr_adc_config *config = MR_NULL;
+    mr_err_t ret = MR_ERR_OK;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
-        case MR_CTRL_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args)
             {
-                return adc->ops->channel_configure(adc, (struct mr_adc_config *)args);
+                config = (struct mr_adc_config *)args;
+                ret = adc->ops->channel_configure(adc, (struct mr_adc_config *)args);
+                if (ret == MR_ERR_OK)
+                {
+                    adc->config = *config;
+                }
+                return ret;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_CTRL_GET_CONFIG:
+        {
+            if (args)
+            {
+                config = (struct mr_adc_config *)args;
+                *config = adc->config;
+                return MR_ERR_OK;
             }
             return -MR_ERR_INVALID;
         }
@@ -53,6 +75,12 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_pos_t pos, void *buffer, mr
     mr_size_t recv_size = 0;
 
     if (size < sizeof(*recv_buffer))
+    {
+        return -MR_ERR_INVALID;
+    }
+
+    /* Check whether the channel is enabled */
+    if (!((1 << pos) & adc->config._channel_mask))
     {
         return -MR_ERR_INVALID;
     }
@@ -103,6 +131,8 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, void *data, struct mr
     adc->device.type = MR_DEVICE_TYPE_ADC;
     adc->device.data = data;
     adc->device.ops = &device_ops;
+
+    adc->config._channel_mask = 0;
 
     /* Set operations as protection-ops if ops is null */
     ops->configure = ops->configure ? ops->configure : _err_io_adc_configure;

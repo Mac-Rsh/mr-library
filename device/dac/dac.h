@@ -15,13 +15,50 @@
 
 #if (MR_CONF_DAC == MR_CONF_ENABLE)
 
-#define MR_DAC_STATE_DISABLE            0
-#define MR_DAC_STATE_ENABLE             1
+#define MR_DAC_CHANNEL_DISABLE          MR_DISABLE
+#define MR_DAC_CHANNEL_ENABLE           MR_ENABLE
 
 struct mr_dac_config
 {
-    mr_pos_t channel;
-    mr_state_t state;
+    union
+    {
+        struct
+        {
+            mr_pos_t channel0: 1;
+            mr_pos_t channel1: 1;
+            mr_pos_t channel2: 1;
+            mr_pos_t channel3: 1;
+            mr_pos_t channel4: 1;
+            mr_pos_t channel5: 1;
+            mr_pos_t channel6: 1;
+            mr_pos_t channel7: 1;
+            mr_pos_t channel8: 1;
+            mr_pos_t channel9: 1;
+            mr_pos_t channel10: 1;
+            mr_pos_t channel11: 1;
+            mr_pos_t channel12: 1;
+            mr_pos_t channel13: 1;
+            mr_pos_t channel14: 1;
+            mr_pos_t channel15: 1;
+            mr_pos_t channel16: 1;
+            mr_pos_t channel17: 1;
+            mr_pos_t channel18: 1;
+            mr_pos_t channel19: 1;
+            mr_pos_t channel20: 1;
+            mr_pos_t channel21: 1;
+            mr_pos_t channel22: 1;
+            mr_pos_t channel23: 1;
+            mr_pos_t channel24: 1;
+            mr_pos_t channel25: 1;
+            mr_pos_t channel26: 1;
+            mr_pos_t channel27: 1;
+            mr_pos_t channel28: 1;
+            mr_pos_t channel29: 1;
+            mr_pos_t channel30: 1;
+            mr_pos_t channel31: 1;
+        };
+        mr_pos_t _channel_mask;
+    };
 };
 
 typedef struct mr_dac *mr_dac_t;
@@ -37,7 +74,8 @@ struct mr_dac
 {
     struct mr_device device;
 
-    mr_size_t delay;
+    struct mr_dac_config config;
+
     const struct mr_dac_ops *ops;
 };
 
