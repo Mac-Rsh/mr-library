@@ -339,7 +339,8 @@ struct mr_soft_timer_server
     struct mr_object object;                                        /* Soft-timer server object */
 
     mr_uint32_t time;                                               /* Current time */
-    struct mr_list list;                                            /* Soft-timer server list */
+    struct mr_list run_list;                                        /* Soft-timer running list */
+    mr_avl_t list;                                                  /* Soft-timer server list */
 };
 typedef struct mr_soft_timer_server *mr_soft_timer_server_t;        /* Type for soft-timer server */
 
@@ -347,12 +348,12 @@ typedef struct mr_soft_timer *mr_soft_timer_t;                      /* Type for 
 
 struct mr_soft_timer
 {
-    struct mr_list list;                                            /* Timer list */
-    mr_soft_timer_server_t server;                                  /* Timer owner server */
+    struct mr_avl list;                                             /* Timer list */
+    struct mr_list run_list;                                        /* Timer running list */
     mr_uint32_t interval;                                           /* Timer interval time */
     mr_uint32_t timeout;                                            /* Timer timeout time */
 
-    mr_err_t (*cb)(mr_soft_timer_t timer, void *args);              /* Timer callback */
+    mr_err_t (*cb)(mr_soft_timer_server_t server, void *args);      /* Timer callback */
     void *args;                                                     /* Timer arguments */
 };
 #endif /* MR_CONF_SOFT_TIMER */

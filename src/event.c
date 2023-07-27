@@ -162,15 +162,15 @@ mr_err_t mr_event_create(mr_uint8_t id,
     /* Check if the event is already exists in the server */
     if (mr_avl_find(server->list, id) != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%d already exists in %s.\r\n", id, server->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d.\r\n", server->object.name, id, -MR_ERR_BUSY);
         return -MR_ERR_BUSY;
     }
 
-    /* Allocate the event object */
+    /* Allocate the event */
     event = (mr_event_t)mr_malloc(sizeof(struct mr_event));
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%d create failed: %d.\r\n", id, -MR_ERR_NO_MEMORY);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d.\r\n", server->object.name, id, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
     mr_memset(event, 0, sizeof(struct mr_event));
@@ -212,7 +212,7 @@ mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%d not found in %s.\r\n", id, server->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d delete failed: %d.\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
         return -MR_ERR_NOT_FOUND;
     }
 
@@ -250,7 +250,7 @@ mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server)
     /* Write the event id to the queue */
     if (!mr_fifo_write(&server->queue, &id, sizeof(id)))
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s notify failed: %d.\r\n", server->object.name, -MR_ERR_NO_MEMORY);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d notify failed: %d.\r\r\n", server->object.name, id, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
 
@@ -278,7 +278,7 @@ mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%d not found in %s.\r\n", id, server->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d trigger failed: %d.\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
         return -MR_ERR_NOT_FOUND;
     }
 

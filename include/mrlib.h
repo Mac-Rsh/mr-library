@@ -67,19 +67,19 @@ mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *nam
 mr_err_t mr_soft_timer_server_remove(mr_soft_timer_server_t server);
 void mr_soft_timer_server_update(mr_soft_timer_server_t server, mr_uint32_t time);
 void mr_soft_timer_server_handle(mr_soft_timer_server_t server);
-mr_err_t mr_soft_timer_add(mr_soft_timer_t timer,
-                           mr_uint32_t time,
-                           mr_err_t (*cb)(mr_soft_timer_t timer, void *args),
-                           void *args,
-                           mr_soft_timer_server_t server);
-mr_err_t mr_soft_timer_remove(mr_soft_timer_t timer);
-mr_err_t mr_soft_timer_start(mr_soft_timer_t timer);
-mr_err_t mr_soft_timer_stop(mr_soft_timer_t timer);
-mr_err_t mr_soft_timer_add_then_start(mr_soft_timer_t timer,
-                                      mr_uint32_t time,
-                                      mr_err_t (*cb)(mr_soft_timer_t timer, void *args),
-                                      void *args,
-                                      mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_create(mr_uint8_t id,
+                              mr_uint32_t timeout,
+                              mr_err_t (*cb)(mr_soft_timer_server_t server, void *args),
+                              void *args,
+                              mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_delete(mr_uint8_t id, mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_start(mr_uint8_t id, mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_stop(mr_uint8_t id, mr_soft_timer_server_t server);
+mr_err_t mr_soft_timer_create_and_start(mr_uint8_t id,
+                                        mr_uint32_t timeout,
+                                        mr_err_t (*cb)(mr_soft_timer_server_t server, void *args),
+                                        void *args,
+                                        mr_soft_timer_server_t server);
 #endif /* MR_CONF_SOFT_TIMER */
 
 /**
