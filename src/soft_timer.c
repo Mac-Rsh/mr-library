@@ -48,7 +48,7 @@ mr_err_t mr_soft_timer_server_add(mr_soft_timer_server_t server, const char *nam
     ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_SOFT_TIMER);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d.\r\n", server->object.name, ret);
+        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d\r\n", server->object.name, ret);
         return ret;
     }
 
@@ -78,7 +78,7 @@ mr_err_t mr_soft_timer_server_remove(mr_soft_timer_server_t server)
     ret = mr_object_remove(&server->object);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d.\r\n", server->object.name, ret);
+        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d\r\n", server->object.name, ret);
         return ret;
     }
 
@@ -112,16 +112,13 @@ void mr_soft_timer_server_update(mr_soft_timer_server_t server, mr_uint32_t time
  */
 void mr_soft_timer_server_handle(mr_soft_timer_server_t server)
 {
-    mr_list_t list = MR_NULL;
-    mr_soft_timer_t timer = MR_NULL;
-
     MR_ASSERT(server != MR_NULL);
     MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
 
-    for (list = server->run_list.next; list != &server->run_list; list = list->next)
+    for (mr_list_t list = server->run_list.next; list != &server->run_list; list = list->next)
     {
         /* Get the timer from the running list */
-        timer = mr_container_of(list, struct mr_soft_timer, run_list);
+        mr_soft_timer_t timer = mr_container_of(list, struct mr_soft_timer, run_list);
 
         /* Without timer timeout */
         if ((server->time - timer->timeout) >= MR_UINT32_MAX / 2)
@@ -168,7 +165,7 @@ mr_err_t mr_soft_timer_create(mr_uint8_t id,
     /* Check if the timer is already exists in the server */
     if (mr_avl_find(server->list, id) != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d.\r\n", server->object.name, id, -MR_ERR_BUSY);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d\r\n", server->object.name, id, -MR_ERR_BUSY);
         return -MR_ERR_BUSY;
     }
 
@@ -176,7 +173,7 @@ mr_err_t mr_soft_timer_create(mr_uint8_t id,
     timer = (mr_soft_timer_t)mr_malloc(sizeof(struct mr_soft_timer));
     if (timer == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d.\r\n", server->object.name, id, -MR_ERR_NO_MEMORY);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d\r\n", server->object.name, id, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
     mr_memset(timer, 0, sizeof(struct mr_soft_timer));
@@ -211,8 +208,8 @@ mr_err_t mr_soft_timer_create(mr_uint8_t id,
  */
 mr_err_t mr_soft_timer_delete(mr_uint8_t id, mr_soft_timer_server_t server)
 {
-    mr_avl_t node = MR_NULL;
     mr_soft_timer_t timer = MR_NULL;
+    mr_avl_t node = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
     MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
@@ -221,7 +218,7 @@ mr_err_t mr_soft_timer_delete(mr_uint8_t id, mr_soft_timer_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d delete failed: %d.\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d delete failed: %d\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
         return -MR_ERR_NOT_FOUND;
     }
 
@@ -256,10 +253,8 @@ mr_err_t mr_soft_timer_delete(mr_uint8_t id, mr_soft_timer_server_t server)
  */
 mr_err_t mr_soft_timer_start(mr_uint8_t id, mr_soft_timer_server_t server)
 {
-    mr_avl_t node = MR_NULL;
-    mr_list_t list = MR_NULL;
     mr_soft_timer_t timer = MR_NULL;
-    mr_soft_timer_t be_insert_timer = MR_NULL;
+    mr_avl_t node = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
     MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
@@ -268,7 +263,7 @@ mr_err_t mr_soft_timer_start(mr_uint8_t id, mr_soft_timer_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d start failed: %d.\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d start failed: %d\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
         return -MR_ERR_NOT_FOUND;
     }
 
@@ -288,9 +283,9 @@ mr_err_t mr_soft_timer_start(mr_uint8_t id, mr_soft_timer_server_t server)
     timer->timeout = server->time + timer->interval;
 
     /* Find the timer to be inserted */
-    for (list = server->run_list.next; list != &server->run_list; list = list->next)
+    for (mr_list_t list = server->run_list.next; list != &server->run_list; list = list->next)
     {
-        be_insert_timer = mr_container_of(list, struct mr_soft_timer, run_list);
+        mr_soft_timer_t be_insert_timer = mr_container_of(list, struct mr_soft_timer, run_list);
         if (timer->timeout < be_insert_timer->timeout)
         {
             mr_list_insert_before(&be_insert_timer->run_list, &timer->run_list);
@@ -320,8 +315,8 @@ mr_err_t mr_soft_timer_start(mr_uint8_t id, mr_soft_timer_server_t server)
  */
 mr_err_t mr_soft_timer_stop(mr_uint8_t id, mr_soft_timer_server_t server)
 {
-    mr_avl_t node = MR_NULL;
     mr_soft_timer_t timer = MR_NULL;
+    mr_avl_t node = MR_NULL;
 
     MR_ASSERT(server != MR_NULL);
     MR_ASSERT(server->object.type & MR_OBJECT_TYPE_SOFT_TIMER);
@@ -330,7 +325,7 @@ mr_err_t mr_soft_timer_stop(mr_uint8_t id, mr_soft_timer_server_t server)
     node = mr_avl_find(server->list, id);
     if (node == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d stop failed: %d.\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
+        MR_DEBUG_D(DEBUG_TAG, "%s -> %d stop failed: %d\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
         return -MR_ERR_NOT_FOUND;
     }
 
@@ -388,4 +383,4 @@ mr_err_t mr_soft_timer_create_and_start(mr_uint8_t id,
     return mr_soft_timer_start(id, server);
 }
 
-#endif /* MR_CONF_SOFT_TIMER */
+#endif  /* MR_CONF_SOFT_TIMER */
