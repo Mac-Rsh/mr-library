@@ -32,7 +32,6 @@ static mr_err_t mr_adc_close(mr_device_t device)
 static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_adc_t adc = (mr_adc_t)device;
-    struct mr_adc_config *config = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
@@ -41,7 +40,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                config = (struct mr_adc_config *)args;
+                struct mr_adc_config *config = (struct mr_adc_config *)args;
                 ret = adc->ops->channel_configure(adc, (struct mr_adc_config *)args);
                 if (ret == MR_ERR_OK)
                 {
@@ -56,7 +55,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                config = (struct mr_adc_config *)args;
+                struct mr_adc_config *config = (struct mr_adc_config *)args;
                 *config = adc->config;
                 return MR_ERR_OK;
             }
@@ -71,10 +70,10 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
 static mr_ssize_t mr_adc_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_adc_t adc = (mr_adc_t)device;
-    mr_uint32_t *recv_buffer = (mr_uint32_t *)buffer;
-    mr_size_t recv_size = 0;
+    mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
+    mr_size_t read_size = 0;
 
-    if (size < sizeof(*recv_buffer))
+    if (size < sizeof(*read_buffer))
     {
         return -MR_ERR_INVALID;
     }
@@ -85,13 +84,13 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_pos_t pos, void *buffer, mr
         return -MR_ERR_INVALID;
     }
 
-    for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
+    for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
     {
-        *recv_buffer = adc->ops->read(adc, pos);
-        recv_buffer++;
+        *read_buffer = adc->ops->read(adc, pos);
+        read_buffer++;
     }
 
-    return (mr_ssize_t)recv_size;
+    return (mr_ssize_t)read_size;
 }
 
 static mr_err_t _err_io_adc_configure(mr_adc_t adc, mr_state_t state)

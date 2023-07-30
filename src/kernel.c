@@ -48,9 +48,7 @@ static struct mr_container mr_kernel_container[] =
  */
 mr_container_t mr_container_find(mr_uint8_t type)
 {
-    mr_size_t count = 0;
-
-    for (count = 0; count < mr_array_get_length(mr_kernel_container); count++)
+    for (mr_size_t count = 0; count < mr_array_get_length(mr_kernel_container); count++)
     {
         if (mr_kernel_container[count].type == type)
         {
@@ -71,9 +69,7 @@ mr_container_t mr_container_find(mr_uint8_t type)
  */
 mr_object_t mr_object_find(const char *name, mr_uint8_t type)
 {
-    mr_list_t list = MR_NULL;
     mr_container_t container = MR_NULL;
-    mr_object_t object = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
@@ -89,9 +85,9 @@ mr_object_t mr_object_find(const char *name, mr_uint8_t type)
     mr_interrupt_disable();
 
     /* Walk through the container looking for objects */
-    for (list = container->list.next; list != &container->list; list = list->next)
+    for (mr_list_t list = container->list.next; list != &container->list; list = list->next)
     {
-        object = mr_container_of(list, struct mr_object, list);
+        mr_object_t object = mr_container_of(list, struct mr_object, list);
         if (mr_strncmp(object->name, name, MR_CONF_NAME_MAX) == 0)
         {
             /* Enable interrupt */
@@ -191,8 +187,8 @@ mr_err_t mr_object_remove(mr_object_t object)
  */
 mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type)
 {
-    mr_err_t ret = MR_ERR_OK;
     mr_container_t container = MR_NULL;
+    mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
@@ -271,27 +267,21 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
     /* Disable interrupt */
     mr_interrupt_disable();
 
-    if (mutex->owner != owner)
+    if (mutex->owner == MR_NULL)
     {
-        /* Check if the mutex is locked */
-        if (mutex->hold != 0)
-        {
-            /* Enable interrupt */
-            mr_interrupt_enable();
-
-            return -MR_ERR_BUSY;
-        }
-
+        mutex->hold++;
         mutex->owner = owner;
-    }
 
-    /* Mutex is locked, increment the hold */
-    mutex->hold++;
+        /* Enable interrupt */
+        mr_interrupt_enable();
+
+        return MR_ERR_OK;
+    }
 
     /* Enable interrupt */
     mr_interrupt_enable();
 
-    return MR_ERR_OK;
+    return -MR_ERR_BUSY;
 }
 
 /**
@@ -310,20 +300,20 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
     /* Disable interrupt */
     mr_interrupt_disable();
 
-    /* Check if the mutex is locked */
-    if (mutex->owner == owner && mutex->hold != 0)
+    if (mutex->owner == owner)
     {
-        /* Mutex is unlocked, decrement the hold */
         mutex->hold--;
+
+        if (mutex->hold == 0)
+        {
+            mutex->owner = MR_NULL;
+        }
 
         /* Enable interrupt */
         mr_interrupt_enable();
 
         return MR_ERR_OK;
     }
-
-    /* Enable interrupt */
-    mr_interrupt_enable();
 
     return -MR_ERR_GENERIC;
 }

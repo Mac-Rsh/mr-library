@@ -32,7 +32,6 @@ static mr_err_t mr_dac_close(mr_device_t device)
 static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_dac_t dac = (mr_dac_t)device;
-    struct mr_dac_config *config = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
@@ -41,7 +40,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                config = (struct mr_dac_config *)args;
+                struct mr_dac_config *config = (struct mr_dac_config *)args;
                 ret = dac->ops->channel_configure(dac, config);
                 if (ret == MR_ERR_OK)
                 {
@@ -56,7 +55,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                config = (struct mr_dac_config *)args;
+                struct mr_dac_config *config = (struct mr_dac_config *)args;
                 *config = dac->config;
                 return MR_ERR_OK;
             }
@@ -71,10 +70,10 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
 static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_dac_t dac = (mr_dac_t)device;
-    mr_uint32_t *send_buffer = (mr_uint32_t *)buffer;
-    mr_size_t send_size = 0;
+    mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
+    mr_size_t write_size = 0;
 
-    if (size < sizeof(*send_buffer))
+    if (size < sizeof(*write_buffer))
     {
         return -MR_ERR_INVALID;
     }
@@ -85,13 +84,13 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buf
         return -MR_ERR_INVALID;
     }
 
-    for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
+    for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
     {
-        dac->ops->write(dac, pos, *send_buffer);
-        send_buffer++;
+        dac->ops->write(dac, pos, *write_buffer);
+        write_buffer++;
     }
 
-    return (mr_ssize_t)send_size;
+    return (mr_ssize_t)write_size;
 }
 
 static mr_err_t _err_io_dac_configure(mr_dac_t dac, mr_state_t state)

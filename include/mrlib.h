@@ -39,7 +39,7 @@ mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
 mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
-#endif /* MR_CONF_DEVICE */
+#endif  /* MR_CONF_DEVICE */
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
@@ -56,7 +56,7 @@ mr_err_t mr_event_create(mr_uint8_t id,
 mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server);
 mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server);
 mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server);
-#endif /* MR_CONF_EVENT */
+#endif  /* MR_CONF_EVENT */
 
 #if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
 /**
@@ -80,7 +80,7 @@ mr_err_t mr_soft_timer_create_and_start(mr_uint8_t id,
                                         mr_err_t (*cb)(mr_soft_timer_server_t server, void *args),
                                         void *args,
                                         mr_soft_timer_server_t server);
-#endif /* MR_CONF_SOFT_TIMER */
+#endif  /* MR_CONF_SOFT_TIMER */
 
 /**
  *  Export kernel service functions
@@ -117,4 +117,4 @@ mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
 mr_uint32_t mr_str2hash(const char *string, mr_size_t length);
 
-#endif /* _MR_LIB_H_ */
+#endif  /* _MR_LIB_H_ */

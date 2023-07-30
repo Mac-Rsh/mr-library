@@ -40,8 +40,8 @@ mr_device_t mr_device_find(const char *name)
  */
 mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
 {
-    mr_err_t ret = MR_ERR_OK;
     static const struct mr_device_ops null_ops = {MR_NULL};
+    mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
@@ -51,7 +51,7 @@ mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
     ret = mr_object_add(&device->object, name, MR_OBJECT_TYPE_DEVICE);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d.\r\n", device->object.name, ret);
+        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d\r\n", device->object.name, ret);
         return ret;
     }
 
@@ -89,7 +89,7 @@ mr_err_t mr_device_remove(mr_device_t device)
     ret = mr_object_remove(&device->object);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d.\r\n", device->object.name, ret);
+        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d\r\n", device->object.name, ret);
         return ret;
     }
 
@@ -112,13 +112,18 @@ mr_err_t mr_device_remove(mr_device_t device)
  */
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
 {
+    mr_err_t ret = MR_ERR_OK;
+
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
     /* Check if the specified open flags are supported by the device */
     if (flags != (flags & device->support_flag))
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported open flags: 0x%x.\r\n", device->object.name, flags);
+        MR_DEBUG_D(DEBUG_TAG,
+                   "%s unsupported open flags: 0x%x\r\n",
+                   device->object.name,
+                   (flags ^ device->support_flag));
         return -MR_ERR_UNSUPPORTED;
     }
 
@@ -141,7 +146,14 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
         return MR_ERR_OK;
     }
 
-    return device->ops->open(device);
+    ret = device->ops->open(device);
+#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "%s open failed: %d\r\n", device->object.name, ret);
+    }
+#endif
+    return ret;
 }
 
 /**
@@ -153,6 +165,8 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
  */
 mr_err_t mr_device_close(mr_device_t device)
 {
+    mr_err_t ret = MR_ERR_OK;
+
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
@@ -182,7 +196,14 @@ mr_err_t mr_device_close(mr_device_t device)
         return MR_ERR_OK;
     }
 
-    return device->ops->close(device);
+    ret = device->ops->close(device);
+#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "%s close failed: %d\r\n", device->object.name, ret);
+    }
+#endif
+    return ret;
 }
 
 /**
@@ -196,17 +217,26 @@ mr_err_t mr_device_close(mr_device_t device)
  */
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
 {
+    mr_err_t ret = MR_ERR_OK;
+
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
 
     /* Call the ioctl function, if provided */
     if (device->ops->ioctl == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported ioctl.\r\n", device->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s unsupported ioctl\r\n", device->object.name);
         return -MR_ERR_UNSUPPORTED;
     }
 
-    return device->ops->ioctl(device, cmd, args);
+    ret = device->ops->ioctl(device, cmd, args);
+#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "%s ioctl failed: %d\r\n", device->object.name, ret);
+    }
+#endif
+    return ret;
 }
 
 /**
@@ -221,6 +251,8 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
  */
 mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
+    mr_err_t ret = MR_ERR_OK;
+
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
     MR_ASSERT(buffer != MR_NULL);
@@ -228,18 +260,25 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_siz
     /* Check if the device is closed or unsupported */
     if ((device->ref_count == 0) || !(device->open_flag & MR_OPEN_RDONLY))
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported read.\r\n", device->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s unsupported read\r\n", device->object.name);
         return -MR_ERR_UNSUPPORTED;
     }
 
     /* Call the read function, if provided */
     if (device->ops->read == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unprovided read operation.\r\n", device->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s read failed: %d\r\n", device->object.name, -MR_ERR_IO);
         return -MR_ERR_IO;
     }
 
-    return device->ops->read(device, pos, buffer, size);
+    ret = device->ops->read(device, pos, buffer, size);
+#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
+    if (ret < MR_ERR_OK)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "%s read failed: %d\r\n", device->object.name, ret);
+    }
+#endif
+    return ret;
 }
 
 /**
@@ -254,6 +293,8 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_siz
  */
 mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
+    mr_err_t ret = MR_ERR_OK;
+
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
     MR_ASSERT(buffer != MR_NULL);
@@ -261,18 +302,25 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
     /* Check if the device is closed or unsupported */
     if ((device->ref_count == 0) || !(device->open_flag & MR_OPEN_WRONLY))
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported write.\r\n", device->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s unsupported write\r\n", device->object.name);
         return -MR_ERR_UNSUPPORTED;
     }
 
     /* Call the write function, if provided */
     if (device->ops->write == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unprovided write operation.\r\n", device->object.name);
+        MR_DEBUG_D(DEBUG_TAG, "%s write failed: %d\r\n", device->object.name, -MR_ERR_IO);
         return -MR_ERR_IO;
     }
 
-    return device->ops->write(device, pos, buffer, size);
+    ret = device->ops->write(device, pos, buffer, size);
+#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
+    if (ret < MR_ERR_OK)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "%s write failed: %d\r\n", device->object.name, ret);
+    }
+#endif
+    return ret;
 }
 
-#endif /* MR_CONFIG_DEVICE */
+#endif  /* MR_CONFIG_DEVICE */

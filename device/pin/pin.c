@@ -15,7 +15,6 @@
 static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_pin_t pin = (mr_pin_t)device;
-    struct mr_pin_config *config = MR_NULL;
 
     switch (cmd & _MR_CTRL_FLAG_MASK)
     {
@@ -23,7 +22,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                config = (struct mr_pin_config *)args;
+                struct mr_pin_config *config = (struct mr_pin_config *)args;
                 return pin->ops->configure(pin, config);
             }
             return -MR_ERR_INVALID;
@@ -43,41 +42,41 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 static mr_ssize_t mr_pin_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
-    mr_level_t *recv_buffer = (mr_level_t *)buffer;
-    mr_size_t recv_size = 0;
+    mr_level_t *read_buffer = (mr_level_t *)buffer;
+    mr_size_t read_size = 0;
 
-    if (size < sizeof(*recv_buffer))
+    if (size < sizeof(*read_buffer))
     {
         return -MR_ERR_INVALID;
     }
 
-    for (recv_size = 0; recv_size < size; recv_size += sizeof(*recv_buffer))
+    for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
     {
-        *recv_buffer = pin->ops->read(pin, pos);
-        recv_buffer++;
+        *read_buffer = pin->ops->read(pin, pos);
+        read_buffer++;
     }
 
-    return (mr_ssize_t)recv_size;
+    return (mr_ssize_t)read_size;
 }
 
 static mr_ssize_t mr_pin_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
-    mr_level_t *send_buffer = (mr_level_t *)buffer;
-    mr_size_t send_size = 0;
+    mr_level_t *write_buffer = (mr_level_t *)buffer;
+    mr_size_t write_size = 0;
 
-    if (size < sizeof(*send_buffer))
+    if (size < sizeof(*write_buffer))
     {
         return -MR_ERR_INVALID;
     }
 
-    for (send_size = 0; send_size < size; send_size += sizeof(*send_buffer))
+    for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
     {
-        pin->ops->write(pin, pos, *send_buffer);
-        send_buffer++;
+        pin->ops->write(pin, pos, *write_buffer);
+        write_buffer++;
     }
 
-    return (mr_ssize_t)send_size;
+    return (mr_ssize_t)write_size;
 }
 
 static mr_err_t _err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
