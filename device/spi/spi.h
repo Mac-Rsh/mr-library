@@ -52,7 +52,7 @@ struct mr_spi_config
     mr_uint8_t host_slave: 1;
     mr_uint8_t mode: 2;
     mr_uint8_t bit_order: 1;
-    mr_uint8_t cs_active: 2;
+    mr_level_t cs_active: 2;
 };
 
 struct mr_spi_fifo
@@ -108,7 +108,7 @@ struct mr_spi_bus
 };
 
 mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, void *data, struct mr_spi_bus_ops *ops);
-mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_uint16_t cs_pin);
+mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_pos_t cs_number);
 void mr_spi_bus_isr(mr_spi_bus_t spi_bus, mr_uint32_t event);
 
 #endif  /* MR_CONF_SPI */
