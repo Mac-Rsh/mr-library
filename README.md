@@ -38,13 +38,13 @@
 
 ```c
 /* 定义SPI设备 */
-#define SPI_DEVICE0_CS_PIN              10
-#define SPI_DEVICE1_CS_PIN              20
+#define SPI_DEVICE0_CS_NUMBER           10
+#define SPI_DEVICE1_CS_NUMBER           20
 struct mr_spi_device spi_device0, spi_device1;
 
 /* 添加SPI设备 */
-mr_spi_device_add(&spi_device0, "spi10", SPI_DEVICE0_CS_PIN);
-mr_spi_device_add(&spi_device1, "spi11", SPI_DEVICE1_CS_PIN);
+mr_spi_device_add(&spi_device0, "spi10", SPI_DEVICE0_CS_NUMBER);
+mr_spi_device_add(&spi_device1, "spi11", SPI_DEVICE1_CS_NUMBER);
 
 /* 查找SPI设备 */
 mr_device_t spi0_device = mr_device_find("spi10");
@@ -186,35 +186,41 @@ event3_cb
 | mr_soft_timer_server_remove    | 移除定时服务器     |
 | mr_soft_timer_server_update    | 定时服务器时基信号更新 |
 | mr_soft_timer_server_handle    | 定时服务器处理     |
-| mr_soft_timer_add              | 添加定时器       |
-| mr_soft_timer_remove           | 移除定时器       |
+| mr_soft_timer_create           | 创建定时器       |
+| mr_soft_timer_delete           | 删除定时器       |
 | mr_soft_timer_start            | 启动定时器       |
 | mr_soft_timer_stop             | 暂停定时器       |
-| mr_soft_timer_add_then_start   | 添加定时器并启动    |
+| mr_soft_timer_create_and_start | 创建定时器并启动    |
 
 ### 软件定时器服务使用示例：
 
 ```c
-/* 定义定时服务器和定时器 */
-struct mr_soft_timer_server server;
-struct mr_soft_timer timer1, timer2, timer3;
+/* 定义定时器 */
+#define TIMER1                          1
+#define TIMER2                          2
+#define TIMER3                          3
 
-mr_err_t timer1_callback(mr_soft_timer timer, void *args)
+/* 定义定时服务器 */
+struct mr_soft_timer_server server;
+
+mr_err_t timer1_callback(mr_soft_timer_server_t server, void *args)
 {
     printf("timer1_callback\r\n");
     return MR_ERR_OK;
 }
 
-mr_err_t timer2_callback(mr_soft_timer timer, void *args)
+mr_err_t timer2_callback(mr_soft_timer_server_t server, void *args)
 {
     printf("timer2_callback\r\n");
     return MR_ERR_OK;
 }
 
-mr_err_t timer3_callback(mr_soft_timer timer, void *args)
+mr_err_t timer3_callback(mr_soft_timer_server_t server, void *args)
 {
     printf("timer3_callback\r\n");
-    mr_soft_timer_stop(timer);
+    
+    /* 暂停定时器3 */
+    mr_soft_timer_stop(TIMER3, server);
     return MR_ERR_OK;
 }
 
@@ -223,10 +229,10 @@ int main(void)
     /* 添加定时服务器 */
     mr_soft_timer_server_add(&server, "soft-timer");
 
-    /* 添加定时器并启动 */
-    mr_soft_timer_add_then_start(&timer1, 5, timer1_callback, MR_NULL, &server);
-    mr_soft_timer_add_then_start(&timer2, 10, timer2_callback, MR_NULL, &server);
-    mr_soft_timer_add_then_start(&timer3, 15, timer3_callback, MR_NULL, &server);
+    /* 创建定时器并启动 */
+    mr_soft_timer_create_and_start(TIMER1, 5, timer1_callback, MR_NULL, &server);
+    mr_soft_timer_create_and_start(TIMER2, 10, timer2_callback, MR_NULL, &server);
+    mr_soft_timer_create_and_start(TIMER3, 15, timer3_callback, MR_NULL, &server);
 
     while (1)
     {
