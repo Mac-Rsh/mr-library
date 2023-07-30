@@ -336,7 +336,7 @@ mr_err_t ch32_spi_init(void)
                     ch32_spi_configure,
                     ch32_spi_write,
                     ch32_spi_read,
-                    ch32_spi_cs_crtl,
+                    ch32_spi_cs_ctrl,
                     ch32_spi_cs_read,
                     ch32_spi_start_tx,
                     ch32_spi_stop_tx,
