@@ -193,7 +193,7 @@ typedef struct mr_avl *mr_avl_t;                                    /* Type for 
 /**
  *  Fifo
  */
-struct mr_fifo
+struct mr_rb
 {
     mr_uint16_t read_mirror: 1;                                     /* Read mirror flag */
     mr_uint16_t read_index: 15;                                     /* Read index */
@@ -203,7 +203,7 @@ struct mr_fifo
     mr_uint16_t size;                                               /* Buffer pool size */
     mr_uint8_t *buffer;                                             /* Buffer pool */
 };
-typedef struct mr_fifo *mr_fifo_t;                                  /* Type for fifo */
+typedef struct mr_rb *mr_rb_t;                                  /* Type for fifo */
 
 /**
  *  Transfer
@@ -234,6 +234,7 @@ enum mr_object_type
 {
     MR_OBJECT_TYPE_NONE,                                            /* No object */
     MR_OBJECT_TYPE_DEVICE,                                          /* Device object */
+    MR_OBJECT_TYPE_FSM,                                             /* FSM object */
     MR_OBJECT_TYPE_EVENT,                                           /* Event object */
     MR_OBJECT_TYPE_SOFT_TIMER,                                      /* Soft timer object */
     MR_OBJECT_TYPE_MODULE,                                          /* Module object */
@@ -243,6 +244,7 @@ struct mr_object
 {
     char name[MR_CONF_NAME_MAX];                                    /* Object name */
     mr_uint8_t type;                                                /* Object type */
+    mr_err_t err;                                                   /* Object error */
     struct mr_list list;                                            /* Object list */
 };
 typedef struct mr_object *mr_object_t;                              /* Type for object */
@@ -306,6 +308,31 @@ struct mr_device
 };
 #endif /* MR_CONF_DEVICE */
 
+#if (MR_CONF_FSM == MR_CONF_ENABLE)
+/**
+ *  FSM
+ */
+typedef struct mr_fsm_table *mr_fsm_table_t;                        /* Type for fsm table */
+
+struct mr_fsm
+{
+    struct mr_object object;                                        /* FSM object */
+
+    mr_fsm_table_t table;                                           /* State table */
+    mr_size_t table_size;                                           /* State table size */
+    mr_uint32_t current_state;                                      /* Current state */
+    mr_uint32_t next_state;                                         /* Next state */
+};
+typedef struct mr_fsm *mr_fsm_t;                                    /* Type for fsm */
+
+struct mr_fsm_table
+{
+    mr_err_t (*cb)(mr_fsm_t fsm, void *args);                       /* State callback */
+    void *args;                                                     /* State arguments */
+    mr_err_t (*signal)(mr_fsm_t fsm, mr_uint32_t signal);           /* State signal */
+};
+#endif  /* MR_CONF_FSM */
+
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
  *  Event server
@@ -314,7 +341,7 @@ struct mr_event_server
 {
     struct mr_object object;                                        /* Event server object */
 
-    struct mr_fifo queue;                                           /* Event server queue */
+    struct mr_rb queue;                                           /* Event server queue */
     mr_avl_t list;                                                  /* Event server list */
 };
 typedef struct mr_event_server *mr_event_server_t;                  /* Type for event server */
@@ -328,7 +355,7 @@ struct mr_event
     mr_err_t (*cb)(mr_event_server_t server, void *args);           /* Event callback */
     void *args;                                                     /* Event arguments */
 };
-#endif /* MR_CONF_EVENT */
+#endif  /* MR_CONF_EVENT */
 
 #if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
 /**
@@ -356,6 +383,6 @@ struct mr_soft_timer
     mr_err_t (*cb)(mr_soft_timer_server_t server, void *args);      /* Timer callback */
     void *args;                                                     /* Timer arguments */
 };
-#endif /* MR_CONF_SOFT_TIMER */
+#endif  /* MR_CONF_SOFT_TIMER */
 
-#endif /* _MR_DEF_H_ */
+#endif  /* _MR_DEF_H_ */

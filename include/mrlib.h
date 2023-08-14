@@ -23,6 +23,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type);
 mr_err_t mr_object_remove(mr_object_t object);
 mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type);
 void mr_object_rename(mr_object_t object, char *name);
+void mr_object_set_err(mr_object_t object, mr_err_t err);
 void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner);
@@ -40,6 +41,16 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
 mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 #endif  /* MR_CONF_DEVICE */
+
+#if (MR_CONF_FSM == MR_CONF_ENABLE)
+/**
+ *  Export fsm functions
+ */
+mr_err_t mr_fsm_add(mr_fsm_t fsm, const char *name, mr_fsm_table_t table, mr_size_t table_size);
+void mr_fsm_handle(mr_fsm_t fsm);
+mr_err_t mr_fsm_signal(mr_fsm_t fsm, mr_uint32_t signal);
+mr_err_t mr_fsm_shift(mr_fsm_t fsm, mr_uint32_t state);
+#endif  /* MR_CONF_FSM */
 
 #if (MR_CONF_EVENT == MR_CONF_ENABLE)
 /**
@@ -96,16 +107,18 @@ void mr_delay_us(mr_uint32_t us);
 void mr_delay_ms(mr_uint32_t ms);
 
 /**
- *  Export fifo functions
+ *  Export ringbuffer functions
  */
-void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size);
-void mr_fifo_reset(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo);
-mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size);
-mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size);
-mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size);
+void mr_rb_init(mr_rb_t rb, void *pool, mr_size_t pool_size);
+void mr_rb_reset(mr_rb_t rb);
+mr_size_t mr_rb_get_data_size(mr_rb_t rb);
+mr_size_t mr_rb_get_space_size(mr_rb_t rb);
+mr_size_t mr_rb_get_buffer_size(mr_rb_t rb);
+mr_size_t mr_rb_read(mr_rb_t rb, void *buffer, mr_size_t size);
+mr_size_t mr_rb_get(mr_rb_t rb, mr_uint8_t *data);
+mr_size_t mr_rb_write(mr_rb_t rb, const void *buffer, mr_size_t size);
+mr_size_t mr_rb_write_force(mr_rb_t rb, const void *buffer, mr_size_t size);
+mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data);
 
 /**
  *  Export avl functions
