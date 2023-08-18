@@ -6,289 +6,210 @@
  * Change Logs:
  * Date           Author       Notes
  * 2023-05-22     MacRsh       first version
+ * 2023-08-16     MacRsh       code refactoring
  */
 
 #include "mrlib.h"
 
-#if (MR_CONF_EVENT == MR_CONF_ENABLE)
+#if (MR_CFG_EVENT == MR_CFG_ENABLE)
 
 #define DEBUG_TAG   "event"
 
-/**
- * @brief This function find the event server object.
- *
- * @param name The name of the event server.
- *
- * @return A handle to the found event server, or MR_NULL if not found.
- */
-mr_event_server_t mr_event_server_find(const char *name)
+static mr_err_t err_io_event_cb(mr_event_t cb, void *args)
 {
-    MR_ASSERT(name != MR_NULL);
-
-    /* Find the event server object from the server container */
-    return (mr_event_server_t)mr_object_find(name, MR_OBJECT_TYPE_EVENT);
+    return -MR_ERR_IO;
 }
 
 /**
- * @brief This function adds a event server to the container.
+ * @brief This function finds a event.
  *
- * @param server The event server to be added.
- * @param name The name of the event server.
- * @param queue_length The length of the queue.
+ * @param name The name of the event.
+ *
+ * @return A handle to the found event, or MR_NULL if not found.
+ */
+mr_event_t mr_event_find(const char *name)
+{
+    MR_ASSERT(name != MR_NULL);
+
+    /* Find the event object from the container */
+    return (mr_event_t)mr_object_find(name, Mr_Object_Type_Event);
+}
+
+/**
+ * @brief This function adds an event to the container.
+ *
+ * @param event The event to be added.
+ * @param name The name of the event.
+ * @param table The table of the event.
+ * @param table_size The size of the table.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_event_server_add(mr_event_server_t server, const char *name, mr_size_t queue_length)
+mr_err_t mr_event_add(mr_event_t event, const char *name, mr_event_table_t table, mr_size_t table_size)
 {
+    mr_uint8_t *memory = MR_NULL;
+    mr_size_t count = 0;
     mr_err_t ret = MR_ERR_OK;
-    mr_uint8_t *pool = MR_NULL;
 
-    MR_ASSERT(server != MR_NULL);
+    MR_ASSERT(event != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(queue_length > 0 && queue_length < MR_UINT16_MAX);
+    MR_ASSERT(table != MR_NULL);
+    MR_ASSERT(table_size != 0);
 
-    /* Allocate the queue memory */
-    pool = mr_malloc(queue_length * sizeof(mr_uint8_t));
-    if (pool == MR_NULL)
+    /* Allocate memory for the event queue */
+    memory = mr_malloc(table_size * sizeof(mr_uint32_t));
+    if (memory == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d\r\n", server->object.name, -MR_ERR_NO_MEMORY);
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, -MR_ERR_NO_MEMORY);
         return -MR_ERR_NO_MEMORY;
     }
 
     /* Add the object to the container */
-    ret = mr_object_add(&server->object, name, MR_OBJECT_TYPE_EVENT);
+    ret = mr_object_add(&event->object, name, Mr_Object_Type_Event);
     if (ret != MR_ERR_OK)
     {
-        /* Free the queue memory */
-        mr_free(pool);
-
-        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d\r\n", server->object.name, ret);
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
+        mr_free(memory);
         return ret;
     }
 
     /* Initialize the private fields */
-    mr_fifo_init(&server->queue, pool, queue_length);
-    server->list = MR_NULL;
+    event->table = table;
+    event->table_size = table_size;
+    mr_rb_init(&event->queue, memory, table_size * sizeof(mr_uint32_t));
+
+    /* Protect the callback function of each event */
+    for (count = 0; count < event->table_size; count++)
+    {
+        event->table[count].cb = event->table[count].cb ? event->table[count].cb : err_io_event_cb;
+    }
 
     return MR_ERR_OK;
 }
 
 /**
- * @brief This function remove a event server object from the container.
+ * @brief This function removes an event from the container.
  *
- * @param server The event server to be removed.
+ * @param event The event to be removed.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_event_server_remove(mr_event_server_t server)
+mr_err_t mr_event_remove(mr_event_t event)
 {
     mr_err_t ret = MR_ERR_OK;
 
-    MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
+    MR_ASSERT(event != MR_NULL);
+    MR_ASSERT(event->object.type == Mr_Object_Type_Event);
 
     /* Remove the object from the container */
-    ret = mr_object_remove(&server->object);
+    ret = mr_object_remove(&event->object);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d\r\n", server->object.name, ret);
+        MR_DEBUG_E(DEBUG_TAG, "%s remove failed: %d\r\n", event->object.name, ret);
         return ret;
     }
 
-    /* Free the queue memory */
-    mr_free(server->queue.buffer);
-
     /* Reset the private fields */
-    server->list = MR_NULL;
-    mr_fifo_init(&server->queue, MR_NULL, 0);
+    event->table = MR_NULL;
+    event->table_size = 0;
+    mr_free(event->queue.buffer);
+    mr_rb_init(&event->queue, MR_NULL, 0);
 
     return MR_ERR_OK;
 }
 
 /**
- * @brief This function handle the event server.
+ * @brief This function handles the events.
  *
- * @param server The event server to be handled.
+ * @param event The event to be handled.
  */
-void mr_event_server_handle(mr_event_server_t server)
+void mr_event_handle(mr_event_t event)
 {
     mr_size_t count = 0;
+    mr_uint32_t index = 0;
 
-    MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
+    MR_ASSERT(event != MR_NULL);
+    MR_ASSERT(event->object.type == Mr_Object_Type_Event);
 
-    /* Get the number of the ready event */
-    count = mr_fifo_get_data_size(&server->queue);
+    /* Get the number of events */
+    count = mr_rb_get_data_size(&event->queue);
 
-    /* Handle the event */
-    while (count--)
+    while (count != 0)
     {
-        /* Get the event id */
-        mr_uint8_t id = 0;
-        mr_fifo_read(&server->queue, &id, sizeof(id));
+        /* Get the index from the queue */
+        count -= mr_rb_read(&event->queue, &index, sizeof(index));
 
-        /* Find the event */
-        mr_avl_t node = mr_avl_find(server->list, id);
-        if (node == MR_NULL)
+        /* Check whether the index is valid */
+        if (index >= event->table_size)
         {
+            MR_DEBUG_E(DEBUG_TAG, "[%s -> %d] handle failed: %d\r\n", event->object.name, index, -MR_ERR_GENERIC);
             continue;
         }
 
-        /* Call the event callback */
-        mr_event_t event = mr_container_of(node, struct mr_event, list);
-        event->cb(server, event->args);
+        /* Call the event callback function */
+        event->table[index].cb(event, event->table[index].args);
     }
 }
 
 /**
- * @brief This function creates a new event.
+ * @brief This function notifies the event.
  *
- * @param id The id of the event.
- * @param cb The event callback function.
- * @param args The arguments of the callback function.
- * @param server The event server to which the event belong.
+ * @param event The event to be notified.
+ * @param index The index to be notified.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_event_create(mr_uint8_t id,
-                         mr_err_t (*cb)(mr_event_server_t server, void *args),
-                         void *args,
-                         mr_event_server_t server)
+mr_err_t mr_event_notify(mr_event_t event, mr_uint32_t index)
 {
-    mr_event_t event = MR_NULL;
+    mr_size_t count = 0;
 
-    MR_ASSERT(cb != MR_NULL);
-    MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
+    MR_ASSERT(event != MR_NULL);
+    MR_ASSERT(event->object.type == Mr_Object_Type_Event);
 
-    /* Check if the event is already exists in the server */
-    if (mr_avl_find(server->list, id) != MR_NULL)
+    /* Check whether the index is valid */
+    if (index >= event->table_size)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d\r\n", server->object.name, id, -MR_ERR_BUSY);
+        MR_DEBUG_E(DEBUG_TAG, "[%s -> %d] index failed: %d\r\n", event->object.name, index, -MR_ERR_INVALID);
+        return -MR_ERR_INVALID;
+    }
+
+    /* Write the index to the queue */
+    count = mr_rb_write(&event->queue, &index, sizeof(index));
+    if (count != sizeof(index))
+    {
+        MR_DEBUG_E(DEBUG_TAG, "[%s -> %d] index failed: %d\r\n", event->object.name, index, -MR_ERR_BUSY);
         return -MR_ERR_BUSY;
     }
 
-    /* Allocate the event */
-    event = (mr_event_t)mr_malloc(sizeof(struct mr_event));
-    if (event == MR_NULL)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d create failed: %d\r\n", server->object.name, id, -MR_ERR_NO_MEMORY);
-        return -MR_ERR_NO_MEMORY;
-    }
-    mr_memset(event, 0, sizeof(struct mr_event));
-
-    /* Initialize the private fields */
-    mr_avl_init(&event->list, id);
-    event->cb = cb;
-    event->args = args;
-
-    /* Disable interrupt */
-    mr_interrupt_disable();
-
-    /* Insert the event into the server's list */
-    mr_avl_insert(&server->list, &event->list);
-
-    /* Enable interrupt */
-    mr_interrupt_enable();
-
     return MR_ERR_OK;
 }
 
 /**
- * @brief This function delete an event.
+ * @brief This function toggles the event.
  *
- * @param id The id of the event.
- * @param server The event server to which the event belongs.
+ * @param event The event to be toggled.
+ * @param index The index to be toggled.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
+ *
+ * @note This function fires the event and immediately invokes the event callback.
  */
-mr_err_t mr_event_delete(mr_uint8_t id, mr_event_server_t server)
+mr_err_t mr_event_toggle(mr_event_t event, mr_uint32_t index)
 {
-    mr_avl_t node = MR_NULL;
-    mr_event_t event = MR_NULL;
+    MR_ASSERT(event != MR_NULL);
+    MR_ASSERT(event->object.type == Mr_Object_Type_Event);
 
-    MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
-
-    /* Find the event from the server */
-    node = mr_avl_find(server->list, id);
-    if (node == MR_NULL)
+    /* Check whether the index is valid */
+    if (index >= event->table_size)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d delete failed: %d\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
+        MR_DEBUG_E(DEBUG_TAG, "[%s -> %d] toggle failed: %d\r\n", event->object.name, index, -MR_ERR_INVALID);
+        return -MR_ERR_INVALID;
     }
 
-    /* Get the event from the list */
-    event = mr_container_of(node, struct mr_event, list);
-
-    /* Disable interrupt */
-    mr_interrupt_disable();
-
-    /* Remove the event from the server's list */
-    mr_avl_remove(&server->list, &event->list);
-
-    /* Enable interrupt */
-    mr_interrupt_enable();
-
-    /* Free the event */
-    mr_free(event);
+    /* Call the event callback function */
+    event->table[index].cb(event, event->table[index].args);
 
     return MR_ERR_OK;
 }
 
-/**
- * @brief This function notify the event server to wake up a event.
- *
- * @param id The id of the event to be wake up.
- * @param server The event server to be notified.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
- */
-mr_err_t mr_event_notify(mr_uint8_t id, mr_event_server_t server)
-{
-    MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
-
-    /* Write the event id to the queue */
-    if (!mr_fifo_write(&server->queue, &id, sizeof(id)))
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d notify failed: %d.\r\r\n", server->object.name, id, -MR_ERR_NO_MEMORY);
-        return -MR_ERR_NO_MEMORY;
-    }
-
-    return MR_ERR_OK;
-}
-
-/**
- * @brief This function trigger an event.
- *
- * @param id The id of the event to be triggered.
- * @param server The event server to which the event belongs.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
- *
- * @note The callback function will wake up immediately, please note that it is only used for very short or high priority event processing.
- */
-mr_err_t mr_event_trigger(mr_uint8_t id, mr_event_server_t server)
-{
-    mr_avl_t node = MR_NULL;
-    mr_event_t event = MR_NULL;
-
-    MR_ASSERT(server != MR_NULL);
-    MR_ASSERT(server->object.type & MR_OBJECT_TYPE_EVENT);
-
-    node = mr_avl_find(server->list, id);
-    if (node == MR_NULL)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s -> %d trigger failed: %d\r\n", server->object.name, id, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
-    }
-
-    /* Call the event callback */
-    event = mr_container_of(node, struct mr_event, list);
-    event->cb(server, event->args);
-
-    return MR_ERR_OK;
-}
-
-#endif  /* MR_CONF_EVENT */
+#endif /* MR_CFG_EVENT */

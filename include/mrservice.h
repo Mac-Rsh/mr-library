@@ -13,44 +13,45 @@
 
 #include "mrdef.h"
 
-#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_ASSERT && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_DEBUG_A(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
+/**
+ * @def Debug
+ */
+#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_ASSERT)
+#define MR_DEBUG_A(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_A(TAG, FORMAT, ...)
 #endif
-#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_ERROR && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_DEBUG_E(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_ERROR, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_ERROR)
+#define MR_DEBUG_E(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_ERROR, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_E(TAG, FORMAT, ...)
 #endif
-#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_WARNING && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_DEBUG_W(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_WARNING, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_WARNING)
+#define MR_DEBUG_W(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_WARNING, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_W(TAG, FORMAT, ...)
 #endif
-#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_INFO && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_DEBUG_I(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_INFO, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_INFO)
+#define MR_DEBUG_I(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_INFO, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_I(TAG, FORMAT, ...)
 #endif
-
-#if (MR_CONF_DEBUG_LEVEL >= MR_CONF_DEBUG_DEBUG && MR_CONF_DEBUG == MR_CONF_ENABLE)
-#define MR_DEBUG_D(TAG, FORMAT, ...)    mr_log_output(MR_CONF_DEBUG_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_DEBUG)
+#define MR_DEBUG_D(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_D(TAG, FORMAT, ...)
 #endif
 
-#if (MR_CONF_ASSERT == MR_CONF_ENABLE)
-#define MR_ASSERT(EX)                         \
-    do{                                       \
-        if (!(EX))                            \
-        {                                     \
-          MR_DEBUG_A(__FUNCTION__,            \
-                   "File: %s, Line: %d\r\n",  \
-                   __FILE__,                  \
-                   __LINE__);                 \
-          mr_assert_handle();                 \
-        }                                     \
+#if (MR_CFG_ASSERT == MR_CFG_ENABLE)
+/**
+ * @def Assert
+ */
+#define MR_ASSERT(EX)                           \
+    do{                                         \
+        if (!(EX))                              \
+        {                                       \
+          mr_assert_handle(__FILE__, __LINE__); \
+        }                                       \
     }while(0)
 #else
 #define MR_ASSERT(EX)
@@ -59,7 +60,7 @@
 #define mr_container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 
-#define mr_array_get_length(array)    sizeof(array)/sizeof(array[0])
+#define MR_ARRAY_SIZE(array)    sizeof(array)/sizeof(array[0])
 
 #define mr_align_down(size, align)    (size & (~(align - 1)))
 
@@ -73,7 +74,7 @@
  *
  * @param list The list to initialize.
  */
-mr_inline void mr_slist_init(mr_slist_t list)
+MR_INLINE void mr_slist_init(mr_slist_t list)
 {
     list->next = NULL;
 }
@@ -84,7 +85,7 @@ mr_inline void mr_slist_init(mr_slist_t list)
  * @param list The list to append to.
  * @param node The node to append.
  */
-mr_inline void mr_slist_append(mr_slist_t list, mr_slist_t node)
+MR_INLINE void mr_slist_append(mr_slist_t list, mr_slist_t node)
 {
     mr_slist_t temp_node = NULL;
 
@@ -104,7 +105,7 @@ mr_inline void mr_slist_append(mr_slist_t list, mr_slist_t node)
  * @param list The list to insert after.
  * @param node The node to insert.
  */
-mr_inline void mr_slist_insert_after(mr_slist_t list, mr_slist_t node)
+MR_INLINE void mr_slist_insert_after(mr_slist_t list, mr_slist_t node)
 {
     node->next = list->next;
     list->next = node;
@@ -116,7 +117,7 @@ mr_inline void mr_slist_insert_after(mr_slist_t list, mr_slist_t node)
  * @param list The list to remove from.
  * @param node The node to remove.
  */
-mr_inline void mr_slist_remove(mr_slist_t list, mr_slist_t node)
+MR_INLINE void mr_slist_remove(mr_slist_t list, mr_slist_t node)
 {
     mr_slist_t temp_node = NULL;
 
@@ -139,7 +140,7 @@ mr_inline void mr_slist_remove(mr_slist_t list, mr_slist_t node)
  *
  * @return The length of the list.
  */
-mr_inline mr_size_t mr_slist_get_length(mr_slist_t list)
+MR_INLINE mr_size_t mr_slist_get_length(mr_slist_t list)
 {
     mr_slist_t temp_node = NULL;
     size_t length = 0;
@@ -161,7 +162,7 @@ mr_inline mr_size_t mr_slist_get_length(mr_slist_t list)
  *
  * @return A handle to the tail of the list.
  */
-mr_inline mr_slist_t mr_slist_get_tail(mr_slist_t list)
+MR_INLINE mr_slist_t mr_slist_get_tail(mr_slist_t list)
 {
     mr_slist_t temp_node = NULL;
 
@@ -180,7 +181,7 @@ mr_inline mr_slist_t mr_slist_get_tail(mr_slist_t list)
  *
  * @return Whether the list is empty.
  */
-mr_inline mr_bool_t mr_slist_is_empty(mr_slist_t list)
+MR_INLINE mr_bool_t mr_slist_is_empty(mr_slist_t list)
 {
     return (mr_bool_t)(list->next == NULL);
 }
@@ -190,7 +191,7 @@ mr_inline mr_bool_t mr_slist_is_empty(mr_slist_t list)
  *
  * @param list The list to initialize.
  */
-mr_inline void mr_list_init(mr_list_t list)
+MR_INLINE void mr_list_init(mr_list_t list)
 {
     list->next = list;
     list->prev = list;
@@ -202,7 +203,7 @@ mr_inline void mr_list_init(mr_list_t list)
  * @param list The list to insert after.
  * @param node The node to insert.
  */
-mr_inline void mr_list_insert_after(mr_list_t list, mr_list_t node)
+MR_INLINE void mr_list_insert_after(mr_list_t list, mr_list_t node)
 {
     list->next->prev = node;
     node->next = list->next;
@@ -217,7 +218,7 @@ mr_inline void mr_list_insert_after(mr_list_t list, mr_list_t node)
  * @param list The list to insert before.
  * @param node The node to insert.
  */
-mr_inline void mr_list_insert_before(mr_list_t list, mr_list_t node)
+MR_INLINE void mr_list_insert_before(mr_list_t list, mr_list_t node)
 {
     list->prev->next = node;
     node->prev = list->prev;
@@ -231,7 +232,7 @@ mr_inline void mr_list_insert_before(mr_list_t list, mr_list_t node)
  *
  * @param node The node to remove.
  */
-mr_inline void mr_list_remove(mr_list_t node)
+MR_INLINE void mr_list_remove(mr_list_t node)
 {
     node->next->prev = node->prev;
     node->prev->next = node->next;
@@ -246,7 +247,7 @@ mr_inline void mr_list_remove(mr_list_t node)
  *
  * @return The length of the list.
  */
-mr_inline mr_size_t mr_list_get_length(mr_list_t list)
+MR_INLINE mr_size_t mr_list_get_length(mr_list_t list)
 {
     mr_size_t length = 0;
     mr_list_t temp_list = list;
@@ -267,7 +268,7 @@ mr_inline mr_size_t mr_list_get_length(mr_list_t list)
  *
  * @return Whether the list is empty.
  */
-mr_inline mr_bool_t mr_list_is_empty(mr_list_t list)
+MR_INLINE mr_bool_t mr_list_is_empty(mr_list_t list)
 {
     return (mr_bool_t)(list->next == list);
 }

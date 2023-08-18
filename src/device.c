@@ -10,9 +10,19 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
+#if (MR_CFG_DEVICE == MR_CFG_ENABLE)
 
 #define DEBUG_TAG   "device"
+
+static mr_ssize_t err_io_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+{
+    return -MR_ERR_IO;
+}
+
+static mr_ssize_t err_io_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+{
+    return -MR_ERR_IO;
+}
 
 /**
  * @brief This function finds a device.
@@ -25,8 +35,8 @@ mr_device_t mr_device_find(const char *name)
 {
     MR_ASSERT(name != MR_NULL);
 
-    /* Find the device object from the device container */
-    return (mr_device_t)mr_object_find(name, MR_OBJECT_TYPE_DEVICE);
+    /* Find the device object from the container */
+    return (mr_device_t)mr_object_find(name, Mr_Object_Type_Device);
 }
 
 /**
@@ -35,23 +45,25 @@ mr_device_t mr_device_find(const char *name)
  * @param device The device to be added.
  * @param name The name of the device.
  * @param flags The open flags supported by the device.
+ * @param ops The operations supported by the device.
+ * @param data The private data of the device.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
+mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags, mr_device_ops_t ops, void *data)
 {
-    static const struct mr_device_ops null_ops = {MR_NULL};
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(flags != MR_OPEN_CLOSED);
+    MR_ASSERT(ops != MR_NULL);
 
     /* Add the object to the container */
-    ret = mr_object_add(&device->object, name, MR_OBJECT_TYPE_DEVICE);
+    ret = mr_object_add(&device->object, name, Mr_Object_Type_Device);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s add failed: %d\r\n", device->object.name, ret);
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
         return ret;
     }
 
@@ -62,11 +74,13 @@ mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags)
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 
-    /* Set operations as null-ops if ops is null */
-    if (device->ops == MR_NULL)
-    {
-        device->ops = &null_ops;
-    }
+    /* Protect every operation of the device */
+    ops->read = ops->read ? ops->read : err_io_read;
+    ops->write = ops->write ? ops->write : err_io_write;
+    device->ops = ops;
+
+    /* Set the private data */
+    device->data = data;
 
     return MR_ERR_OK;
 }
@@ -83,21 +97,15 @@ mr_err_t mr_device_remove(mr_device_t device)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
-    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
+    MR_ASSERT(device->object.type == Mr_Object_Type_Device);
 
     /* Remove the object from the container */
     ret = mr_object_remove(&device->object);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s remove failed: %d\r\n", device->object.name, ret);
+        MR_DEBUG_E(DEBUG_TAG, "%s remove failed: %d\r\n", device->object.name, ret);
         return ret;
     }
-
-    /* Reset the private fields */
-    device->open_flag = MR_OPEN_CLOSED;
-    device->ref_count = 0;
-    device->rx_cb = MR_NULL;
-    device->tx_cb = MR_NULL;
 
     return MR_ERR_OK;
 }
@@ -115,45 +123,37 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
-    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
+    MR_ASSERT(device->object.type == Mr_Object_Type_Device);
 
     /* Check if the specified open flags are supported by the device */
     if (flags != (flags & device->support_flag))
     {
-        MR_DEBUG_D(DEBUG_TAG,
-                   "%s unsupported open flags: 0x%x\r\n",
-                   device->object.name,
-                   (flags ^ device->support_flag));
+        MR_DEBUG_E(DEBUG_TAG, "%s open failed: %d\r\n", device->object.name, -MR_ERR_UNSUPPORTED);
         return -MR_ERR_UNSUPPORTED;
     }
 
     /* Update the device open flag and reference count */
-    device->open_flag |= (flags & _MR_OPEN_FLAG_MASK);
+    device->open_flag |= (flags & MR_OPEN_FLAG_MASK);
     device->ref_count++;
 
-    /* Check if the device is already open */
-    if ((device->open_flag & MR_OPEN_ACTIVE))
+    /* Device is already opened */
+    if (device->ref_count > 1)
     {
         return MR_ERR_OK;
     }
 
-    /* Set the device status to active */
-    device->open_flag |= MR_OPEN_ACTIVE;
-
-    /* Call the open function, if provided */
-    if (device->ops->open == MR_NULL)
+    /* Call the open operation, if provided */
+    if (device->ops->open != MR_NULL)
     {
-        return MR_ERR_OK;
+        ret = device->ops->open(device);
+        if (ret != MR_ERR_OK)
+        {
+            MR_DEBUG_E(DEBUG_TAG, "%s open failed: %d\r\n", device->object.name, ret);
+        }
+        return ret;
     }
 
-    ret = device->ops->open(device);
-#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s open failed: %d\r\n", device->object.name, ret);
-    }
-#endif
-    return ret;
+    return MR_ERR_OK;
 }
 
 /**
@@ -168,7 +168,7 @@ mr_err_t mr_device_close(mr_device_t device)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
-    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
+    MR_ASSERT(device->object.type == Mr_Object_Type_Device);
 
     /* Check if the device is already closed */
     if (device->open_flag == MR_OPEN_CLOSED)
@@ -190,20 +190,18 @@ mr_err_t mr_device_close(mr_device_t device)
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 
-    /* Call the close function, if provided */
-    if (device->ops->close == MR_NULL)
+    /* Call the close operation, if provided */
+    if (device->ops->close != MR_NULL)
     {
-        return MR_ERR_OK;
+        ret = device->ops->close(device);
+        if (ret != MR_ERR_OK)
+        {
+            MR_DEBUG_E(DEBUG_TAG, "%s close failed: %d\r\n", device->object.name, ret);
+        }
+        return ret;
     }
 
-    ret = device->ops->close(device);
-#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s close failed: %d\r\n", device->object.name, ret);
-    }
-#endif
-    return ret;
+    return MR_ERR_OK;
 }
 
 /**
@@ -220,23 +218,20 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
-    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
+    MR_ASSERT(device->object.type == Mr_Object_Type_Device);
 
-    /* Call the ioctl function, if provided */
-    if (device->ops->ioctl == MR_NULL)
+    /* Call the ioctl operation, if provided */
+    if (device->ops->ioctl != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported ioctl\r\n", device->object.name);
-        return -MR_ERR_UNSUPPORTED;
+        ret = device->ops->ioctl(device, cmd, args);
+        if (ret != MR_ERR_OK)
+        {
+            MR_DEBUG_E(DEBUG_TAG, "%s ioctl failed: %d\r\n", device->object.name, ret);
+        }
+        return ret;
     }
 
-    ret = device->ops->ioctl(device, cmd, args);
-#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s ioctl failed: %d\r\n", device->object.name, ret);
-    }
-#endif
-    return ret;
+    return -MR_ERR_UNSUPPORTED;
 }
 
 /**
@@ -254,30 +249,22 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_siz
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
-    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
+    MR_ASSERT(device->object.type == Mr_Object_Type_Device);
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
-    if ((device->ref_count == 0) || !(device->open_flag & MR_OPEN_RDONLY))
+    if ((device->ref_count == 0) || ((device->open_flag & MR_OPEN_RDONLY) == 0))
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported read\r\n", device->object.name);
         return -MR_ERR_UNSUPPORTED;
     }
 
-    /* Call the read function, if provided */
-    if (device->ops->read == MR_NULL)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s read failed: %d\r\n", device->object.name, -MR_ERR_IO);
-        return -MR_ERR_IO;
-    }
-
+    /* Call the read operation */
     ret = device->ops->read(device, pos, buffer, size);
-#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
     if (ret < MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s read failed: %d\r\n", device->object.name, ret);
+        MR_DEBUG_E(DEBUG_TAG, "%s read failed: %d\r\n", device->object.name, ret);
     }
-#endif
+
     return ret;
 }
 
@@ -296,31 +283,23 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
-    MR_ASSERT(device->object.type & MR_OBJECT_TYPE_DEVICE);
+    MR_ASSERT(device->object.type == Mr_Object_Type_Device);
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
-    if ((device->ref_count == 0) || !(device->open_flag & MR_OPEN_WRONLY))
+    if ((device->ref_count == 0) || ((device->open_flag & MR_OPEN_WRONLY) == 0))
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s unsupported write\r\n", device->object.name);
         return -MR_ERR_UNSUPPORTED;
     }
 
-    /* Call the write function, if provided */
-    if (device->ops->write == MR_NULL)
-    {
-        MR_DEBUG_D(DEBUG_TAG, "%s write failed: %d\r\n", device->object.name, -MR_ERR_IO);
-        return -MR_ERR_IO;
-    }
-
+    /* Call the write operation */
     ret = device->ops->write(device, pos, buffer, size);
-#if (MR_CONF_DEBUG_LEVEL == MR_CONF_DEBUG_DEBUG)
     if (ret < MR_ERR_OK)
     {
-        MR_DEBUG_D(DEBUG_TAG, "%s write failed: %d\r\n", device->object.name, ret);
+        MR_DEBUG_E(DEBUG_TAG, "%s write failed: %d\r\n", device->object.name, ret);
     }
-#endif
+
     return ret;
 }
 
-#endif  /* MR_CONFIG_DEVICE */
+#endif /* MR_CFG_DEVICE */

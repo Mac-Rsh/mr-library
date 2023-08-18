@@ -10,49 +10,56 @@
 
 #include "mrlib.h"
 
-static struct mr_container mr_kernel_container[] =
+static struct mr_object_container mr_object_container_table[] =
         {
                 {
-                        MR_OBJECT_TYPE_NONE,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_NONE].list, &mr_kernel_container[MR_OBJECT_TYPE_NONE].list}
+                        Mr_Object_Type_None,
+                        {&mr_object_container_table[Mr_Object_Type_None].list,
+                         &mr_object_container_table[Mr_Object_Type_None].list}
                 },
-#if (MR_CONF_DEVICE == MR_CONF_ENABLE)
                 {
-                        MR_OBJECT_TYPE_DEVICE,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list,
-                         &mr_kernel_container[MR_OBJECT_TYPE_DEVICE].list}
+                        Mr_Object_Type_Device,
+                        {&mr_object_container_table[Mr_Object_Type_Device].list,
+                         &mr_object_container_table[Mr_Object_Type_Device].list}
                 },
-#endif
-#if (MR_CONF_EVENT == MR_CONF_ENABLE)
                 {
-                        MR_OBJECT_TYPE_EVENT,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_EVENT].list,
-                         &mr_kernel_container[MR_OBJECT_TYPE_EVENT].list}
+                        Mr_Object_Type_Fsm,
+                        {&mr_object_container_table[Mr_Object_Type_Fsm].list,
+                         &mr_object_container_table[Mr_Object_Type_Fsm].list}
                 },
-#endif
-#if (MR_CONF_SOFT_TIMER == MR_CONF_ENABLE)
                 {
-                        MR_OBJECT_TYPE_SOFT_TIMER,
-                        {&mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list,
-                         &mr_kernel_container[MR_OBJECT_TYPE_SOFT_TIMER].list}
+                        Mr_Object_Type_Event,
+                        {&mr_object_container_table[Mr_Object_Type_Event].list,
+                         &mr_object_container_table[Mr_Object_Type_Event].list}
                 },
-#endif
+                {
+                        Mr_Object_Type_SoftTimer,
+                        {&mr_object_container_table[Mr_Object_Type_SoftTimer].list,
+                         &mr_object_container_table[Mr_Object_Type_SoftTimer].list}
+                },
+                {
+                        Mr_Object_Type_Module,
+                        {&mr_object_container_table[Mr_Object_Type_Module].list,
+                         &mr_object_container_table[Mr_Object_Type_Module].list}
+                },
         };
 
 /**
- * @brief This function find the container.
+ * @brief This function find the object container.
  *
- * @param type The type of the container.
+ * @param type The type of the object container.
  *
  * @return A handle to the find container, or MR_NULL if not find.
  */
-mr_container_t mr_container_find(mr_uint8_t type)
+mr_object_container_t mr_object_container_find(enum mr_object_type type)
 {
-    for (mr_size_t count = 0; count < mr_array_get_length(mr_kernel_container); count++)
+    mr_size_t count = 0;
+
+    for (count = 0; count < MR_ARRAY_SIZE(mr_object_container_table); count++)
     {
-        if (mr_kernel_container[count].type == type)
+        if (mr_object_container_table[count].type == type)
         {
-            return &mr_kernel_container[count];
+            return &mr_object_container_table[count];
         }
     }
 
@@ -67,15 +74,16 @@ mr_container_t mr_container_find(mr_uint8_t type)
  *
  * @return A handle to the find object, or MR_NULL if not find.
  */
-mr_object_t mr_object_find(const char *name, mr_uint8_t type)
+mr_object_t mr_object_find(const char *name, enum mr_object_type type)
 {
-    mr_container_t container = MR_NULL;
+    mr_object_container_t container = MR_NULL;
+    mr_list_t list = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
+    MR_ASSERT(type < MR_ARRAY_SIZE(mr_object_container_table));
 
     /* Get corresponding container */
-    container = mr_container_find(type);
+    container = mr_object_container_find(type);
     if (container == MR_NULL)
     {
         return MR_NULL;
@@ -85,10 +93,10 @@ mr_object_t mr_object_find(const char *name, mr_uint8_t type)
     mr_interrupt_disable();
 
     /* Walk through the container looking for objects */
-    for (mr_list_t list = container->list.next; list != &container->list; list = list->next)
+    for (list = container->list.next; list != &container->list; list = list->next)
     {
         mr_object_t object = mr_container_of(list, struct mr_object, list);
-        if (mr_strncmp(object->name, name, MR_CONF_NAME_MAX) == 0)
+        if (mr_strncmp(object->name, name, MR_CFG_OBJECT_NAME_SIZE) == 0)
         {
             /* Enable interrupt */
             mr_interrupt_enable();
@@ -111,19 +119,19 @@ mr_object_t mr_object_find(const char *name, mr_uint8_t type)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type)
+mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_object_type type)
 {
-    mr_container_t container = MR_NULL;
+    mr_object_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
+    MR_ASSERT(type < MR_ARRAY_SIZE(mr_object_container_table));
 
-    /* Find the container for the specified type */
-    container = mr_container_find(type);
+    /* Get the container for the specified type */
+    container = mr_object_container_find(type);
     if (container == MR_NULL)
     {
-        return -MR_ERR_NOT_FOUND;
+        return -MR_ERR_UNSUPPORTED;
     }
 
     /* Check if the object already exists in the container */
@@ -133,7 +141,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint8_t type)
     }
 
     /* Initialize the private fields */
-    mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
+    mr_strncpy(object->name, name, MR_CFG_OBJECT_NAME_SIZE);
     object->type = type;
 
     /* Disable interrupt */
@@ -165,6 +173,9 @@ mr_err_t mr_object_remove(mr_object_t object)
         return -MR_ERR_NOT_FOUND;
     }
 
+    /* Reset the object type */
+    object->type = Mr_Object_Type_None;
+
     /* Disable interrupt */
     mr_interrupt_disable();
 
@@ -185,19 +196,19 @@ mr_err_t mr_object_remove(mr_object_t object)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type)
+mr_err_t mr_object_change_type(mr_object_t object, enum mr_object_type type)
 {
-    mr_container_t container = MR_NULL;
+    mr_object_container_t container = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(object != MR_NULL);
-    MR_ASSERT(type < mr_array_get_length(mr_kernel_container));
+    MR_ASSERT(type < MR_ARRAY_SIZE(mr_object_container_table));
 
-    /* Find the container for the specified type */
-    container = mr_container_find(type);
+    /* Get the container for the specified type */
+    container = mr_object_container_find(type);
     if (container == MR_NULL)
     {
-        return -MR_ERR_NOT_FOUND;
+        return -MR_ERR_UNSUPPORTED;
     }
 
     /* Check if the object already exists in the container */
@@ -216,7 +227,7 @@ mr_err_t mr_object_change_type(mr_object_t object, mr_uint8_t type)
     mr_list_remove(&(object->list));
 
     /* Insert the object into the new container's list */
-    mr_list_insert_after(&(container->list), &(object->list));
+    mr_list_insert_before(&(container->list), &(object->list));
 
     /* Enable interrupt */
     mr_interrupt_enable();
@@ -235,7 +246,7 @@ void mr_object_rename(mr_object_t object, char *name)
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
 
-    mr_strncpy(object->name, name, MR_CONF_NAME_MAX);
+    mr_strncpy(object->name, name, MR_CFG_OBJECT_NAME_SIZE);
 }
 
 /**
@@ -255,14 +266,14 @@ void mr_mutex_init(mr_mutex_t mutex)
  * @brief This function take the mutex.
  *
  * @param mutex The mutex to be taken.
- * @param owner The object that take the mutex.
+ * @param acquirer The acquirer of the mutex.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
+mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
 {
     MR_ASSERT(mutex != MR_NULL);
-    MR_ASSERT(owner != MR_NULL);
+    MR_ASSERT(acquirer != MR_NULL);
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -270,7 +281,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
     if (mutex->owner == MR_NULL)
     {
         mutex->hold++;
-        mutex->owner = owner;
+        mutex->owner = acquirer;
 
         /* Enable interrupt */
         mr_interrupt_enable();
@@ -288,11 +299,11 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, mr_object_t owner)
  * @brief This function release the mutex.
  *
  * @param mutex The mutex to be released.
- * @param owner The object that release the mutex.
+ * @param owner The owner of the mutex.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
+mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner)
 {
     MR_ASSERT(mutex != MR_NULL);
     MR_ASSERT(owner != MR_NULL);
@@ -320,10 +331,12 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, mr_object_t owner)
 
 /**
  * @brief This function get the owner of the mutex.
+ *
  * @param mutex The mutex to get the owner.
+ *
  * @return A handle to the owner of the mutex, or MR_NULL if without owner.
  */
-mr_object_t mr_mutex_get_owner(mr_mutex_t mutex)
+void *mr_mutex_get_owner(mr_mutex_t mutex)
 {
     MR_ASSERT(mutex != MR_NULL);
 

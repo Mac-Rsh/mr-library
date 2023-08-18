@@ -10,40 +10,33 @@
 
 #include "mrlib.h"
 
-static mr_device_t console_device = MR_NULL;
+static mr_device_t debug_console = MR_NULL;
 
-static const char *debug_level_name[] =
-        {
-                "Debug-assert",
-                "Debug-error",
-                "Debug-warning",
-                "Debug-info",
-                "Debug-debug",
-        };
+#if(MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
 
 static int start(void)
 {
     return 0;
 }
-AUTO_INIT_EXPORT(start, "0");
+MR_INIT_EXPORT(start, "0");
 
 static int driver_start(void)
 {
     return 0;
 }
-AUTO_INIT_EXPORT(driver_start, "0.end");
+MR_INIT_EXPORT(driver_start, "0.end");
 
 static int driver_end(void)
 {
     return 0;
 }
-AUTO_INIT_EXPORT(driver_end, "1.end");
+MR_INIT_EXPORT(driver_end, "1.end");
 
 static int end(void)
 {
     return 0;
 }
-AUTO_INIT_EXPORT(end, "3.end");
+MR_INIT_EXPORT(end, "3.end");
 
 /**
  * @brief This function is auto initialization macro derived functions.
@@ -52,8 +45,10 @@ AUTO_INIT_EXPORT(end, "3.end");
  */
 int mr_auto_init(void)
 {
+    volatile const init_fn_t *fn_ptr = MR_NULL;
+
     /* Auto-initialization */
-    for (volatile const init_fn_t *fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr++)
+    for (fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr++)
     {
         (*fn_ptr)();
     }
@@ -61,23 +56,63 @@ int mr_auto_init(void)
     return MR_ERR_OK;
 }
 
+#endif
+
+#if (MR_CFG_DEBUG == MR_CFG_ENABLE)
+
 /**
  * @brief This function initialize the console.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_console_init(void)
+mr_err_t mr_debug_console_init(void)
 {
-#if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    console_device = mr_device_find(MR_CONF_CONSOLE_NAME);
-    MR_ASSERT(console_device != MR_NULL);
-    return mr_device_open(console_device, MR_OPEN_RDWR | MR_OPEN_NONBLOCKING);
-#else
-    console_device = MR_NULL;
-    return MR_ERR_OK;
-#endif
+    debug_console = mr_device_find(MR_CONF_CONSOLE_NAME);
+    if (debug_console == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+
+    return mr_device_open(debug_console, MR_OPEN_RDWR);
 }
-AUTO_INIT_DEVICE_EXPORT(mr_console_init);
+MR_INIT_DEVICE_EXPORT(mr_debug_console_init);
+
+/**
+ * @brief This function outputs debugging information.
+ *
+ * @param level The debug level.
+ * @param tag The tag of the output.
+ * @param format The format of the output.
+ * @param ... The arguments of the format.
+ */
+void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
+{
+    static const char *debug_level_name[] =
+            {
+                    "Debug-assert",
+                    "Debug-error",
+                    "Debug-warning",
+                    "Debug-info",
+                    "Debug-debug",
+            };
+    char buffer[256];
+    mr_size_t size = 0;
+    va_list args;
+
+    va_start(args, format);
+    mr_printf("[%s/%s]: ", debug_level_name[level], tag);
+    size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
+    if (debug_console != MR_NULL)
+    {
+        mr_device_write(debug_console, 0, buffer, size);
+    } else
+    {
+        mr_printf_output(buffer, size);
+    }
+    va_end(args);
+}
+
+#endif
 
 /**
  * @brief This function print the output.
@@ -87,22 +122,22 @@ AUTO_INIT_DEVICE_EXPORT(mr_console_init);
  *
  * @return The size of the actual write.
  */
-mr_weak mr_size_t mr_printf_output(const char *buffer, mr_size_t size)
+MR_WEAK mr_size_t mr_printf_output(const char *buffer, mr_size_t size)
 {
     return 0;
 }
 
 mr_size_t mr_printf(const char *format, ...)
 {
-    char buffer[MR_CONF_CONSOLE_BUFSZ];
+    char buffer[256];
     mr_size_t size = 0;
     va_list args;
 
     va_start(args, format);
     size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
-    if (console_device != MR_NULL)
+    if (debug_console != MR_NULL)
     {
-        mr_device_write(console_device, 0, buffer, size);
+        mr_device_write(debug_console, 0, buffer, size);
     } else
     {
         mr_printf_output(buffer, size);
@@ -112,31 +147,16 @@ mr_size_t mr_printf(const char *format, ...)
     return size;
 }
 
-void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
-{
-    char buffer[MR_CONF_CONSOLE_BUFSZ];
-    mr_size_t size = 0;
-    va_list args;
-
-    va_start(args, format);
-    mr_printf("[%s/%s]: ", debug_level_name[level], tag);
-    size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
-#if (MR_CONF_CONSOLE == MR_ENABLE && MR_CONF_SERIAL == MR_ENABLE)
-    if (console_device != MR_NULL)
-    {
-        mr_device_write(console_device, 0, buffer, size);
-    }
-#else
-    mr_printf_output(buffer, size);
-#endif
-    va_end(args);
-}
-
 /**
  * @brief This function assert the handle.
+ *
+ * @param file The file of the assert.
+ * @param line The line of the file.
  */
-mr_weak void mr_assert_handle(void)
+MR_WEAK void mr_assert_handle(char *file, int line)
 {
+    MR_DEBUG_A("Assert", "file:%s, line: %d\r\n", file, line);
+
     while (1)
     {
 
@@ -146,7 +166,7 @@ mr_weak void mr_assert_handle(void)
 /**
  * @brief This function disable the interrupt.
  */
-mr_weak void mr_interrupt_disable(void)
+MR_WEAK void mr_interrupt_disable(void)
 {
 
 }
@@ -154,7 +174,7 @@ mr_weak void mr_interrupt_disable(void)
 /**
  * @brief This function enable the interrupt.
  */
-mr_weak void mr_interrupt_enable(void)
+MR_WEAK void mr_interrupt_enable(void)
 {
 
 }
@@ -164,9 +184,11 @@ mr_weak void mr_interrupt_enable(void)
  *
  * @param us The us to delay.
  */
-mr_weak void mr_delay_us(mr_size_t us)
+MR_WEAK void mr_delay_us(mr_size_t us)
 {
-    for (volatile mr_size_t count = 0; count < us * (BSP_SYSCLK_FREQ / 1000000u); count++)
+    volatile mr_size_t count = 0;
+
+    for (count = 0; count < us * (MR_BSP_SYSCLK_FREQ / 1000000u); count++)
     {
 
     }
@@ -177,132 +199,157 @@ mr_weak void mr_delay_us(mr_size_t us)
  *
  * @param ms The ms to delay.
  */
-mr_weak void mr_delay_ms(mr_size_t ms)
+MR_WEAK void mr_delay_ms(mr_size_t ms)
 {
     mr_delay_us(ms * 1000u);
 }
 
 /**
- * @brief This function initialize the fifo.
+ * @brief This function initialize the ringbuffer.
  *
- * @param fifo The fifo to initialize.
+ * @param rb The ringbuffer to initialize.
  * @param pool The pool of data.
- * @param pool_size The size of the pool.
+ * @param size The size of the pool.
  */
-void mr_fifo_init(mr_fifo_t fifo, void *pool, mr_size_t pool_size)
+void mr_rb_init(mr_rb_t rb, void *pool, mr_size_t size)
 {
-    MR_ASSERT(fifo != MR_NULL);
-    MR_ASSERT((pool != MR_NULL || pool_size == 0));
+    MR_ASSERT(rb != MR_NULL);
+    MR_ASSERT((pool != MR_NULL || size == 0));
 
-    fifo->read_index = 0;
-    fifo->write_index = 0;
-    fifo->read_mirror = 0;
-    fifo->write_mirror = 0;
+    rb->read_index = 0;
+    rb->write_index = 0;
+    rb->read_mirror = 0;
+    rb->write_mirror = 0;
 
-    fifo->size = pool_size;
-    fifo->buffer = pool;
+    rb->size = size;
+    rb->buffer = pool;
 }
 
 /**
- * @brief This function reset the fifo.
+ * @brief This function reset the ringbuffer.
  *
- * @param fifo The fifo to reset.
+ * @param rb The ringbuffer to reset.
  */
-void mr_fifo_reset(mr_fifo_t fifo)
+void mr_rb_reset(mr_rb_t rb)
 {
-    MR_ASSERT(fifo != MR_NULL);
+    MR_ASSERT(rb != MR_NULL);
 
-    fifo->read_index = 0;
-    fifo->write_index = 0;
+    rb->read_index = 0;
+    rb->write_index = 0;
 
-    fifo->read_mirror = 0;
-    fifo->write_mirror = 0;
+    rb->read_mirror = 0;
+    rb->write_mirror = 0;
 }
 
 /**
- * @brief This function get the data size from the fifo.
+ * @brief This function get the data size from the ringbuffer.
  *
- * @param fifo The fifo to get the data size.
+ * @param rb The ringbuffer to get the data size.
  *
  * @return The data size.
  */
-mr_size_t mr_fifo_get_data_size(mr_fifo_t fifo)
+mr_size_t mr_rb_get_data_size(mr_rb_t rb)
 {
-    MR_ASSERT(fifo != MR_NULL);
+    MR_ASSERT(rb != MR_NULL);
 
     /* Empty or full according to the mirror flag */
-    if (fifo->read_index == fifo->write_index)
+    if (rb->read_index == rb->write_index)
     {
-        if (fifo->read_mirror == fifo->write_mirror)
+        if (rb->read_mirror == rb->write_mirror)
         {
             return 0;
         } else
         {
-            return fifo->size;
+            return rb->size;
         }
     }
 
-    if (fifo->write_index > fifo->read_index)
+    if (rb->write_index > rb->read_index)
     {
-        return fifo->write_index - fifo->read_index;
+        return rb->write_index - rb->read_index;
     } else
     {
-        return fifo->size - fifo->read_index + fifo->write_index;
+        return rb->size - rb->read_index + rb->write_index;
     }
 }
 
 /**
- * @brief This function get the space size from the fifo.
+ * @brief This function get the space size from the ringbuffer.
  *
- * @param fifo The fifo to get the space size.
+ * @param rb The ringbuffer to get the space size.
  *
  * @return The space size.
  */
-mr_size_t mr_fifo_get_space_size(mr_fifo_t fifo)
+mr_size_t mr_rb_get_space_size(mr_rb_t rb)
 {
-    MR_ASSERT(fifo != MR_NULL);
+    MR_ASSERT(rb != MR_NULL);
 
-    return fifo->size - mr_fifo_get_data_size(fifo);
+    return rb->size - mr_rb_get_data_size(rb);
 }
 
 /**
- * @brief This function get the buffer size from the fifo.
+ * @brief This function get the buffer size from the ringbuffer.
  *
- * @param fifo The fifo to get the buffer size.
+ * @param rb The ringbuffer to get the buffer size.
  *
  * @return  The buffer size.
  */
-mr_size_t mr_fifo_get_buffer_size(mr_fifo_t fifo)
+mr_size_t mr_rb_get_buffer_size(mr_rb_t rb)
 {
-    MR_ASSERT(fifo != MR_NULL);
+    MR_ASSERT(rb != MR_NULL);
 
-    return fifo->size;
+    return rb->size;
 }
 
 /**
- * @brief This function reads from the fifo.
+ * @brief This function get the data from the ringbuffer.
  *
- * @param fifo The fifo to be read.
- * @param buffer The data buffer to be read from the fifo.
- * @param size The size of the read.
+ * @param rb The ringbuffer to get the data from.
+ * @param data The data buffer to be read from the ringbuffer.
  *
  * @return The size of the actual read.
  */
-mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size)
+mr_size_t mr_rb_get(mr_rb_t rb, mr_uint8_t *data)
 {
-    mr_uint8_t *read_buffer = (mr_uint8_t *)buffer;
-    mr_size_t data_size = 0;
-
-    MR_ASSERT(fifo != MR_NULL);
-    MR_ASSERT(buffer != MR_NULL);
-
-    if (size == 0)
+    /* Get the data size */
+    if (mr_rb_get_data_size(rb) == 0)
     {
         return 0;
     }
 
+    *data = rb->buffer[rb->read_index];
+
+    if (rb->read_index == rb->size - 1)
+    {
+        rb->read_mirror = ~rb->read_mirror;
+        rb->read_index = 0;
+    } else
+    {
+        rb->read_index++;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief This function reads from the ringbuffer.
+ *
+ * @param rb The ringbuffer to be read.
+ * @param buffer The data buffer to be read from the ringbuffer.
+ * @param size The size of the read.
+ *
+ * @return The size of the actual read.
+ */
+mr_size_t mr_rb_read(mr_rb_t rb, void *buffer, mr_size_t size)
+{
+    mr_uint8_t *read_buffer = (mr_uint8_t *)buffer;
+    mr_size_t data_size = 0;
+
+    MR_ASSERT(rb != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
+
     /* Get the data size */
-    data_size = mr_fifo_get_data_size(fifo);
+    data_size = mr_rb_get_data_size(rb);
     if (data_size == 0)
     {
         return 0;
@@ -314,48 +361,73 @@ mr_size_t mr_fifo_read(mr_fifo_t fifo, void *buffer, mr_size_t size)
         size = data_size;
     }
 
-    /* Copy the data from the fifo to the buffer */
-    if ((fifo->size - fifo->read_index) > size)
+    /* Copy the data from the rb to the buffer */
+    if ((rb->size - rb->read_index) > size)
     {
-        mr_memcpy(read_buffer, &fifo->buffer[fifo->read_index], size);
-        fifo->read_index += size;
+        mr_memcpy(read_buffer, &rb->buffer[rb->read_index], size);
+        rb->read_index += size;
 
         return size;
     }
 
-    mr_memcpy(read_buffer, &fifo->buffer[fifo->read_index], fifo->size - fifo->read_index);
-    mr_memcpy(&read_buffer[fifo->size - fifo->read_index], &fifo->buffer[0], size - (fifo->size - fifo->read_index));
+    mr_memcpy(read_buffer, &rb->buffer[rb->read_index], rb->size - rb->read_index);
+    mr_memcpy(&read_buffer[rb->size - rb->read_index], &rb->buffer[0], size - (rb->size - rb->read_index));
 
-    fifo->read_mirror = ~fifo->read_mirror;
-    fifo->read_index = size - (fifo->size - fifo->read_index);
+    rb->read_mirror = ~rb->read_mirror;
+    rb->read_index = size - (rb->size - rb->read_index);
 
     return size;
 }
 
 /**
- * @brief This function write the fifo.
+ * @brief This function put the data to the ringbuffer.
  *
- * @param fifo The fifo to be written.
- * @param buffer The data buffer to be written to fifo.
- * @param size The size of write.
+ * @param rb The ringbuffer to be put.
+ * @param data The data to be put.
  *
- * @return The size of the actual write.
+ * @return The size of the actual put.
  */
-mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size)
+mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data)
 {
-    mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
-    mr_size_t space_size = 0;
-
-    MR_ASSERT(fifo != MR_NULL);
-    MR_ASSERT(buffer != MR_NULL);
-
-    if (size == 0)
+    /* Get the space size */
+    if (mr_rb_get_space_size(rb) == 0)
     {
         return 0;
     }
 
+    rb->buffer[rb->write_index] = data;
+
+    if (rb->write_index == rb->size - 1)
+    {
+        rb->write_mirror = ~rb->write_mirror;
+        rb->write_index = 0;
+    } else
+    {
+        rb->write_index++;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief This function write the ringbuffer.
+ *
+ * @param rb The ringbuffer to be written.
+ * @param buffer The data buffer to be written to ringbuffer.
+ * @param size The size of write.
+ *
+ * @return The size of the actual write.
+ */
+mr_size_t mr_rb_write(mr_rb_t rb, const void *buffer, mr_size_t size)
+{
+    mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
+    mr_size_t space_size = 0;
+
+    MR_ASSERT(rb != MR_NULL);
+    MR_ASSERT(buffer != MR_NULL);
+
     /* Get the space size */
-    space_size = mr_fifo_get_space_size(fifo);
+    space_size = mr_rb_get_space_size(rb);
     if (space_size == 0)
     {
         return 0;
@@ -367,39 +439,39 @@ mr_size_t mr_fifo_write(mr_fifo_t fifo, const void *buffer, mr_size_t size)
         size = space_size;
     }
 
-    /* Copy the data from the buffer to the fifo */
-    if ((fifo->size - fifo->write_index) > size)
+    /* Copy the data from the buffer to the rb */
+    if ((rb->size - rb->write_index) > size)
     {
-        mr_memcpy(&fifo->buffer[fifo->write_index], write_buffer, size);
-        fifo->write_index += size;
+        mr_memcpy(&rb->buffer[rb->write_index], write_buffer, size);
+        rb->write_index += size;
 
         return size;
     }
 
-    mr_memcpy(&fifo->buffer[fifo->write_index], write_buffer, fifo->size - fifo->write_index);
-    mr_memcpy(&fifo->buffer[0], &write_buffer[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
+    mr_memcpy(&rb->buffer[rb->write_index], write_buffer, rb->size - rb->write_index);
+    mr_memcpy(&rb->buffer[0], &write_buffer[rb->size - rb->write_index], size - (rb->size - rb->write_index));
 
-    fifo->write_mirror = ~fifo->write_mirror;
-    fifo->write_index = size - (fifo->size - fifo->write_index);
+    rb->write_mirror = ~rb->write_mirror;
+    rb->write_index = size - (rb->size - rb->write_index);
 
     return size;
 }
 
 /**
- * @brief This function force write the fifo.
+ * @brief This function force write the ringbuffer.
  *
- * @param fifo The fifo to be written.
- * @param buffer The data buffer to be written to fifo.
+ * @param rb The ringbuffer to be written.
+ * @param buffer The data buffer to be written to ringbuffer.
  * @param size The size of write.
  *
  * @return The size of the actual write.
  */
-mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size)
+mr_size_t mr_rb_write_force(mr_rb_t rb, const void *buffer, mr_size_t size)
 {
     mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
     mr_size_t space_size = 0;
 
-    MR_ASSERT(fifo != MR_NULL);
+    MR_ASSERT(rb != MR_NULL);
     MR_ASSERT(buffer != MR_NULL);
 
     if (size == 0)
@@ -408,42 +480,42 @@ mr_size_t mr_fifo_write_force(mr_fifo_t fifo, const void *buffer, mr_size_t size
     }
 
     /* Get the space size */
-    space_size = mr_fifo_get_space_size(fifo);
+    space_size = mr_rb_get_space_size(rb);
 
     /* If the data exceeds the buffer space_size, the front data is discarded */
-    if (size > fifo->size)
+    if (size > rb->size)
     {
-        write_buffer = &write_buffer[size - fifo->size];
-        size = fifo->size;
+        write_buffer = &write_buffer[size - rb->size];
+        size = rb->size;
     }
 
-    /* Copy the data from the buffer to the fifo */
-    if ((fifo->size - fifo->write_index) > size)
+    /* Copy the data from the buffer to the rb */
+    if ((rb->size - rb->write_index) > size)
     {
-        mr_memcpy(&fifo->buffer[fifo->write_index], write_buffer, size);
-        fifo->write_index += size;
+        mr_memcpy(&rb->buffer[rb->write_index], write_buffer, size);
+        rb->write_index += size;
         if (size > space_size)
         {
-            fifo->read_index = fifo->write_index;
+            rb->read_index = rb->write_index;
         }
 
         return size;
     }
 
-    mr_memcpy(&fifo->buffer[fifo->write_index], write_buffer, fifo->size - fifo->write_index);
-    mr_memcpy(&fifo->buffer[0], &write_buffer[fifo->size - fifo->write_index], size - (fifo->size - fifo->write_index));
+    mr_memcpy(&rb->buffer[rb->write_index], write_buffer, rb->size - rb->write_index);
+    mr_memcpy(&rb->buffer[0], &write_buffer[rb->size - rb->write_index], size - (rb->size - rb->write_index));
 
-    fifo->write_mirror = ~fifo->write_mirror;
-    fifo->write_index = size - (fifo->size - fifo->write_index);
+    rb->write_mirror = ~rb->write_mirror;
+    rb->write_index = size - (rb->size - rb->write_index);
 
     if (size > space_size)
     {
-        if (fifo->write_index <= fifo->read_index)
+        if (rb->write_index <= rb->read_index)
         {
-            fifo->read_mirror = ~fifo->read_mirror;
+            rb->read_mirror = ~rb->read_mirror;
         }
 
-        fifo->read_index = fifo->write_index;
+        rb->read_index = rb->write_index;
     }
 
     return size;
