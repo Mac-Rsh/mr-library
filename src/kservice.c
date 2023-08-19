@@ -88,13 +88,13 @@ MR_INIT_DEVICE_EXPORT(mr_debug_console_init);
 void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
 {
     static const char *debug_level_name[] =
-            {
-                    "Debug-assert",
-                    "Debug-error",
-                    "Debug-warning",
-                    "Debug-info",
-                    "Debug-debug",
-            };
+        {
+            "Debug-assert",
+            "Debug-error",
+            "Debug-warning",
+            "Debug-info",
+            "Debug-debug",
+        };
     char buffer[256];
     mr_size_t size = 0;
     va_list args;
@@ -552,7 +552,7 @@ static void mr_avl_left_rotate(mr_avl_t *node)
 
     (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     right_child->height =
-                    mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
+            mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
 
     (*node) = right_child;
 }
@@ -568,7 +568,7 @@ static void mr_avl_right_rotate(mr_avl_t *node)
 
     (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     left_child->height =
-                    mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
+            mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
 
     (*node) = left_child;
 }
