@@ -44,13 +44,19 @@ mr_device_t mr_device_find(const char *name)
  *
  * @param device The device to be added.
  * @param name The name of the device.
+ * @param type The type of the device.
  * @param flags The open flags supported by the device.
  * @param ops The operations supported by the device.
  * @param data The private data of the device.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags, mr_device_ops_t ops, void *data)
+mr_err_t mr_device_add(mr_device_t device,
+                       const char *name,
+                       enum mr_device_type type,
+                       mr_uint16_t flags,
+                       mr_device_ops_t ops,
+                       void *data)
 {
     mr_err_t ret = MR_ERR_OK;
 
@@ -68,6 +74,7 @@ mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags, 
     }
 
     /* Initialize the private fields */
+    device->type = type;
     device->support_flag = flags;
     device->open_flag = MR_OPEN_CLOSED;
     device->ref_count = 0;
