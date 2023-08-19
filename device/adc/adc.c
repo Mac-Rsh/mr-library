@@ -10,7 +10,7 @@
 
 #include "device/adc/adc.h"
 
-#if (MR_CONF_ADC == MR_CFG_ENABLE)
+#if (MR_CFG_ADC == MR_CFG_ENABLE)
 
 static mr_err_t err_io_adc_configure(mr_adc_t adc, mr_state_t state)
 {

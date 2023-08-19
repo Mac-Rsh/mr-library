@@ -10,7 +10,7 @@
 
 #include "device/dac/dac.h"
 
-#if (MR_CONF_DAC == MR_CFG_ENABLE)
+#if (MR_CFG_DAC == MR_CFG_ENABLE)
 
 static mr_err_t err_io_dac_configure(mr_dac_t dac, mr_state_t state)
 {

@@ -13,7 +13,7 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_ADC == MR_CFG_ENABLE)
+#if (MR_CFG_ADC == MR_CFG_ENABLE)
 
 /**
  * @struct ADC device config

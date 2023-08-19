@@ -13,7 +13,7 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_DAC == MR_CFG_ENABLE)
+#if (MR_CFG_DAC == MR_CFG_ENABLE)
 
 /**
  * @struct DAC device config
