@@ -11,38 +11,14 @@
 #include "mrlib.h"
 
 static struct mr_object_container mr_object_container_table[] =
-        {
-                {
-                        Mr_Object_Type_None,
-                        {&mr_object_container_table[Mr_Object_Type_None].list,
-                         &mr_object_container_table[Mr_Object_Type_None].list}
-                },
-                {
-                        Mr_Object_Type_Device,
-                        {&mr_object_container_table[Mr_Object_Type_Device].list,
-                         &mr_object_container_table[Mr_Object_Type_Device].list}
-                },
-                {
-                        Mr_Object_Type_Fsm,
-                        {&mr_object_container_table[Mr_Object_Type_Fsm].list,
-                         &mr_object_container_table[Mr_Object_Type_Fsm].list}
-                },
-                {
-                        Mr_Object_Type_Event,
-                        {&mr_object_container_table[Mr_Object_Type_Event].list,
-                         &mr_object_container_table[Mr_Object_Type_Event].list}
-                },
-                {
-                        Mr_Object_Type_SoftTimer,
-                        {&mr_object_container_table[Mr_Object_Type_SoftTimer].list,
-                         &mr_object_container_table[Mr_Object_Type_SoftTimer].list}
-                },
-                {
-                        Mr_Object_Type_Module,
-                        {&mr_object_container_table[Mr_Object_Type_Module].list,
-                         &mr_object_container_table[Mr_Object_Type_Module].list}
-                },
-        };
+    {
+        {Mr_Object_Type_None,      {&mr_object_container_table[Mr_Object_Type_None].list,      &mr_object_container_table[Mr_Object_Type_None].list}},
+        {Mr_Object_Type_Device,    {&mr_object_container_table[Mr_Object_Type_Device].list,    &mr_object_container_table[Mr_Object_Type_Device].list}},
+        {Mr_Object_Type_Fsm,       {&mr_object_container_table[Mr_Object_Type_Fsm].list,       &mr_object_container_table[Mr_Object_Type_Fsm].list}},
+        {Mr_Object_Type_Event,     {&mr_object_container_table[Mr_Object_Type_Event].list,     &mr_object_container_table[Mr_Object_Type_Event].list}},
+        {Mr_Object_Type_SoftTimer, {&mr_object_container_table[Mr_Object_Type_SoftTimer].list, &mr_object_container_table[Mr_Object_Type_SoftTimer].list}},
+        {Mr_Object_Type_Module,    {&mr_object_container_table[Mr_Object_Type_Module].list,    &mr_object_container_table[Mr_Object_Type_Module].list}},
+    };
 
 /**
  * @brief This function find the object container.
