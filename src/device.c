@@ -55,7 +55,7 @@ mr_err_t mr_device_add(mr_device_t device,
                        const char *name,
                        enum mr_device_type type,
                        mr_uint16_t flags,
-                       mr_device_ops_t ops,
+                       struct mr_device_ops *ops,
                        void *data)
 {
     mr_err_t ret = MR_ERR_OK;
