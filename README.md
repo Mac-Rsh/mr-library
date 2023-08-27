@@ -3,14 +3,14 @@
 **mr-library** 是一个面向嵌入式系统的轻量级框架，提供统一的底层驱动设备模型以及基础服务功能，具有模块化设计、可配置性和扩展性的特点，
 可帮助开发者快速构建嵌入式应用程序。
 
-**mr-library** 框架支持互斥锁、对象管理等基础内核功能。集成异步事件驱动框架（event）、多时基软件定时器(soft-timer)
+**mr-library** 框架支持互斥锁、对象管理等基础内核功能。集成状态机（fsm）、异步事件驱动框架（event）、多时基软件定时器（soft-timer）
 等服务。提供串口、SPI、I2C、ADC/DAC等常见外设的驱动设备模型，通过统一的驱动接口（open、close、ioctl、read、write）访问底层硬件设备，解耦底层驱动和应用。
 
 ### 应用场景
 
 - MCU开发的低层驱动程序。
 - RTOS实时操作系统的外挂框架（作为驱动设备框架使用）。
-- 各类IoT和智能硬件产品的快速开发。
+- 各类Iot和智能硬件产品的快速开发。
 
  ----------
 
@@ -80,82 +80,198 @@ mr_device_close(spi1_device);
 **mr-library** 框架集成了轻量级的服务框架，用于构建嵌入式开发中的应用服务，支持异步事件监听，多时基软件定时器等。
 通过服务框架完成对应用层不同应用间的解耦，实现应用程序的模块化，可裁剪，业务逻辑清晰，开发快速，代码高度复用。
 
-## 事件服务
+## 状态机
 
-事件服务是一种异步事件处理机制,它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
+状态机通过状态和事件来描述系统在不同场景下的行为。
 
-事件服务包含两个部分:事件服务器和事件。
+状态机包含两个部分:状态机和状态。
 
-- 事件服务器用于接收和分发事件，其内部维护一个事件队列用于存储待处理事件和一个事件列表用于存储已创建事件。
-- 事件需要创建到事件服务器并提供一个回调函数。
+- 状态机负责维护系统当前的状态，接收和分发事件。它内部会保存当前状态和可能产生的状态转换规则表。
+- 状态代表系统在某一时间点的状态，,如“就绪”、“运行”等。每个状态定义了几种事件(触发状态转换)以及相应的状态转换效果。
 
-当事件发生时,事件服务器会将事件插入到事件队列中进行缓存。事件服务器会周期性地从事件队列中取出事件进行分发,找到对应的事件回调进行事件处理。
+当收到一个事件时，状态机器会根据当前状态和发生的事件，查找状态转换表决定应该变换到哪一个状态。相应地调用目标状态的处理方法来完成状态的切换。
 
-### 事件服务操作接口
+### 状态机操作接口
 
-| 接口                      | 描述      |
-|:------------------------|:--------|
-| mr_event_server_find    | 查找事件服务器 |
-| mr_event_server_add     | 添加事件服务器 |
-| mr_event_server_remove  | 移除事件服务器 |
-| mr_event_server_handle  | 事件服务器处理 |
-| mr_event_create         | 创建事件    |
-| mr_event_delete         | 移除事件    |
-| mr_event_notify         | 通知事件发生  |
-| mr_event_trigger        | 触发事件    |
+| 接口            | 描述     |
+|:--------------|:-------|
+| mr_fsm_find   | 查找状态机  |
+| mr_fsm_add    | 添加状态机  |
+| mr_fsm_remove | 移除状态机  |
+| mr_fsm_handle | 状态机处理  |
+| mr_fsm_signal | 发送事件信号 |
+| mr_fsm_shift  | 状态转换   |
 
-### 事件服务使用示例：
+### 状态机使用示例：
 
 ```c
-/* 定义事件 */
-#define EVENT1                          1
-#define EVENT2                          2
-#define EVENT3                          3
+/* 定义状态索引 */
+enum fsm_state_index
+{
+    Fsm_State_1 = 0,
+    Fsm_State_2,
+};
 
-/* 定义事件服务器 */
-struct mr_event_server event_server;
+/* 定义信号 */
+enum fsm_signal
+{
+    Fsm_Signal_1 = 0,
+    Fsm_Signal_2,
+};
 
-mr_err_t event1_cb(mr_event_server_t server, void *args)
+/* 定义状态回调 */
+mr_err_t fsm1_cb(mr_fsm_t fsm, void *args)
+{
+    printf("fsm1_cb\r\n");
+    return MR_ERR_OK;
+}
+
+mr_err_t fsm2_cb(mr_fsm_t fsm, void *args)
+{
+    printf("fsm2_cb\r\n");
+    return MR_ERR_OK;
+}
+
+/* 定义信号触发规则函数 */
+mr_err_t fsm1_signal(mr_fsm_t fsm, mr_uint32_t signal)
+{
+    switch (signal)
+    {
+        case Fsm_Signal_2:
+        {
+            mr_fsm_shift(fsm, Fsm_State_2);
+            break;
+        }
+        
+        default:
+            break;
+    }
+}
+
+mr_err_t fsm2_signal(mr_fsm_t fsm, mr_uint32_t signal)
+{
+    switch (signal)
+    {
+        case Fsm_Signal_1:
+        {
+            mr_fsm_shift(fsm, Fsm_State_1);
+            break;
+        }
+    
+        default:
+            break;
+    }
+}
+
+/* 定义状态列表 */
+struct mr_fsm_table fsm_table[] =
+{
+    {fsm1_cb, MR_NULL, fsm1_signal},
+    {fsm2_cb, MR_NULL, fsm2_signal},
+};
+
+/* 定义状态机 */
+struct mr_fsm fsm;
+
+int main(void)
+{
+    /* 添加状态机 */
+    mr_fsm_add(&fsm, "fsm", fsm_table, MR_ARRAY_SIZE(fsm_table));
+    
+    while (1)
+    {
+        /* 发送事件信号2，状态1->状态2 */
+        mr_fsm_signal(&fsm, Fsm_Signal_2);
+        
+        /* 状态机处理 */
+        mr_fsm_handle(&event);
+        
+        /* 发送事件信号1，状态2->状态1 */
+        mr_fsm_signal(&fsm, Fsm_Signal_1);
+    }
+}
+
+```
+
+## 事件
+
+事件是一种异步事件处理机制，它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
+
+事件包含两个部分:事件处理器和事件。
+
+- 事件处理器用于接收和分发事件，其内部维护一个事件队列用于存储待处理事件。
+- 事件需要创建到事件处理器并提供一个回调函数。
+
+当事件发生时,事件处理器会将事件插入到事件队列中进行缓存。事件处理器会周期性地从事件队列中取出事件进行分发,找到对应的事件回调进行事件处理。
+
+### 事件操作接口
+
+| 接口               | 描述           |
+|:-----------------|:-------------|
+| mr_event_find    | 查找事件处理器      |
+| mr_event_add     | 添加事件处理器      |
+| mr_event_remove  | 移除事件处理器      |
+| mr_event_handle  | 事件处理         |
+| mr_event_notify  | 通知事件发生（异步触发） |
+| mr_event_trigger | 触发事件（同步触发）   |
+
+### 事件使用示例：
+
+```c
+/* 定义事件索引 */
+enum event_index
+{
+    Event_1 = 0,
+    Event_2,
+    Event_3,
+};
+
+/* 定义事件回调 */
+mr_err_t event1_cb(mr_event_t event, void *args)
 {
     printf("event1_cb\r\n");
-    
-    /* 通知事件服务器事件2发生 */
-    mr_event_notify(EVENT2, server);
     return MR_ERR_OK;
 }
 
-mr_err_t event2_cb(mr_event_server_t server, void *args)
+mr_err_t event2_cb(mr_event_t event, void *args)
 {
     printf("event2_cb\r\n");
-
-    /* 通知事件服务器事件3发生 */
-    mr_event_notify(EVENT3, server)
     return MR_ERR_OK;
 }
 
-mr_err_t event3_cb(mr_event_server_t server, void *args)
+mr_err_t event3_cb(mr_event_t event, void *args)
 {
     printf("event3_cb\r\n");
     return MR_ERR_OK;
 }
 
+/* 定义事件列表 */
+struct mr_event_table event_table[] =
+{
+    {event1_cb, MR_NULL},
+    {event2_cb, MR_NULL},
+    {event3_cb, MR_NULL},
+};
+
+/* 定义事件处理器 */
+struct mr_event event;
+
 int main(void)
 {
-    /* 添加事件服务器到内核容器 */
-    mr_event_server_add(&event_server, "server", 4);
-    
-    /* 创建事件到服务器 */
-    mr_event_create(EVENT1, event1_cb, MR_NULL, &event_server);
-    mr_event_create(EVENT2, event2_cb, MR_NULL, &event_server);
-    mr_event_create(EVENT3, event3_cb, MR_NULL, &event_server);
-    
-    /* 通知事件服务器事件1发生 */
-    mr_event_notify(EVENT1, &event_server);
+    /* 添加事件处理器 */
+    mr_event_add(&event, "event", event_table, MR_ARRAY_SIZE(event_table));
+
+    /* 通知事件1 */
+    mr_event_notify(event, Event_1);
+    /* 通知事件2 */
+    mr_event_notify(event, Event_2);
+    /* 触发事件3 */
+    mr_event_trigger(event, Event_3);
     
     while (1)
     {
-        /* 事件服务器处理 */
-        mr_event_server_handle(&event_server);
+        /* 事件处理 */
+        mr_event_handle(&event);
     }
 }
 ```
@@ -163,84 +279,94 @@ int main(void)
 现象：
 
 ```c
+event3_cb
 event1_cb
 event2_cb
-event3_cb
 ```
 
-## 软件定时器服务
+## 软件定时器
 
 软件定时器是一种在软件层面实现计时功能的机制，通过软件定时器，可以在特定时间点或时间间隔触发特定的事件。软件定时器常用于实现周期性任务、超时处理、定时器中断等功能。
 
-软件定时器包含两个主要组件:定时服务器和定时器。
+软件定时器包含两个主要组件:定时处理器和定时器。
 
-- 定时服务器用于时间管理和定时器处理。
-- 定时器用于处理特定的超时处理,它需要注册到定时服务器并提供一个回调函数。
+- 定时处理器用于时间管理和定时器处理。
+- 定时器用于处理特定的超时处理,它需要注册到定时处理器并提供一个回调函数。
 
-### 软件定时器服务操作接口
+### 软件定时器操作接口
 
-| 接口                             | 描述          |
-|:-------------------------------|:------------|
-| mr_soft_timer_server_find      | 查找定时服务器     |
-| mr_soft_timer_server_add       | 添加定时服务器     |
-| mr_soft_timer_server_remove    | 移除定时服务器     |
-| mr_soft_timer_server_update    | 定时服务器时基信号更新 |
-| mr_soft_timer_server_handle    | 定时服务器处理     |
-| mr_soft_timer_create           | 创建定时器       |
-| mr_soft_timer_delete           | 删除定时器       |
-| mr_soft_timer_start            | 启动定时器       |
-| mr_soft_timer_stop             | 暂停定时器       |
-| mr_soft_timer_create_and_start | 创建定时器并启动    |
+| 接口                     | 描述          |
+|:-----------------------|:------------|
+| mr_soft_timer_find     | 查找定时处理器     |
+| mr_soft_timer_add      | 添加定时处理器     |
+| mr_soft_timer_remove   | 移除定时处理器     |
+| mr_soft_timer_update   | 定时处理器时基信号更新 |
+| mr_soft_timer_handle   | 定时器处理       |
+| mr_soft_timer_start    | 启动定时器       |
+| mr_soft_timer_stop     | 暂停定时器       |
+| mr_soft_timer_get_time | 获取当前时间      |
 
-### 软件定时器服务使用示例：
+### 软件定时器使用示例：
 
 ```c
-/* 定义定时器 */
-#define TIMER1                          1
-#define TIMER2                          2
-#define TIMER3                          3
-
-/* 定义定时服务器 */
-struct mr_soft_timer_server server;
-
-mr_err_t timer1_callback(mr_soft_timer_server_t server, void *args)
+/* 定义定时器索引 */
+enum timer_index
 {
-    printf("timer1_callback\r\n");
+    Timer_1 = 0,
+    Timer_2,
+    Timer_3,
+};
+
+/* 定义定时器超时回调 */
+mr_err_t timer1_cb(mr_soft_timer_t timer, void *args)
+{
+    printf("timer1_cb\r\n");
     return MR_ERR_OK;
 }
 
-mr_err_t timer2_callback(mr_soft_timer_server_t server, void *args)
+mr_err_t timer2_cb(mr_soft_timer_t timer, void *args)
 {
-    printf("timer2_callback\r\n");
+    printf("timer2_cb\r\n");
     return MR_ERR_OK;
 }
 
-mr_err_t timer3_callback(mr_soft_timer_server_t server, void *args)
+mr_err_t timer3_cb(mr_soft_timer_t timer, void *args)
 {
-    printf("timer3_callback\r\n");
+    printf("timer3_cb\r\n");
     
     /* 暂停定时器3 */
-    mr_soft_timer_stop(TIMER3, server);
+    mr_soft_timer_stop(timer, Timer_3);
     return MR_ERR_OK;
 }
+
+/* 定义定时器列表 */
+struct mr_soft_timer_table timer_table[] =
+{
+    {5, Mr_Soft_Timer_Type_Period, timer1_cb, MR_NULL},
+    {10, Mr_Soft_Timer_Type_Period, timer2_cb, MR_NULL},
+    {15, Mr_Soft_Timer_Type_Oneshot, timer3_cb, MR_NULL},
+};
+
+/* 定义定时处理器 */
+struct mr_soft_timer timer;
 
 int main(void)
 {
-    /* 添加定时服务器 */
-    mr_soft_timer_server_add(&server, "soft-timer");
+    /* 添加定时处理器 */
+    mr_soft_timer_add(&timer, "timer", timer_table, MR_ARRAY_SIZE(timer_table));
 
-    /* 创建定时器并启动 */
-    mr_soft_timer_create_and_start(TIMER1, 5, timer1_callback, MR_NULL, &server);
-    mr_soft_timer_create_and_start(TIMER2, 10, timer2_callback, MR_NULL, &server);
-    mr_soft_timer_create_and_start(TIMER3, 15, timer3_callback, MR_NULL, &server);
+    /* 启动定时器 */
+    mr_soft_timer_start(&timer, Timer_1);
+    mr_soft_timer_start(&timer, Timer_2);
+    mr_soft_timer_start(&timer, Timer_3);
 
     while (1)
     {
-        /* 更新定时服务器时钟 */
-        mr_soft_timer_server_update(&server, 1);
+        /* 更新时钟 */
+        mr_soft_timer_update(&timer, 1);
         
-        /* 定时服务器处理（放在哪里，回调就将在哪里被调用） */
-        mr_soft_timer_server_handle(&server);
+        /* 定时器超时处理 */
+        mr_soft_timer_handle(&timer);
     }
 }
 ```
