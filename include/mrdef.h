@@ -29,7 +29,7 @@ extern "C" {
 #define MR_LIBRARY_VERSION              "0.0.3"
 
 /**
- * @def Compiler Related
+ * @def Compiler related
  */
 #if defined(__ARMCC_VERSION)
 #define MR_SECTION(x)              		__attribute__((section(x)))
@@ -108,7 +108,7 @@ typedef mr_int8_t mr_state_t;                                       /* Type for 
 /**
  * @def Null pointer
  */
-#define MR_NULL                         0                           /* Null pointer */
+#define MR_NULL                         (void *)0                           /* Null pointer */
 
 /**
  * @def Boolean value
@@ -156,24 +156,24 @@ typedef int (*init_fn_t)(void);
     MR_USED const init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
 
 /**
- * @def Driver auto-init export
- */
-#define MR_INIT_DRIVER_EXPORT(fn)       MR_INIT_EXPORT(fn, "1")     /* Driver auto-init export */
-
-/**
  * @def Device auto-init export
  */
-#define MR_INIT_DEVICE_EXPORT(fn)       MR_INIT_EXPORT(fn, "2")     /* Device auto-init export */
+#define MR_INIT_DEVICE_EXPORT(fn)       MR_INIT_EXPORT(fn, "1")     /* Device auto-init export */
 
 /**
  * @def Module auto-init export
  */
-#define MR_INIT_MODULE_EXPORT(fn)       MR_INIT_EXPORT(fn, "3")     /* Module auto-init export */
+#define MR_INIT_MODULE_EXPORT(fn)       MR_INIT_EXPORT(fn, "2")     /* Module auto-init export */
+
+/**
+ * @def App auto-init export
+ */
+#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")     /* App auto-init export */
 
 #else
-#define MR_INIT_DRIVER_EXPORT(fn)
 #define MR_INIT_DEVICE_EXPORT(fn)
 #define MR_INIT_MODULE_EXPORT(fn)
+#define MR_INIT_APP_EXPORT(fn)
 #endif
 /** @} */
 
@@ -474,7 +474,6 @@ struct mr_device_ops
     mr_ssize_t (*read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
     mr_ssize_t (*write)(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
 };
-typedef struct mr_device_ops *mr_device_ops_t;
 
 /**
  * @struct Device
@@ -491,7 +490,7 @@ struct mr_device
     mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* Receive the completed callback */
     mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* Send completion callback */
 
-    mr_device_ops_t ops;                                            /* Operations */
+    const struct mr_device_ops *ops;                                /* Operations */
 
     void *data;                                                     /* Device data */
 };
@@ -505,40 +504,40 @@ struct mr_device_channel
     {
         struct
         {
-            mr_pos_t channel0: 1;
-            mr_pos_t channel1: 1;
-            mr_pos_t channel2: 1;
-            mr_pos_t channel3: 1;
-            mr_pos_t channel4: 1;
-            mr_pos_t channel5: 1;
-            mr_pos_t channel6: 1;
-            mr_pos_t channel7: 1;
-            mr_pos_t channel8: 1;
-            mr_pos_t channel9: 1;
-            mr_pos_t channel10: 1;
-            mr_pos_t channel11: 1;
-            mr_pos_t channel12: 1;
-            mr_pos_t channel13: 1;
-            mr_pos_t channel14: 1;
-            mr_pos_t channel15: 1;
-            mr_pos_t channel16: 1;
-            mr_pos_t channel17: 1;
-            mr_pos_t channel18: 1;
-            mr_pos_t channel19: 1;
-            mr_pos_t channel20: 1;
-            mr_pos_t channel21: 1;
-            mr_pos_t channel22: 1;
-            mr_pos_t channel23: 1;
-            mr_pos_t channel24: 1;
-            mr_pos_t channel25: 1;
-            mr_pos_t channel26: 1;
-            mr_pos_t channel27: 1;
-            mr_pos_t channel28: 1;
-            mr_pos_t channel29: 1;
-            mr_pos_t channel30: 1;
-            mr_pos_t channel31: 1;
+            mr_pos_t ch0: 1;
+            mr_pos_t ch1: 1;
+            mr_pos_t ch2: 1;
+            mr_pos_t ch3: 1;
+            mr_pos_t ch4: 1;
+            mr_pos_t ch5: 1;
+            mr_pos_t ch6: 1;
+            mr_pos_t ch7: 1;
+            mr_pos_t ch8: 1;
+            mr_pos_t ch9: 1;
+            mr_pos_t ch10: 1;
+            mr_pos_t ch11: 1;
+            mr_pos_t ch12: 1;
+            mr_pos_t ch13: 1;
+            mr_pos_t ch14: 1;
+            mr_pos_t ch15: 1;
+            mr_pos_t ch16: 1;
+            mr_pos_t ch17: 1;
+            mr_pos_t ch18: 1;
+            mr_pos_t ch19: 1;
+            mr_pos_t ch20: 1;
+            mr_pos_t ch21: 1;
+            mr_pos_t ch22: 1;
+            mr_pos_t ch23: 1;
+            mr_pos_t ch24: 1;
+            mr_pos_t ch25: 1;
+            mr_pos_t ch26: 1;
+            mr_pos_t ch27: 1;
+            mr_pos_t ch28: 1;
+            mr_pos_t ch29: 1;
+            mr_pos_t ch30: 1;
+            mr_pos_t ch31: 1;
         };
-        mr_pos_t channel;
+        mr_pos_t mask;
     };
 };
 typedef struct mr_device_channel *mr_device_channel_t;              /* Type for device channel */
