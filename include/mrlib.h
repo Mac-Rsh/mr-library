@@ -41,6 +41,7 @@ mr_size_t mr_rb_get_buffer_size(mr_rb_t rb);
 mr_size_t mr_rb_get(mr_rb_t rb, mr_uint8_t *data);
 mr_size_t mr_rb_read(mr_rb_t rb, void *buffer, mr_size_t size);
 mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data);
+mr_size_t mr_rb_put_force(mr_rb_t rb, mr_uint8_t data);
 mr_size_t mr_rb_write(mr_rb_t rb, const void *buffer, mr_size_t size);
 mr_size_t mr_rb_write_force(mr_rb_t rb, const void *buffer, mr_size_t size);
 /** @} */
@@ -77,6 +78,14 @@ void mr_mutex_init(mr_mutex_t mutex);
 mr_err_t mr_mutex_take(mr_mutex_t mutex, void *owner);
 mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner);
 void *mr_mutex_get_owner(mr_mutex_t mutex);
+/** @} */
+
+/**
+ * @addtogroup Memory
+ * @{
+ */
+void *mr_malloc(mr_size_t size);
+void mr_free(void *memory);
 /** @} */
 
 /**
@@ -129,7 +138,12 @@ mr_uint32_t mr_soft_timer_get_time(mr_soft_timer_t timer);
  */
 #if (MR_CFG_DEVICE == MR_CFG_ENABLE)
 mr_device_t mr_device_find(const char *name);
-mr_err_t mr_device_add(mr_device_t device, const char *name, mr_uint16_t flags, mr_device_ops_t ops, void *data);
+mr_err_t mr_device_add(mr_device_t device,
+                       const char *name,
+                       enum mr_device_type type,
+                       mr_uint16_t flags,
+                       struct mr_device_ops *ops,
+                       void *data);
 mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 mr_err_t mr_device_close(mr_device_t device);
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
@@ -142,8 +156,6 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
  * @addtogroup Lib C
  * @{
  */
-#define mr_malloc                       malloc
-#define mr_free                         free
 #define mr_strncmp                      strncmp
 #define mr_strncpy                      strncpy
 #define mr_memset                       memset
