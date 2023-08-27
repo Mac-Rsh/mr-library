@@ -94,12 +94,6 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buf
         return -MR_ERR_INVALID;
     }
 
-    /* Check whether the channel is enabled */
-    if (((1 << pos) & dac->config.channel.mask) == MR_FALSE)
-    {
-        return -MR_ERR_INVALID;
-    }
-
     for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
     {
         dac->ops->write(dac, pos, *write_buffer);
@@ -129,18 +123,10 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *op
             MR_NULL,
             mr_dac_write,
         };
-    mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(dac != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
-
-    /* Add the device */
-    ret = mr_device_add(&dac->device, name, Mr_Device_Type_DAC, MR_OPEN_WRONLY, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
 
     /* Initialize the private fields */
     dac->config.channel.mask = 0;
@@ -151,7 +137,8 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *op
     ops->write = ops->write ? ops->write : err_io_dac_write;
     dac->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add the device */
+    return mr_device_add(&dac->device, name, Mr_Device_Type_DAC, MR_OPEN_WRONLY, &device_ops, data);
 }
 
 #endif

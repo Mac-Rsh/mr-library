@@ -56,7 +56,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
             if (args)
             {
                 mr_adc_config_t config = (mr_adc_config_t)args;
-                ret = adc->ops->channel_configure(adc, (mr_adc_config_t)args);
+                ret = adc->ops->channel_configure(adc, config);
                 if (ret == MR_ERR_OK)
                 {
                     adc->config = *config;
@@ -94,12 +94,6 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_pos_t pos, void *buffer, mr
         return -MR_ERR_INVALID;
     }
 
-    /* Check whether the channel is enabled */
-    if (((1 << pos) & adc->config.channel.mask) == MR_FALSE)
-    {
-        return -MR_ERR_INVALID;
-    }
-
     for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
     {
         *read_buffer = adc->ops->read(adc, pos);
@@ -129,18 +123,10 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *op
             mr_adc_read,
             MR_NULL,
         };
-    mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(adc != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
-
-    /* Add the device */
-    ret = mr_device_add(&adc->device, name, Mr_Device_Type_ADC, MR_OPEN_RDONLY, &device_ops, data);
-    if (ret != MR_ERR_OK)
-    {
-        return ret;
-    }
 
     /* Initialize the private fields */
     adc->config.channel.mask = 0;
@@ -151,7 +137,8 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *op
     ops->read = ops->read ? ops->read : err_io_adc_read;
     adc->ops = ops;
 
-    return MR_ERR_OK;
+    /* Add the device */
+    return mr_device_add(&adc->device, name, Mr_Device_Type_ADC, MR_OPEN_RDONLY, &device_ops, data);
 }
 
 #endif
