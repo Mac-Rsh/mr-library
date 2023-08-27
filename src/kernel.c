@@ -20,6 +20,8 @@ static struct mr_object_container mr_object_container_table[] =
         {Mr_Object_Type_Module,    {&mr_object_container_table[Mr_Object_Type_Module].list,    &mr_object_container_table[Mr_Object_Type_Module].list}},
     };
 
+static mr_size_t mr_allocated_memory_size = 0;
+
 /**
  * @brief This function find the object container.
  *
@@ -249,7 +251,12 @@ void mr_mutex_init(mr_mutex_t mutex)
 mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
 {
     MR_ASSERT(mutex != MR_NULL);
-    MR_ASSERT(acquirer != MR_NULL);
+
+    /* Check if the acquirer is valid */
+    if(acquirer == MR_NULL)
+    {
+        return -MR_ERR_INVALID;
+    }
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -302,7 +309,7 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner)
         return MR_ERR_OK;
     }
 
-    return -MR_ERR_GENERIC;
+    return -MR_ERR_INVALID;
 }
 
 /**
@@ -317,4 +324,46 @@ void *mr_mutex_get_owner(mr_mutex_t mutex)
     MR_ASSERT(mutex != MR_NULL);
 
     return mutex->owner;
+}
+
+/**
+ * @brief This function allocate memory.
+ *
+ * @param size The size of the memory.
+ *
+ * @return A handle to the allocated memory, or MR_NULL if failed.
+ */
+void *mr_malloc(mr_size_t size)
+{
+    void *memory = MR_NULL;
+
+    /* Disable interrupt */
+    mr_interrupt_disable();
+
+    memory = malloc(size);
+    if (memory != MR_NULL)
+    {
+        mr_allocated_memory_size += size;
+    }
+
+    /* Enable interrupt */
+    mr_interrupt_enable();
+
+    return memory;
+}
+
+/**
+ * @brief This function free memory.
+ *
+ * @param memory The memory to be freed.
+ */
+void mr_free(void *memory)
+{
+    int *size = (int *)memory;
+
+    if (memory != MR_NULL)
+    {
+        mr_allocated_memory_size -= *(size - 5);
+        free(memory);
+    }
 }
