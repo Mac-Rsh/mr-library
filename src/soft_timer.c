@@ -63,15 +63,6 @@ mr_err_t mr_soft_timer_add(mr_soft_timer_t timer, const char *name, mr_soft_time
         return -MR_ERR_NO_MEMORY;
     }
 
-    /* Add the object to the container */
-    ret = mr_object_add(&timer->object, name, Mr_Object_Type_SoftTimer);
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
-        mr_free(memory);
-        return ret;
-    }
-
     /* Initialize the private fields */
     timer->table = table;
     timer->table_size = table_size;
@@ -89,7 +80,15 @@ mr_err_t mr_soft_timer_add(mr_soft_timer_t timer, const char *name, mr_soft_time
         mr_list_init(&timer->data[count].timeout_list);
     }
 
-    return MR_ERR_OK;
+    /* Add the object to the container */
+    ret = mr_object_add(&timer->object, name, Mr_Object_Type_SoftTimer);
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
+        mr_free(memory);
+    }
+
+    return ret;
 }
 
 /**
@@ -122,7 +121,7 @@ mr_err_t mr_soft_timer_remove(mr_soft_timer_t timer)
     mr_free(timer->data);
     timer->data = MR_NULL;
 
-    return ret;
+    return MR_ERR_OK;
 }
 
 /**
