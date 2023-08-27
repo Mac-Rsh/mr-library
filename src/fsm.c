@@ -59,14 +59,6 @@ mr_err_t mr_fsm_add(mr_fsm_t fsm, const char *name, mr_fsm_table_t table, mr_siz
     MR_ASSERT(table != MR_NULL);
     MR_ASSERT(table_size != 0);
 
-    /* Add the object to the container */
-    ret = mr_object_add(&fsm->object, name, Mr_Object_Type_Fsm);
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
-        return ret;
-    }
-
     /* Initialize the private fields */
     fsm->table = table;
     fsm->table_size = table_size;
@@ -80,7 +72,14 @@ mr_err_t mr_fsm_add(mr_fsm_t fsm, const char *name, mr_fsm_table_t table, mr_siz
         table[count].signal = table[count].signal ? table[count].signal : err_io_fsm_signal;
     }
 
-    return MR_ERR_OK;
+    /* Add the object to the container */
+    ret = mr_object_add(&fsm->object, name, Mr_Object_Type_Fsm);
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
+    }
+
+    return ret;
 }
 
 /**

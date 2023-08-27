@@ -64,15 +64,6 @@ mr_err_t mr_event_add(mr_event_t event, const char *name, mr_event_table_t table
         return -MR_ERR_NO_MEMORY;
     }
 
-    /* Add the object to the container */
-    ret = mr_object_add(&event->object, name, Mr_Object_Type_Event);
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
-        mr_free(memory);
-        return ret;
-    }
-
     /* Initialize the private fields */
     event->table = table;
     event->table_size = table_size;
@@ -84,7 +75,15 @@ mr_err_t mr_event_add(mr_event_t event, const char *name, mr_event_table_t table
         event->table[count].cb = event->table[count].cb ? event->table[count].cb : err_io_event_cb;
     }
 
-    return MR_ERR_OK;
+    /* Add the object to the container */
+    ret = mr_object_add(&event->object, name, Mr_Object_Type_Event);
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
+        mr_free(memory);
+    }
+
+    return ret;
 }
 
 /**

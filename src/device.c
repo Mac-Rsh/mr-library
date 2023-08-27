@@ -62,16 +62,7 @@ mr_err_t mr_device_add(mr_device_t device,
 
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(flags != MR_OPEN_CLOSED);
     MR_ASSERT(ops != MR_NULL);
-
-    /* Add the object to the container */
-    ret = mr_object_add(&device->object, name, Mr_Object_Type_Device);
-    if (ret != MR_ERR_OK)
-    {
-        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
-        return ret;
-    }
 
     /* Initialize the private fields */
     device->type = type;
@@ -89,7 +80,14 @@ mr_err_t mr_device_add(mr_device_t device,
     /* Set the private data */
     device->data = data;
 
-    return MR_ERR_OK;
+    /* Add the object to the container */
+    ret = mr_object_add(&device->object, name, Mr_Object_Type_Device);
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_E(DEBUG_TAG, "%s add failed: %d\r\n", name, ret);
+    }
+
+    return ret;
 }
 
 /**
@@ -111,10 +109,9 @@ mr_err_t mr_device_remove(mr_device_t device)
     if (ret != MR_ERR_OK)
     {
         MR_DEBUG_E(DEBUG_TAG, "%s remove failed: %d\r\n", device->object.name, ret);
-        return ret;
     }
 
-    return MR_ERR_OK;
+    return ret;
 }
 
 /**
