@@ -67,7 +67,7 @@ int mr_auto_init(void)
  */
 mr_err_t mr_debug_console_init(void)
 {
-    debug_console = mr_device_find(MR_CONF_CONSOLE_NAME);
+    debug_console = mr_device_find(MR_CFG_DEBUG_CONSOLE_NAME);
     if (debug_console == MR_NULL)
     {
         return -MR_ERR_NOT_FOUND;
@@ -404,6 +404,47 @@ mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data)
     } else
     {
         rb->write_index++;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief This function force put the data to the ringbuffer.
+ *
+ * @param rb The ringbuffer to be put.
+ * @param data The data to be put.
+ *
+ * @return The size of the actual put.
+ */
+mr_size_t mr_rb_put_force(mr_rb_t rb, mr_uint8_t data)
+{
+    mr_bool_t state = MR_FALSE;
+
+    /* Get the space size */
+    if (mr_rb_get_space_size(rb) == 0)
+    {
+        state = MR_TRUE;
+    }
+
+    rb->buffer[rb->write_index] = data;
+
+    if (rb->write_index == rb->size - 1)
+    {
+        rb->write_mirror = ~rb->write_mirror;
+        rb->write_index = 0;
+        if (state == MR_TRUE)
+        {
+            rb->read_mirror = ~rb->read_mirror;
+            rb->read_index = rb->write_index;
+        }
+    } else
+    {
+        rb->write_index++;
+        if (state == MR_TRUE)
+        {
+            rb->read_index = rb->write_index;
+        }
     }
 
     return 1;
