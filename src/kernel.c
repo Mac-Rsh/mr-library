@@ -319,7 +319,7 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner)
  *
  * @return A handle to the owner of the mutex, or MR_NULL if without owner.
  */
-void *mr_mutex_get_owner(mr_mutex_t mutex)
+volatile void *mr_mutex_get_owner(mr_mutex_t mutex)
 {
     MR_ASSERT(mutex != MR_NULL);
 
