@@ -20,23 +20,11 @@ static int start(void)
 }
 MR_INIT_EXPORT(start, "0");
 
-static int driver_start(void)
-{
-    return 0;
-}
-MR_INIT_EXPORT(driver_start, "0.end");
-
-static int driver_end(void)
-{
-    return 0;
-}
-MR_INIT_EXPORT(driver_end, "1.end");
-
 static int end(void)
 {
     return 0;
 }
-MR_INIT_EXPORT(end, "3.end");
+MR_INIT_EXPORT(end, "4.end");
 
 /**
  * @brief This function is auto initialization macro derived functions.
@@ -92,7 +80,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
             "Debug-assert",
             "Debug-error",
             "Debug-warning",
-            "Debug-info",
+            "Debug-data",
             "Debug-debug",
         };
     char buffer[256];
