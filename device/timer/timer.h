@@ -13,54 +13,78 @@
 
 #include "mrlib.h"
 
-#if (MR_CONF_TIMER == MR_CONF_ENABLE)
+#if (MR_CFG_TIMER == MR_CFG_ENABLE)
 
+/**
+ * @def Timer device mode
+ */
 #define MR_TIMER_MODE_PERIOD            0
 #define MR_TIMER_MODE_ONE_SHOT          1
 
-#define _MR_TIMER_CNT_MODE_UP           0
-#define _MR_TIMER_CNT_MODE_DOWN         1
+/**
+ * @def Timer device counter mode
+ */
+#define MR_TIMER_COUNT_MODE_UP          0
+#define MR_TIMER_COUNT_MODE_DOWN        1
 
-#define MR_TIMER_EVENT_PIT_INT          0x1000
-#define _MR_TIMER_EVENT_MASK            0xf000
+/**
+ * @def Timer device interrupt event
+ */
+#define MR_TIMER_EVENT_PIT_INT          0x10000000
+#define MR_TIMER_EVENT_MASK             0xf0000000
 
-/* Default config for mr_timer_config structure */
+/**
+ * @def Timer device default config
+ */
 #define MR_TIMER_CONFIG_DEFAULT         \
 {                                       \
-    1000000,                            \
+    1000,                               \
     MR_TIMER_MODE_PERIOD,               \
 }
 
+/**
+ * @struct Timer device config
+ */
 struct mr_timer_config
 {
     mr_uint32_t freq;
     mr_uint8_t mode;
 };
+typedef struct mr_timer_config *mr_timer_config_t;
 
-struct mr_timer_info
+/**
+ * @struct Timer device data
+ */
+struct mr_timer_data
 {
     mr_uint32_t max_freq;
     mr_uint32_t min_freq;
-    mr_uint32_t max_cnt;
-    mr_uint8_t cnt_mode;
+    mr_uint32_t max_count;
+    mr_uint8_t count_mode;
 };
 
 typedef struct mr_timer *mr_timer_t;
 
+/**
+ * @struct Timer device operations
+ */
 struct mr_timer_ops
 {
-    mr_err_t (*configure)(mr_timer_t timer, struct mr_timer_config *config);
-    mr_err_t (*start)(mr_timer_t timer, mr_uint32_t period_reload);
-    mr_err_t (*stop)(mr_timer_t timer);
+    mr_err_t (*configure)(mr_timer_t timer, mr_timer_config_t config);
+    void (*start)(mr_timer_t timer, mr_uint32_t period_reload);
+    void (*stop)(mr_timer_t timer);
     mr_uint32_t (*get_count)(mr_timer_t timer);
 };
 
+/**
+ * @struct Timer device
+ */
 struct mr_timer
 {
     struct mr_device device;
 
     struct mr_timer_config config;
-    struct mr_timer_info info;
+    struct mr_timer_data *data;
     mr_uint32_t reload;
     mr_uint32_t cycles;
     mr_uint32_t overflow;
@@ -69,13 +93,18 @@ struct mr_timer
     const struct mr_timer_ops *ops;
 };
 
+/**
+ * @addtogroup Timer
+ * @{
+ */
 mr_err_t mr_timer_device_add(mr_timer_t timer,
                              const char *name,
-                             void *data,
                              struct mr_timer_ops *ops,
-                             struct mr_timer_info *info);
+                             struct mr_timer_data *timer_data,
+                             void *data);
 void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event);
+/** @} */
 
-#endif  /* MR_CONF_TIMER */
+#endif
 
-#endif  /* _TIMER_H_ */
+#endif /* _TIMER_H_ */

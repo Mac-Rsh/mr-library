@@ -10,12 +10,33 @@
 
 #include "device/timer/timer.h"
 
-#if (MR_CONF_TIMER == MR_CONF_ENABLE)
+#if (MR_CFG_TIMER == MR_CFG_ENABLE)
+
+static mr_err_t err_io_timer_configure(mr_timer_t timer, struct mr_timer_config *config)
+{
+    return -MR_ERR_IO;
+}
+
+static void err_io_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
+{
+
+}
+
+static void err_io_timer_stop(mr_timer_t timer)
+{
+
+}
+
+static mr_uint32_t err_io_timer_get_count(mr_timer_t timer)
+{
+    return 0;
+}
 
 static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t timeout)
 {
     mr_uint32_t count = 0, timer_period = 0;
     mr_uint32_t error = 0, error_min = 0, reload_best = 0;
+    mr_uint32_t i = 0;
 
     /* Calculate the timer-period and timeout total count */
     timer_period = 1000000u / timer->config.freq;
@@ -26,7 +47,7 @@ static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t time
         count = 1;
     }
 
-    if (count < timer->info.max_cnt)
+    if (count < timer->data->max_count)
     {
         timer->reload = 1;
         timer->cycles = timer->reload;
@@ -34,17 +55,17 @@ static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t time
         return count;
     }
 
-    if (count % timer->info.max_cnt == 0)
+    if (count % timer->data->max_count == 0)
     {
-        timer->reload = count / timer->info.max_cnt;
+        timer->reload = count / timer->data->max_count;
         timer->cycles = timer->reload;
-        timer->timeout = timer->info.max_cnt * timer_period;
-        return timer->info.max_cnt;
+        timer->timeout = timer->data->max_count * timer_period;
+        return timer->data->max_count;
     }
 
     /* Calculate the Least error reload */
-    error_min = count / timer->info.max_cnt + 1;
-    for (mr_uint32_t i = error_min; i < count / 5; i++)
+    error_min = count / timer->data->max_count + 1;
+    for (i = error_min; i < count / 5; i++)
     {
         mr_uint32_t reload = count / i;
         error = count - reload * i;
@@ -69,16 +90,16 @@ static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t time
 static mr_err_t mr_timer_open(mr_device_t device)
 {
     mr_timer_t timer = (mr_timer_t)device;
+    struct mr_timer_config default_config = MR_TIMER_CONFIG_DEFAULT;
 
-    /* Setting timer to default config, if the frequency not set */
+    /* Enable timer using the default config */
     if (timer->config.freq == 0)
     {
-        struct mr_timer_config config = MR_TIMER_CONFIG_DEFAULT;
-        timer->config = config;
+        timer->config = default_config;
     }
 
-    /* Check the frequency */
-    mr_limit(timer->config.freq, timer->info.min_freq, timer->info.max_freq);
+    /* Limit the frequency */
+    mr_limit(timer->config.freq, timer->data->min_freq, timer->data->max_freq);
 
     return timer->ops->configure(timer, &timer->config);
 }
@@ -87,7 +108,7 @@ static mr_err_t mr_timer_close(mr_device_t device)
 {
     mr_timer_t timer = (mr_timer_t)device;
 
-    /* Setting timer to close config */
+    /* Disable timer */
     timer->config.freq = 0;
 
     return timer->ops->configure(timer, &timer->config);
@@ -98,19 +119,18 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
     mr_timer_t timer = (mr_timer_t)device;
     mr_err_t ret = MR_ERR_OK;
 
-    switch (cmd & _MR_CTRL_FLAG_MASK)
+    switch (cmd & MR_CTRL_FLAG_MASK)
     {
         case MR_CTRL_SET_CONFIG:
         {
             if (args)
             {
-                /* Check the frequency */
-                struct mr_timer_config *config = (struct mr_timer_config *)args;
-                mr_limit(config->freq, timer->info.min_freq, timer->info.max_freq);
-                ret = timer->ops->configure(timer, (struct mr_timer_config *)args);
+                mr_timer_config_t config = (mr_timer_config_t)args;
+                mr_limit(config->freq, timer->data->min_freq, timer->data->max_freq);
+                ret = timer->ops->configure(timer, config);
                 if (ret == MR_ERR_OK)
                 {
-                    timer->config = *(struct mr_timer_config *)args;
+                    timer->config = *config;
                 }
                 return ret;
             }
@@ -121,7 +141,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
         {
             if (args)
             {
-                struct mr_timer_config *config = (struct mr_timer_config *)args;
+                mr_timer_config_t config = (mr_timer_config_t)args;
                 *config = timer->config;
                 return MR_ERR_OK;
             }
@@ -138,6 +158,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
         {
             timer->overflow = 0;
             timer->cycles = timer->reload;
+
             /* When the time is not less than one time, the timer is started */
             if (timer->cycles == 0)
             {
@@ -158,20 +179,16 @@ static mr_ssize_t mr_timer_read(mr_device_t device, mr_pos_t pos, void *buffer, 
     mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
     mr_size_t read_size = 0;
 
-    if (size < sizeof(*read_buffer))
+    while ((read_size += sizeof(*read_buffer)) <= size)
     {
-        return -MR_ERR_INVALID;
-    }
-
-    for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
-    {
-        mr_uint32_t cnt = timer->ops->get_count(timer);
-        if (timer->info.cnt_mode == _MR_TIMER_CNT_MODE_DOWN)
+        /* Get current count */
+        mr_uint32_t count = timer->ops->get_count(timer);
+        if (timer->data->count_mode == MR_TIMER_COUNT_MODE_DOWN)
         {
-            cnt = timer->timeout / (1000000u / timer->config.freq) - cnt;
+            count = timer->timeout / (1000000u / timer->config.freq) - count;
         }
 
-        *read_buffer = timer->overflow * timer->timeout + cnt * (1000000u / timer->config.freq);
+        *read_buffer = timer->overflow * timer->timeout + count * (1000000u / timer->config.freq);
         read_buffer++;
     }
 
@@ -184,14 +201,8 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_pos_t pos, const void *b
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
     mr_size_t write_size = 0;
 
-    if (size < sizeof(*write_buffer))
+    while ((write_size += sizeof(*write_buffer)) <= size)
     {
-        return -MR_ERR_INVALID;
-    }
-
-    for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
-    {
-        /* Stop the timer */
         timer->ops->stop(timer);
         timer->overflow = 0;
 
@@ -209,81 +220,71 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_pos_t pos, const void *b
     return (mr_ssize_t)write_size;
 }
 
-static mr_err_t _err_io_timer_configure(mr_timer_t timer, struct mr_timer_config *config)
-{
-    MR_ASSERT(0);
-    return -MR_ERR_IO;
-}
 
-static mr_err_t _err_io_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
-{
-    MR_ASSERT(0);
-    return -MR_ERR_IO;
-}
-
-static mr_err_t _err_io_timer_stop(mr_timer_t timer)
-{
-    MR_ASSERT(0);
-    return -MR_ERR_IO;
-}
-
-static mr_uint32_t _err_io_timer_get_count(mr_timer_t timer)
-{
-    MR_ASSERT(0);
-    return 0;
-}
-
+/**
+ * @brief This function adds the timer device.
+ *
+ * @param timer The timer device to be added.
+ * @param name The name of the timer device.
+ * @param ops The operations of the timer device.
+ * @param timer_data The data of the timer device.
+ * @param data The private data of the timer device.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
 mr_err_t mr_timer_device_add(mr_timer_t timer,
                              const char *name,
-                             void *data,
                              struct mr_timer_ops *ops,
-                             struct mr_timer_info *info)
+                             struct mr_timer_data *timer_data,
+                             void *data)
 {
-    const static struct mr_device_ops device_ops =
-            {
-                    mr_timer_open,
-                    mr_timer_close,
-                    mr_timer_ioctl,
-                    mr_timer_read,
-                    mr_timer_write,
-            };
+    static struct mr_device_ops device_ops =
+        {
+            mr_timer_open,
+            mr_timer_close,
+            mr_timer_ioctl,
+            mr_timer_read,
+            mr_timer_write,
+        };
 
     MR_ASSERT(timer != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
-    MR_ASSERT(info != MR_NULL);
-    MR_ASSERT(info->min_freq > 0);
-    MR_ASSERT(info->max_freq >= info->min_freq);
-    MR_ASSERT(info->max_cnt > 0);
+    MR_ASSERT(timer_data != MR_NULL);
+    MR_ASSERT(timer_data->min_freq > 0);
+    MR_ASSERT(timer_data->max_freq >= timer_data->min_freq);
+    MR_ASSERT(timer_data->max_count > 0);
 
     /* Initialize the private fields */
-    timer->device.type = MR_DEVICE_TYPE_TIMER;
-    timer->device.data = data;
-    timer->device.ops = &device_ops;
-
     timer->config.freq = 0;
-    timer->info = *info;
+    timer->data = timer_data;
     timer->reload = 0;
     timer->cycles = 0;
     timer->overflow = 0;
     timer->timeout = 0;
 
-    /* Set operations as protection-ops if ops is null */
-    ops->configure = ops->configure ? ops->configure : _err_io_timer_configure;
-    ops->start = ops->start ? ops->start : _err_io_timer_start;
-    ops->stop = ops->stop ? ops->stop : _err_io_timer_stop;
-    ops->get_count = ops->get_count ? ops->get_count : _err_io_timer_get_count;
+    /* Protect every operation of the timer device */
+    ops->configure = ops->configure ? ops->configure : err_io_timer_configure;
+    ops->start = ops->start ? ops->start : err_io_timer_start;
+    ops->stop = ops->stop ? ops->stop : err_io_timer_stop;
+    ops->get_count = ops->get_count ? ops->get_count : err_io_timer_get_count;
     timer->ops = ops;
 
-    /* Add to the container */
-    return mr_device_add(&timer->device, name, MR_OPEN_RDWR);
+    /* Add the container */
+    return mr_device_add(&timer->device, name, Mr_Device_Type_Timer, MR_OPEN_RDWR, &device_ops, data);
 }
 
+/**
+ * @brief This function service interrupt routine of the timer device.
+ *
+ * @param timer The timer device.
+ * @param event The interrupt event.
+ */
 void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
 {
     MR_ASSERT(timer != MR_NULL);
 
-    switch (event & _MR_TIMER_EVENT_MASK)
+    switch (event & MR_TIMER_EVENT_MASK)
     {
         case MR_TIMER_EVENT_PIT_INT:
         {
@@ -295,12 +296,13 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
                 timer->cycles = timer->reload;
                 timer->overflow = 0;
 
+                /* Stop the timer if it is a one-shot timer */
                 if (timer->config.mode == MR_TIMER_MODE_ONE_SHOT)
                 {
                     timer->ops->stop(timer);
                 }
 
-                /* Invoke the rx-cb function */
+                /* Call the receiving completion function */
                 if (timer->device.rx_cb != MR_NULL)
                 {
                     timer->device.rx_cb(&timer->device, MR_NULL);
@@ -309,6 +311,7 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
             {
                 timer->cycles--;
             }
+            break;
         }
 
         default:
@@ -316,4 +319,4 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
     }
 }
 
-#endif  /* MR_CONF_TIMER */
+#endif
