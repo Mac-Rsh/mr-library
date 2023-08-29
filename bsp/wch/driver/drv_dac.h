@@ -13,23 +13,19 @@
 
 #include "device/dac/dac.h"
 
-#if (MR_CONF_DAC == MR_CONF_ENABLE)
+#if (MR_CFG_DAC == MR_CFG_ENABLE)
 
-struct ch32_dac_info
-{
-    mr_uint32_t dac_channel;
-    mr_uint32_t dac_periph_clock;
-};
-
-struct ch32_dac
+/**
+ * @struct ch32 DAC data
+ */
+struct ch32_dac_data
 {
     const char *name;
 
-    struct ch32_dac_info info;
+    mr_uint32_t channel;
+    mr_uint32_t periph_clock;
 };
 
-mr_err_t ch32_dac_init(void);
-
-#endif /* MR_CONF_DAC */
+#endif
 
 #endif /* _DRV_DAC_H_ */

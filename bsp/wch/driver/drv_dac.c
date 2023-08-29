@@ -10,32 +10,28 @@
 
 #include "drv_dac.h"
 
-#if (MR_CONF_DAC == MR_CONF_ENABLE)
+#if (MR_CFG_DAC == MR_CFG_ENABLE)
 
-static struct ch32_dac ch32_dac[] =
-        {
-#ifdef BSP_DAC_1
-                {"dac1",
-                 DAC_Channel_1,
-                 RCC_APB1Periph_DAC},
+static struct ch32_dac_data ch32_dac_data[] =
+    {
+#ifdef MR_BSP_DAC_1
+        {"dac1", DAC_Channel_1, RCC_APB1Periph_DAC},
 #endif
-#ifdef BSP_DAC_2
-                {"dac2",
-                 DAC_Channel_2,
-                 RCC_APB1Periph_DAC},
+#ifdef MR_BSP_DAC_2
+        {"dac2", DAC_Channel_2, RCC_APB1Periph_DAC},
 #endif
-        };
+    };
 
-static struct mr_dac dac_device[mr_array_get_length(ch32_dac)];
+static struct mr_dac dac_device[MR_ARRAY_SIZE(ch32_dac_data)];
 
-mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
+static mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
 {
-    struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
-    DAC_InitTypeDef DAC_InitType = {0};
+    struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
+    DAC_InitTypeDef DAC_InitStructure = {0};
 
-    RCC_APB1PeriphClockCmd(driver->info.dac_periph_clock, (FunctionalState)state);
+    RCC_APB1PeriphClockCmd(dac_data->periph_clock, (FunctionalState)state);
 
-    switch (driver->info.dac_channel)
+    switch (dac_data->channel)
     {
         case DAC_Channel_1:
             DAC_SetChannel1Data(DAC_Align_12b_R, 0);
@@ -48,24 +44,24 @@ mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
             return -MR_ERR_INVALID;
     }
 
-    DAC_InitType.DAC_Trigger = DAC_Trigger_None;
-    DAC_InitType.DAC_WaveGeneration = DAC_WaveGeneration_None;
-    DAC_InitType.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
-    DAC_InitType.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
-    DAC_Init(driver->info.dac_channel, &DAC_InitType);
-    DAC_Cmd(driver->info.dac_channel, (FunctionalState)state);
+    DAC_InitStructure.DAC_Trigger = DAC_Trigger_None;
+    DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
+    DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
+    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
+    DAC_Init(dac_data->channel, &DAC_InitStructure);
+    DAC_Cmd(dac_data->channel, (FunctionalState)state);
 
     return MR_ERR_OK;
 }
 
-mr_err_t ch32_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
+static mr_err_t ch32_dac_channel_configure(mr_dac_t dac, mr_dac_config_t config)
 {
-    struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
+    struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
-    switch (driver->info.dac_channel)
+    switch (dac_data->channel)
     {
         case DAC_Channel_1:
             GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
@@ -86,11 +82,11 @@ mr_err_t ch32_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
     return MR_ERR_OK;
 }
 
-void ch32_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
+static void ch32_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
 {
-    struct ch32_dac *driver = (struct ch32_dac *)dac->device.data;
+    struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
 
-    switch (driver->info.dac_channel)
+    switch (dac_data->channel)
     {
         case DAC_Channel_1:
             DAC_SetChannel1Data(DAC_Align_12b_R, value);
@@ -98,30 +94,31 @@ void ch32_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
         case DAC_Channel_2:
             DAC_SetChannel2Data(DAC_Align_12b_R, value);
             break;
+
         default:
             return;
     }
 }
 
-mr_err_t ch32_dac_init(void)
+mr_err_t drv_dac_init(void)
 {
     mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(dac_device);
-    static struct mr_dac_ops driver =
-            {
-                    ch32_dac_configure,
-                    ch32_dac_channel_configure,
-                    ch32_dac_write,
-            };
+    mr_size_t count = MR_ARRAY_SIZE(dac_device);
+    static struct mr_dac_ops drv_ops =
+        {
+            ch32_dac_configure,
+            ch32_dac_channel_configure,
+            ch32_dac_write,
+        };
 
     while (count--)
     {
-        ret = mr_dac_device_add(&dac_device[count], ch32_dac[count].name, &ch32_dac[count], &driver);
+        ret = mr_dac_device_add(&dac_device[count], ch32_dac_data[count].name, &drv_ops, &ch32_dac_data[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
     return MR_ERR_OK;
 }
-AUTO_INIT_DRIVER_EXPORT(ch32_dac_init);
+MR_INIT_DRIVER_EXPORT(drv_dac_init);
 
-#endif /* MR_CONF_DAC */
+#endif
