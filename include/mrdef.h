@@ -156,19 +156,24 @@ typedef int (*init_fn_t)(void);
     MR_USED const init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
 
 /**
+ * @def Driver auto-init export
+ */
+#define MR_INIT_DRIVER_EXPORT(fn)       MR_INIT_EXPORT(fn, "1")
+
+/**
  * @def Device auto-init export
  */
-#define MR_INIT_DEVICE_EXPORT(fn)       MR_INIT_EXPORT(fn, "1")     /* Device auto-init export */
+#define MR_INIT_DEVICE_EXPORT(fn)       MR_INIT_EXPORT(fn, "2")
 
 /**
  * @def Module auto-init export
  */
-#define MR_INIT_MODULE_EXPORT(fn)       MR_INIT_EXPORT(fn, "2")     /* Module auto-init export */
+#define MR_INIT_MODULE_EXPORT(fn)       MR_INIT_EXPORT(fn, "3")
 
 /**
  * @def App auto-init export
  */
-#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")     /* App auto-init export */
+#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
 
 #else
 #define MR_INIT_DEVICE_EXPORT(fn)
@@ -281,8 +286,8 @@ typedef struct mr_object *mr_object_t;                              /* Type for 
  */
 struct mr_mutex
 {
-    mr_size_t hold;                                                 /* Mutex hold count */
-    void *owner;                                                    /* Mutex owner */
+    volatile mr_size_t hold;                                        /* Mutex hold count */
+    volatile void *owner;                                           /* Mutex owner */
 };
 typedef struct mr_mutex *mr_mutex_t;                                /* Type for mutex */
 
