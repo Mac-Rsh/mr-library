@@ -37,7 +37,11 @@
 #include "drv_spi.h"
 #endif
 
-#if (MR_CONF_TIMER == MR_CFG_ENABLE)
+#if (MR_CFG_PWM == MR_CFG_ENABLE)
+#include "drv_pwm.h"
+#endif
+
+#if (MR_CFG_TIMER == MR_CFG_ENABLE)
 #include "drv_timer.h"
 #endif
 

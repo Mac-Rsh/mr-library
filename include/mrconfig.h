@@ -6,7 +6,7 @@
 /**
  * @def Configuration mode
  */
-#define MR_CONF_DISABLE                 0
+#define MR_CFG_DISABLE                  0
 #define MR_CFG_ENABLE                   1
 
 /**
@@ -82,7 +82,7 @@
  * MR_CFG_DEBUG_LEVEL_ASSERT: Assert
  * MR_CFG_DEBUG_LEVEL_ERROR: Error
  * MR_CFG_DEBUG_LEVEL_WARNING: Warning
- * MR_CFG_DEBUG_LEVEL_INFO: Info
+ * MR_CFG_DEBUG_LEVEL_INFO: Information
  * MR_CFG_DEBUG_LEVEL_DEBUG: Debug
  */
 #define MR_CFG_DEBUG_LEVEL              MR_CFG_DEBUG_LEVEL_DEBUG
@@ -118,7 +118,7 @@
  * MR_CFG_DISABLE: Disable serial
  * MR_CFG_ENABLE: Enable serial
  */
-#define MR_CFG_SERIAL                  MR_CFG_ENABLE
+#define MR_CFG_SERIAL                   MR_CFG_ENABLE
 
 /**
  * @def ADC config
@@ -150,13 +150,24 @@
  * MR_CFG_DISABLE: Disable spi
  * MR_CFG_ENABLE: Enable spi
  */
-#define MR_CFG_SPI                       MR_CFG_ENABLE
+#define MR_CFG_SPI                      MR_CFG_ENABLE
+
+/**
+ * @def PWM config
+ *
+ * MR_CFG_DISABLE: Disable pwm
+ * MR_CFG_ENABLE: Enable pwm
+ */
+#define MR_CFG_PWM                      MR_CFG_ENABLE
+
+/**
+ * @def Timer config
+ *
+ * MR_CFG_DISABLE: Disable timer
+ * MR_CFG_ENABLE: Enable timer
+ */
+#define MR_CFG_TIMER                    MR_CFG_ENABLE
 
 #endif
-
-//<< timer >>
-#define MR_CONF_TIMER                   MR_CFG_ENABLE
-//<< pwm >>
-#define MR_CONF_PWM                     MR_CFG_ENABLE
 
 #endif /* _MR_CONFIG_H_ */
