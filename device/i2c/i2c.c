@@ -246,9 +246,9 @@ static mr_ssize_t mr_i2c_device_read(mr_device_t device, mr_pos_t pos, void *buf
         mr_i2c_device_send_address(i2c_device, MR_I2C_RD);
 
         /* Blocking read */
-        for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
+        while ((read_size += sizeof(*read_buffer)) <= size)
         {
-            *read_buffer = i2c_bus->ops->read(i2c_bus, (mr_state_t)(read_size < (size - sizeof(*read_buffer))));
+            *read_buffer = i2c_bus->ops->read(i2c_bus, (mr_state_t)(read_size != size));
             read_buffer++;
         }
 
@@ -298,7 +298,8 @@ static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_pos_t pos, const vo
             }
         }
 
-        for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
+        /* Block write */
+        while ((write_size += sizeof(*write_buffer)) <= size)
         {
             i2c_bus->ops->write(i2c_bus, *write_buffer);
             write_buffer++;

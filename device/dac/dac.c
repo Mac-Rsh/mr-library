@@ -88,13 +88,7 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buf
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
     mr_size_t write_size = 0;
 
-    /* Check size */
-    if (size < sizeof(*write_buffer))
-    {
-        return -MR_ERR_INVALID;
-    }
-
-    for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
+    while ((write_size += sizeof(*write_buffer)) <= size)
     {
         dac->ops->write(dac, pos, *write_buffer);
         write_buffer++;

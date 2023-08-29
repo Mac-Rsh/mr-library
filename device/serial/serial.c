@@ -163,7 +163,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_pos_t pos, void *buffer,
     if (serial->rx_fifo.size == 0)
     {
         /* Blocking read */
-        for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
+        while ((read_size += sizeof(*read_buffer)) <= size)
         {
             *read_buffer = serial->ops->read(serial);
             read_buffer++;
@@ -171,7 +171,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_pos_t pos, void *buffer,
     } else
     {
         /* Non-blocking read */
-        for (read_size = 0; read_size < size;)
+        while (read_size < size)
         {
             read_size += mr_rb_read(&serial->rx_fifo, read_buffer + read_size, size - read_size);
         }
@@ -189,7 +189,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_pos_t pos, const void *
     if (serial->tx_fifo.size == 0 || ((device->open_flag & MR_OPEN_NONBLOCKING) == MR_FALSE))
     {
         /* Blocking write */
-        for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
+        while ((write_size += sizeof(*write_buffer)) <= size)
         {
             serial->ops->write(serial, *write_buffer);
             write_buffer++;
@@ -197,7 +197,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_pos_t pos, const void *
     } else
     {
         /* Non-blocking write */
-        for (write_size = 0; write_size < size;)
+        while (write_size < size)
         {
             /* If this is the first write, start sending */
             if (mr_rb_get_data_size(&serial->tx_fifo) != 0)

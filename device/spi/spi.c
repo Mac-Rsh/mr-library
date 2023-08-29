@@ -31,7 +31,7 @@ static mr_uint8_t err_io_spi_read(mr_spi_bus_t spi_bus)
     return 0;
 }
 
-static void err_io_spi_cs_ctrl(mr_spi_bus_t spi_bus, mr_pos_t cs_number, mr_state_t state)
+static void err_io_spi_cs_write(mr_spi_bus_t spi_bus, mr_pos_t cs_number, mr_uint8_t value)
 {
 
 }
@@ -256,7 +256,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_pos_t pos, void *buf
     if (spi_device->config.host_slave == MR_SPI_HOST)
     {
         /* Start the chip-select of the current device */
-        spi_bus->ops->cs_ctrl(spi_bus, spi_device->cs_number, MR_ENABLE);
+        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, spi_device->config.cs_active);
 
         /* Send position */
         if (pos != 0)
@@ -271,20 +271,20 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_pos_t pos, void *buf
         }
 
         /* Blocking read */
-        for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
+        while ((read_size += sizeof(*read_buffer)) <= size)
         {
             *read_buffer = mr_spi_device_transfer(spi_device, 0u);
             read_buffer++;
         }
 
         /* Stop the chip-select of the current device */
-        spi_bus->ops->cs_ctrl(spi_bus, spi_device->cs_number, MR_DISABLE);
+        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, !spi_device->config.cs_active);
     } else
     {
         if (spi_bus->rx_fifo.size == 0)
         {
             /* Blocking read */
-            for (read_size = 0; read_size < size; read_size += sizeof(*read_buffer))
+            while ((read_size += sizeof(*read_buffer)) <= size)
             {
                 *read_buffer = mr_spi_device_transfer(spi_device, 0u);
                 read_buffer++;
@@ -292,7 +292,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_pos_t pos, void *buf
         } else
         {
             /* Non-blocking read */
-            for (read_size = 0; read_size < size;)
+            while (read_size < size)
             {
                 read_size += mr_rb_read(&spi_bus->rx_fifo, read_buffer + read_size, size - read_size);
             }
@@ -326,7 +326,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_pos_t pos, const vo
     if (spi_device->config.host_slave == MR_SPI_HOST)
     {
         /* Start the chip-select of the current device */
-        spi_bus->ops->cs_ctrl(spi_bus, spi_device->cs_number, MR_ENABLE);
+        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, spi_device->config.cs_active);
 
         /* Send position */
         if (pos != 0)
@@ -340,17 +340,19 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_pos_t pos, const vo
             }
         }
 
-        for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
+        /* Blocking write */
+        while ((write_size += sizeof(*write_buffer)) <= size)
         {
             mr_spi_device_transfer(spi_device, *write_buffer);
             write_buffer++;
         }
 
         /* Stop the chip-select of the current device */
-        spi_bus->ops->cs_ctrl(spi_bus, spi_device->cs_number, MR_DISABLE);
+        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, !spi_device->config.cs_active);
     } else
     {
-        for (write_size = 0; write_size < size; write_size += sizeof(*write_buffer))
+        /* Blocking write */
+        while ((write_size += sizeof(*write_buffer)) <= size)
         {
             mr_spi_device_transfer(spi_device, *write_buffer);
             write_buffer++;
@@ -497,7 +499,7 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
     ops->configure = ops->configure ? ops->configure : err_io_spi_configure;
     ops->write = ops->write ? ops->write : err_io_spi_write;
     ops->read = ops->read ? ops->read : err_io_spi_read;
-    ops->cs_ctrl = ops->cs_ctrl ? ops->cs_ctrl : err_io_spi_cs_ctrl;
+    ops->cs_write = ops->cs_write ? ops->cs_write : err_io_spi_cs_write;
     ops->cs_read = ops->cs_read ? ops->cs_read : err_io_spi_cs_read;
     spi_bus->ops = ops;
 
