@@ -13,23 +13,18 @@
 
 #include "device/i2c/i2c.h"
 
-#if (MR_CONF_I2C == MR_CONF_ENABLE)
+#if (MR_CFG_I2C == MR_CFG_ENABLE)
 
-struct ch32_soft_i2c_info
+struct ch32_soft_i2c_bus_data
 {
+    const char *name;
+
     mr_uint32_t gpio_periph_clock;
     GPIO_TypeDef *gpio_port;
     mr_uint16_t scl_gpio_pin;
     mr_uint16_t sda_gpio_pin;
 };
 
-struct ch32_soft_i2c
-{
-    const char *name;
+#endif
 
-    struct ch32_soft_i2c_info info;
-};
-
-#endif  /* MR_CONF_I2C */
-
-#endif  /* _DRV_I2C_H_ */
+#endif /* _DRV_I2C_H_ */
