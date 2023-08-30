@@ -87,7 +87,7 @@ mr_device_close(spi1_device);
 状态机包含两个部分:状态机和状态。
 
 - 状态机负责维护系统当前的状态，接收和分发事件。它内部会保存当前状态和可能产生的状态转换规则表。
-- 状态代表系统在某一时间点的状态，,如“就绪”、“运行”等。每个状态定义了几种事件(触发状态转换)以及相应的状态转换效果。
+- 状态代表系统在某一时间点的状态，,如“就绪”、“运行”等。每个状态定义了几种事件（触发状态转换）以及相应的状态转换效果。
 
 当收到一个事件时，状态机器会根据当前状态和发生的事件，查找状态转换表决定应该变换到哪一个状态。相应地调用目标状态的处理方法来完成状态的切换。
 
@@ -184,7 +184,7 @@ int main(void)
         mr_fsm_signal(&fsm, Fsm_Signal_2);
         
         /* 状态机处理 */
-        mr_fsm_handle(&event);
+        mr_fsm_handle(&fsm);
         
         /* 发送事件信号1，状态2->状态1 */
         mr_fsm_signal(&fsm, Fsm_Signal_1);
@@ -262,11 +262,11 @@ int main(void)
     mr_event_add(&event, "event", event_table, MR_ARRAY_SIZE(event_table));
 
     /* 通知事件1 */
-    mr_event_notify(event, Event_1);
+    mr_event_notify(&event, Event_1);
     /* 通知事件2 */
-    mr_event_notify(event, Event_2);
+    mr_event_notify(&event, Event_2);
     /* 触发事件3 */
-    mr_event_trigger(event, Event_3);
+    mr_event_trigger(&event, Event_3);
     
     while (1)
     {
