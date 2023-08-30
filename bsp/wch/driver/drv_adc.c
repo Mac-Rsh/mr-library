@@ -101,14 +101,14 @@ static mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_pos_t channel)
 
 mr_err_t drv_adc_init(void)
 {
-    mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = MR_ARRAY_SIZE(adc_device);
     static struct mr_adc_ops drv_ops =
         {
             ch32_adc_configure,
             ch32_adc_channel_configure,
             ch32_adc_read,
         };
+    mr_size_t count = MR_ARRAY_SIZE(adc_device);
+    mr_err_t ret = MR_ERR_OK;
 
     while (count--)
     {

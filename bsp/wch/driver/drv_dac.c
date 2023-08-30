@@ -102,14 +102,14 @@ static void ch32_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
 
 mr_err_t drv_dac_init(void)
 {
-    mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = MR_ARRAY_SIZE(dac_device);
     static struct mr_dac_ops drv_ops =
         {
             ch32_dac_configure,
             ch32_dac_channel_configure,
             ch32_dac_write,
         };
+    mr_size_t count = MR_ARRAY_SIZE(dac_device);
+    mr_err_t ret = MR_ERR_OK;
 
     while (count--)
     {
