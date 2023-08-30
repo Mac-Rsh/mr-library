@@ -112,7 +112,7 @@ mr_err_t mr_event_add(mr_event_t event, const char *name, mr_event_table_t table
 mr_err_t mr_event_remove(mr_event_t event);
 void mr_event_handle(mr_event_t event);
 mr_err_t mr_event_notify(mr_event_t event, mr_uint32_t index);
-mr_err_t mr_event_toggle(mr_event_t event, mr_uint32_t index);
+mr_err_t mr_event_trigger(mr_event_t event, mr_uint32_t index);
 #endif
 /** @} */
 

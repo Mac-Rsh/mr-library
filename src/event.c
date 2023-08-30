@@ -184,16 +184,16 @@ mr_err_t mr_event_notify(mr_event_t event, mr_uint32_t index)
 }
 
 /**
- * @brief This function toggles the event.
+ * @brief This function triggers the event.
  *
- * @param event The event to be toggled.
- * @param index The index to be toggled.
+ * @param event The event to be triggered.
+ * @param index The index to be triggered.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  *
  * @note This function fires the event and immediately invokes the event callback.
  */
-mr_err_t mr_event_toggle(mr_event_t event, mr_uint32_t index)
+mr_err_t mr_event_trigger(mr_event_t event, mr_uint32_t index)
 {
     MR_ASSERT(event != MR_NULL);
     MR_ASSERT(event->object.type == Mr_Object_Type_Event);
