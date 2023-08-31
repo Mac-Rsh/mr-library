@@ -128,7 +128,9 @@ void mr_soft_timer_update(mr_soft_timer_t timer, mr_uint32_t time);
 void mr_soft_timer_handle(mr_soft_timer_t timer);
 mr_err_t mr_soft_timer_start(mr_soft_timer_t timer, mr_uint32_t index);
 mr_err_t mr_soft_timer_stop(mr_soft_timer_t timer, mr_uint32_t index);
-mr_uint32_t mr_soft_timer_get_time(mr_soft_timer_t timer);
+mr_err_t mr_soft_timer_restart(mr_soft_timer_t timer, mr_uint32_t index);
+mr_err_t mr_soft_timer_set_time(mr_soft_timer_t timer, mr_uint32_t index, mr_uint32_t time);
+mr_uint32_t mr_soft_timer_get_current_time(mr_soft_timer_t timer);
 #endif
 /** @} */
 
