@@ -300,6 +300,9 @@ mr_err_t mr_soft_timer_stop(mr_soft_timer_t timer, mr_uint32_t index)
  */
 mr_uint32_t mr_soft_timer_get_time(mr_soft_timer_t timer)
 {
+    MR_ASSERT(timer != MR_NULL);
+    MR_ASSERT(timer->object.type == Mr_Object_Type_SoftTimer);
+
     return timer->current_time;
 }
 
