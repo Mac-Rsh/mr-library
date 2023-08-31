@@ -292,10 +292,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_pos_t pos, void *buf
         } else
         {
             /* Non-blocking read */
-            while (read_size < size)
-            {
-                read_size += mr_rb_read(&spi_bus->rx_fifo, read_buffer + read_size, size - read_size);
-            }
+            read_size = mr_rb_read(&spi_bus->rx_fifo, read_buffer, size);
         }
     }
 

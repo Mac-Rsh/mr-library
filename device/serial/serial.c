@@ -171,10 +171,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_pos_t pos, void *buffer,
     } else
     {
         /* Non-blocking read */
-        while (read_size < size)
-        {
-            read_size += mr_rb_read(&serial->rx_fifo, read_buffer + read_size, size - read_size);
-        }
+        read_size = mr_rb_read(&serial->rx_fifo, read_buffer, size);
     }
 
     return (mr_ssize_t)read_size;
@@ -197,19 +194,15 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_pos_t pos, const void *
     } else
     {
         /* Non-blocking write */
-        while (write_size < size)
+        if (mr_rb_get_data_size(&serial->tx_fifo) != 0)
         {
-            /* If this is the first write, start sending */
-            if (mr_rb_get_data_size(&serial->tx_fifo) != 0)
-            {
-                write_size += mr_rb_write(&serial->tx_fifo, write_buffer + write_size, size - write_size);
-            } else
-            {
-                write_size += mr_rb_write(&serial->tx_fifo, write_buffer + write_size, size - write_size);
+            write_size = mr_rb_write(&serial->tx_fifo, write_buffer, size);
+        } else
+        {
+            write_size = mr_rb_write(&serial->tx_fifo, write_buffer, size);
 
-                /* Start interrupt send */
-                serial->ops->start_tx(serial);
-            }
+            /* Start interrupt send */
+            serial->ops->start_tx(serial);
         }
     }
 
