@@ -197,23 +197,18 @@ int main(void)
 
 事件是一种异步事件处理机制，它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
 
-事件包含两个部分:事件处理器和事件。
-
-- 事件处理器用于接收和分发事件，其内部维护一个事件队列用于存储待处理事件。
-- 事件需要创建到事件处理器并提供一个回调函数。
-
-当事件发生时,事件处理器会将事件插入到事件队列中进行缓存。事件处理器会周期性地从事件队列中取出事件进行分发,找到对应的事件回调进行事件处理。
+当事件发生时，其将缓存至事件队列。周期性地从事件队列中取出事件进行处理。
 
 ### 事件操作接口
 
-| 接口               | 描述           |
-|:-----------------|:-------------|
-| mr_event_find    | 查找事件处理器      |
-| mr_event_add     | 添加事件处理器      |
-| mr_event_remove  | 移除事件处理器      |
-| mr_event_handle  | 事件处理         |
-| mr_event_notify  | 通知事件发生（异步触发） |
-| mr_event_trigger | 触发事件（同步触发）   |
+| 接口               | 描述         |
+|:-----------------|:-----------|
+| mr_event_find    | 查找事件       |
+| mr_event_add     | 添加事件       |
+| mr_event_remove  | 移除事件       |
+| mr_event_handle  | 发生事件处理     |
+| mr_event_notify  | 通知事件发生（异步） |
+| mr_event_trigger | 触发事件（同步）   |
 
 ### 事件使用示例：
 
@@ -253,12 +248,12 @@ struct mr_event_table event_table[] =
     {event3_cb, MR_NULL},
 };
 
-/* 定义事件处理器 */
+/* 定义事件 */
 struct mr_event event;
 
 int main(void)
 {
-    /* 添加事件处理器 */
+    /* 添加事件 */
     mr_event_add(&event, "event", event_table, MR_ARRAY_SIZE(event_table));
 
     /* 通知事件1 */
@@ -270,7 +265,7 @@ int main(void)
     
     while (1)
     {
-        /* 事件处理 */
+        /* 发生事件处理 */
         mr_event_handle(&event);
     }
 }
@@ -288,23 +283,20 @@ event2_cb
 
 软件定时器是一种在软件层面实现计时功能的机制，通过软件定时器，可以在特定时间点或时间间隔触发特定的事件。软件定时器常用于实现周期性任务、超时处理、定时器中断等功能。
 
-软件定时器包含两个主要组件:定时处理器和定时器。
-
-- 定时处理器用于时间管理和定时器处理。
-- 定时器用于处理特定的超时处理,它需要注册到定时处理器并提供一个回调函数。
-
 ### 软件定时器操作接口
 
-| 接口                     | 描述          |
-|:-----------------------|:------------|
-| mr_soft_timer_find     | 查找定时处理器     |
-| mr_soft_timer_add      | 添加定时处理器     |
-| mr_soft_timer_remove   | 移除定时处理器     |
-| mr_soft_timer_update   | 定时处理器时基信号更新 |
-| mr_soft_timer_handle   | 定时器处理       |
-| mr_soft_timer_start    | 启动定时器       |
-| mr_soft_timer_stop     | 暂停定时器       |
-| mr_soft_timer_get_time | 获取当前时间      |
+| 接口                             | 描述        |
+|:-------------------------------|:----------|
+| mr_soft_timer_find             | 查找定时器     |
+| mr_soft_timer_add              | 添加定时器     |
+| mr_soft_timer_remove           | 移除定时器     |
+| mr_soft_timer_update           | 定时器时间更新   |
+| mr_soft_timer_handle           | 定时器超时处理   |
+| mr_soft_timer_start            | 启动定时器     |
+| mr_soft_timer_stop             | 停止定时器     |
+| mr_soft_timer_restart          | 重启定时器     |
+| mr_soft_timer_set_time         | 设置定时器时间间隔 |
+| mr_soft_timer_get_current_time | 获取定时器当前时间 |
 
 ### 软件定时器使用示例：
 
@@ -347,13 +339,16 @@ struct mr_soft_timer_table timer_table[] =
     {15, Mr_Soft_Timer_Type_Oneshot, timer3_cb, MR_NULL},
 };
 
-/* 定义定时处理器 */
+/* 定义定时器 */
 struct mr_soft_timer timer;
 
 int main(void)
 {
-    /* 添加定时处理器 */
+    /* 添加定时器 */
     mr_soft_timer_add(&timer, "timer", timer_table, MR_ARRAY_SIZE(timer_table));
+
+    /* 修改定时器1时间间隔*/
+    mr_soft_timer_set_time(&timer, Timer_1, 2);
 
     /* 启动定时器 */
     mr_soft_timer_start(&timer, Timer_1);
@@ -362,7 +357,7 @@ int main(void)
 
     while (1)
     {
-        /* 更新时钟 */
+        /* 更新时间 */
         mr_soft_timer_update(&timer, 1);
         
         /* 定时器超时处理 */
