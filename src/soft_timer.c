@@ -292,13 +292,64 @@ mr_err_t mr_soft_timer_stop(mr_soft_timer_t timer, mr_uint32_t index)
 }
 
 /**
+ * @brief This function restarts a soft timer.
+ * 
+ * @param timer The soft timer to be restarted.
+ * @param index The index of the soft timer.
+ * 
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_soft_timer_restart(mr_soft_timer_t timer, mr_uint32_t index)
+{
+    mr_err_t ret = MR_ERR_OK;
+
+    MR_ASSERT(timer != MR_NULL);
+    MR_ASSERT(timer->object.type == Mr_Object_Type_SoftTimer);
+
+    ret = mr_soft_timer_stop(timer, index);
+    if (ret != MR_ERR_OK)
+    {
+        return ret;
+    }
+
+    return mr_soft_timer_start(timer, index);
+}
+
+/**
+ * @brief This function sets the time of a soft timer.
+ *
+ * @param timer The soft timer to be set.
+ * @param index The index of the soft timer.
+ * @param time The time to be set.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_soft_timer_set_time(mr_soft_timer_t timer, mr_uint32_t index, mr_uint32_t time)
+{
+    MR_ASSERT(timer != MR_NULL);
+    MR_ASSERT(timer->object.type == Mr_Object_Type_SoftTimer);
+
+    /* Check whether the index is valid */
+    if (index >= timer->table_size)
+    {
+        MR_DEBUG_E(DEBUG_TAG, "[%s -> %d] stop failed: %d\r\n", timer->object.name, index, -MR_ERR_INVALID);
+        return -MR_ERR_INVALID;
+    }
+
+    /* Set the time */
+    timer->table[index].time = time;
+
+    return MR_ERR_OK;
+}
+
+/**
  * @brief This function gets the current time of a soft timer.
  *
  * @param timer The soft timer to be gotten.
  *
  * @return Current time of the soft timer.
  */
-mr_uint32_t mr_soft_timer_get_time(mr_soft_timer_t timer)
+mr_uint32_t mr_soft_timer_get_current_time(mr_soft_timer_t timer)
 {
     MR_ASSERT(timer != MR_NULL);
     MR_ASSERT(timer->object.type == Mr_Object_Type_SoftTimer);
@@ -306,4 +357,4 @@ mr_uint32_t mr_soft_timer_get_time(mr_soft_timer_t timer)
     return timer->current_time;
 }
 
-#endif /* MR_CFG_SOFT_TIMER */
+#endif
