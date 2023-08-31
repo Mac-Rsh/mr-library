@@ -59,7 +59,7 @@ mr_err_t mr_event_remove(mr_event_t event);
 
 添加事件时所分配的内存将在此释放（移除后请勿再次操作该事件，如需再次使用请重新添加）。
 
-### 事件处理
+### 发生事件处理
 
 ```c
 void mr_event_handle(mr_event_t event);
@@ -69,7 +69,7 @@ void mr_event_handle(mr_event_t event);
 |:-------|:-------|
 | event  | 事件句柄   |
 
-事件处理仅会处理进入该函数前已经发生的事件，对于事件处理过程中发生的事件将在下次运行时处理（防止事件循环占用），事件处理顺序按发生顺序处理（FIFO）。
+仅处理调用该函数前已经发生的事件，对于处理过程中发生的事件将在下次运行时处理（防止事件循环占用），事件处理顺序按发生顺序处理（FIFO）。
 
 ### 通知事件发生
 
@@ -104,6 +104,17 @@ mr_err_t mr_event_trigger(mr_event_t event, mr_uint32_t index);
 | 错误码       | 触发失败 |
 
 此操作为同步操作，实际处理将在触发处立即执行。
+
+## 事件列表介绍
+
+```c
+struct mr_event_table
+```
+
+| 参数       | 描述       |
+|:---------|:---------|
+| cb       | 事件发生回调   |
+| args     | 事件发生回调参数 |
 
 ## 使用示例
 
@@ -160,7 +171,7 @@ int main(void)
 
     while (1)
     {
-        /* 事件处理 */
+        /* 发生事件处理 */
         mr_event_handle(&event);
     }
 }
