@@ -11,6 +11,10 @@
 - 裸机任务拆分、前后台同步（推荐使用）。
 - RTOS和裸机间代码快速移植。
 
+## 操作流程图
+
+![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/event_process.jpg)
+
 ## 接口介绍
 
 ### 查找事件
@@ -176,6 +180,7 @@ int main(void)
     }
 }
 ```
+
 现象：
 
 ```c

@@ -3,7 +3,7 @@
 **mr-library** 是一个面向嵌入式系统的轻量级框架，提供统一的底层驱动设备模型以及基础服务功能，具有模块化设计、可配置性和扩展性的特点，
 可帮助开发者快速构建嵌入式应用程序。
 
-**mr-library** 框架支持互斥锁、对象管理等基础内核功能。集成状态机（fsm）、异步事件驱动框架（event）、多时基软件定时器（soft-timer）
+**mr-library** 框架支持互斥锁、对象管理等基础内核功能。集成异步事件驱动框架（event）、多时基软件定时器（soft-timer）、状态机（fsm）
 等服务。提供串口、SPI、I2C、ADC/DAC等常见外设的驱动设备模型，通过统一的驱动接口（open、close、ioctl、read、write）访问底层硬件设备，解耦底层驱动和应用。
 
 ### 应用场景
@@ -27,6 +27,8 @@
 开发者能以面向对象的方式访问外设，简化驱动逻辑的开发流程。框架实现了常用外设的通用驱动模板，开发者可以快速移植到不同的硬件平台。
 
 驱动设备框架支持普通设备的通用接口、总线设备自动总线控制、多种设备的中断接管。
+
+![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/device_process.jpg)
 
 ### 驱动设备接口
 
@@ -88,123 +90,13 @@ mr_device_close(spi1_device);
 **mr-library** 框架集成了轻量级的服务框架，用于构建嵌入式开发中的应用服务，支持异步事件监听，多时基软件定时器等。
 通过服务框架完成对应用层不同应用间的解耦，实现应用程序的模块化，可裁剪，业务逻辑清晰，开发快速，代码高度复用。
 
-## 状态机
-
-状态机通过状态和事件来描述系统在不同场景下的行为。
-
-状态机包含两个部分:状态机和状态。
-
-- 状态机负责维护系统当前的状态，接收和分发事件。它内部会保存当前状态和可能产生的状态转换规则表。
-- 状态代表系统在某一时间点的状态，,如“就绪”、“运行”等。每个状态定义了几种事件（触发状态转换）以及相应的状态转换效果。
-
-当收到一个事件时，状态机器会根据当前状态和发生的事件，查找状态转换表决定应该变换到哪一个状态。相应地调用目标状态的处理方法来完成状态的切换。
-
-### 状态机操作接口
-
-| 接口            | 描述        |
-|:--------------|:----------|
-| mr_fsm_find   | 查找状态机     |
-| mr_fsm_add    | 添加状态机     |
-| mr_fsm_remove | 移除状态机     |
-| mr_fsm_handle | 状态机处理     |
-| mr_fsm_signal | 发送状态机信号   |
-| mr_fsm_shift  | 切换状态机当前状态 |
-
-### 状态机使用示例：
-
-```c
-/* 定义状态索引 */
-enum fsm_state_index
-{
-    Fsm_State_1 = 0,
-    Fsm_State_2,
-};
-
-/* 定义信号 */
-enum fsm_signal
-{
-    Fsm_Signal_1 = 0,
-    Fsm_Signal_2,
-};
-
-/* 定义状态回调 */
-mr_err_t fsm1_cb(mr_fsm_t fsm, void *args)
-{
-    printf("fsm1_cb\r\n");
-    return MR_ERR_OK;
-}
-
-mr_err_t fsm2_cb(mr_fsm_t fsm, void *args)
-{
-    printf("fsm2_cb\r\n");
-    return MR_ERR_OK;
-}
-
-/* 定义信号敏感函数 */
-mr_err_t fsm1_signal(mr_fsm_t fsm, mr_uint32_t signal)
-{
-    switch (signal)
-    {
-        case Fsm_Signal_2:
-        {
-            mr_fsm_shift(fsm, Fsm_State_2);
-            return MR_ERR_OK;
-        }
-    
-        default:
-        return -MR_ERR_UNSUPPORTED;
-    }
-}
-
-mr_err_t fsm2_signal(mr_fsm_t fsm, mr_uint32_t signal)
-{
-    switch (signal)
-    {
-        case Fsm_Signal_1:
-        {
-            mr_fsm_shift(fsm, Fsm_State_1);
-            return MR_ERR_OK;
-        }
-    
-        default:
-        return -MR_ERR_UNSUPPORTED;
-    }
-}
-
-/* 定义状态列表 */
-struct mr_fsm_table fsm_table[] =
-{
-    {fsm1_cb, MR_NULL, fsm1_signal},
-    {fsm2_cb, MR_NULL, fsm2_signal},
-};
-
-/* 定义状态机 */
-struct mr_fsm fsm;
-
-int main(void)
-{
-    /* 添加状态机 */
-    mr_fsm_add(&fsm, "fsm", fsm_table, MR_ARRAY_SIZE(fsm_table));
-
-    while (1)
-    {
-        /* 发送事件信号2，状态1->状态2 */
-        mr_fsm_signal(&fsm, Fsm_Signal_2);
-        
-        /* 状态机处理 */
-        mr_fsm_handle(&fsm);
-        
-        /* 发送事件信号1，状态2->状态1 */
-        mr_fsm_signal(&fsm, Fsm_Signal_1);
-    }
-}
-```
-
 ## 事件
 
 事件是一种异步事件处理机制，它通过事件分发和回调的方式,可以有效地提高系统的异步处理能力、解耦性和可扩展性。
 
 当事件发生时，其将缓存至事件队列。周期性地从事件队列中取出事件进行处理。
+
+![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/event_process.jpg)
 
 ### 事件操作接口
 
@@ -369,6 +261,118 @@ int main(void)
         
         /* 定时器超时处理 */
         mr_soft_timer_handle(&timer);
+    }
+}
+```
+
+## 状态机
+
+状态机通过状态和事件来描述系统在不同场景下的行为。
+
+状态机包含两个部分:状态机和状态。
+
+- 状态机负责维护系统当前的状态，接收和分发事件。它内部会保存当前状态和可能产生的状态转换规则表。
+- 状态代表系统在某一时间点的状态，,如“就绪”、“运行”等。每个状态定义了几种事件（触发状态转换）以及相应的状态转换效果。
+
+当收到一个事件时，状态机器会根据当前状态和发生的事件，查找状态转换表决定应该变换到哪一个状态。相应地调用目标状态的处理方法来完成状态的切换。
+
+### 状态机操作接口
+
+| 接口            | 描述        |
+|:--------------|:----------|
+| mr_fsm_find   | 查找状态机     |
+| mr_fsm_add    | 添加状态机     |
+| mr_fsm_remove | 移除状态机     |
+| mr_fsm_handle | 状态机处理     |
+| mr_fsm_signal | 发送状态机信号   |
+| mr_fsm_shift  | 切换状态机当前状态 |
+
+### 状态机使用示例：
+
+```c
+/* 定义状态索引 */
+enum fsm_state_index
+{
+    Fsm_State_1 = 0,
+    Fsm_State_2,
+};
+
+/* 定义信号 */
+enum fsm_signal
+{
+    Fsm_Signal_1 = 0,
+    Fsm_Signal_2,
+};
+
+/* 定义状态回调 */
+mr_err_t fsm1_cb(mr_fsm_t fsm, void *args)
+{
+    printf("fsm1_cb\r\n");
+    return MR_ERR_OK;
+}
+
+mr_err_t fsm2_cb(mr_fsm_t fsm, void *args)
+{
+    printf("fsm2_cb\r\n");
+    return MR_ERR_OK;
+}
+
+/* 定义信号敏感函数 */
+mr_err_t fsm1_signal(mr_fsm_t fsm, mr_uint32_t signal)
+{
+    switch (signal)
+    {
+        case Fsm_Signal_2:
+        {
+            mr_fsm_shift(fsm, Fsm_State_2);
+            return MR_ERR_OK;
+        }
+    
+        default:
+        return -MR_ERR_UNSUPPORTED;
+    }
+}
+
+mr_err_t fsm2_signal(mr_fsm_t fsm, mr_uint32_t signal)
+{
+    switch (signal)
+    {
+        case Fsm_Signal_1:
+        {
+            mr_fsm_shift(fsm, Fsm_State_1);
+            return MR_ERR_OK;
+        }
+    
+        default:
+        return -MR_ERR_UNSUPPORTED;
+    }
+}
+
+/* 定义状态列表 */
+struct mr_fsm_table fsm_table[] =
+{
+    {fsm1_cb, MR_NULL, fsm1_signal},
+    {fsm2_cb, MR_NULL, fsm2_signal},
+};
+
+/* 定义状态机 */
+struct mr_fsm fsm;
+
+int main(void)
+{
+    /* 添加状态机 */
+    mr_fsm_add(&fsm, "fsm", fsm_table, MR_ARRAY_SIZE(fsm_table));
+
+    while (1)
+    {
+        /* 发送事件信号2，状态1->状态2 */
+        mr_fsm_signal(&fsm, Fsm_Signal_2);
+        
+        /* 状态机处理 */
+        mr_fsm_handle(&fsm);
+        
+        /* 发送事件信号1，状态2->状态1 */
+        mr_fsm_signal(&fsm, Fsm_Signal_1);
     }
 }
 ```
