@@ -13,10 +13,15 @@
 
 #include "device/spi/spi.h"
 
-#if (MR_CONF_SPI == MR_CONF_ENABLE)
+#if (MR_CFG_SPI == MR_CFG_ENABLE)
 
-struct ch32_spi_info
+/**
+ * @struct ch32 SPI bus data
+ */
+struct ch32_spi_bus_data
 {
+    const char *name;
+
     SPI_TypeDef *Instance;
     mr_uint32_t spi_periph_clock;
     mr_uint32_t gpio_periph_clock;
@@ -27,15 +32,6 @@ struct ch32_spi_info
     IRQn_Type irqno;
 };
 
-struct ch32_spi
-{
-    const char *name;
-
-    struct ch32_spi_info info;
-};
-
-mr_err_t ch32_spi_init(void);
-
-#endif /* MR_CONF_SPI */
+#endif
 
 #endif /* _DRV_SPI_H_ */
