@@ -2,6 +2,10 @@
 
 **mr-library** 将硬件设备抽象成设备对象，并提供了统一的设备操作接口，方便应用程序与硬件设备进行交互。通过将驱动层与设备层解耦，提高了代码的可靠性和可维护性。
 
+## 操作流程图
+
+![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/device_process.jpg)
+
 ## 设备模型
 
 设备对象定义如下：
@@ -143,3 +147,4 @@ mr_device_read(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
 mr_device_close(spi0_device);
 mr_device_close(spi1_device);
 ```
+
