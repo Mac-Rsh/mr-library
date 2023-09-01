@@ -13,12 +13,15 @@
 
 #include "device/serial/serial.h"
 
-#if (MR_CONF_SERIAL == MR_CONF_ENABLE)
+#if (MR_CFG_SERIAL == MR_CFG_ENABLE)
 
-#define CH32_UART_GPIO_REMAP_NONE        0
-
-struct ch32_uart_info
+/**
+ * @struct ch32 UART data
+ */
+struct ch32_uart_data
 {
+    const char *name;
+
     USART_TypeDef *Instance;
     mr_uint32_t uart_periph_clock;
     mr_uint32_t gpio_periph_clock;
@@ -26,19 +29,9 @@ struct ch32_uart_info
     mr_uint16_t tx_gpio_pin;
     GPIO_TypeDef *rx_gpio_port;
     mr_uint16_t rx_gpio_pin;
-    mr_uint32_t remap;
     IRQn_Type irqno;
 };
 
-struct ch32_uart
-{
-    const char *name;
-
-    struct ch32_uart_info info;
-};
-
-mr_err_t ch32_uart_init(void);
-
-#endif /* MR_CONF_SERIAL */
+#endif
 
 #endif /* _DRV_UART_H_ */
