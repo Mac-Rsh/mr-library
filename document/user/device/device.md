@@ -15,12 +15,13 @@ struct mr_device
     mr_uint16_t support_flag;                                       /* 设备支持的打开方式 */
     mr_uint16_t open_flag;                                          /* 设备打开方式 */
     mr_size_t ref_count;                                            /* 设备被引用次数 */
-    void *data;                                                     /* 设备数据 */
 
     mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* 设备接收回调函数 */
     mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* 设备发送回调函数 */
 
     const struct mr_device_ops *ops;                                /* 设备操作方法 */
+    
+    void *data;                                                     /* 设备数据 */
 };
 ```
 
@@ -31,18 +32,18 @@ struct mr_device
 ```c
 enum mr_device_type
 {
-    MR_DEVICE_TYPE_NONE,                                            /* 无类型设备 */
-    MR_DEVICE_TYPE_PIN,                                             /* GPIO设备 */
-    MR_DEVICE_TYPE_SPI_BUS,                                         /* SPI总线设备 */
-    MR_DEVICE_TYPE_SPI,                                             /* SPI设备 */
-    MR_DEVICE_TYPE_I2C_BUS,                                         /* I2C总线设备 */
-    MR_DEVICE_TYPE_I2C,                                             /* I2C设备 */
-    MR_DEVICE_TYPE_SERIAL,                                          /* UART设备*/
-    MR_DEVICE_TYPE_ADC,                                             /* ADC设备 */
-    MR_DEVICE_TYPE_DAC,                                             /* DAC设备 */
-    MR_DEVICE_TYPE_PWM,                                             /* PWM设备 */
-    MR_DEVICE_TYPE_TIMER,                                           /* TIMER设备 */
-    MR_DEVICE_TYPE_FLASH,                                           /* FLASH设备 */
+    Mr_Device_Type_None,                                            /* 无类型设备 */
+    Mr_Device_Type_Pin,                                             /* GPIO设备 */
+    Mr_Device_Type_SPIBUS,,                                         /* SPI总线设备 */
+    Mr_Device_Type_SPI,                                             /* SPI设备 */
+    Mr_Device_Type_I2CBUS,,                                         /* I2C总线设备 */
+    Mr_Device_Type_I2C,                                             /* I2C设备 */
+    Mr_Device_Type_Serial,                                          /* UART设备*/
+    Mr_Device_Type_ADC,                                             /* ADC设备 */
+    Mr_Device_Type_DAC,                                             /* DAC设备 */
+    Mr_Device_Type_PWM,                                             /* PWM设备 */
+    Mr_Device_Type_Timer,                                           /* TIMER设备 */
+    Mr_Device_Type_Flash,                                           /* FLASH设备 */
     /* ... */
 };
 ```
@@ -55,8 +56,8 @@ enum mr_device_type
 MR_OPEN_RDONLY                          0x1000                      /* 只读打开 */
 MR_OPEN_WRONLY                          0x2000                      /* 只写打开 */
 MR_OPEN_RDWR                            0x3000                      /* 可读可写 */
+
 MR_OPEN_NONBLOCKING                     0x4000                      /* 非阻塞 */
-MR_OPEN_DMA                             0x0100                      /* DMA */
 ```
 
 打开方式可或使用，例如：

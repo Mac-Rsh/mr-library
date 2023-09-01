@@ -82,53 +82,15 @@ DAC控制参数原型如下：
 ```c
 struct mr_dac_config
 {
-    union
-    {
-        struct
-        {
-            mr_pos_t channel0: 1;
-            mr_pos_t channel1: 1;
-            mr_pos_t channel2: 1;
-            mr_pos_t channel3: 1;
-            mr_pos_t channel4: 1;
-            mr_pos_t channel5: 1;
-            mr_pos_t channel6: 1;
-            mr_pos_t channel7: 1;
-            mr_pos_t channel8: 1;
-            mr_pos_t channel9: 1;
-            mr_pos_t channel10: 1;
-            mr_pos_t channel11: 1;
-            mr_pos_t channel12: 1;
-            mr_pos_t channel13: 1;
-            mr_pos_t channel14: 1;
-            mr_pos_t channel15: 1;
-            mr_pos_t channel16: 1;
-            mr_pos_t channel17: 1;
-            mr_pos_t channel18: 1;
-            mr_pos_t channel19: 1;
-            mr_pos_t channel20: 1;
-            mr_pos_t channel21: 1;
-            mr_pos_t channel22: 1;
-            mr_pos_t channel23: 1;
-            mr_pos_t channel24: 1;
-            mr_pos_t channel25: 1;
-            mr_pos_t channel26: 1;
-            mr_pos_t channel27: 1;
-            mr_pos_t channel28: 1;
-            mr_pos_t channel29: 1;
-            mr_pos_t channel30: 1;
-            mr_pos_t channel31: 1;
-        };
-        mr_pos_t _channel_mask;
-    };
+    struct mr_device_channel channel;
 };
 ```
 
 - 通道：DAC支持的通道数,和芯片相关。
 
 ```c
-#define MR_DAC_CHANNEL_DISABLE          0                           /* 失能通道 */
-#define MR_DAC_CHANNEL_ENABLE           1                           /* 使能通道 */
+MR_DISABLE                              0                           /* 失能通道 */
+MR_ENABLE                               1                           /* 使能通道 */
 ```
 
 使用示例：
@@ -145,7 +107,7 @@ struct mr_dac_config dac_config;
 mr_device_ioctl(dac_device, MR_CTRL_GET_CONFIG, &dac_config);
 
 /* 使能通道1 */
-dac_config.channel1 = MR_DAC_CHANNEL_ENABLE;
+dac_config.channel.ch1 = MR_ENABLE;
 mr_device_ioctl(dac_device, MR_CTRL_SET_CONFIG, &dac_config);
 ```
 
@@ -169,6 +131,8 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 - 写入位置：需要写入数据的通道。
 - 写入数据：DAC设备输出值。
 
+DAC设备数据为uint32格式。
+
 使用示例：
 
 ```c
@@ -181,7 +145,7 @@ mr_device_t dac_device = mr_device_find("dac1");
 mr_device_open(dac_device, MR_OPEN_WRONLY);
 
 /* 使能通道1 */
-dac_config.channel1 = MR_DAC_CHANNEL_ENABLE;
+dac_config.channel.ch1 = MR_ENABLE;
 mr_device_ioctl(dac_device, MR_CTRL_SET_CONFIG, &dac_config);
 
 /* 写入通道1输出值 */

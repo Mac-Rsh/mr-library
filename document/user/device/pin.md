@@ -183,6 +183,8 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 
 - 读取位置：指需要读取的IO编号，如读取B13，则pos = 29。
 
+PIN设备数据为int8格式。
+
 使用示例：
 
 ```c
@@ -223,6 +225,8 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 | 实际写入的数据大小 |         |
 
 - 写入位置：指需要写入的IO编号，如读取B13，则pos = 29。
+
+PIN设备数据为int8格式。
 
 使用示例：
 

@@ -54,6 +54,8 @@ MR_OPEN_RDWR                                                        /* 可读可
 MR_OPEN_NONBLOCKING                                                 /* 非阻塞 */
 ```
 
+当打开方式|MR_OPEN_NONBLOCKING，对串口设备写入数据时将检测发送缓冲区空间是否为0，如果非0，数据将被压入发送缓冲区后通过中断发送。
+
 ----------
 
 ## 控制SERIAL设备
@@ -259,8 +261,8 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 /* 查找SERIAL1设备 */    
 mr_device_t serial_device = mr_device_find("uart1");
 
-/* 以可读可写方式打开 */
-mr_device_open(serial_device, MR_OPEN_RDWR);
+/* 以非阻塞可读可写方式打开 */
+mr_device_open(serial_device, MR_OPEN_RDWR | MR_OPEN_NONBLOCKING);
 
 /* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;

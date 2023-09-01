@@ -82,53 +82,15 @@ ADC控制参数原型如下：
 ```c
 struct mr_adc_config
 {
-    union
-    {
-        struct
-        {
-            mr_pos_t channel0: 1;
-            mr_pos_t channel1: 1;
-            mr_pos_t channel2: 1;
-            mr_pos_t channel3: 1;
-            mr_pos_t channel4: 1;
-            mr_pos_t channel5: 1;
-            mr_pos_t channel6: 1;
-            mr_pos_t channel7: 1;
-            mr_pos_t channel8: 1;
-            mr_pos_t channel9: 1;
-            mr_pos_t channel10: 1;
-            mr_pos_t channel11: 1;
-            mr_pos_t channel12: 1;
-            mr_pos_t channel13: 1;
-            mr_pos_t channel14: 1;
-            mr_pos_t channel15: 1;
-            mr_pos_t channel16: 1;
-            mr_pos_t channel17: 1;
-            mr_pos_t channel18: 1;
-            mr_pos_t channel19: 1;
-            mr_pos_t channel20: 1;
-            mr_pos_t channel21: 1;
-            mr_pos_t channel22: 1;
-            mr_pos_t channel23: 1;
-            mr_pos_t channel24: 1;
-            mr_pos_t channel25: 1;
-            mr_pos_t channel26: 1;
-            mr_pos_t channel27: 1;
-            mr_pos_t channel28: 1;
-            mr_pos_t channel29: 1;
-            mr_pos_t channel30: 1;
-            mr_pos_t channel31: 1;
-        };
-        mr_pos_t _channel_mask;
-    };
+    struct mr_device_channel channel;
 };
 ```
 
 - 通道：ADC支持的通道数，和芯片相关。
 
 ```c
-MR_ADC_CHANNEL_DISABLE                  0                           /* 失能通道 */
-MR_ADC_CHANNEL_ENABLE                   1                           /* 使能通道 */
+MR_DISABLE                              0                           /* 失能通道 */
+MR_ENABLE                               1                           /* 使能通道 */
 ```
 
 使用示例：
@@ -145,7 +107,7 @@ struct mr_adc_config adc_config;
 mr_device_ioctl(adc_device, MR_CTRL_GET_CONFIG, &adc_config);
 
 /* 使能通道5 */
-adc_config.channel5 = MR_ADC_CHANNEL_ENABLE;
+adc_config.channel.ch5 = MR_ENABLE;
 mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
 ```
 
@@ -169,6 +131,8 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 - 读取位置：需要读取数据的通道。
 - 读取数据：ADC设备采集的输入值。
 
+ADC设备数据为uint32格式。
+
 使用示例：
 
 ```c
@@ -182,7 +146,7 @@ mr_device_open(adc_device, MR_OPEN_RDONLY);
 
 /* 使能通道5 */
 struct mr_adc_config adc_config;
-adc_config.channel5 = MR_ADC_CHANNEL_ENABLE;
+adc_config.channel.ch5 = MR_ENABLE;
 mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
 
 /* 读取通道5输入值 */
