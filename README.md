@@ -1,6 +1,6 @@
 ﻿# 简介
 
-**mr-library** 是一个面向嵌入式系统的轻量级框架，提供统一的底层驱动设备模型以及基础服务功能，具有模块化设计、可配置性和扩展性的特点，
+**mr-library** 是一个面向嵌入式系统的轻量级框架，提供统一的设备框架模型以及基础服务功能，具有模块化设计、可配置性和扩展性的特点，
 可帮助开发者快速构建嵌入式应用程序。
 
 **mr-library** 框架支持互斥锁、对象管理等基础内核功能。集成异步事件驱动框架（event）、多时基软件定时器（soft-timer）、状态机（fsm）
@@ -22,13 +22,13 @@
 
  ----------
 
-# 驱动设备框架
+# 设备框架
 
 开发者能以面向对象的方式访问外设，简化驱动逻辑的开发流程。框架实现了常用外设的通用驱动模板，开发者可以快速移植到不同的硬件平台。
 
 驱动设备框架支持普通设备的通用接口、总线设备自动总线控制、多种设备的中断接管。
 
-![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/device_process.jpg)
+![设备框架流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/device_process.jpg)
 
 ### 驱动设备接口
 
@@ -96,7 +96,7 @@ mr_device_close(spi1_device);
 
 当事件发生时，其将缓存至事件队列。周期性地从事件队列中取出事件进行处理。
 
-![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/event_process.jpg)
+![事件流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/event_process.jpg)
 
 ### 事件操作接口
 
