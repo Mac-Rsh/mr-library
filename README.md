@@ -12,6 +12,14 @@
 - RTOS实时操作系统的外挂框架（作为驱动设备框架使用）。
 - 各类Iot和智能硬件产品的快速开发。
 
+### 项目结构
+
+![项目结构图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/framework.jpg)
+
+设备框架可作为中间层，为上层提供操作硬件的方法。
+
+事件框架、软件定时器框架、状态机框架可外挂在实时操作系统上，协同运行。
+
  ----------
 
 # 驱动设备框架
@@ -93,14 +101,14 @@ mr_device_close(spi1_device);
 
 ### 状态机操作接口
 
-| 接口            | 描述     |
-|:--------------|:-------|
-| mr_fsm_find   | 查找状态机  |
-| mr_fsm_add    | 添加状态机  |
-| mr_fsm_remove | 移除状态机  |
-| mr_fsm_handle | 状态机处理  |
-| mr_fsm_signal | 发送事件信号 |
-| mr_fsm_shift  | 状态转换   |
+| 接口            | 描述        |
+|:--------------|:----------|
+| mr_fsm_find   | 查找状态机     |
+| mr_fsm_add    | 添加状态机     |
+| mr_fsm_remove | 移除状态机     |
+| mr_fsm_handle | 状态机处理     |
+| mr_fsm_signal | 发送状态机信号   |
+| mr_fsm_shift  | 切换状态机当前状态 |
 
 ### 状态机使用示例：
 
@@ -132,7 +140,7 @@ mr_err_t fsm2_cb(mr_fsm_t fsm, void *args)
     return MR_ERR_OK;
 }
 
-/* 定义信号触发规则函数 */
+/* 定义信号敏感函数 */
 mr_err_t fsm1_signal(mr_fsm_t fsm, mr_uint32_t signal)
 {
     switch (signal)
@@ -140,11 +148,11 @@ mr_err_t fsm1_signal(mr_fsm_t fsm, mr_uint32_t signal)
         case Fsm_Signal_2:
         {
             mr_fsm_shift(fsm, Fsm_State_2);
-            break;
+            return MR_ERR_OK;
         }
-        
+    
         default:
-            break;
+        return -MR_ERR_UNSUPPORTED;
     }
 }
 
@@ -155,11 +163,11 @@ mr_err_t fsm2_signal(mr_fsm_t fsm, mr_uint32_t signal)
         case Fsm_Signal_1:
         {
             mr_fsm_shift(fsm, Fsm_State_1);
-            break;
+            return MR_ERR_OK;
         }
     
         default:
-            break;
+        return -MR_ERR_UNSUPPORTED;
     }
 }
 
@@ -177,7 +185,7 @@ int main(void)
 {
     /* 添加状态机 */
     mr_fsm_add(&fsm, "fsm", fsm_table, MR_ARRAY_SIZE(fsm_table));
-    
+
     while (1)
     {
         /* 发送事件信号2，状态1->状态2 */
@@ -190,7 +198,6 @@ int main(void)
         mr_fsm_signal(&fsm, Fsm_Signal_1);
     }
 }
-
 ```
 
 ## 事件
