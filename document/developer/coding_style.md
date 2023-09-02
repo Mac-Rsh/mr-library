@@ -40,11 +40,11 @@
 ### 头文件
 
 1. 头文件为避免重复包含，使用`_FILE_H_`宏进行保护。
-2. 头文件按字母顺序导入，库文件优先。库头文件使用`<>`导入，用户头文件使用`""`导入。
+2. 头文件按字母顺序导入，库文件优先。库头文件使用`<>`导入，其余头文件使用`""`导入。
    例如:
 
    ```c  
-   #include <assert.h>   
+   #include <stdlib.h>   
    #include <stdio.h>
    #include "bar.h"
    #include "foo.h"
@@ -54,16 +54,15 @@
 
 ### 类型
 
-1. 枚举类型命名全部小写，下划线分隔，枚举常量全部大写。仅开发者使用的枚举常量以`_`开头
+1. 枚举类型命名全部小写，下划线分隔，枚举常量首字母大写。
    例如:
 
    ```c
    enum color_type
    {
-       RED,  
-       GREEN,
-       BLUE,
-       _PRIVATE_ENUM,
+       Red,  
+       Green,
+       Blue,
    };
    ```
 
@@ -73,11 +72,11 @@
    ```c
    struct foo
    {
-       int bar;
-       union
+       char *name;
+       union coordinate
        {
-           int baz;
-           char qux;
+           int x;
+           int y;
        }
    };
    ```
@@ -102,14 +101,14 @@
    char *p;
    ```
 
-3. 常量命名全部大写，下划线分隔。
+3. 宏定义全部大写，下划线分隔。宏函数遵守函数命名规则。
    例如:
 
    ```c
-   #define PI 3.14
+   #define PI                           3.14
    ```
 
-4. typedef定义使用类型名加`_t`后缀。
+4. typedef定义使用类型名加`_t`后缀， 结构体等默认`_t`为指针类型。
    例如:
 
    ```c
@@ -130,12 +129,11 @@
 
 ### 宏
 
-1. 宏定义全部大写，下划线分隔，用户可修改的宏配置需加`CONF`标识，仅开发者使用的宏以`_`开头。
+1. 宏定义全部大写，下划线分隔，用户可修改的宏配置需加`CFG`标识。
    例如:
 
    ```c
-   #define MR_CONF_NAME_MAX 15
-   #define _PRIVATE_MACRO  
+   #define MR_CFG_OBJECT_NAME_SIZE      15
    ```
 
 ## 注释规范
@@ -153,16 +151,50 @@
 
    ```c
    /**
-   * @brief This function add object to the container.
-   *
-   * @param object The object to be added.
-   * @param name The name of the object.
-   * @param type The target container flag.
-   *
-   * @return MR_ERR_OK on success, otherwise an error code.
-   */
-   mr_err_t mr_object_add(mr_object_t object, const char *name, enum container_type type)
+    * @brief This function change the type of the object.
+    *
+    * @param object The object to be changed.
+    * @param type The type of the object.
+    *
+    * @return MR_ERR_OK on success, otherwise an error code.
+    */
+   mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_object_type type)
    {
-       ...
+      ...
    }
+   ```
+   
+3. 结构体，宏等定义需添加注释：
+
+    ```c
+   /**
+    * @struct Object
+    */
+   struct mr_object
+   {
+       char name[MR_CFG_OBJECT_NAME_SIZE];
+       enum mr_object_type type;          
+       struct mr_list list;               
+   };
+   
+   /**
+    * @def Null pointer
+    */
+   #define MR_NULL                      (void *)0
+   ```
+
+4. 函数声明时需用注释将所有同类函数包含：
+
+   ```c
+   /**
+    * @addtogroup Object
+    * @{
+    */
+   mr_object_container_t mr_object_container_find(enum mr_object_type type);
+   mr_object_t mr_object_find(const char *name, enum mr_object_type type);
+   mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_object_type type);
+   mr_err_t mr_object_remove(mr_object_t object);
+   mr_err_t mr_object_change_type(mr_object_t object, enum mr_object_type type);
+   void mr_object_rename(mr_object_t object, char *name);
+   /** @} */
    ```
