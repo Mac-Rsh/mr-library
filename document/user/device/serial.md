@@ -8,6 +8,12 @@ UART（Universal Asynchronous Receiver/Transmitter）即通用异步收发传输
 
 ----------
 
+## 调用关系
+
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/serial_device.png)
+
+----------
+
 ## 准备工作
 
 1. 引用 `mrdrv.h` 头文件以使用驱动部分。
@@ -39,7 +45,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
 
 | 参数        | 描述         |
 |:----------|:-----------|
-| device    | SERAIL设备句柄 |
+| device    | SERIAL设备句柄 |
 | flags     | 打开方式       |
 | **返回**    |            |
 | MR_ERR_OK | 打开设备成功     |
@@ -55,6 +61,13 @@ MR_OPEN_NONBLOCKING                                                 /* 非阻塞
 ```
 
 当打开方式|MR_OPEN_NONBLOCKING，对串口设备写入数据时将检测发送缓冲区空间是否为0，如果非0，数据将被压入发送缓冲区后通过中断发送。
+
+| 缓冲区 | 打开方式 | 接收方式 | 发送方式 |
+|:----|:-----|:-----|:-----|
+| 不使用 | 阻塞   | 轮询   | 轮询   |
+| 不使用 | 非阻塞  | 轮询   | 轮询   |
+| 使用  | 阻塞   | 中断   | 轮询   |
+| 使用  | 非阻塞  | 中断   | 中断   |
 
 ----------
 
@@ -195,13 +208,6 @@ mr_size_t bufsz = 64;
 mr_device_ioctl(serial_device, MR_CTRL_SET_RX_BUFSZ, &bufsz);
 mr_device_ioctl(serial_device, MR_CTRL_SET_TX_BUFSZ, &bufsz);
 ```
-
-| 缓冲区 | 打开方式 | 接收方式 | 发送方式 |
-|:----|:-----|:-----|:-----|
-| 不使用 | 阻塞   | 轮询   | 轮询   |
-| 不使用 | 非阻塞  | 轮询   | 轮询   |
-| 使用  | 阻塞   | 中断   | 轮询   |
-| 使用  | 非阻塞  | 中断   | 中断   |
 
 ----------
 

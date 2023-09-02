@@ -16,6 +16,12 @@ GPIO（通用目的输入/输出）是一种可以通过软件进行控制的硬
 
 ----------
 
+## 调用关系
+
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/pin_device.png)
+
+----------
+
 ## 查找PIN设备
 
 ```c
