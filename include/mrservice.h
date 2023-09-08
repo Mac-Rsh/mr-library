@@ -13,6 +13,10 @@
 
 #include "mrdef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @def Debug
  */
@@ -57,17 +61,67 @@
 #define MR_ASSERT(EX)
 #endif
 
-#define mr_container_of(ptr, type, member) \
-    ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
+/**
+ * @brief This macro function gets its structure from its member.
+ *
+ * @param pointer The pointer to the structure.
+ * @param type The type of the structure.
+ * @param member The member of the structure.
+ *
+ * @return A pointer to the structure.
+ */
+#define mr_container_of(pointer, type, member) \
+    ((type *)((char *)(pointer) - (unsigned long)(&((type *)0)->member)))
 
-#define MR_ARRAY_SIZE(array)    sizeof(array)/sizeof(array[0])
+/**
+ * @brief This macro function gets the number of elements in an array.
+ *
+ * @param array The array.
+ *
+ * @return The number of elements in the array.
+ */
+#define mr_array_number_of(array)    sizeof(array)/sizeof(array[0])
 
+/**
+ * @brief This macro function aligns down a size.
+ *
+ * @param size The size to align.
+ * @param align The alignment.
+ *
+ * @return The aligned size.
+ */
 #define mr_align_down(size, align)    (size & (~(align - 1)))
 
-#define mr_max(a, b)    ((a) > (b)) ? (a):(b)
-#define mr_min(a, b)    ((a) < (b)) ? (a):(b)
+/**
+ * @brief This macro function gets the maximum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The maximum of the two values.
+ */
+#define mr_max_of(a, b)    ((a) > (b)) ? (a):(b)
 
-#define mr_limit(x, a, b)    do{ (x) = ((x) < (a)) ? (a) : ((x) > (b)) ? (b) : (x); }while(0)
+/**
+ * @brief This macro function gets the minimum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The minimum of the two values.
+ */
+#define mr_min_of(a, b)    ((a) < (b)) ? (a):(b)
+
+/**
+ * @brief This macro function gets the limit of a value.
+ *
+ * @param x The value.
+ * @param a The lower limit.
+ * @param b The upper limit.
+ *
+ * @return The limit of the value.
+ */
+#define mr_limit_of(x, a, b)    do{ (x) = ((x) < (a)) ? (a) : ((x) > (b)) ? (b) : (x); }while(0)
 
 /**
  * @brief This function initialize a single list.
@@ -160,7 +214,7 @@ MR_INLINE mr_size_t mr_slist_get_length(mr_slist_t list)
  *
  * @param list The list to get the tail of.
  *
- * @return A handle to the tail of the list.
+ * @return A pointer to the tail of the list.
  */
 MR_INLINE mr_slist_t mr_slist_get_tail(mr_slist_t list)
 {
@@ -272,5 +326,9 @@ MR_INLINE mr_bool_t mr_list_is_empty(mr_list_t list)
 {
     return (mr_bool_t)(list->next == list);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _MR_SERVICE_H_ */
