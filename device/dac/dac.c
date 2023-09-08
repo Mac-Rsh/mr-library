@@ -22,7 +22,7 @@ static mr_err_t err_io_dac_channel_configure(mr_dac_t dac, struct mr_dac_config 
     return -MR_ERR_IO;
 }
 
-static void err_io_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
+static void err_io_dac_write(mr_dac_t dac, mr_off_t channel, mr_uint32_t value)
 {
 
 }
@@ -39,7 +39,7 @@ static mr_err_t mr_dac_close(mr_device_t device)
     mr_dac_t dac = (mr_dac_t)device;
 
     /* Disable all channel */
-    dac->config.channel.mask = 0;
+    dac->config.channel._mask = 0;
 
     return dac->ops->configure(dac, MR_DISABLE);
 }
@@ -49,9 +49,9 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
     mr_dac_t dac = (mr_dac_t)device;
     mr_err_t ret = MR_ERR_OK;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_DEVICE_CTRL_SET_CONFIG:
         {
             if (args)
             {
@@ -66,7 +66,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_DEVICE_CTRL_GET_CONFIG:
         {
             if (args)
             {
@@ -82,7 +82,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_dac_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_dac_t dac = (mr_dac_t)device;
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
@@ -123,7 +123,7 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *op
     MR_ASSERT(ops != MR_NULL);
 
     /* Initialize the private fields */
-    dac->config.channel.mask = 0;
+    dac->config.channel._mask = 0;
 
     /* Protect every operation of the dac device */
     ops->configure = ops->configure ? ops->configure : err_io_dac_configure;
@@ -132,7 +132,7 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *op
     dac->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&dac->device, name, Mr_Device_Type_DAC, MR_OPEN_WRONLY, &device_ops, data);
+    return mr_device_add(&dac->device, name, Mr_Device_Type_DAC, MR_DEVICE_OPEN_FLAG_WRONLY, &device_ops, data);
 }
 
 #endif
