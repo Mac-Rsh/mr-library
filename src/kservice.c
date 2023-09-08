@@ -8,11 +8,9 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include "mrlib.h"
+#include "mrapi.h"
 
-static mr_device_t debug_console = MR_NULL;
-
-#if(MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
+#if (MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
 
 static int start(void)
 {
@@ -27,18 +25,18 @@ static int end(void)
 MR_INIT_EXPORT(end, "4.end");
 
 /**
- * @brief This function is auto initialization macro derived functions.
+ * @brief This function is auto initialized.
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
 int mr_auto_init(void)
 {
-    volatile const init_fn_t *fn_ptr = MR_NULL;
+    volatile const init_fn_t *fn = MR_NULL;
 
     /* Auto-initialization */
-    for (fn_ptr = &_mr_auto_init_start; fn_ptr < &_mr_auto_init_end; fn_ptr++)
+    for (fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)
     {
-        (*fn_ptr)();
+        (*fn)();
     }
 
     return MR_ERR_OK;
@@ -47,23 +45,6 @@ int mr_auto_init(void)
 #endif
 
 #if (MR_CFG_DEBUG == MR_CFG_ENABLE)
-
-/**
- * @brief This function initialize the console.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
- */
-mr_err_t mr_debug_console_init(void)
-{
-    debug_console = mr_device_find(MR_CFG_DEBUG_CONSOLE_NAME);
-    if (debug_console == MR_NULL)
-    {
-        return -MR_ERR_NOT_FOUND;
-    }
-
-    return mr_device_open(debug_console, MR_OPEN_RDWR);
-}
-MR_INIT_DEVICE_EXPORT(mr_debug_console_init);
 
 /**
  * @brief This function outputs debugging information.
@@ -90,13 +71,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
     va_start(args, format);
     mr_printf("[%s/%s]: ", debug_level_name[level], tag);
     size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
-    if (debug_console != MR_NULL)
-    {
-        mr_device_write(debug_console, 0, buffer, size);
-    } else
-    {
-        mr_printf_output(buffer, size);
-    }
+    mr_printf_output(buffer, size);
     va_end(args);
 }
 
@@ -123,13 +98,7 @@ mr_size_t mr_printf(const char *format, ...)
 
     va_start(args, format);
     size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
-    if (debug_console != MR_NULL)
-    {
-        mr_device_write(debug_console, 0, buffer, size);
-    } else
-    {
-        mr_printf_output(buffer, size);
-    }
+    mr_printf_output(buffer, size);
     va_end(args);
 
     return size;
@@ -143,7 +112,7 @@ mr_size_t mr_printf(const char *format, ...)
  */
 MR_WEAK void mr_assert_handle(char *file, int line)
 {
-    MR_DEBUG_A("Assert", "file:%s, line: %d\r\n", file, line);
+    MR_DEBUG_A("Assert", "file: [%s], line: [%d]\r\n", file, line);
 
     while (1)
     {
@@ -211,6 +180,37 @@ void mr_rb_init(mr_rb_t rb, void *pool, mr_size_t size)
 
     rb->size = size;
     rb->buffer = pool;
+}
+
+/**
+ * @brief This function allocate memory for the ringbuffer.
+ *
+ * @param rb The ringbuffer to allocate.
+ * @param size The size of the memory.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_rb_allocate_buffer(mr_rb_t rb, mr_size_t size)
+{
+    mr_uint8_t *pool = MR_NULL;
+
+    MR_ASSERT(rb != MR_NULL);
+
+    /* Free old buffer */
+    if (rb->size != 0)
+    {
+        mr_free(rb->buffer);
+    }
+
+    /* Allocate new buffer */
+    pool = mr_malloc(size);
+    if (pool == MR_NULL)
+    {
+        return -MR_ERR_NO_MEMORY;
+    }
+    mr_rb_init(rb, pool, size);
+
+    return MR_ERR_OK;
 }
 
 /**
@@ -579,9 +579,9 @@ static void mr_avl_left_rotate(mr_avl_t *node)
     (*node)->right_child = right_child->left_child;
     right_child->left_child = (*node);
 
-    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    (*node)->height = mr_max_of(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     right_child->height =
-            mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
+            mr_max_of(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
 
     (*node) = right_child;
 }
@@ -595,9 +595,9 @@ static void mr_avl_right_rotate(mr_avl_t *node)
     (*node)->left_child = left_child->right_child;
     left_child->right_child = (*node);
 
-    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    (*node)->height = mr_max_of(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     left_child->height =
-            mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
+            mr_max_of(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
 
     (*node) = left_child;
 }
@@ -644,7 +644,7 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
         return;
     }
 
-    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = mr_max_of(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
     balance = mr_avl_get_balance((*tree));
     if (balance > 1 && node->value < (*tree)->left_child->value)
@@ -715,7 +715,7 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
         return;
     }
 
-    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = mr_max_of(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
     mr_int8_t balance = mr_avl_get_balance(*tree);
 
@@ -748,7 +748,7 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
  * @param tree The tree to be searched.
  * @param value The value to be searched.
  *
- * @return A handle to the found node, or MR_NULL if not found.
+ * @return A pointer to the found node, or MR_NULL if not found.
  */
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value)
 {
