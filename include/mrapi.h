@@ -43,10 +43,10 @@ void mr_rb_reset(mr_rb_t rb);
 mr_size_t mr_rb_get_data_size(mr_rb_t rb);
 mr_size_t mr_rb_get_space_size(mr_rb_t rb);
 mr_size_t mr_rb_get_buffer_size(mr_rb_t rb);
-mr_size_t mr_rb_get(mr_rb_t rb, mr_uint8_t *data);
+mr_size_t mr_rb_pop(mr_rb_t rb, mr_uint8_t *data);
 mr_size_t mr_rb_read(mr_rb_t rb, void *buffer, mr_size_t size);
-mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data);
-mr_size_t mr_rb_put_force(mr_rb_t rb, mr_uint8_t data);
+mr_size_t mr_rb_push(mr_rb_t rb, mr_uint8_t data);
+mr_size_t mr_rb_push_force(mr_rb_t rb, mr_uint8_t data);
 mr_size_t mr_rb_write(mr_rb_t rb, const void *buffer, mr_size_t size);
 mr_size_t mr_rb_write_force(mr_rb_t rb, const void *buffer, mr_size_t size);
 /** @} */
@@ -108,13 +108,14 @@ mr_err_t mr_task_add(mr_task_t task,
 mr_err_t mr_task_remove(mr_task_t task);
 void mr_task_update_tick(mr_task_t task, mr_uint32_t tick);
 void mr_task_handle(mr_task_t task);
-mr_err_t mr_task_ioctl(mr_task_t task, int cmd, void *args);
-mr_err_t mr_task_publish(mr_task_t task, mr_uint8_t index, mr_uint8_t label);
+mr_err_t mr_task_start(mr_task_t task);
+mr_err_t mr_task_stop(mr_task_t task);
+mr_err_t mr_task_post_event(mr_task_t task, mr_uint8_t index, mr_uint8_t event);
 mr_err_t mr_task_timing(mr_task_t task, mr_uint8_t index, mr_uint32_t tick, mr_uint8_t flag);
-mr_err_t mr_task_transition(mr_task_t task, mr_uint8_t index);
-mr_uint8_t mr_task_get_label(mr_task_t task);
+mr_err_t mr_task_transition_state(mr_task_t task, mr_uint8_t index);
+mr_uint8_t mr_task_get_event(mr_task_t task);
 mr_uint32_t mr_task_get_tick(mr_task_t task);
-mr_uint8_t mr_task_get_usage_rate(mr_task_t task);
+mr_uint8_t mr_task_get_usage(mr_task_t task);
 #endif
 /** @} */
 

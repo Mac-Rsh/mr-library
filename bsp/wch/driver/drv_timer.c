@@ -82,7 +82,7 @@ static struct ch32_timer_data ch32_timer_data[] =
 
 static struct mr_timer_data timer_device_data = {10000000, 5000, 0xffff, MR_TIMER_COUNT_MODE_UP};
 
-static struct mr_timer timer_device[mr_array_number_of(ch32_timer_data)];
+static struct mr_timer timer_device[mr_array_num(ch32_timer_data)];
 
 static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_timer_config_t config)
 {
@@ -291,7 +291,7 @@ mr_err_t drv_timer_init(void)
             ch32_timer_stop,
             ch32_timer_get_count,
         };
-    mr_size_t count = mr_array_number_of(timer_device);
+    mr_size_t count = mr_array_num(timer_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

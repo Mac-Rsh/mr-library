@@ -22,7 +22,7 @@ static struct ch32_dac_data ch32_dac_data[] =
 #endif
     };
 
-static struct mr_dac dac_device[mr_array_number_of(ch32_dac_data)];
+static struct mr_dac dac_device[mr_array_num(ch32_dac_data)];
 
 static mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
 {
@@ -117,7 +117,7 @@ mr_err_t drv_dac_init(void)
             ch32_dac_channel_configure,
             ch32_dac_write,
         };
-    mr_size_t count = mr_array_number_of(dac_device);
+    mr_size_t count = mr_array_num(dac_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

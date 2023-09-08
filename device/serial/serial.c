@@ -263,7 +263,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
         {
             /* Save data to the fifo */
             mr_uint8_t data = serial->ops->read(serial);
-            mr_rb_put_force(&serial->rx_fifo, data);
+            mr_rb_push_force(&serial->rx_fifo, data);
 
             /* Call the receiving completion function */
             if (serial->device.rx_cb != MR_NULL)
@@ -278,7 +278,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
         {
             /* Write data from the fifo */
             mr_uint8_t data = 0;
-            if (mr_rb_get(&serial->tx_fifo, &data) == sizeof(data))
+            if (mr_rb_pop(&serial->tx_fifo, &data) == sizeof(data))
             {
                 serial->ops->write(serial, data);
             } else

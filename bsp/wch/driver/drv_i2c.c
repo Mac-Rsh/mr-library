@@ -25,7 +25,7 @@ static struct ch32_soft_i2c_bus_data ch32_soft_i2c_bus_data[] =
 #endif
     };
 
-static struct mr_soft_i2c_bus soft_i2c_bus_device[mr_array_number_of(ch32_soft_i2c_bus_data)];
+static struct mr_soft_i2c_bus soft_i2c_bus_device[mr_array_num(ch32_soft_i2c_bus_data)];
 
 static mr_err_t ch32_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus)
 {
@@ -71,7 +71,7 @@ mr_err_t drv_soft_i2c_bus_init(void)
             ch32_soft_i2c_bus_sda_write,
             ch32_soft_i2c_bus_sda_read,
         };
-    mr_size_t count = mr_array_number_of(soft_i2c_bus_device);
+    mr_size_t count = mr_array_num(soft_i2c_bus_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

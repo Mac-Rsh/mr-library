@@ -73,7 +73,7 @@ static struct ch32_uart_data ch32_uart_data[] =
 #endif
     };
 
-static struct mr_serial serial_device[mr_array_number_of(ch32_uart_data)];
+static struct mr_serial serial_device[mr_array_num(ch32_uart_data)];
 
 static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
@@ -349,7 +349,7 @@ mr_err_t drv_uart_init(void)
             ch32_serial_start_tx,
             ch32_serial_stop_tx,
         };
-    mr_size_t count = mr_array_number_of(serial_device);
+    mr_size_t count = mr_array_num(serial_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

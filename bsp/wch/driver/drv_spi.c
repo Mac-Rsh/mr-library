@@ -43,7 +43,7 @@ static struct ch32_spi_bus_data ch32_spi_bus_data[] =
 #endif
     };
 
-static struct mr_spi_bus spi_bus_device[mr_array_number_of(ch32_spi_bus_data)];
+static struct mr_spi_bus spi_bus_device[mr_array_num(ch32_spi_bus_data)];
 
 static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32_t baud_rate)
 {
@@ -354,7 +354,7 @@ mr_err_t drv_spi_bus_init(void)
             ch32_spi_cs_write,
             ch32_spi_cs_read,
         };
-    mr_size_t count = mr_array_number_of(spi_bus_device);
+    mr_size_t count = mr_array_num(spi_bus_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

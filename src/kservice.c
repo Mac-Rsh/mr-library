@@ -299,14 +299,14 @@ mr_size_t mr_rb_get_buffer_size(mr_rb_t rb)
 }
 
 /**
- * @brief This function get the data from the ringbuffer.
+ * @brief This function pop the data from the ringbuffer.
  *
- * @param rb The ringbuffer to get the data from.
- * @param data The data buffer to be read from the ringbuffer.
+ * @param rb The ringbuffer to pop the data.
+ * @param data The data to pop.
  *
- * @return The size of the actual read.
+ * @return The size of the actual pop.
  */
-mr_size_t mr_rb_get(mr_rb_t rb, mr_uint8_t *data)
+mr_size_t mr_rb_pop(mr_rb_t rb, mr_uint8_t *data)
 {
     /* Get the data size */
     if (mr_rb_get_data_size(rb) == 0)
@@ -377,14 +377,14 @@ mr_size_t mr_rb_read(mr_rb_t rb, void *buffer, mr_size_t size)
 }
 
 /**
- * @brief This function put the data to the ringbuffer.
+ * @brief This function push the data to the ringbuffer.
  *
- * @param rb The ringbuffer to be put.
- * @param data The data to be put.
+ * @param rb The ringbuffer to be pushed.
+ * @param data The data to be pushed.
  *
- * @return The size of the actual put.
+ * @return The size of the actual write.
  */
-mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data)
+mr_size_t mr_rb_push(mr_rb_t rb, mr_uint8_t data)
 {
     /* Get the space size */
     if (mr_rb_get_space_size(rb) == 0)
@@ -407,14 +407,14 @@ mr_size_t mr_rb_put(mr_rb_t rb, mr_uint8_t data)
 }
 
 /**
- * @brief This function force put the data to the ringbuffer.
+ * @brief This function force to push the data to the ringbuffer.
  *
- * @param rb The ringbuffer to be put.
- * @param data The data to be put.
+ * @param rb The ringbuffer to be pushed.
+ * @param data The data to be pushed.
  *
- * @return The size of the actual put.
+ * @return The size of the actual write.
  */
-mr_size_t mr_rb_put_force(mr_rb_t rb, mr_uint8_t data)
+mr_size_t mr_rb_push_force(mr_rb_t rb, mr_uint8_t data)
 {
     mr_bool_t state = MR_FALSE;
 
@@ -588,9 +588,9 @@ static void mr_avl_left_rotate(mr_avl_t *node)
     (*node)->right_child = right_child->left_child;
     right_child->left_child = (*node);
 
-    (*node)->height = mr_max_of(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     right_child->height =
-            mr_max_of(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
+            mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
 
     (*node) = right_child;
 }
@@ -604,9 +604,9 @@ static void mr_avl_right_rotate(mr_avl_t *node)
     (*node)->left_child = left_child->right_child;
     left_child->right_child = (*node);
 
-    (*node)->height = mr_max_of(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     left_child->height =
-            mr_max_of(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
+            mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
 
     (*node) = left_child;
 }
@@ -653,7 +653,7 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
         return;
     }
 
-    (*tree)->height = mr_max_of(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
     balance = mr_avl_get_balance((*tree));
     if (balance > 1 && node->value < (*tree)->left_child->value)
@@ -724,7 +724,7 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
         return;
     }
 
-    (*tree)->height = mr_max_of(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
     mr_int8_t balance = mr_avl_get_balance(*tree);
 

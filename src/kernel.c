@@ -30,7 +30,7 @@ mr_object_container_t mr_object_container_find(mr_uint32_t type)
 {
     mr_size_t count = 0;
 
-    for (count = 0; count < mr_array_number_of(mr_object_container_table); count++)
+    for (count = 0; count < mr_array_num(mr_object_container_table); count++)
     {
         if (mr_object_container_table[count].type == type)
         {
@@ -55,7 +55,7 @@ mr_object_t mr_object_find(const char *name, mr_uint32_t type)
     mr_list_t list = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < mr_array_number_of(mr_object_container_table));
+    MR_ASSERT(type < mr_array_num(mr_object_container_table));
 
     /* Get corresponding container */
     container = mr_object_container_find(type);
@@ -100,7 +100,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint32_t type)
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < mr_array_number_of(mr_object_container_table));
+    MR_ASSERT(type < mr_array_num(mr_object_container_table));
 
     /* Get the container for the specified type */
     container = mr_object_container_find(type);
@@ -177,7 +177,7 @@ mr_err_t mr_object_change_type(mr_object_t object, mr_uint32_t type)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(object != MR_NULL);
-    MR_ASSERT(type < mr_array_number_of(mr_object_container_table));
+    MR_ASSERT(type < mr_array_num(mr_object_container_table));
 
     /* Get the container for the specified type */
     container = mr_object_container_find(type);

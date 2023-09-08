@@ -80,7 +80,7 @@ extern "C" {
  *
  * @return The number of elements in the array.
  */
-#define mr_array_number_of(array)    sizeof(array)/sizeof(array[0])
+#define mr_array_num(array)             sizeof(array)/sizeof(array[0])
 
 /**
  * @brief This macro function aligns down a size.
@@ -90,7 +90,7 @@ extern "C" {
  *
  * @return The aligned size.
  */
-#define mr_align_down(size, align)    (size & (~(align - 1)))
+#define mr_align_down(size, align)      (size & (~(align - 1)))
 
 /**
  * @brief This macro function gets the maximum of two values.
@@ -100,7 +100,7 @@ extern "C" {
  *
  * @return The maximum of the two values.
  */
-#define mr_max_of(a, b)    ((a) > (b)) ? (a):(b)
+#define mr_max(a, b)                    ((a) > (b)) ? (a):(b)
 
 /**
  * @brief This macro function gets the minimum of two values.
@@ -110,7 +110,7 @@ extern "C" {
  *
  * @return The minimum of the two values.
  */
-#define mr_min_of(a, b)    ((a) < (b)) ? (a):(b)
+#define mr_min(a, b)                    ((a) < (b)) ? (a):(b)
 
 /**
  * @brief This macro function gets the limit of a value.

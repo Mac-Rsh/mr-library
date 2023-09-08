@@ -12,6 +12,7 @@ extern "C" {
 #define MR_CFG_ENABLE                   1
 
 //<------------------------------------ Configuration ------------------------------------>
+
 /**
  * @def Object name size config
  *

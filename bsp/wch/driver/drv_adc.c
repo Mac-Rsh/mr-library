@@ -22,7 +22,7 @@ static struct ch32_adc_data ch32_adc_data[] =
 #endif
     };
 
-static struct mr_adc adc_device[mr_array_number_of(ch32_adc_data)];
+static struct mr_adc adc_device[mr_array_num(ch32_adc_data)];
 
 static mr_err_t ch32_adc_configure(mr_adc_t adc, mr_state_t state)
 {
@@ -118,7 +118,7 @@ mr_err_t drv_adc_init(void)
             ch32_adc_channel_configure,
             ch32_adc_read,
         };
-    mr_size_t count = mr_array_number_of(adc_device);
+    mr_size_t count = mr_array_num(adc_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

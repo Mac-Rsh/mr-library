@@ -286,15 +286,14 @@ typedef struct mr_mutex *mr_mutex_t;                                /* Type for 
  */
 #define MR_TASK_TIMING_FLAG_ONESHOT     0x00                        /* One-shot timing */
 #define MR_TASK_TIMING_FLAG_PERIODIC    0x01                        /* Periodic timing */
-#define MR_TASK_TIMING_FLAG_HARDWARE    0x10                        /* Hardware timing */
 
 /**
- * @def Task label
+ * @def Task build-in event
  */
-#define MR_TASK_LABEL_TIMING             255                        /* Timing label */
-#define MR_TASK_LABEL_SM_ENTER           254                        /* Enter state machine label */
-#define MR_TASK_LABEL_SM                 253                        /* State machine label */
-#define MR_TASK_LABEL_SM_EXIT            252                        /* Exit state machine label */
+#define MR_TASK_EVENT_TIMING             255                        /* Timing event */
+#define MR_TASK_EVENT_SM_ENTER           254                        /* Enter state machine event */
+#define MR_TASK_EVENT_SM                 253                        /* State machine event */
+#define MR_TASK_EVENT_SM_EXIT            252                        /* Exit state machine event */
 
 typedef struct mr_task_table *mr_task_table_t;                      /* Type for task table */
 
@@ -307,13 +306,13 @@ struct mr_task
 
     mr_uint16_t active: 1;                                          /* Task active */
     mr_uint16_t sm_active: 1;                                       /* State machine active */
-    mr_uint16_t usage_rate_max: 7;                                  /* Maximum usage rate */
+    mr_uint16_t usage_max: 7;                                       /* Maximum usage rate */
     mr_uint16_t reserved: 7;                                        /* Reserved */
-    mr_uint8_t current_label;                                       /* Current label */
-    mr_uint8_t current_sm;                                          /* Current state machine */
+    mr_uint8_t event;                                               /* Trigger event */
+    mr_uint8_t sm;                                                  /* Current state machine */
     mr_uint32_t tick;                                               /* Current tick */
     struct mr_rb queue;                                             /* Event queue */
-    struct mr_list run;                                             /* Timing running list */
+    struct mr_list run;                                             /* Timing list */
 
     mr_task_table_t table;                                          /* Task table */
     mr_size_t table_size;                                           /* Task table size */
@@ -333,7 +332,7 @@ struct mr_task_table
         mr_uint32_t interval;                                       /* Timing interval time */
         mr_uint32_t timeout;                                        /* Timeout tick */
         struct mr_list run;                                         /* Timing running list */
-    } _timing;
+    } timing;
 };
 
 #endif
