@@ -22,7 +22,7 @@ static mr_err_t err_io_adc_channel_configure(mr_adc_t adc, mr_adc_config_t confi
     return -MR_ERR_IO;
 }
 
-static mr_uint32_t err_io_adc_read(mr_adc_t adc, mr_pos_t channel)
+static mr_uint32_t err_io_adc_read(mr_adc_t adc, mr_off_t channel)
 {
     return 0;
 }
@@ -39,7 +39,7 @@ static mr_err_t mr_adc_close(mr_device_t device)
     mr_adc_t adc = (mr_adc_t)device;
 
     /* Disable all channel */
-    adc->config.channel.mask = 0;
+    adc->config.channel._mask = 0;
 
     return adc->ops->configure(adc, MR_DISABLE);
 }
@@ -49,9 +49,9 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
     mr_adc_t adc = (mr_adc_t)device;
     mr_err_t ret = MR_ERR_OK;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_DEVICE_CTRL_SET_CONFIG:
         {
             if (args)
             {
@@ -66,7 +66,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_DEVICE_CTRL_GET_CONFIG:
         {
             if (args)
             {
@@ -82,7 +82,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_adc_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
     mr_adc_t adc = (mr_adc_t)device;
     mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
@@ -123,7 +123,7 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *op
     MR_ASSERT(ops != MR_NULL);
 
     /* Initialize the private fields */
-    adc->config.channel.mask = 0;
+    adc->config.channel._mask = 0;
 
     /* Protect every operation of the adc device */
     ops->configure = ops->configure ? ops->configure : err_io_adc_configure;
@@ -132,7 +132,7 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *op
     adc->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&adc->device, name, Mr_Device_Type_ADC, MR_OPEN_RDONLY, &device_ops, data);
+    return mr_device_add(&adc->device, name, Mr_Device_Type_ADC, MR_DEVICE_OPEN_FLAG_RDONLY, &device_ops, data);
 }
 
 #endif
