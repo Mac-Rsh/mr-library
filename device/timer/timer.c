@@ -47,7 +47,7 @@ static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t time
         count = 1;
     }
 
-    if (count < timer->data->max_count)
+    if (count < timer->data->count_max)
     {
         timer->reload = 1;
         timer->cycles = timer->reload;
@@ -55,16 +55,16 @@ static mr_uint32_t mr_timer_timeout_calculate(mr_timer_t timer, mr_uint32_t time
         return count;
     }
 
-    if (count % timer->data->max_count == 0)
+    if (count % timer->data->count_max == 0)
     {
-        timer->reload = count / timer->data->max_count;
+        timer->reload = count / timer->data->count_max;
         timer->cycles = timer->reload;
-        timer->timeout = timer->data->max_count * timer_period;
-        return timer->data->max_count;
+        timer->timeout = timer->data->count_max * timer_period;
+        return timer->data->count_max;
     }
 
     /* Calculate the Least error reload */
-    error_min = count / timer->data->max_count + 1;
+    error_min = count / timer->data->count_max + 1;
     for (i = error_min; i < count / 5; i++)
     {
         mr_uint32_t reload = count / i;
@@ -99,7 +99,7 @@ static mr_err_t mr_timer_open(mr_device_t device)
     }
 
     /* Limit the frequency */
-    mr_limit(timer->config.freq, timer->data->min_freq, timer->data->max_freq);
+    mr_limit_of(timer->config.freq, timer->data->freq_min, timer->data->freq_max);
 
     return timer->ops->configure(timer, &timer->config);
 }
@@ -119,14 +119,14 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
     mr_timer_t timer = (mr_timer_t)device;
     mr_err_t ret = MR_ERR_OK;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_DEVICE_CTRL_SET_CONFIG:
         {
             if (args)
             {
                 mr_timer_config_t config = (mr_timer_config_t)args;
-                mr_limit(config->freq, timer->data->min_freq, timer->data->max_freq);
+                mr_limit_of(config->freq, timer->data->freq_min, timer->data->freq_max);
                 ret = timer->ops->configure(timer, config);
                 if (ret == MR_ERR_OK)
                 {
@@ -137,7 +137,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_DEVICE_CTRL_GET_CONFIG:
         {
             if (args)
             {
@@ -148,32 +148,32 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_SET_RX_CB:
+        case MR_DEVICE_CTRL_SET_RX_CB:
         {
             device->rx_cb = args;
             return MR_ERR_OK;
         }
 
-        case MR_CTRL_REBOOT:
-        {
-            timer->overflow = 0;
-            timer->cycles = timer->reload;
-
-            /* When the time is not less than one time, the timer is started */
-            if (timer->cycles == 0)
-            {
-                return -MR_ERR_INVALID;
-            }
-            timer->ops->start(timer, timer->timeout / (1000000u / timer->config.freq));
-            return MR_ERR_OK;
-        }
+//        case MR_DEVICE_CTRL_REBOOT:
+//        {
+//            timer->overflow = 0;
+//            timer->cycles = timer->reload;
+//
+//            /* When the time is not less than one time, the timer is started */
+//            if (timer->cycles == 0)
+//            {
+//                return -MR_ERR_INVALID;
+//            }
+//            timer->ops->start(timer, timer->timeout / (1000000u / timer->config.freq));
+//            return MR_ERR_OK;
+//        }
 
         default:
             return -MR_ERR_UNSUPPORTED;
     }
 }
 
-static mr_ssize_t mr_timer_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
     mr_timer_t timer = (mr_timer_t)device;
     mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
@@ -195,7 +195,7 @@ static mr_ssize_t mr_timer_read(mr_device_t device, mr_pos_t pos, void *buffer, 
     return (mr_ssize_t)read_size;
 }
 
-static mr_ssize_t mr_timer_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_timer_t timer = (mr_timer_t)device;
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
@@ -251,17 +251,17 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
     MR_ASSERT(timer_data != MR_NULL);
-    MR_ASSERT(timer_data->min_freq > 0);
-    MR_ASSERT(timer_data->max_freq >= timer_data->min_freq);
-    MR_ASSERT(timer_data->max_count > 0);
+    MR_ASSERT(timer_data->freq_min > 0);
+    MR_ASSERT(timer_data->freq_max >= timer_data->freq_min);
+    MR_ASSERT(timer_data->count_max > 0);
 
     /* Initialize the private fields */
     timer->config.freq = 0;
-    timer->data = timer_data;
     timer->reload = 0;
     timer->cycles = 0;
     timer->overflow = 0;
     timer->timeout = 0;
+    timer->data = timer_data;
 
     /* Protect every operation of the timer device */
     ops->configure = ops->configure ? ops->configure : err_io_timer_configure;
@@ -271,7 +271,7 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     timer->ops = ops;
 
     /* Add the container */
-    return mr_device_add(&timer->device, name, Mr_Device_Type_Timer, MR_OPEN_RDWR, &device_ops, data);
+    return mr_device_add(&timer->device, name, Mr_Device_Type_Timer, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
 }
 
 /**
@@ -291,7 +291,10 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
             timer->overflow++;
 
             /* Timeout */
-            if (timer->cycles == 0)
+            if (timer->cycles != 0)
+            {
+                timer->cycles--;
+            } else
             {
                 timer->cycles = timer->reload;
                 timer->overflow = 0;
@@ -307,9 +310,6 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
                 {
                     timer->device.rx_cb(&timer->device, MR_NULL);
                 }
-            } else
-            {
-                timer->cycles--;
             }
             break;
         }

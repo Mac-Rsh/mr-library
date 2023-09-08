@@ -11,7 +11,11 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
-#include "mrlib.h"
+#include "mrapi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if (MR_CFG_TIMER == MR_CFG_ENABLE)
 
@@ -48,7 +52,8 @@
 struct mr_timer_config
 {
     mr_uint32_t freq;
-    mr_uint8_t mode;
+    mr_uint32_t mode: 1;
+    mr_uint32_t reserved: 31;
 };
 typedef struct mr_timer_config *mr_timer_config_t;
 
@@ -57,10 +62,11 @@ typedef struct mr_timer_config *mr_timer_config_t;
  */
 struct mr_timer_data
 {
-    mr_uint32_t max_freq;
-    mr_uint32_t min_freq;
-    mr_uint32_t max_count;
-    mr_uint8_t count_mode;
+    mr_uint32_t freq_max;
+    mr_uint32_t freq_min;
+    mr_uint32_t count_max;
+    mr_uint32_t count_mode: 1;
+    mr_uint32_t reserved: 31;
 };
 
 typedef struct mr_timer *mr_timer_t;
@@ -84,12 +90,12 @@ struct mr_timer
     struct mr_device device;
 
     struct mr_timer_config config;
-    struct mr_timer_data *data;
     mr_uint32_t reload;
     mr_uint32_t cycles;
     mr_uint32_t overflow;
     mr_uint32_t timeout;
 
+    const struct mr_timer_data *data;
     const struct mr_timer_ops *ops;
 };
 
@@ -105,6 +111,10 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
 void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _TIMER_H_ */
