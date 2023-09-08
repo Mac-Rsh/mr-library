@@ -16,37 +16,41 @@
 #include "device/pin/pin.h"
 #endif
 
+#define MR_SPI_RD                       0
+#define MR_SPI_WR                       1
+#define MR_SPI_RDWR                     2
+
 static mr_err_t err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
 {
     return -MR_ERR_IO;
 }
 
-static void err_io_spi_write(mr_spi_bus_t spi_bus, mr_uint8_t data)
+static void err_io_spi_write(mr_spi_bus_t spi_bus, mr_uint32_t data)
 {
 
 }
 
-static mr_uint8_t err_io_spi_read(mr_spi_bus_t spi_bus)
-{
-    return 0;
-}
-
-static void err_io_spi_cs_write(mr_spi_bus_t spi_bus, mr_pos_t cs_number, mr_uint8_t value)
-{
-
-}
-
-static mr_uint8_t err_io_spi_cs_read(mr_spi_bus_t spi_bus, mr_pos_t cs_number)
+static mr_uint32_t err_io_spi_read(mr_spi_bus_t spi_bus)
 {
     return 0;
 }
 
-static mr_err_t mr_spi_device_attach_bus(mr_spi_device_t spi_device, const char *name)
+static void err_io_spi_cs_write(mr_spi_bus_t spi_bus, mr_off_t cs_number, mr_level_t level)
+{
+
+}
+
+static mr_level_t err_io_spi_cs_read(mr_spi_bus_t spi_bus, mr_off_t cs_number)
+{
+    return 0;
+}
+
+static mr_err_t mr_spi_device_connect_bus(mr_spi_device_t spi_device, const char *name)
 {
     mr_device_t spi_bus = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
-    /* Detach the spi-bus */
+    /* Disconnect the spi-bus */
     if (name == MR_NULL)
     {
         if (spi_device->bus != MR_NULL)
@@ -61,15 +65,14 @@ static mr_err_t mr_spi_device_attach_bus(mr_spi_device_t spi_device, const char 
                 return ret;
             }
 
-            /* Clear the spi-bus */
             spi_device->bus = MR_NULL;
-            spi_device->device.support_flag = MR_OPEN_CLOSED;
+            spi_device->device.oflags = spi_device->device.sflags = MR_DEVICE_OPEN_FLAG_CLOSED;
         }
 
         return MR_ERR_OK;
     }
 
-    /* Attach the spi-bus */
+    /* Connect the spi-bus */
     spi_bus = mr_device_find(name);
     if (spi_bus == MR_NULL || spi_bus->type != Mr_Device_Type_SPIBUS)
     {
@@ -77,7 +80,7 @@ static mr_err_t mr_spi_device_attach_bus(mr_spi_device_t spi_device, const char 
     }
 
     /* Open the spi-bus */
-    ret = mr_device_open(spi_bus, MR_OPEN_RDWR);
+    ret = mr_device_open(spi_bus, MR_DEVICE_OPEN_FLAG_RDWR);
     if (ret != MR_ERR_OK)
     {
         return ret;
@@ -85,35 +88,44 @@ static mr_err_t mr_spi_device_attach_bus(mr_spi_device_t spi_device, const char 
 
     /* Set the spi-bus */
     spi_device->bus = (mr_spi_bus_t)spi_bus;
-    spi_device->device.support_flag = spi_bus->support_flag;
+    spi_device->device.sflags = spi_bus->sflags;
 
     return MR_ERR_OK;
 }
 
 mr_err_t mr_spi_device_take_bus(mr_spi_device_t spi_device)
 {
-    mr_spi_bus_t spi_bus = spi_device->bus;
+    mr_spi_bus_t spi_bus = (mr_spi_bus_t)spi_device->bus;
     mr_err_t ret = MR_ERR_OK;
 
+    /* Check if the spi-bus is valid */
+    if (spi_bus == MR_NULL)
+    {
+        return -MR_ERR_UNSUPPORTED;
+    }
+
     /* Take the mutex lock of the spi-bus */
-    ret = mr_mutex_take(&spi_bus->lock, &spi_device->device.object);
+    ret = mr_mutex_take(&spi_bus->lock, spi_device);
     if (ret != MR_ERR_OK)
     {
         return ret;
     }
 
-    /* Check if the spi-bus is different from the current one */
+    /* Check if the spi-bus owner is different from the current one */
     if (spi_bus->owner != spi_device)
     {
         /* If the configuration is different, the spi-bus is reconfigured */
         if (spi_device->config.baud_rate != spi_bus->config.baud_rate
             || spi_device->config.host_slave != spi_bus->config.host_slave
             || spi_device->config.mode != spi_bus->config.mode
+            || spi_device->config.data_bits != spi_bus->config.data_bits
             || spi_device->config.bit_order != spi_bus->config.bit_order)
         {
             ret = spi_bus->ops->configure(spi_bus, &spi_device->config);
             if (ret != MR_ERR_OK)
             {
+                /* Release the mutex lock of the spi-bus */
+                mr_mutex_release(&spi_bus->lock, spi_device);
                 return ret;
             }
         }
@@ -131,15 +143,174 @@ static mr_err_t mr_spi_device_release_bus(mr_spi_device_t spi_device)
     mr_spi_bus_t spi_bus = spi_device->bus;
 
     /* Release the mutex lock of the spi-bus */
-    return mr_mutex_release(&spi_bus->lock, &spi_device->device.object);
+    return mr_mutex_release(&spi_bus->lock, spi_device);
 }
 
-static mr_uint8_t mr_spi_device_transfer(mr_spi_device_t spi_device, mr_uint8_t data)
+MR_INLINE void mr_spi_device_cs_set_state(mr_spi_device_t spi_device, mr_state_t state)
 {
     mr_spi_bus_t spi_bus = spi_device->bus;
 
-    spi_bus->ops->write(spi_bus, data);
-    return spi_bus->ops->read(spi_bus);
+    if (spi_device->config.cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+    {
+        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, (mr_level_t)!(state ^ spi_device->config.cs_active));
+    }
+}
+
+MR_INLINE mr_state_t mr_spi_device_cs_get_state(mr_spi_device_t spi_device)
+{
+    mr_spi_bus_t spi_bus = spi_device->bus;
+
+    if (spi_device->config.cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+    {
+        return (mr_state_t)(spi_bus->ops->cs_read(spi_bus, spi_device->cs_number) == spi_device->config.cs_active);
+    }
+
+    return MR_ENABLE;
+}
+
+static mr_ssize_t mr_spi_bus_transfer(mr_spi_bus_t spi_bus,
+                                      void *write_data,
+                                      void *read_data,
+                                      mr_size_t size,
+                                      mr_state_t rw)
+{
+    mr_size_t tran_size = 0;
+
+    if (rw == MR_SPI_WR)
+    {
+        switch (spi_bus->config.data_bits)
+        {
+            case MR_SPI_DATA_BITS_8:
+            {
+                mr_uint8_t *w_data = (mr_uint8_t *)write_data;
+                while ((tran_size += (sizeof(*w_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, *w_data);
+                    spi_bus->ops->read(spi_bus);
+                    w_data++;
+                }
+                break;
+            }
+
+            case MR_SPI_DATA_BITS_16:
+            {
+                mr_uint16_t *w_data = (mr_uint16_t *)write_data;
+                while ((tran_size += (sizeof(*w_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, *w_data);
+                    spi_bus->ops->read(spi_bus);
+                    w_data++;
+                }
+                break;
+            }
+
+            case MR_SPI_DATA_BITS_32:
+            {
+                mr_uint32_t *w_data = (mr_uint32_t *)write_data;
+                while ((tran_size += (sizeof(*w_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, *w_data);
+                    spi_bus->ops->read(spi_bus);
+                    w_data++;
+                }
+                break;
+            }
+
+            default:
+                return -MR_ERR_INVALID;
+        }
+    } else if (rw == MR_SPI_RD)
+    {
+        switch (spi_bus->config.data_bits)
+        {
+            case MR_SPI_DATA_BITS_8:
+            {
+                mr_uint8_t *r_data = (mr_uint8_t *)read_data;
+                while ((tran_size += (sizeof(*r_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, 0);
+                    *r_data = spi_bus->ops->read(spi_bus);
+                    r_data++;
+                }
+                break;
+            }
+
+            case MR_SPI_DATA_BITS_16:
+            {
+                mr_uint16_t *r_data = (mr_uint16_t *)read_data;
+                while ((tran_size += (sizeof(*r_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, 0);
+                    *r_data = spi_bus->ops->read(spi_bus);
+                    r_data++;
+                }
+                break;
+            }
+
+            case MR_SPI_DATA_BITS_32:
+            {
+                mr_uint32_t *r_data = (mr_uint32_t *)read_data;
+                while ((tran_size += (sizeof(*r_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, 0);
+                    *r_data = spi_bus->ops->read(spi_bus);
+                    r_data++;
+                }
+                break;
+            }
+
+            default:
+                return -MR_ERR_INVALID;
+        }
+    } else
+    {
+        switch (spi_bus->config.data_bits)
+        {
+            case MR_SPI_DATA_BITS_8:
+            {
+                mr_uint8_t *w_data = (mr_uint8_t *)write_data;
+                mr_uint8_t *r_data = (mr_uint8_t *)read_data;
+                while ((tran_size += (sizeof(*w_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, *w_data);
+                    *r_data = spi_bus->ops->read(spi_bus);
+                    w_data++;
+                }
+                break;
+            }
+
+            case MR_SPI_DATA_BITS_16:
+            {
+                mr_uint16_t *w_data = (mr_uint16_t *)write_data;
+                mr_uint16_t *r_data = (mr_uint16_t *)read_data;
+                while ((tran_size += (sizeof(*w_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, *w_data);
+                    *r_data = spi_bus->ops->read(spi_bus);
+                    w_data++;
+                }
+                break;
+            }
+
+            case MR_SPI_DATA_BITS_32:
+            {
+                mr_uint32_t *w_data = (mr_uint32_t *)write_data;
+                mr_uint32_t *r_data = (mr_uint32_t *)read_data;
+                while ((tran_size += (sizeof(*w_data))) <= size)
+                {
+                    spi_bus->ops->write(spi_bus, *w_data);
+                    *r_data = spi_bus->ops->read(spi_bus);
+                    w_data++;
+                }
+                break;
+            }
+
+            default:
+                return -MR_ERR_INVALID;
+        }
+    }
+
+    return (mr_ssize_t)tran_size;
 }
 
 static mr_err_t mr_spi_device_configure_cs(mr_spi_device_t spi_device, mr_state_t state)
@@ -152,12 +323,12 @@ static mr_err_t mr_spi_device_configure_cs(mr_spi_device_t spi_device, mr_state_
     pin_config.mode = (state == MR_ENABLE) ? MR_PIN_MODE_OUTPUT : MR_PIN_MODE_NONE;
 
     /* Configure pin */
-    if (spi_device->config.cs_active != MR_SPI_CS_ACTIVE_NONE)
+    if (spi_device->config.cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
     {
         pin = mr_device_find("pin");
         if (pin != MR_NULL)
         {
-            mr_device_ioctl(pin, MR_CTRL_SET_CONFIG, &pin_config);
+            mr_device_ioctl(pin, MR_DEVICE_CTRL_SET_CONFIG, &pin_config);
         }
     }
 #endif
@@ -188,16 +359,16 @@ static mr_err_t mr_spi_device_close(mr_device_t device)
     spi_device->config.baud_rate = 0;
     mr_spi_device_configure_cs(spi_device, MR_DISABLE);
 
-    return mr_spi_device_attach_bus(spi_device, MR_NULL);
+    return MR_ERR_OK;
 }
 
 static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_DEVICE_CTRL_SET_CONFIG:
         {
             if (args)
             {
@@ -208,7 +379,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_DEVICE_CTRL_GET_CONFIG:
         {
             if (args)
             {
@@ -219,15 +390,34 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_SET_RX_CB:
+        case MR_DEVICE_CTRL_SET_RX_CB:
         {
             device->rx_cb = args;
             return MR_ERR_OK;
         }
 
-        case MR_CTRL_ATTACH:
+        case MR_DEVICE_CTRL_CONNECT:
         {
-            return mr_spi_device_attach_bus(spi_device, (const char *)args);
+            return mr_spi_device_connect_bus(spi_device, (const char *)args);
+        }
+
+        case MR_DEVICE_CTRL_SPI_TRANSFER:
+        {
+            if(args)
+            {
+                struct mr_spi_transfer *transfer = (struct mr_spi_transfer *)args;
+                mr_ssize_t tran_size = 0;
+
+                /* Enable the chip-select of the current device */
+                mr_spi_device_cs_set_state(spi_device, MR_ENABLE);
+
+                tran_size = mr_spi_bus_transfer(spi_device->bus, transfer->write_buffer, transfer->read_buffer, transfer->size, MR_SPI_RDWR);
+
+                /* Disable the chip-select of the current device */
+                mr_spi_device_cs_set_state(spi_device, MR_DISABLE);
+                return (mr_err_t)tran_size;
+            }
+            return -MR_ERR_INVALID;
         }
 
         default:
@@ -235,12 +425,11 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
     mr_uint8_t *read_buffer = (mr_uint8_t *)buffer;
-    mr_spi_bus_t spi_bus = MR_NULL;
-    mr_size_t read_size = 0;
+    mr_ssize_t read_size = 0;
     mr_err_t ret = MR_ERR_OK;
 
     /* Take the spi-bus */
@@ -250,64 +439,46 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_pos_t pos, void *buf
         return ret;
     }
 
-    /* Get the spi-bus */
-    spi_bus = spi_device->bus;
-
     if (spi_device->config.host_slave == MR_SPI_HOST)
     {
-        /* Start the chip-select of the current device */
-        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, spi_device->config.cs_active);
+        /* Enable the chip-select of the current device */
+        mr_spi_device_cs_set_state(spi_device, MR_ENABLE);
 
         /* Send position */
         if (pos != 0)
         {
-            mr_size_t bits = 1 << spi_device->config.pos_bits;
-
-            while (bits--)
-            {
-                mr_spi_device_transfer(spi_device, (mr_uint8_t)pos);
-                pos >>= 8;
-            }
+            mr_spi_bus_transfer(spi_device->bus, &pos, MR_NULL, (spi_device->config.pos_bits >> 3), MR_SPI_WR);
         }
 
         /* Blocking read */
-        while ((read_size += sizeof(*read_buffer)) <= size)
-        {
-            *read_buffer = mr_spi_device_transfer(spi_device, 0u);
-            read_buffer++;
-        }
+        read_size = mr_spi_bus_transfer(spi_device->bus, MR_NULL, read_buffer, size, MR_SPI_RD);
 
-        /* Stop the chip-select of the current device */
-        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, !spi_device->config.cs_active);
+        /* Disable the chip-select of the current device */
+        mr_spi_device_cs_set_state(spi_device, MR_DISABLE);
     } else
     {
-        if (spi_bus->rx_fifo.size == 0)
+        if (spi_device->bus->rx_fifo.size == 0)
         {
             /* Blocking read */
-            while ((read_size += sizeof(*read_buffer)) <= size)
-            {
-                *read_buffer = mr_spi_device_transfer(spi_device, 0u);
-                read_buffer++;
-            }
+            read_size = mr_spi_bus_transfer(spi_device->bus, MR_NULL, read_buffer, size, MR_SPI_RD);
         } else
         {
             /* Non-blocking read */
-            read_size = mr_rb_read(&spi_bus->rx_fifo, read_buffer, size);
+            read_size = (mr_ssize_t)mr_rb_read(&spi_device->bus->rx_fifo, read_buffer, size);
         }
     }
 
     /* Release spi-bus */
     mr_spi_device_release_bus(spi_device);
 
-    return (mr_ssize_t)read_size;
+    return read_size;
 }
 
-static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
     mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
-    mr_spi_bus_t spi_bus = MR_NULL;
-    mr_size_t write_size = 0;
+    mr_ssize_t write_size = 0;
     mr_err_t ret = MR_ERR_OK;
 
     /* Take the spi-bus */
@@ -317,43 +488,26 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_pos_t pos, const vo
         return ret;
     }
 
-    /* Get the spi-bus */
-    spi_bus = spi_device->bus;
-
     if (spi_device->config.host_slave == MR_SPI_HOST)
     {
-        /* Start the chip-select of the current device */
-        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, spi_device->config.cs_active);
+        /* Enable the chip-select of the current device */
+        mr_spi_device_cs_set_state(spi_device, MR_ENABLE);
 
         /* Send position */
         if (pos != 0)
         {
-            mr_size_t bits = 1 << spi_device->config.pos_bits;
-
-            while (bits--)
-            {
-                mr_spi_device_transfer(spi_device, (mr_uint8_t)pos);
-                pos >>= 8;
-            }
+            mr_spi_bus_transfer(spi_device->bus, &pos, MR_NULL, (spi_device->config.pos_bits >> 3), MR_SPI_WR);
         }
 
         /* Blocking write */
-        while ((write_size += sizeof(*write_buffer)) <= size)
-        {
-            mr_spi_device_transfer(spi_device, *write_buffer);
-            write_buffer++;
-        }
+        write_size = mr_spi_bus_transfer(spi_device->bus, write_buffer, MR_NULL, size, MR_SPI_WR);
 
-        /* Stop the chip-select of the current device */
-        spi_bus->ops->cs_write(spi_bus, spi_device->cs_number, !spi_device->config.cs_active);
+        /* Disable the chip-select of the current device */
+        mr_spi_device_cs_set_state(spi_device, MR_DISABLE);
     } else
     {
         /* Blocking write */
-        while ((write_size += sizeof(*write_buffer)) <= size)
-        {
-            mr_spi_device_transfer(spi_device, *write_buffer);
-            write_buffer++;
-        }
+        write_size = mr_spi_bus_transfer(spi_device->bus, write_buffer, MR_NULL, size, MR_SPI_WR);
     }
 
     /* Release spi-bus */
@@ -371,7 +525,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_pos_t pos, const vo
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_pos_t cs_number)
+mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_off_t cs_number)
 {
     static struct mr_device_ops device_ops =
         {
@@ -387,32 +541,16 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_pos_
 
     /* Initialize the private fields */
     spi_device->config.baud_rate = 0;
-    spi_device->bus = MR_NULL;
     spi_device->cs_number = cs_number;
+    spi_device->bus = MR_NULL;
 
     /* Add the device */
-    return mr_device_add(&spi_device->device, name, Mr_Device_Type_SPI, MR_OPEN_CLOSED, &device_ops, MR_NULL);
-}
-
-static mr_err_t mr_spi_bus_set_fifo(mr_rb_t rb, mr_size_t fifo_size)
-{
-    mr_uint8_t *pool = MR_NULL;
-
-    /* Free old buffer */
-    if (rb->size != 0)
-    {
-        mr_free(rb->buffer);
-    }
-
-    /* Allocate new buffer */
-    pool = mr_malloc(fifo_size);
-    if (pool == MR_NULL)
-    {
-        return -MR_ERR_NO_MEMORY;
-    }
-    mr_rb_init(rb, pool, fifo_size);
-
-    return MR_ERR_OK;
+    return mr_device_add(&spi_device->device,
+                         name,
+                         Mr_Device_Type_SPI,
+                         MR_DEVICE_OPEN_FLAG_CLOSED,
+                         &device_ops,
+                         MR_NULL);
 }
 
 static mr_err_t mr_spi_bus_open(mr_device_t device)
@@ -426,6 +564,12 @@ static mr_err_t mr_spi_bus_open(mr_device_t device)
         spi_bus->config = default_config;
     }
 
+    /* Allocate fifo using configuration size */
+    if (spi_bus->rx_fifo.size == 0)
+    {
+        mr_rb_allocate_buffer(&spi_bus->rx_fifo, MR_CFG_SPI_RX_BUFSZ);
+    }
+
     return spi_bus->ops->configure(spi_bus, &spi_bus->config);
 }
 
@@ -435,7 +579,7 @@ static mr_err_t mr_spi_bus_close(mr_device_t device)
 
     /* Disable spi */
     spi_bus->config.baud_rate = 0;
-    mr_spi_bus_set_fifo(&spi_bus->rx_fifo, 0);
+    mr_rb_allocate_buffer(&spi_bus->rx_fifo, 0);
 
     return spi_bus->ops->configure(spi_bus, &spi_bus->config);
 }
@@ -443,15 +587,42 @@ static mr_err_t mr_spi_bus_close(mr_device_t device)
 static mr_err_t mr_spi_bus_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
+    mr_err_t ret = MR_ERR_OK;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_RX_BUFSZ:
+        case MR_DEVICE_CTRL_SET_RX_BUFSZ:
         {
             if (args)
             {
                 mr_size_t bufsz = *((mr_size_t *)args);
-                return mr_spi_bus_set_fifo(&spi_bus->rx_fifo, bufsz);
+                return mr_rb_allocate_buffer(&spi_bus->rx_fifo, bufsz);
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_DEVICE_CTRL_SET_CONFIG:
+        {
+            if (args)
+            {
+                mr_spi_config_t config = (mr_spi_config_t)args;
+                ret = spi_bus->ops->configure(spi_bus, config);
+                if (ret == MR_ERR_OK)
+                {
+                    spi_bus->config = *config;
+                }
+                return ret;
+            }
+            return -MR_ERR_INVALID;
+        }
+
+        case MR_DEVICE_CTRL_GET_CONFIG:
+        {
+            if (args)
+            {
+                mr_spi_config_t config = (mr_spi_config_t)args;
+                *config = spi_bus->config;
+                return MR_ERR_OK;
             }
             return -MR_ERR_INVALID;
         }
@@ -459,6 +630,28 @@ static mr_err_t mr_spi_bus_ioctl(mr_device_t device, int cmd, void *args)
         default:
             return -MR_ERR_UNSUPPORTED;
     }
+}
+
+static mr_ssize_t mr_spi_bus_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
+{
+    mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
+    mr_uint8_t *read_buffer = (mr_uint8_t *)buffer;
+    mr_size_t read_size = 0;
+
+    read_size = mr_spi_bus_transfer(spi_bus, MR_NULL, read_buffer, size, MR_SPI_RD);
+
+    return (mr_ssize_t)read_size;
+}
+
+static mr_ssize_t mr_spi_bus_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
+{
+    mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
+    mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
+    mr_size_t write_size = 0;
+
+    write_size = mr_spi_bus_transfer(spi_bus, write_buffer, MR_NULL, size, MR_SPI_WR);
+
+    return (mr_ssize_t)write_size;
 }
 
 /**
@@ -478,8 +671,8 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
             mr_spi_bus_open,
             mr_spi_bus_close,
             mr_spi_bus_ioctl,
-            MR_NULL,
-            MR_NULL,
+            mr_spi_bus_read,
+            mr_spi_bus_write,
         };
 
     MR_ASSERT(spi_bus != MR_NULL);
@@ -488,9 +681,9 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
 
     /* Initialize the private fields */
     spi_bus->config.baud_rate = 0;
-    spi_bus->owner = MR_NULL;
     mr_mutex_init(&spi_bus->lock);
     mr_rb_init(&spi_bus->rx_fifo, MR_NULL, 0);
+    spi_bus->owner = MR_NULL;
 
     /* Protect every operation of the spi-bus device */
     ops->configure = ops->configure ? ops->configure : err_io_spi_configure;
@@ -501,7 +694,7 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
     spi_bus->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&spi_bus->device, name, Mr_Device_Type_SPIBUS, MR_OPEN_RDWR, &device_ops, data);
+    return mr_device_add(&spi_bus->device, name, Mr_Device_Type_SPIBUS, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
 }
 
 /**
@@ -523,23 +716,20 @@ void mr_spi_bus_isr(mr_spi_bus_t spi_bus, mr_uint32_t event)
             if (spi_device->config.host_slave == MR_SPI_SLAVE)
             {
                 /* Check if the chip-select is active */
-                if (spi_device->config.cs_active != MR_SPI_CS_ACTIVE_NONE)
+                if (mr_spi_device_cs_get_state(spi_device) != MR_ENABLE)
                 {
-                    if (spi_bus->ops->cs_read(spi_bus, spi_device->cs_number) != spi_device->config.cs_active)
-                    {
-                        break;
-                    }
+                    return;
                 }
 
-                /* Read data into the fifo */
-                mr_uint8_t data = spi_bus->ops->read(spi_bus);
-                mr_rb_put_force(&spi_bus->rx_fifo, data);
+                /* Save data to the fifo */
+                mr_uint32_t data = spi_bus->ops->read(spi_bus);
+                mr_rb_write_force(&spi_bus->rx_fifo, &data, (spi_device->config.data_bits >> 3));
 
                 /* Call the receiving completion function */
                 if (spi_device->device.rx_cb != MR_NULL)
                 {
-                    mr_size_t length = mr_rb_get_data_size(&spi_bus->rx_fifo);
-                    spi_device->device.rx_cb(&spi_device->device, &length);
+                    mr_size_t size = mr_rb_get_data_size(&spi_bus->rx_fifo);
+                    spi_device->device.rx_cb(&spi_device->device, &size);
                 }
             }
             break;
