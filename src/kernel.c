@@ -8,16 +8,13 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include "mrlib.h"
+#include "mrapi.h"
 
 static struct mr_object_container mr_object_container_table[] =
     {
-        {Mr_Object_Type_None,      {&mr_object_container_table[Mr_Object_Type_None].list,      &mr_object_container_table[Mr_Object_Type_None].list}},
-        {Mr_Object_Type_Device,    {&mr_object_container_table[Mr_Object_Type_Device].list,    &mr_object_container_table[Mr_Object_Type_Device].list}},
-        {Mr_Object_Type_Fsm,       {&mr_object_container_table[Mr_Object_Type_Fsm].list,       &mr_object_container_table[Mr_Object_Type_Fsm].list}},
-        {Mr_Object_Type_Event,     {&mr_object_container_table[Mr_Object_Type_Event].list,     &mr_object_container_table[Mr_Object_Type_Event].list}},
-        {Mr_Object_Type_SoftTimer, {&mr_object_container_table[Mr_Object_Type_SoftTimer].list, &mr_object_container_table[Mr_Object_Type_SoftTimer].list}},
-        {Mr_Object_Type_Module,    {&mr_object_container_table[Mr_Object_Type_Module].list,    &mr_object_container_table[Mr_Object_Type_Module].list}},
+        {Mr_Object_Type_None,   {&mr_object_container_table[Mr_Object_Type_None].list,   &mr_object_container_table[Mr_Object_Type_None].list}},
+        {Mr_Object_Type_Task,   {&mr_object_container_table[Mr_Object_Type_Task].list,   &mr_object_container_table[Mr_Object_Type_Task].list}},
+        {Mr_Object_Type_Device, {&mr_object_container_table[Mr_Object_Type_Device].list, &mr_object_container_table[Mr_Object_Type_Device].list}},
     };
 
 static mr_size_t mr_allocated_memory_size = 0;
@@ -27,13 +24,13 @@ static mr_size_t mr_allocated_memory_size = 0;
  *
  * @param type The type of the object container.
  *
- * @return A handle to the find container, or MR_NULL if not find.
+ * @return A pointer to the find container, or MR_NULL if not find.
  */
-mr_object_container_t mr_object_container_find(enum mr_object_type type)
+mr_object_container_t mr_object_container_find(mr_uint32_t type)
 {
     mr_size_t count = 0;
 
-    for (count = 0; count < MR_ARRAY_SIZE(mr_object_container_table); count++)
+    for (count = 0; count < mr_array_number_of(mr_object_container_table); count++)
     {
         if (mr_object_container_table[count].type == type)
         {
@@ -50,15 +47,15 @@ mr_object_container_t mr_object_container_find(enum mr_object_type type)
  * @param name The name of the object.
  * @param type The type of the object.
  *
- * @return A handle to the find object, or MR_NULL if not find.
+ * @return A pointer to the find object, or MR_NULL if not find.
  */
-mr_object_t mr_object_find(const char *name, enum mr_object_type type)
+mr_object_t mr_object_find(const char *name, mr_uint32_t type)
 {
     mr_object_container_t container = MR_NULL;
     mr_list_t list = MR_NULL;
 
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < MR_ARRAY_SIZE(mr_object_container_table));
+    MR_ASSERT(type < mr_array_number_of(mr_object_container_table));
 
     /* Get corresponding container */
     container = mr_object_container_find(type);
@@ -97,13 +94,13 @@ mr_object_t mr_object_find(const char *name, enum mr_object_type type)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_add(mr_object_t object, const char *name, enum mr_object_type type)
+mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint32_t type)
 {
     mr_object_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
     MR_ASSERT(name != MR_NULL);
-    MR_ASSERT(type < MR_ARRAY_SIZE(mr_object_container_table));
+    MR_ASSERT(type < mr_array_number_of(mr_object_container_table));
 
     /* Get the container for the specified type */
     container = mr_object_container_find(type);
@@ -174,13 +171,13 @@ mr_err_t mr_object_remove(mr_object_t object)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_change_type(mr_object_t object, enum mr_object_type type)
+mr_err_t mr_object_change_type(mr_object_t object, mr_uint32_t type)
 {
     mr_object_container_t container = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(object != MR_NULL);
-    MR_ASSERT(type < MR_ARRAY_SIZE(mr_object_container_table));
+    MR_ASSERT(type < mr_array_number_of(mr_object_container_table));
 
     /* Get the container for the specified type */
     container = mr_object_container_find(type);
@@ -253,7 +250,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
     MR_ASSERT(mutex != MR_NULL);
 
     /* Check if the acquirer is valid */
-    if(acquirer == MR_NULL)
+    if (acquirer == MR_NULL)
     {
         return -MR_ERR_INVALID;
     }
@@ -289,7 +286,6 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
 mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner)
 {
     MR_ASSERT(mutex != MR_NULL);
-    MR_ASSERT(owner != MR_NULL);
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -317,7 +313,7 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner)
  *
  * @param mutex The mutex to get the owner.
  *
- * @return A handle to the owner of the mutex, or MR_NULL if without owner.
+ * @return A pointer to the owner of the mutex, or MR_NULL if without owner.
  */
 volatile void *mr_mutex_get_owner(mr_mutex_t mutex)
 {
@@ -331,7 +327,7 @@ volatile void *mr_mutex_get_owner(mr_mutex_t mutex)
  *
  * @param size The size of the memory.
  *
- * @return A handle to the allocated memory, or MR_NULL if failed.
+ * @return A pointer to the allocated memory, or MR_NULL if failed.
  */
 void *mr_malloc(mr_size_t size)
 {
@@ -359,11 +355,21 @@ void *mr_malloc(mr_size_t size)
  */
 void mr_free(void *memory)
 {
-    int *size = (int *)memory;
+    int *size = ((int *)memory) - 5;
 
     if (memory != MR_NULL)
     {
-        mr_allocated_memory_size -= *(size - 5);
+        mr_allocated_memory_size -= *size;
         free(memory);
     }
+}
+
+/**
+ * @brief This function get the allocated size.
+ *
+ * @return The allocated size.
+ */
+mr_size_t mr_memory_get_allocated_size(void)
+{
+    return mr_allocated_memory_size;
 }
