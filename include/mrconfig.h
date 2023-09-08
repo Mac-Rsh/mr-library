@@ -1,7 +1,9 @@
 #ifndef _MR_CONFIG_H_
 #define _MR_CONFIG_H_
 
-#include "mrboard.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @def Configuration mode
@@ -18,13 +20,13 @@
 #define MR_CFG_DEBUG_LEVEL_INFO         3
 #define MR_CFG_DEBUG_LEVEL_DEBUG        4
 
-//<---------------------------- Configuration -------------------------------------->
+//<------------------------------------ Configuration ------------------------------------>
 /**
- * @def Object name size
+ * @def Object name size config
  *
- * Recommend size: 2^n - 1.
+ * Recommend size: (4 * n) - 1.
  */
-#define MR_CFG_OBJECT_NAME_SIZE         15
+#define MR_CFG_OBJECT_NAME_SIZE         12
 
 /**
  * @def Auto init config
@@ -35,28 +37,24 @@
 #define MR_CFG_AUTO_INIT                MR_CFG_ENABLE
 
 /**
- * @def FSM config
+ * @def Task config
  *
- * MR_CFG_DISABLE: Disable fsm
- * MR_CFG_ENABLE: Enable fsm
+ * MR_CFG_DISABLE: Disable task
+ * MR_CFG_ENABLE: Enable task
  */
-#define MR_CFG_FSM                      MR_CFG_ENABLE
+#define MR_CFG_TASK                     MR_CFG_ENABLE
+
+#if (MR_CFG_TASK == MR_CFG_ENABLE)
 
 /**
- * @def Event config
+ * @def Task usage rate record config
  *
- * MR_CFG_DISABLE: Disable event
- * MR_CFG_ENABLE: Enable event
+ * MR_CFG_DISABLE: Disable task usage rate record
+ * MR_CFG_ENABLE: Enable task usage rate record
  */
-#define MR_CFG_EVENT                    MR_CFG_ENABLE
+#define MR_CFG_TASK_USAGE               MR_CFG_ENABLE
 
-/**
- * @def Soft timer config
- *
- * MR_CFG_DISABLE: Disable soft timer
- * MR_CFG_ENABLE: Enable soft timer
- */
-#define MR_CFG_SOFT_TIMER               MR_CFG_ENABLE
+#endif
 
 /**
  * @def Debug config
@@ -87,11 +85,6 @@
  */
 #define MR_CFG_DEBUG_LEVEL              MR_CFG_DEBUG_LEVEL_DEBUG
 
-/**
- * @def Debug console name
- */
-#define MR_CFG_DEBUG_CONSOLE_NAME       "uart1"
-
 #endif
 
 /**
@@ -105,20 +98,9 @@
 #if (MR_CFG_DEVICE == MR_CFG_ENABLE)
 
 /**
- * @def Pin config
- *
- * MR_CFG_DISABLE: Disable pin
- * MR_CFG_ENABLE: Enable pin
+ * @include Board support package
  */
-#define MR_CFG_PIN                      MR_CFG_ENABLE
-
-/**
- * @def Serial config
- *
- * MR_CFG_DISABLE: Disable serial
- * MR_CFG_ENABLE: Enable serial
- */
-#define MR_CFG_SERIAL                   MR_CFG_ENABLE
+#include "mrboard.h"
 
 /**
  * @def ADC config
@@ -145,12 +127,12 @@
 #define MR_CFG_I2C                      MR_CFG_ENABLE
 
 /**
- * @def SPI config
+ * @def Pin config
  *
- * MR_CFG_DISABLE: Disable spi
- * MR_CFG_ENABLE: Enable spi
+ * MR_CFG_DISABLE: Disable pin
+ * MR_CFG_ENABLE: Enable pin
  */
-#define MR_CFG_SPI                      MR_CFG_ENABLE
+#define MR_CFG_PIN                      MR_CFG_ENABLE
 
 /**
  * @def PWM config
@@ -161,6 +143,51 @@
 #define MR_CFG_PWM                      MR_CFG_ENABLE
 
 /**
+ * @def Serial config
+ *
+ * MR_CFG_DISABLE: Disable serial
+ * MR_CFG_ENABLE: Enable serial
+ */
+#define MR_CFG_SERIAL                   MR_CFG_ENABLE
+
+#if (MR_CFG_SERIAL == MR_CFG_ENABLE)
+
+/**
+ * @def Serial RX buffer default size
+ *
+ * If the default configuration is not required, set the value to 0
+ */
+#define MR_CFG_SERIAL_RX_BUFSZ          32
+
+/**
+ * @def Serial TX buffer default size
+ *
+ * If the default configuration is not required, set the value to 0
+ */
+#define MR_CFG_SERIAL_TX_BUFSZ          0
+
+#endif
+
+/**
+ * @def SPI config
+ *
+ * MR_CFG_DISABLE: Disable spi
+ * MR_CFG_ENABLE: Enable spi
+ */
+#define MR_CFG_SPI                      MR_CFG_ENABLE
+
+#if (MR_CFG_SPI == MR_CFG_ENABLE)
+
+/**
+ * @def SPI RX buffer default size
+ *
+ * If the default configuration is not required, set the value to 0
+ */
+#define MR_CFG_SPI_RX_BUFSZ             32
+
+#endif
+
+/**
  * @def Timer config
  *
  * MR_CFG_DISABLE: Disable timer
@@ -168,6 +195,10 @@
  */
 #define MR_CFG_TIMER                    MR_CFG_ENABLE
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _MR_CONFIG_H_ */
