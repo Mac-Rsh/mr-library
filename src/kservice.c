@@ -68,11 +68,32 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
     mr_size_t size = 0;
     va_list args;
 
+    if(level > 4)
+    {
+        return;
+    }
+
     va_start(args, format);
-    mr_printf("[%s/%s]: ", debug_level_name[level], tag);
+    mr_printf("[%s] [%s]: ", debug_level_name[level], tag);
     size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
     mr_printf_output(buffer, size);
     va_end(args);
+}
+
+/**
+ * @brief This function assert the handle.
+ *
+ * @param file The file of the assert.
+ * @param line The line of the file.
+ */
+MR_WEAK void mr_assert_handle(char *file, int line)
+{
+    MR_DEBUG_A("[!!!]", "file: [%s], line: [%d], fail to run.\r\n", file, line);
+
+    while (1)
+    {
+
+    }
 }
 
 #endif
@@ -105,22 +126,6 @@ mr_size_t mr_printf(const char *format, ...)
 }
 
 /**
- * @brief This function assert the handle.
- *
- * @param file The file of the assert.
- * @param line The line of the file.
- */
-MR_WEAK void mr_assert_handle(char *file, int line)
-{
-    MR_DEBUG_A("Assert", "file: [%s], line: [%d]\r\n", file, line);
-
-    while (1)
-    {
-
-    }
-}
-
-/**
  * @brief This function disable the interrupt.
  */
 MR_WEAK void mr_interrupt_disable(void)
@@ -144,6 +149,10 @@ MR_WEAK void mr_interrupt_enable(void)
 MR_WEAK void mr_delay_us(mr_size_t us)
 {
     volatile mr_size_t count = 0;
+
+#ifndef MR_BSP_SYSCLK_FREQ
+#define MR_BSP_SYSCLK_FREQ              14400000
+#endif
 
     for (count = 0; count < us * (MR_BSP_SYSCLK_FREQ / 1000000u); count++)
     {

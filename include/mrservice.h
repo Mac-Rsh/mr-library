@@ -20,33 +20,33 @@ extern "C" {
 /**
  * @def Debug
  */
-#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_ASSERT)
-#define MR_DEBUG_A(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_ASSERT, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_ASSERT == MR_CFG_ENABLE)
+#define MR_DEBUG_A(TAG, FORMAT, ...)    mr_log_output(0, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_A(TAG, FORMAT, ...)
 #endif
-#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_ERROR)
-#define MR_DEBUG_E(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_ERROR, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_ERROR == MR_CFG_ENABLE)
+#define MR_DEBUG_E(TAG, FORMAT, ...)    mr_log_output(1, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_E(TAG, FORMAT, ...)
 #endif
-#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_WARNING)
-#define MR_DEBUG_W(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_WARNING, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_WARNING == MR_CFG_ENABLE)
+#define MR_DEBUG_W(TAG, FORMAT, ...)    mr_log_output(2, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_W(TAG, FORMAT, ...)
 #endif
-#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_INFO)
-#define MR_DEBUG_I(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_INFO, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_INFO == MR_CFG_ENABLE)
+#define MR_DEBUG_I(TAG, FORMAT, ...)    mr_log_output(3, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_I(TAG, FORMAT, ...)
 #endif
-#if (MR_CFG_DEBUG_LEVEL >= MR_CFG_DEBUG_LEVEL_DEBUG)
-#define MR_DEBUG_D(TAG, FORMAT, ...)    mr_log_output(MR_CFG_DEBUG_LEVEL_DEBUG, TAG, FORMAT, ##__VA_ARGS__)
+#if (MR_CFG_DEBUG_DEBUG == MR_CFG_ENABLE)
+#define MR_DEBUG_D(TAG, FORMAT, ...)    mr_log_output(4, TAG, FORMAT, ##__VA_ARGS__)
 #else
 #define MR_DEBUG_D(TAG, FORMAT, ...)
 #endif
 
-#if (MR_CFG_ASSERT == MR_CFG_ENABLE)
+#if (MR_CFG_DEBUG_ASSERT == MR_CFG_ENABLE)
 /**
  * @def Assert
  */

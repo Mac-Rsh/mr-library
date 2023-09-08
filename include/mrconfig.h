@@ -11,15 +11,6 @@ extern "C" {
 #define MR_CFG_DISABLE                  0
 #define MR_CFG_ENABLE                   1
 
-/**
- * @def Debug level
- */
-#define MR_CFG_DEBUG_LEVEL_ASSERT       0
-#define MR_CFG_DEBUG_LEVEL_ERROR        1
-#define MR_CFG_DEBUG_LEVEL_WARNING      2
-#define MR_CFG_DEBUG_LEVEL_INFO         3
-#define MR_CFG_DEBUG_LEVEL_DEBUG        4
-
 //<------------------------------------ Configuration ------------------------------------>
 /**
  * @def Object name size config
@@ -27,6 +18,66 @@ extern "C" {
  * Recommend size: (4 * n) - 1.
  */
 #define MR_CFG_OBJECT_NAME_SIZE         12
+
+/**
+ * @def Debug config
+ *
+ * MR_CFG_DISABLE: Disable debug
+ * MR_CFG_ENABLE: Enable debug
+ */
+#define MR_CFG_DEBUG                    MR_CFG_ENABLE
+
+#if (MR_CFG_DEBUG == MR_CFG_ENABLE)
+
+/**
+ * @def Debug assert config
+ *
+ * MR_CFG_DISABLE: Disable assert
+ * MR_CFG_ENABLE: Enable assert
+ */
+#define MR_CFG_DEBUG_ASSERT             MR_CFG_ENABLE
+
+/**
+ * @def Debug error config
+ *
+ * MR_CFG_DISABLE: Disable error
+ * MR_CFG_ENABLE: Enable error
+ */
+#define MR_CFG_DEBUG_ERROR              MR_CFG_ENABLE
+
+/**
+ * @def Debug warning config
+ *
+ * MR_CFG_DISABLE: Disable warning
+ * MR_CFG_ENABLE: Enable warning
+ */
+#define MR_CFG_DEBUG_WARNING            MR_CFG_ENABLE
+
+/**
+ * @def Debug warning config
+ *
+ * MR_CFG_DISABLE: Disable warning
+ * MR_CFG_ENABLE: Enable warning
+ */
+#define MR_CFG_DEBUG_WARNING            MR_CFG_ENABLE
+
+/**
+ * @def Debug info config
+ *
+ * MR_CFG_DISABLE: Disable info
+ * MR_CFG_ENABLE: Enable info
+ */
+#define MR_CFG_DEBUG_INFO               MR_CFG_ENABLE
+
+/**
+ * @def Debug debug config
+ *
+ * MR_CFG_DISABLE: Disable debug
+ * MR_CFG_ENABLE: Enable debug
+ */
+#define MR_CFG_DEBUG_DEBUG              MR_CFG_ENABLE
+
+#endif
 
 /**
  * @def Auto init config
@@ -53,37 +104,6 @@ extern "C" {
  * MR_CFG_ENABLE: Enable task usage rate record
  */
 #define MR_CFG_TASK_USAGE               MR_CFG_ENABLE
-
-#endif
-
-/**
- * @def Debug config
- *
- * MR_CFG_DISABLE: Disable debug
- * MR_CFG_ENABLE: Enable debug
- */
-#define MR_CFG_DEBUG                    MR_CFG_ENABLE
-
-#if (MR_CFG_DEBUG == MR_CFG_ENABLE)
-
-/**
- * @def Assert config
- *
- * MR_CFG_DISABLE: Disable assert
- * MR_CFG_ENABLE: Enable assert
- */
-#define MR_CFG_ASSERT                   MR_CFG_ENABLE
-
-/**
- * @def Debug level
- *
- * MR_CFG_DEBUG_LEVEL_ASSERT: Assert
- * MR_CFG_DEBUG_LEVEL_ERROR: Error
- * MR_CFG_DEBUG_LEVEL_WARNING: Warning
- * MR_CFG_DEBUG_LEVEL_INFO: Information
- * MR_CFG_DEBUG_LEVEL_DEBUG: Debug
- */
-#define MR_CFG_DEBUG_LEVEL              MR_CFG_DEBUG_LEVEL_DEBUG
 
 #endif
 
