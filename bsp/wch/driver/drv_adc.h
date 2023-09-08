@@ -22,7 +22,7 @@ struct ch32_adc_data
 {
     const char *name;
 
-    ADC_TypeDef *Instance;
+    ADC_TypeDef *instance;
     mr_uint32_t periph_clock;
 };
 

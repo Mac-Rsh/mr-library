@@ -25,7 +25,7 @@ static struct ch32_soft_i2c_bus_data ch32_soft_i2c_bus_data[] =
 #endif
     };
 
-static struct mr_soft_i2c_bus soft_i2c_bus_device[MR_ARRAY_SIZE(ch32_soft_i2c_bus_data)];
+static struct mr_soft_i2c_bus soft_i2c_bus_device[mr_array_number_of(ch32_soft_i2c_bus_data)];
 
 static mr_err_t ch32_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus)
 {
@@ -41,21 +41,21 @@ static mr_err_t ch32_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus)
     return MR_ERR_OK;
 }
 
-static void ch32_soft_i2c_bus_scl_write(mr_soft_i2c_bus_t i2c_bus, mr_uint8_t value)
+static void ch32_soft_i2c_bus_scl_write(mr_soft_i2c_bus_t i2c_bus, mr_level_t level)
 {
     struct ch32_soft_i2c_bus_data *soft_i2c_bus_data = (struct ch32_soft_i2c_bus_data *)i2c_bus->i2c_bus.device.data;
 
-    GPIO_WriteBit(soft_i2c_bus_data->gpio_port, soft_i2c_bus_data->scl_gpio_pin, value);
+    GPIO_WriteBit(soft_i2c_bus_data->gpio_port, soft_i2c_bus_data->scl_gpio_pin, level);
 }
 
-static void ch32_soft_i2c_bus_sda_write(mr_soft_i2c_bus_t i2c_bus, mr_uint8_t value)
+static void ch32_soft_i2c_bus_sda_write(mr_soft_i2c_bus_t i2c_bus, mr_level_t level)
 {
     struct ch32_soft_i2c_bus_data *soft_i2c_bus_data = (struct ch32_soft_i2c_bus_data *)i2c_bus->i2c_bus.device.data;
 
-    GPIO_WriteBit(soft_i2c_bus_data->gpio_port, soft_i2c_bus_data->sda_gpio_pin, value);
+    GPIO_WriteBit(soft_i2c_bus_data->gpio_port, soft_i2c_bus_data->sda_gpio_pin, level);
 }
 
-static mr_uint8_t ch32_soft_i2c_bus_sda_read(mr_soft_i2c_bus_t i2c_bus)
+static mr_level_t ch32_soft_i2c_bus_sda_read(mr_soft_i2c_bus_t i2c_bus)
 {
     struct ch32_soft_i2c_bus_data *soft_i2c_bus_data = (struct ch32_soft_i2c_bus_data *)i2c_bus->i2c_bus.device.data;
 
@@ -71,7 +71,7 @@ mr_err_t drv_soft_i2c_bus_init(void)
             ch32_soft_i2c_bus_sda_write,
             ch32_soft_i2c_bus_sda_read,
         };
-    mr_size_t count = MR_ARRAY_SIZE(soft_i2c_bus_device);
+    mr_size_t count = mr_array_number_of(soft_i2c_bus_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

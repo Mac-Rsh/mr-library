@@ -73,7 +73,7 @@ static struct ch32_uart_data ch32_uart_data[] =
 #endif
     };
 
-static struct mr_serial serial_device[MR_ARRAY_SIZE(ch32_uart_data)];
+static struct mr_serial serial_device[mr_array_number_of(ch32_uart_data)];
 
 static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
@@ -84,19 +84,17 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 
     if (config->baud_rate == 0)
     {
-        if (uart_data->Instance == USART1)
+        if (uart_data->instance == USART1)
         {
             RCC_APB2PeriphClockCmd(uart_data->uart_periph_clock, DISABLE);
         } else
         {
             RCC_APB1PeriphClockCmd(uart_data->uart_periph_clock, DISABLE);
         }
-        RCC_APB2PeriphClockCmd(uart_data->gpio_periph_clock, DISABLE);
-
         return MR_ERR_OK;
     }
 
-    if (uart_data->Instance == USART1)
+    if (uart_data->instance == USART1)
     {
         RCC_APB2PeriphClockCmd(uart_data->uart_periph_clock, ENABLE);
     } else
@@ -108,43 +106,83 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
     switch (config->data_bits)
     {
         case MR_SERIAL_DATA_BITS_8:
+        {
             USART_InitStructure.USART_WordLength = USART_WordLength_8b;
             break;
+        }
+
         case MR_SERIAL_DATA_BITS_9:
+        {
             USART_InitStructure.USART_WordLength = USART_WordLength_9b;
             break;
+        }
+
         default:
-            USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-            break;
+            return -MR_ERR_INVALID;
     }
 
     switch (config->stop_bits)
     {
         case MR_SERIAL_STOP_BITS_1:
+        {
             USART_InitStructure.USART_StopBits = USART_StopBits_1;
             break;
+        }
+
         case MR_SERIAL_STOP_BITS_2:
+        {
             USART_InitStructure.USART_StopBits = USART_StopBits_2;
             break;
+        }
+
         default:
-            USART_InitStructure.USART_StopBits = USART_StopBits_1;
-            break;
+            return -MR_ERR_INVALID;
     }
 
     switch (config->parity)
     {
         case MR_SERIAL_PARITY_NONE:
+        {
             USART_InitStructure.USART_Parity = USART_Parity_No;
             break;
+        }
+
         case MR_SERIAL_PARITY_ODD:
+        {
             USART_InitStructure.USART_Parity = USART_Parity_Odd;
             break;
+        }
+
         case MR_SERIAL_PARITY_EVEN:
+        {
             USART_InitStructure.USART_Parity = USART_Parity_Even;
             break;
+        }
+
         default:
-            USART_InitStructure.USART_Parity = USART_Parity_No;
+            return -MR_ERR_INVALID;
+    }
+
+    switch (config->bit_order)
+    {
+        case MR_SERIAL_BIT_ORDER_LSB:
+        {
             break;
+        }
+
+        default:
+            return -MR_ERR_INVALID;
+    }
+
+    switch (config->invert)
+    {
+        case MR_SERIAL_NRZ_NORMAL:
+        {
+            break;
+        }
+
+        default:
+            return -MR_ERR_INVALID;
     }
 
     GPIO_InitStructure.GPIO_Pin = uart_data->tx_gpio_pin;
@@ -162,13 +200,13 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-    USART_ITConfig(uart_data->Instance, USART_IT_RXNE, ENABLE);
+    USART_ITConfig(uart_data->instance, USART_IT_RXNE, ENABLE);
 
     USART_InitStructure.USART_BaudRate = config->baud_rate;
     USART_InitStructure.USART_HardwareFlowControl = 0;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(uart_data->Instance, &USART_InitStructure);
-    USART_Cmd(uart_data->Instance, ENABLE);
+    USART_Init(uart_data->instance, &USART_InitStructure);
+    USART_Cmd(uart_data->instance, ENABLE);
 
     return MR_ERR_OK;
 }
@@ -176,51 +214,64 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
 static void ch32_serial_write(mr_serial_t serial, mr_uint8_t data)
 {
     struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    mr_size_t i = 0;
 
-    while (USART_GetFlagStatus(uart_data->Instance, USART_FLAG_TC) == RESET);
-    uart_data->Instance->DATAR = data;
+    while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_TC) == RESET)
+    {
+        i++;
+        if (i > MR_UINT16_MAX)
+        {
+            return;
+        }
+    }
+    uart_data->instance->DATAR = data;
 }
 
 static mr_uint8_t ch32_serial_read(mr_serial_t serial)
 {
     struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    mr_size_t i = 0;
 
-    if (USART_GetFlagStatus(uart_data->Instance, USART_FLAG_RXNE) != RESET)
+    while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_RXNE) == RESET)
     {
-        return uart_data->Instance->DATAR & 0xff;
+        i++;
+        if (i > MR_UINT16_MAX)
+        {
+            return 0;
+        }
     }
 
-    return 0;
+    return uart_data->instance->DATAR & 0xff;
 }
 
 static void ch32_serial_start_tx(mr_serial_t serial)
 {
     struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
 
-    USART_ITConfig(uart_data->Instance, USART_IT_TXE, ENABLE);
+    USART_ITConfig(uart_data->instance, USART_IT_TXE, ENABLE);
 }
 
 static void ch32_serial_stop_tx(mr_serial_t serial)
 {
     struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
 
-    USART_ITConfig(uart_data->Instance, USART_IT_TXE, DISABLE);
+    USART_ITConfig(uart_data->instance, USART_IT_TXE, DISABLE);
 }
 
 static void ch32_serial_isr(mr_serial_t serial)
 {
     struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
 
-    if (USART_GetITStatus(uart_data->Instance, USART_IT_RXNE) != RESET)
+    if (USART_GetITStatus(uart_data->instance, USART_IT_RXNE) != RESET)
     {
         mr_serial_device_isr(serial, MR_SERIAL_EVENT_RX_INT);
-        USART_ClearITPendingBit(uart_data->Instance, USART_IT_RXNE);
+        USART_ClearITPendingBit(uart_data->instance, USART_IT_RXNE);
     }
 
-    if (USART_GetITStatus(uart_data->Instance, USART_IT_TXE) != RESET)
+    if (USART_GetITStatus(uart_data->instance, USART_IT_TXE) != RESET)
     {
         mr_serial_device_isr(serial, MR_SERIAL_EVENT_TX_INT);
-        USART_ClearITPendingBit(uart_data->Instance, USART_IT_TXE);
+        USART_ClearITPendingBit(uart_data->instance, USART_IT_TXE);
     }
 }
 
@@ -298,7 +349,7 @@ mr_err_t drv_uart_init(void)
             ch32_serial_start_tx,
             ch32_serial_stop_tx,
         };
-    mr_size_t count = MR_ARRAY_SIZE(serial_device);
+    mr_size_t count = mr_array_number_of(serial_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

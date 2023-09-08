@@ -22,7 +22,7 @@ static struct ch32_adc_data ch32_adc_data[] =
 #endif
     };
 
-static struct mr_adc adc_device[MR_ARRAY_SIZE(ch32_adc_data)];
+static struct mr_adc adc_device[mr_array_number_of(ch32_adc_data)];
 
 static mr_err_t ch32_adc_configure(mr_adc_t adc, mr_state_t state)
 {
@@ -38,8 +38,8 @@ static mr_err_t ch32_adc_configure(mr_adc_t adc, mr_state_t state)
     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_NbrOfChannel = 1;
-    ADC_Init(adc_data->Instance, &ADC_InitStructure);
-    ADC_Cmd(adc_data->Instance, (FunctionalState)state);
+    ADC_Init(adc_data->instance, &ADC_InitStructure);
+    ADC_Cmd(adc_data->instance, (FunctionalState)state);
 
     return MR_ERR_OK;
 }
@@ -52,7 +52,7 @@ static mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
 
     for (count = 0; count <= 17; count++)
     {
-        if ((1 << count) & config->channel.mask)
+        if (((1 << count) & config->channel._mask) == MR_ENABLE)
         {
             if (count <= 7)
             {
@@ -74,29 +74,40 @@ static mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
             GPIO_InitStructure.GPIO_Pin = (1 << count);
             GPIO_Init(GPIOx, &GPIO_InitStructure);
+        } else
+        {
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_InitStructure.GPIO_Pin = (1 << count);
+            GPIO_Init(GPIOx, &GPIO_InitStructure);
         }
     }
 
     return MR_ERR_OK;
 }
 
-static mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_pos_t channel)
+static mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_off_t channel)
 {
     struct ch32_adc_data *adc_data = (struct ch32_adc_data *)adc->device.data;
-    mr_uint32_t data = 0;
+    mr_size_t i = 0;
 
-    if (channel > 17)
+    if (channel < 0 || channel > 17)
     {
         return 0;
     }
 
-    ADC_RegularChannelConfig(adc_data->Instance, channel, 1, ADC_SampleTime_239Cycles5);
-    ADC_SoftwareStartConvCmd(adc_data->Instance, ENABLE);
-    while (!ADC_GetFlagStatus(adc_data->Instance, ADC_FLAG_EOC));
-    data = ADC_GetConversionValue(adc_data->Instance);
-    ADC_ClearFlag(adc_data->Instance, ADC_FLAG_EOC);
+    ADC_RegularChannelConfig(adc_data->instance, channel, 1, ADC_SampleTime_239Cycles5);
+    ADC_SoftwareStartConvCmd(adc_data->instance, ENABLE);
+    while (!ADC_GetFlagStatus(adc_data->instance, ADC_FLAG_EOC))
+    {
+        i++;
+        if (i > MR_UINT16_MAX)
+        {
+            return 0;
+        }
+    }
+    ADC_ClearFlag(adc_data->instance, ADC_FLAG_EOC);
 
-    return data;
+    return ADC_GetConversionValue(adc_data->instance);
 }
 
 mr_err_t drv_adc_init(void)
@@ -107,7 +118,7 @@ mr_err_t drv_adc_init(void)
             ch32_adc_channel_configure,
             ch32_adc_read,
         };
-    mr_size_t count = MR_ARRAY_SIZE(adc_device);
+    mr_size_t count = mr_array_number_of(adc_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

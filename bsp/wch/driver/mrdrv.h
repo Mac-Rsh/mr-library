@@ -13,14 +13,6 @@
 
 #include "mrconfig.h"
 
-#if (MR_CFG_PIN == MR_CFG_ENABLE)
-#include "drv_gpio.h"
-#endif
-
-#if (MR_CFG_SERIAL == MR_CFG_ENABLE)
-#include "drv_uart.h"
-#endif
-
 #if (MR_CFG_ADC == MR_CFG_ENABLE)
 #include "drv_adc.h"
 #endif
@@ -33,12 +25,20 @@
 #include "drv_i2c.h"
 #endif
 
-#if (MR_CFG_SPI == MR_CFG_ENABLE)
-#include "drv_spi.h"
+#if (MR_CFG_PIN == MR_CFG_ENABLE)
+#include "drv_gpio.h"
 #endif
 
 #if (MR_CFG_PWM == MR_CFG_ENABLE)
 #include "drv_pwm.h"
+#endif
+
+#if (MR_CFG_SERIAL == MR_CFG_ENABLE)
+#include "drv_uart.h"
+#endif
+
+#if (MR_CFG_SPI == MR_CFG_ENABLE)
+#include "drv_spi.h"
 #endif
 
 #if (MR_CFG_TIMER == MR_CFG_ENABLE)

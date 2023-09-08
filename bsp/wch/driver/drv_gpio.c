@@ -37,7 +37,7 @@ static IRQn_Type irq[] =
         EXTI15_10_IRQn,
     };
 
-static mr_pos_t irq_mask[16] = {-1,
+static mr_off_t irq_mask[16] = {-1,
                                 -1,
                                 -1,
                                 -1,
@@ -61,13 +61,14 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     EXTI_InitTypeDef EXTI_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
+    mr_uint32_t exti_line = config->number % 16;
+
+    if (config->number < 0)
+    {
+        return -MR_ERR_INVALID;
+    }
 
     RCC_APB2PeriphClockCmd(PIN_RCC(config->number), ENABLE);
-
-    /* Configure GPIO_InitStructure */
-    GPIO_InitStructure.GPIO_Pin = PIN_STPIN(config->number);
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 
     switch (config->mode)
     {
@@ -131,30 +132,29 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
 
     if (config->mode >= MR_PIN_MODE_IRQ_RISING)
     {
-        if ((irq_mask[config->number % 16] != -1 && irq_mask[config->number % 16] != config->number))
+        if ((irq_mask[exti_line] != -1 && irq_mask[exti_line] != config->number))
         {
             return -MR_ERR_BUSY;
         }
 
-        irq_mask[config->number % 16] = config->number;
+        irq_mask[exti_line] = config->number;
 
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
         EXTI_InitStructure.EXTI_Line = PIN_STPIN(config->number);
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-
-        GPIO_EXTILineConfig(PIN_PORT(config->number), config->number % 16);
+        GPIO_EXTILineConfig(PIN_PORT(config->number), exti_line);
         EXTI_Init(&EXTI_InitStructure);
 
-        NVIC_InitStructure.NVIC_IRQChannel = irq[config->number % 16];
+        NVIC_InitStructure.NVIC_IRQChannel = irq[exti_line];
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
     } else if (config->number == irq_mask[config->number % 16])
     {
-        if (config->number % 16 >= 5 && config->number % 16 <= 9)
+        if (exti_line >= 5 && exti_line <= 9)
         {
             if (irq_mask[5] == -1 && irq_mask[6] == -1 && irq_mask[7] == -1 && irq_mask[8] == -1 && irq_mask[9] == -1)
             {
@@ -163,8 +163,7 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
             {
                 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
             }
-
-        } else if (config->number % 16 >= 10 && config->number % 16 <= 15)
+        } else
         {
             if (irq_mask[10] == -1 && irq_mask[11] == -1 && irq_mask[12] == -1 && irq_mask[13] == -1 &&
                 irq_mask[14] == -1
@@ -175,33 +174,41 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
             {
                 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
             }
-        } else
-        {
-            EXTI_InitStructure.EXTI_LineCmd = DISABLE;
         }
 
-        irq_mask[config->number % 16] = -1;
+        irq_mask[exti_line] = -1;
 
         EXTI_InitStructure.EXTI_Line = PIN_STPIN(config->number);
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-
-        GPIO_EXTILineConfig(PIN_PORT(config->number), config->number % 16);
+        GPIO_EXTILineConfig(PIN_PORT(config->number), exti_line);
         EXTI_Init(&EXTI_InitStructure);
     }
 
+    GPIO_InitStructure.GPIO_Pin = PIN_STPIN(config->number);
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(PIN_STPORT(config->number), &GPIO_InitStructure);
 
     return MR_ERR_OK;
 }
 
-static mr_level_t ch32_pin_read(mr_pin_t pin, mr_pos_t number)
+static mr_level_t ch32_pin_read(mr_pin_t pin, mr_off_t number)
 {
-    return GPIO_ReadInputDataBit(PIN_STPORT(number), PIN_STPIN(number));
+    if (number < 0 || number > MR_BSP_PIN_NUMBER)
+    {
+        return 0;
+    }
+
+    return (mr_level_t)GPIO_ReadInputDataBit(PIN_STPORT(number), PIN_STPIN(number));
 }
 
-static void ch32_pin_write(mr_pin_t pin, mr_pos_t number, mr_level_t level)
+static void ch32_pin_write(mr_pin_t pin, mr_off_t number, mr_level_t level)
 {
-    GPIO_WriteBit(PIN_STPORT(number), PIN_STPIN(number), level);
+    if (number < 0 || number > MR_BSP_PIN_NUMBER)
+    {
+        return;
+    }
+
+    GPIO_WriteBit(PIN_STPORT(number), PIN_STPIN(number), (BitAction)level);
 }
 
 void EXTI0_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));

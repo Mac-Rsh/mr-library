@@ -13,24 +13,20 @@
 
 #include "device/timer/timer.h"
 
-#if (MR_CONF_TIMER == MR_CONF_ENABLE)
+#if (MR_CFG_TIMER == MR_CFG_ENABLE)
 
-struct ch32_timer_info
+/**
+ * @struct ch32 Timer data
+ */
+struct ch32_timer_data
 {
-    TIM_TypeDef *Instance;
+    const char *name;
+
+    TIM_TypeDef *instance;
     mr_uint32_t timer_periph_clock;
     IRQn_Type irqno;
 };
 
-struct ch32_timer
-{
-    const char *name;
-
-    struct ch32_timer_info info;
-};
-
-mr_err_t ch32_timer_init(void);
-
-#endif /* MR_CONF_TIMER */
+#endif
 
 #endif /* _DRV_TIMER_H_ */

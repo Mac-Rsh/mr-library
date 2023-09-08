@@ -22,7 +22,7 @@ struct ch32_spi_bus_data
 {
     const char *name;
 
-    SPI_TypeDef *Instance;
+    SPI_TypeDef *instance;
     mr_uint32_t spi_periph_clock;
     mr_uint32_t gpio_periph_clock;
     GPIO_TypeDef *gpio_port;

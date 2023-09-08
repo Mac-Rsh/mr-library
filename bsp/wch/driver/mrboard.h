@@ -65,6 +65,13 @@
 #define MR_BSP_PWM_1
 #define MR_BSP_PWM_2
 #define MR_BSP_PWM_3
+#define MR_BSP_PWM_4
+#define MR_BSP_PWM_5
+#define MR_BSP_PWM_6
+#define MR_BSP_PWM_7
+#define MR_BSP_PWM_8
+#define MR_BSP_PWM_9
+#define MR_BSP_PWM_10
 
 /**
  * @def Bsp timer
@@ -72,5 +79,12 @@
 #define MR_BSP_TIMER_1
 #define MR_BSP_TIMER_2
 #define MR_BSP_TIMER_3
+#define MR_BSP_TIMER_4
+#define MR_BSP_TIMER_5
+#define MR_BSP_TIMER_6
+#define MR_BSP_TIMER_7
+#define MR_BSP_TIMER_8
+#define MR_BSP_TIMER_9
+#define MR_BSP_TIMER_10
 
 #endif /* _MR_BOARD_H_ */

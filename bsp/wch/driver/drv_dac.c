@@ -22,7 +22,7 @@ static struct ch32_dac_data ch32_dac_data[] =
 #endif
     };
 
-static struct mr_dac dac_device[MR_ARRAY_SIZE(ch32_dac_data)];
+static struct mr_dac dac_device[mr_array_number_of(ch32_dac_data)];
 
 static mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
 {
@@ -74,15 +74,24 @@ static mr_err_t ch32_dac_channel_configure(mr_dac_t dac, mr_dac_config_t config)
             return -MR_ERR_INVALID;
     }
 
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-    GPIO_ResetBits(GPIOA, GPIO_InitStructure.GPIO_Pin);
+    if (config->channel._mask != 0)
+    {
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        GPIO_ResetBits(GPIOA, GPIO_InitStructure.GPIO_Pin);
+    } else
+    {
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        GPIO_ResetBits(GPIOA, GPIO_InitStructure.GPIO_Pin);
+    }
 
     return MR_ERR_OK;
 }
 
-static void ch32_dac_write(mr_dac_t dac, mr_pos_t channel, mr_uint32_t value)
+static void ch32_dac_write(mr_dac_t dac, mr_off_t channel, mr_uint32_t value)
 {
     struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
 
@@ -108,7 +117,7 @@ mr_err_t drv_dac_init(void)
             ch32_dac_channel_configure,
             ch32_dac_write,
         };
-    mr_size_t count = MR_ARRAY_SIZE(dac_device);
+    mr_size_t count = mr_array_number_of(dac_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

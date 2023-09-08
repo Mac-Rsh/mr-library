@@ -22,7 +22,7 @@ struct ch32_uart_data
 {
     const char *name;
 
-    USART_TypeDef *Instance;
+    USART_TypeDef *instance;
     mr_uint32_t uart_periph_clock;
     mr_uint32_t gpio_periph_clock;
     GPIO_TypeDef *tx_gpio_port;

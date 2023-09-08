@@ -10,106 +10,109 @@
 
 #include "drv_pwm.h"
 
-#if (MR_CONF_PWM == MR_CONF_ENABLE)
+#if (MR_CFG_PWM == MR_CFG_ENABLE)
 
 enum
 {
-#ifdef BSP_PWM_1
-    PWM1_INDEX,
+#ifdef MR_BSP_PWM_1
+    CH32_PWM_1_INDEX,
 #endif
-#ifdef BSP_PWM_2
-    PWM2_INDEX,
+#ifdef MR_BSP_PWM_2
+    CH32_PWM_2_INDEX,
 #endif
-#ifdef BSP_PWM_3
-    PWM3_INDEX,
+#ifdef MR_BSP_PWM_3
+    CH32_PWM_3_INDEX,
 #endif
-#ifdef BSP_PWM_4
-    PWM4_INDEX,
+#ifdef MR_BSP_PWM_4
+    CH32_PWM_4_INDEX,
 #endif
-#ifdef BSP_PWM_5
-    PWM5_INDEX,
+#ifdef MR_BSP_PWM_5
+    CH32_PWM_5_INDEX,
 #endif
-#ifdef BSP_PWM_8
-    PWM8_INDEX,
+#ifdef MR_BSP_PWM_8
+    CH32_PWM_8_INDEX,
 #endif
-#ifdef BSP_PWM_9
-    PWM9_INDEX,
+#ifdef MR_BSP_PWM_9
+    CH32_PWM_9_INDEX,
 #endif
-#ifdef BSP_PWM_10
-    PWM10_INDEX,
+#ifdef MR_BSP_PWM_10
+    CH32_PWM_10_INDEX,
 #endif
 };
 
-static struct ch32_pwm ch32_pwm[] =
+static struct ch32_pwm_data ch32_pwm_data[] =
         {
-#ifdef BSP_PWM_1
-                {"pwm1"},
+#ifdef MR_BSP_PWM_1
+                {"pwm1",TIM1,RCC_APB2Periph_TIM1,RCC_APB2Periph_GPIOA,GPIOA,GPIO_Pin_8,GPIO_Pin_9,GPIO_Pin_10,GPIO_Pin_11},
 #endif
-#ifdef BSP_PWM_2
-                {"pwm2"},
+#ifdef MR_BSP_PWM_2
+                {"pwm2",TIM2,RCC_APB1Periph_TIM2,RCC_APB2Periph_GPIOA,GPIOA,GPIO_Pin_0,GPIO_Pin_1,GPIO_Pin_2,GPIO_Pin_3},
 #endif
-#ifdef BSP_PWM_3
-                {"pwm3"},
+#ifdef MR_BSP_PWM_3
+                {"pwm3",TIM3,RCC_APB1Periph_TIM3,RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB,GPIOA,GPIO_Pin_6,GPIO_Pin_7,},
 #endif
-#ifdef BSP_PWM_4
-                {"pwm4"},
+#ifdef MR_BSP_PWM_4
+                {"pwm4",TIM4,RCC_APB1Periph_TIM4,RCC_APB2Periph_GPIOD},
 #endif
-#ifdef BSP_PWM_5
-                {"pwm5"},
+#ifdef MR_BSP_PWM_5
+                {"pwm5",TIM5,RCC_APB1Periph_TIM5},
 #endif
-#ifdef BSP_PWM_8
-                {"pwm8"},
+#ifdef MR_BSP_PWM_6
+                {"pwm5",TIM6,RCC_APB1Periph_TIM6},
 #endif
-#ifdef BSP_PWM_9
-                {"pwm9"},
+#ifdef MR_BSP_PWM_7
+                {"pwm7",TIM7,RCC_APB1Periph_TIM7},
 #endif
-#ifdef BSP_PWM_10
-                {"pwm10"},
+#ifdef MR_BSP_PWM_8
+                {"pwm8",TIM8,RCC_APB2Periph_TIM8},
+#endif
+#ifdef MR_BSP_PWM_9
+                {"pwm9",TIM9,RCC_APB2Periph_TIM9},
+#endif
+#ifdef MR_BSP_PWM_10
+                {"pwm10",TIM10,RCC_APB2Periph_TIM10},
 #endif
         };
 
-static struct mr_pwm_info pwm_device_info = {10000000, 5000};
+static struct mr_pwm pwm_device[mr_array_number_of(ch32_pwm_data)];
 
-static struct mr_pwm pwm_device[mr_array_get_length(ch32_pwm)];
-
-static mr_err_t ch32_pwm_configure(mr_pwm_t pwm, struct mr_pwm_config *config)
+static mr_err_t ch32_pwm_configure(mr_pwm_t pwm, mr_pwm_config_t config)
 {
 
 }
 
-static mr_err_t ch32_pwm_write(mr_pwm_t pwm, mr_pos_t channel, mr_uint32_t duty)
+static void ch32_pwm_write(mr_pwm_t pwm, mr_off_t channel, mr_uint32_t duty)
 {
 
 }
 
-static mr_uint32_t ch32_pwm_read(mr_pwm_t pwm, mr_pos_t channel)
+static mr_uint32_t ch32_pwm_read(mr_pwm_t pwm, mr_off_t channel)
 {
 
 }
 
-mr_err_t ch32_pwm_init(void)
+mr_err_t drv_pwm_init(void)
 {
-    mr_err_t ret = MR_ERR_OK;
-    mr_size_t count = mr_array_get_length(pwm_device);
-    static struct mr_pwm_ops driver =
+    static struct mr_pwm_ops drv_ops =
             {
                     ch32_pwm_configure,
                     ch32_pwm_write,
                     ch32_pwm_read,
             };
+    mr_size_t count = mr_array_number_of(pwm_device);
+    mr_err_t ret = MR_ERR_OK;
 
     while (count--)
     {
         ret = mr_pwm_device_add(&pwm_device[count],
-                                ch32_pwm[count].name,
-                                &ch32_pwm[count],
-                                &driver,
-                                &pwm_device_info);
+                                ch32_pwm_data[count].name,
+                                &drv_ops,&ch32_pwm_data[count]
+                                );
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
     return MR_ERR_OK;
 }
-AUTO_INIT_DRIVER_EXPORT(ch32_pwm_init);
+MR_INIT_DRIVER_EXPORT(drv_pwm_init);
 
-#endif /* MR_CONF_PWM */
+#endif
