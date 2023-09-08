@@ -11,7 +11,11 @@
 #ifndef _PIN_H_
 #define _PIN_H_
 
-#include "mrlib.h"
+#include "mrapi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if (MR_CFG_PIN == MR_CFG_ENABLE)
 
@@ -39,8 +43,8 @@
  */
 struct mr_pin_config
 {
-    mr_pos_t number;
-    mr_uint8_t mode;
+    mr_off_t number: 28;
+    mr_uint32_t mode: 4;
 };
 typedef struct mr_pin_config *mr_pin_config_t;
 
@@ -52,8 +56,8 @@ typedef struct mr_pin *mr_pin_t;
 struct mr_pin_ops
 {
     mr_err_t (*configure)(mr_pin_t pin, mr_pin_config_t config);
-    mr_level_t (*read)(mr_pin_t pin, mr_pos_t number);
-    void (*write)(mr_pin_t pin, mr_pos_t number, mr_level_t level);
+    mr_level_t (*read)(mr_pin_t pin, mr_off_t number);
+    void (*write)(mr_pin_t pin, mr_off_t number, mr_level_t level);
 };
 
 /**
@@ -71,9 +75,13 @@ struct mr_pin
  * @{
  */
 mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *ops, void *data);
-void mr_pin_device_isr(mr_pin_t pin, mr_pos_t number);
+void mr_pin_device_isr(mr_pin_t pin, mr_off_t number);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _PIN_H_ */

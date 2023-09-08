@@ -17,12 +17,12 @@ static mr_err_t err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
     return -MR_ERR_IO;
 }
 
-static mr_level_t err_io_pin_read(mr_pin_t pin, mr_pos_t number)
+static mr_level_t err_io_pin_read(mr_pin_t pin, mr_off_t number)
 {
     return 0;
 }
 
-static void err_io_pin_write(mr_pin_t pin, mr_pos_t number, mr_level_t level)
+static void err_io_pin_write(mr_pin_t pin, mr_off_t number, mr_level_t level)
 {
 
 }
@@ -31,9 +31,9 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
 {
     mr_pin_t pin = (mr_pin_t)device;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_DEVICE_CTRL_SET_CONFIG:
         {
             if (args)
             {
@@ -43,7 +43,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_SET_RX_CB:
+        case MR_DEVICE_CTRL_SET_RX_CB:
         {
             device->rx_cb = args;
             return MR_ERR_OK;
@@ -54,7 +54,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_ssize_t mr_pin_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+static mr_ssize_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
     mr_level_t *read_buffer = (mr_level_t *)buffer;
@@ -69,7 +69,7 @@ static mr_ssize_t mr_pin_read(mr_device_t device, mr_pos_t pos, void *buffer, mr
     return (mr_ssize_t)read_size;
 }
 
-static mr_ssize_t mr_pin_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+static mr_ssize_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_pin_t pin = (mr_pin_t)device;
     mr_level_t *write_buffer = (mr_level_t *)buffer;
@@ -116,7 +116,7 @@ mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *op
     pin->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&pin->device, name, Mr_Device_Type_Pin, MR_OPEN_RDWR, &device_ops, data);
+    return mr_device_add(&pin->device, name, Mr_Device_Type_Pin, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
 }
 
 /**
@@ -125,7 +125,7 @@ mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *op
  * @param pin The pin device.
  * @param number The number of the interrupt.
  */
-void mr_pin_device_isr(mr_pin_t pin, mr_pos_t number)
+void mr_pin_device_isr(mr_pin_t pin, mr_off_t number)
 {
     MR_ASSERT(pin != MR_NULL);
 
