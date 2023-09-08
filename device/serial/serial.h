@@ -11,22 +11,30 @@
 #ifndef _SERIAL_H_
 #define _SERIAL_H_
 
-#include "mrlib.h"
+#include "mrapi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if (MR_CFG_SERIAL == MR_CFG_ENABLE)
 
 /**
  * @def Serial device data bits
  */
-#define MR_SERIAL_DATA_BITS_8           0
-#define MR_SERIAL_DATA_BITS_9           1
+#define MR_SERIAL_DATA_BITS_5           5
+#define MR_SERIAL_DATA_BITS_6           6
+#define MR_SERIAL_DATA_BITS_7           7
+#define MR_SERIAL_DATA_BITS_8           8
+#define MR_SERIAL_DATA_BITS_9           9
 
 /**
  * @def Serial device stop bits
  */
-#define MR_SERIAL_STOP_BITS_1           0
-#define MR_SERIAL_STOP_BITS_1_5         1
+#define MR_SERIAL_STOP_BITS_1           1
 #define MR_SERIAL_STOP_BITS_2           2
+#define MR_SERIAL_STOP_BITS_3           3
+#define MR_SERIAL_STOP_BITS_4           4
 
 /**
  * @def Serial device parity
@@ -73,11 +81,12 @@
 struct mr_serial_config
 {
     mr_uint32_t baud_rate;
-    mr_uint8_t data_bits: 2;
-    mr_uint8_t stop_bits: 2;
-    mr_uint8_t parity: 2;
-    mr_uint8_t bit_order: 1;
-    mr_uint8_t invert: 1;
+    mr_uint32_t data_bits: 4;
+    mr_uint32_t stop_bits: 3;
+    mr_uint32_t parity: 2;
+    mr_uint32_t bit_order: 1;
+    mr_uint32_t invert: 1;
+    mr_uint32_t reserved: 21;
 };
 typedef struct mr_serial_config *mr_serial_config_t;
 
@@ -119,6 +128,10 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
 void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _SERIAL_H_ */
