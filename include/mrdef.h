@@ -26,7 +26,7 @@ extern "C" {
 /**
  * @version mr-library version
  */
-#define MR_LIBRARY_VERSION              "0.0.3"
+#define MR_LIBRARY_VERSION              "0.0.4"
 
 /**
  * @def Compiler related
@@ -85,14 +85,13 @@ typedef unsigned int mr_uint32_t;                                   /* Type for 
 typedef unsigned long long mr_uint64_t;                             /* Type for 64bit unsigned integer */
 typedef float mr_fp32_t;                                            /* Type for single-precision floating point */
 typedef double mr_fp64_t;                                           /* Type for double-precision floating point */
-
 typedef signed int mr_base_t;                                       /* Type for Nbit CPU related date */
 typedef unsigned int mr_ubase_t;                                    /* Type for Nbit unsigned CPU related data */
 
 typedef mr_ubase_t mr_size_t;                                       /* Type for size number */
 typedef mr_base_t mr_ssize_t;                                       /* Type for signed size number */
 typedef mr_base_t mr_err_t;                                         /* Type for error number */
-typedef mr_base_t mr_pos_t;                                         /* Type for position */
+typedef mr_base_t mr_off_t;                                         /* Type for offset */
 typedef mr_int8_t mr_bool_t;                                        /* Type for boolean */
 typedef mr_int8_t mr_level_t;                                       /* Type for level */
 typedef mr_int8_t mr_state_t;                                       /* Type for state */
@@ -145,7 +144,7 @@ typedef mr_int8_t mr_state_t;                                       /* Type for 
  * @addtogroup Auto init
  * @{
  */
-#if(MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
+#if (MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
 
 typedef int (*init_fn_t)(void);
 
@@ -206,7 +205,7 @@ typedef struct mr_list *mr_list_t;                                  /* Type for 
  */
 struct mr_avl
 {
-    mr_int8_t height;                                               /* Balance factor */
+    mr_int32_t height;                                              /* Balance factor */
     mr_uint32_t value;                                              /* Key-hold */
 
     struct mr_avl *left_child;                                      /* Point to left-child node */
@@ -219,27 +218,15 @@ typedef struct mr_avl *mr_avl_t;                                    /* Type for 
  */
 struct mr_rb
 {
-    mr_uint16_t read_mirror: 1;                                     /* Read mirror flag */
-    mr_uint16_t read_index: 15;                                     /* Read index */
-    mr_uint16_t write_mirror: 1;                                    /* Write mirror flag */
-    mr_uint16_t write_index: 15;                                    /* Write index */
-
-    mr_uint16_t size;                                               /* Buffer pool size */
     mr_uint8_t *buffer;                                             /* Buffer pool */
+    mr_uint16_t size;                                               /* Buffer pool size */
+    mr_uint16_t read_mirror: 1;                                     /* Read mirror flag */
+    mr_uint16_t write_mirror: 1;                                    /* Write mirror flag */
+    mr_uint16_t reserved: 14;                                       /* Reserved */
+    mr_uint16_t read_index;                                         /* Read index */
+    mr_uint16_t write_index;                                        /* Write index */
 };
-typedef struct mr_rb *mr_rb_t;                                      /* Type for fifo */
-
-/**
- * @struct Transfer
- */
-struct mr_transfer
-{
-    void *data;                                                     /* Transfer data */
-    mr_size_t size;                                                 /* Transfer size */
-
-    struct mr_transfer *next;                                       /* Point to next transfer */
-};
-typedef struct mr_transfer *mr_transfer_t;                          /* Type for transfer */
+typedef struct mr_rb *mr_rb_t;                                      /* Type for ring buffer */
 
 /**
  * @addtogroup Object
@@ -251,12 +238,9 @@ typedef struct mr_transfer *mr_transfer_t;                          /* Type for 
  */
 enum mr_object_type
 {
-    Mr_Object_Type_None,                                            /* No object */
+    Mr_Object_Type_None = 0,                                        /* None object */
+    Mr_Object_Type_Task,                                            /* Task object */
     Mr_Object_Type_Device,                                          /* Device object */
-    Mr_Object_Type_Fsm,                                             /* FSM object */
-    Mr_Object_Type_Event,                                           /* Event object */
-    Mr_Object_Type_SoftTimer,                                       /* Soft timer object */
-    Mr_Object_Type_Module,                                          /* Module object */
 };
 
 /**
@@ -264,7 +248,7 @@ enum mr_object_type
  */
 struct mr_object_container
 {
-    enum mr_object_type type;                                       /* Object type */
+    mr_uint32_t type;                                               /* Object type */
     struct mr_list list;                                            /* Container list */
 };
 typedef struct mr_object_container *mr_object_container_t;          /* Type for container */
@@ -275,7 +259,7 @@ typedef struct mr_object_container *mr_object_container_t;          /* Type for 
 struct mr_object
 {
     char name[MR_CFG_OBJECT_NAME_SIZE];                             /* Object name */
-    enum mr_object_type type;                                       /* Object type */
+    mr_uint32_t type;                                               /* Object type */
     struct mr_list list;                                            /* Object list */
 };
 typedef struct mr_object *mr_object_t;                              /* Type for object */
@@ -292,128 +276,67 @@ struct mr_mutex
 typedef struct mr_mutex *mr_mutex_t;                                /* Type for mutex */
 
 /**
- * @addtogroup Finite State Machine
+ * @addtogroup Task
  * @{
  */
-#if (MR_CFG_FSM == MR_CFG_ENABLE)
-
-typedef struct mr_fsm_table *mr_fsm_table_t;                        /* Type for fsm table */
+#if (MR_CFG_TASK == MR_CFG_ENABLE)
 
 /**
- * @struct FSM
+ * @def Task timing flag
  */
-struct mr_fsm
+#define MR_TASK_TIMING_FLAG_ONESHOT     0x00                        /* One-shot timing */
+#define MR_TASK_TIMING_FLAG_PERIODIC    0x01                        /* Periodic timing */
+#define MR_TASK_TIMING_FLAG_HARDWARE    0x10                        /* Hardware timing */
+
+/**
+ * @def Task label
+ */
+#define MR_TASK_LABEL_TIMING             255                        /* Timing label */
+#define MR_TASK_LABEL_SM_ENTER           254                        /* Enter state machine label */
+#define MR_TASK_LABEL_SM                 253                        /* State machine label */
+#define MR_TASK_LABEL_SM_EXIT            252                        /* Exit state machine label */
+
+typedef struct mr_task_table *mr_task_table_t;                      /* Type for task table */
+
+/**
+ * @struct Task
+ */
+struct mr_task
 {
-    struct mr_object object;                                        /* FSM object */
+    struct mr_object object;                                        /* Task object */
 
-    mr_fsm_table_t table;                                           /* State table */
-    mr_size_t table_size;                                           /* State table size */
-    mr_uint32_t current_state;                                      /* Current state */
-    mr_uint32_t next_state;                                         /* Next state */
-};
-typedef struct mr_fsm *mr_fsm_t;                                    /* Type for fsm */
-
-/**
- * @struct FSM table
- */
-struct mr_fsm_table
-{
-    mr_err_t (*cb)(mr_fsm_t fsm, void *args);                       /* State callback */
-    void *args;                                                     /* State arguments */
-    mr_err_t (*signal)(mr_fsm_t fsm, mr_uint32_t signal);           /* State signal */
-};
-
-#endif
-/** @} */
-
-/**
- * @addtogroup Event
- * @{
- */
-#if (MR_CFG_EVENT == MR_CFG_ENABLE)
-
-typedef struct mr_event_table *mr_event_table_t;                    /* Type for event */
-
-/**
- * @struct Event
- */
-struct mr_event
-{
-    struct mr_object object;                                        /* Event object */
-
-    mr_event_table_t table;                                         /* Event table */
-    mr_size_t table_size;                                           /* Event table size */
+    mr_uint16_t active: 1;                                          /* Task active */
+    mr_uint16_t sm_active: 1;                                       /* State machine active */
+    mr_uint16_t usage_rate_max: 7;                                  /* Maximum usage rate */
+    mr_uint16_t reserved: 7;                                        /* Reserved */
+    mr_uint8_t current_label;                                       /* Current label */
+    mr_uint8_t current_sm;                                          /* Current state machine */
+    mr_uint32_t tick;                                               /* Current tick */
     struct mr_rb queue;                                             /* Event queue */
+    struct mr_list run;                                             /* Timing running list */
+
+    mr_task_table_t table;                                          /* Task table */
+    mr_size_t table_size;                                           /* Task table size */
 };
-typedef struct mr_event *mr_event_t;                                /* Type for event */
+typedef struct mr_task *mr_task_t;                                  /* Type for task */
 
 /**
- * @struct Event table
+ * @struct Task table
  */
-struct mr_event_table
+struct mr_task_table
 {
-    mr_err_t (*cb)(mr_event_t event, void *args);                    /* Event callback */
-    void *args;                                                      /* Event arguments */
+    mr_err_t (*cb)(mr_task_t task, void *args);                     /* Task callback */
+    void *args;                                                     /* Task arguments */
+
+    struct
+    {
+        mr_uint32_t interval;                                       /* Timing interval time */
+        mr_uint32_t timeout;                                        /* Timeout tick */
+        struct mr_list run;                                         /* Timing running list */
+    } _timing;
 };
 
 #endif
-/** @} */
-
-/**
- * @addtogroup Soft-timer
- * @{
- */
-#if (MR_CFG_SOFT_TIMER == MR_CFG_ENABLE)
-
-/**
- * @enum Soft-timer type
- */
-enum mr_soft_timer_type
-{
-    Mr_Soft_Timer_Type_Period,                                      /* Periodic timer */
-    Mr_Soft_Timer_Type_Oneshot,                                     /* One-shot timer */
-};
-
-/**
- * @struct Soft-timer data
- */
-struct mr_soft_timer_data
-{
-    mr_uint32_t timeout;                                            /* Timeout time */
-    struct mr_list timeout_list;                                    /* Timeout list */
-};
-typedef struct mr_soft_timer_data *mr_soft_timer_data_t;            /* Type for soft-timer data */
-
-typedef struct mr_soft_timer_table *mr_soft_timer_table_t;          /* Type for soft-timer table */
-
-/**
- * @struct Soft-timer
- */
-struct mr_soft_timer
-{
-    struct mr_object object;                                        /* Soft-timer object */
-
-    mr_soft_timer_table_t table;                                    /* Timer table */
-    mr_size_t table_size;                                           /* Timer table size */
-    mr_uint32_t current_time;                                       /* Current time */
-    struct mr_list timeout_list;                                    /* Timeout list */
-    mr_soft_timer_data_t data;                                      /* Timer data */
-};
-typedef struct mr_soft_timer *mr_soft_timer_t;                      /* Type for soft-timer */
-
-/**
- * @struct Soft-timer table
- */
-struct mr_soft_timer_table
-{
-    mr_uint32_t time;                                               /* Timer interval time */
-    enum mr_soft_timer_type type;                                   /* Timer type */
-    mr_err_t (*cb)(mr_soft_timer_t timer, void *args);              /* Timer callback */
-    void *args;                                                     /* Timer arguments */
-};
-
-#endif
-/** @} */
 
 /**
  * @addtogroup Device
@@ -426,7 +349,7 @@ struct mr_soft_timer_table
  */
 enum mr_device_type
 {
-    Mr_Device_Type_None,                                            /* No device */
+    Mr_Device_Type_None = 0,                                        /* None device */
     Mr_Device_Type_Pin,                                             /* GPIO device */
     Mr_Device_Type_SPIBUS,                                          /* SPI-BUS device */
     Mr_Device_Type_SPI,                                             /* SPI device */
@@ -444,27 +367,24 @@ enum mr_device_type
 /**
  * @def Device open mode flags
  */
-#define MR_OPEN_CLOSED                  0x0000                      /* Closed */
-#define MR_OPEN_RDONLY                  0x1000                      /* Read only */
-#define MR_OPEN_WRONLY                  0x2000                      /* Write only */
-#define MR_OPEN_RDWR                    0x3000                      /* Read and write */
-#define MR_OPEN_NONBLOCKING             0x4000                      /* Non-blocking */
-#define MR_OPEN_FLAG_MASK               0xf000                      /* Mask for open mode flag */
+#define MR_DEVICE_OPEN_FLAG_CLOSED      0x00                        /* Closed */
+#define MR_DEVICE_OPEN_FLAG_RDONLY      0x10                        /* Read only */
+#define MR_DEVICE_OPEN_FLAG_WRONLY      0x20                        /* Write only */
+#define MR_DEVICE_OPEN_FLAG_RDWR        0x30                        /* Read and write */
+#define MR_DEVICE_OPEN_FLAG_NONBLOCKING 0x40                        /* Non-blocking */
+#define MR_DEVICE_OPEN_FLAG_MASK        0xf0                        /* Mask for open mode flag */
 
 /**
- * @def Device control flags
+ * @def Device public command
  */
-#define MR_CTRL_NONE                    0x0000                      /* No control */
-#define MR_CTRL_SET_CONFIG              0x1000                      /* Set configure */
-#define MR_CTRL_GET_CONFIG              0x2000                      /* Get configure */
-#define MR_CTRL_SET_RX_CB               0x3000                      /* Set receive callback */
-#define MR_CTRL_SET_TX_CB               0x4000                      /* Set transmit callback */
-#define MR_CTRL_SET_RX_BUFSZ            0x5000                      /* Set receive buffer size */
-#define MR_CTRL_SET_TX_BUFSZ            0x6000                      /* Set transmit buffer size */
-#define MR_CTRL_ATTACH                  0x7000                      /* Attach the bus */
-#define MR_CTRL_TRANSFER                0x8000                      /* Transfer */
-#define MR_CTRL_REBOOT                  0x9000                      /* Reboot */
-#define MR_CTRL_FLAG_MASK               0xf000                      /* Mask for control flag */
+#define MR_DEVICE_CTRL_NONE             0x00000000                  /* None control */
+#define MR_DEVICE_CTRL_SET_CONFIG       0x10000000                  /* Set configure */
+#define MR_DEVICE_CTRL_GET_CONFIG       0x20000000                  /* Get configure */
+#define MR_DEVICE_CTRL_SET_RX_CB        0x30000000                  /* Set receive callback */
+#define MR_DEVICE_CTRL_SET_TX_CB        0x40000000                  /* Set transmit callback */
+#define MR_DEVICE_CTRL_SET_RX_BUFSZ     0x50000000                  /* Set receive buffer size */
+#define MR_DEVICE_CTRL_SET_TX_BUFSZ     0x60000000                  /* Set transmit buffer size */
+#define MR_DEVICE_CTRL_CONNECT          0x70000000                  /* Connect device */
 
 typedef struct mr_device *mr_device_t;                              /* Type for device */
 
@@ -476,8 +396,8 @@ struct mr_device_ops
     mr_err_t (*open)(mr_device_t device);
     mr_err_t (*close)(mr_device_t device);
     mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
-    mr_ssize_t (*write)(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
+    mr_ssize_t (*read)(mr_device_t device, mr_off_t off, void *buffer, mr_size_t size);
+    mr_ssize_t (*write)(mr_device_t device, mr_off_t off, const void *buffer, mr_size_t size);
 };
 
 /**
@@ -487,16 +407,15 @@ struct mr_device
 {
     struct mr_object object;                                        /* Device object */
 
-    enum mr_device_type type;                                       /* Device type */
-    mr_uint16_t support_flag;                                       /* Open mode supported */
-    mr_uint16_t open_flag;                                          /* Open mode */
+    mr_uint8_t type;                                                /* Device type */
+    mr_uint8_t sflags;                                              /* Support open mode flags */
+    mr_uint8_t oflags;                                              /* Open mode flags */
+    mr_uint8_t reserved;                                            /* Reserved */
     mr_size_t ref_count;                                            /* Number of references */
-
     mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* Receive the completed callback */
     mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* Send completion callback */
 
     const struct mr_device_ops *ops;                                /* Operations */
-
     void *data;                                                     /* Device data */
 };
 
@@ -542,12 +461,16 @@ struct mr_device_channel
             mr_uint32_t ch30: 1;
             mr_uint32_t ch31: 1;
         };
-        mr_uint32_t mask;
+        mr_uint32_t _mask;
     };
 };
 typedef struct mr_device_channel *mr_device_channel_t;              /* Type for device channel */
 
 #endif
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _MR_DEF_H_ */
