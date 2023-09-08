@@ -17,12 +17,12 @@ static mr_err_t err_io_pwm_configure(mr_pwm_t pwm, mr_pwm_config_t config)
     return -MR_ERR_IO;
 }
 
-static void err_io_pwm_write(mr_pwm_t pwm, mr_pos_t channel, mr_uint32_t duty)
+static void err_io_pwm_write(mr_pwm_t pwm, mr_off_t channel, mr_uint32_t duty)
 {
 
 }
 
-static mr_uint32_t err_io_pwm_read(mr_pwm_t pwm, mr_pos_t channel)
+static mr_uint32_t err_io_pwm_read(mr_pwm_t pwm, mr_off_t channel)
 {
     return 0;
 }
@@ -47,7 +47,7 @@ static mr_err_t mr_pwm_close(mr_device_t device)
 
     /* Disable pwm */
     pwm->config.freq = 0;
-    pwm->config.channel.mask = 0;
+    pwm->config.channel._mask = 0;
 
     return pwm->ops->configure(pwm, &pwm->config);
 }
@@ -57,9 +57,9 @@ static mr_err_t mr_pwm_ioctl(mr_device_t device, int cmd, void *args)
     mr_pwm_t pwm = (mr_pwm_t)device;
     mr_err_t ret = MR_ERR_OK;
 
-    switch (cmd & MR_CTRL_FLAG_MASK)
+    switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_DEVICE_CTRL_SET_CONFIG:
         {
             if (args)
             {
@@ -74,7 +74,7 @@ static mr_err_t mr_pwm_ioctl(mr_device_t device, int cmd, void *args)
             return -MR_ERR_INVALID;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_DEVICE_CTRL_GET_CONFIG:
         {
             if (args)
             {
@@ -90,7 +90,7 @@ static mr_err_t mr_pwm_ioctl(mr_device_t device, int cmd, void *args)
     }
 }
 
-static mr_err_t mr_pwm_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size)
+static mr_err_t mr_pwm_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
     mr_pwm_t pwm = (mr_pwm_t)device;
     mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
@@ -105,7 +105,7 @@ static mr_err_t mr_pwm_read(mr_device_t device, mr_pos_t pos, void *buffer, mr_s
     return (mr_ssize_t)read_size;
 }
 
-static mr_err_t mr_pwm_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size)
+static mr_err_t mr_pwm_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
     mr_pwm_t pwm = (mr_pwm_t)device;
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
@@ -147,7 +147,7 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
 
     /* Initialize the private fields */
     pwm->config.freq = 0;
-    pwm->config.channel.mask = 0;
+    pwm->config.channel._mask = 0;
 
     /* Protect every operation of the pwm device */
     ops->configure = ops->configure ? ops->configure : err_io_pwm_configure;
@@ -156,7 +156,7 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
     pwm->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&pwm->device, name, Mr_Device_Type_PWM, MR_OPEN_RDWR, &device_ops, data);
+    return mr_device_add(&pwm->device, name, Mr_Device_Type_PWM, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
 }
 
 #endif
