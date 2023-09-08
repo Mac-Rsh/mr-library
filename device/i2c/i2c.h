@@ -11,7 +11,11 @@
 #ifndef _I2C_H_
 #define _I2C_H_
 
-#include "mrlib.h"
+#include "mrapi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if (MR_CFG_I2C == MR_CFG_ENABLE)
 
@@ -22,11 +26,17 @@
 #define MR_I2C_SLAVE                    1
 
 /**
+ * @def I2C device address bits
+ */
+#define MR_I2C_ADDR_BITS_7               7
+#define MR_I2C_ADDR_BITS_10              10
+
+/**
  * @def I2C device position bits
  */
-#define MR_I2C_POS_BITS_8               0
-#define MR_I2C_POS_BITS_16              1
-#define MR_I2C_POS_BITS_32              2
+#define MR_I2C_POS_BITS_8               8
+#define MR_I2C_POS_BITS_16              16
+#define MR_I2C_POS_BITS_32              32
 
 /**
  * @def I2C device default config
@@ -35,6 +45,7 @@
 {                                       \
     100000,                             \
     MR_I2C_HOST,                        \
+    MR_I2C_ADDR_BITS_7,                 \
     MR_I2C_POS_BITS_8,                  \
 }
 
@@ -44,9 +55,10 @@
 struct mr_i2c_config
 {
     mr_uint32_t baud_rate;
-    mr_uint8_t host_slave: 1;
-    mr_uint8_t pos_bits: 2;
-    mr_uint8_t reserve: 5;
+    mr_uint32_t host_slave: 1;
+    mr_uint32_t addr_bits: 4;
+    mr_uint32_t pos_bits: 6;
+    mr_uint32_t reserved: 21;
 };
 typedef struct mr_i2c_config *mr_i2c_config_t;
 
@@ -60,8 +72,8 @@ struct mr_i2c_device
     struct mr_device device;
 
     struct mr_i2c_config config;
+    mr_uint32_t address;
     mr_i2c_bus_t bus;
-    mr_uint8_t address;
 };
 typedef struct mr_i2c_device *mr_i2c_device_t;
 
@@ -85,8 +97,8 @@ struct mr_i2c_bus
     struct mr_device device;
 
     struct mr_i2c_config config;
-    mr_i2c_device_t owner;
     struct mr_mutex lock;
+    mr_i2c_device_t owner;
 
     const struct mr_i2c_bus_ops *ops;
 };
@@ -99,9 +111,9 @@ typedef struct mr_soft_i2c_bus *mr_soft_i2c_bus_t;
 struct mr_soft_i2c_ops
 {
     mr_err_t (*configure)(mr_soft_i2c_bus_t i2c_bus);
-    void (*scl_write)(mr_soft_i2c_bus_t i2c_bus, mr_uint8_t value);
-    void (*sda_write)(mr_soft_i2c_bus_t i2c_bus, mr_uint8_t value);
-    mr_uint8_t (*sda_read)(mr_soft_i2c_bus_t i2c_bus);
+    void (*scl_write)(mr_soft_i2c_bus_t i2c_bus, mr_level_t level);
+    void (*sda_write)(mr_soft_i2c_bus_t i2c_bus, mr_level_t level);
+    mr_level_t (*sda_read)(mr_soft_i2c_bus_t i2c_bus);
 };
 
 /**
@@ -120,7 +132,7 @@ struct mr_soft_i2c_bus
  * @addtogroup I2C device
  * @{
  */
-mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint8_t address);
+mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint32_t address);
 /** @} */
 
 /**
@@ -137,6 +149,10 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
 mr_err_t mr_soft_i2c_bus_add(mr_soft_i2c_bus_t i2c_bus, const char *name, struct mr_soft_i2c_ops *ops, void *data);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _I2C_H_ */
