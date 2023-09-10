@@ -445,7 +445,7 @@ static mr_ssize_t mr_spi_device_read(mr_device_t device, mr_off_t pos, void *buf
         mr_spi_device_cs_set_state(spi_device, MR_ENABLE);
 
         /* Send position */
-        if (pos != 0)
+        if (pos >= 0)
         {
             mr_spi_bus_transfer(spi_device->bus, &pos, MR_NULL, (spi_device->config.pos_bits >> 3), MR_SPI_WR);
         }
@@ -494,7 +494,7 @@ static mr_ssize_t mr_spi_device_write(mr_device_t device, mr_off_t pos, const vo
         mr_spi_device_cs_set_state(spi_device, MR_ENABLE);
 
         /* Send position */
-        if (pos != 0)
+        if (pos >= 0)
         {
             mr_spi_bus_transfer(spi_device->bus, &pos, MR_NULL, (spi_device->config.pos_bits >> 3), MR_SPI_WR);
         }

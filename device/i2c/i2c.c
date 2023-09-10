@@ -232,7 +232,7 @@ static mr_ssize_t mr_i2c_device_read(mr_device_t device, mr_off_t pos, void *buf
     if (i2c_device->config.host_slave == MR_I2C_HOST)
     {
         /* Send position */
-        if (pos != 0)
+        if (pos >= 0)
         {
             mr_size_t bits = 0;
 
@@ -288,7 +288,7 @@ static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const vo
         mr_i2c_device_send_address(i2c_device, MR_I2C_WR);
 
         /* Send position */
-        if (pos != 0)
+        if (pos >= 0)
         {
             mr_size_t bits = 0;
 

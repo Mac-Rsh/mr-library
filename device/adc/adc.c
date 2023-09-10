@@ -88,6 +88,11 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr
     mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
     mr_size_t read_size = 0;
 
+    if (pos < 0)
+    {
+        return -MR_ERR_INVALID;
+    }
+
     while ((read_size += sizeof(*read_buffer)) <= size)
     {
         *read_buffer = adc->ops->read(adc, pos);

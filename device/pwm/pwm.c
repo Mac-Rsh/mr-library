@@ -96,6 +96,11 @@ static mr_err_t mr_pwm_read(mr_device_t device, mr_off_t pos, void *buffer, mr_s
     mr_uint32_t *read_buffer = (mr_uint32_t *)buffer;
     mr_size_t read_size = 0;
 
+    if (pos < 0)
+    {
+        return -MR_ERR_INVALID;
+    }
+
     while ((read_size += sizeof(*read_buffer)) <= size)
     {
         *read_buffer = pwm->ops->read(pwm, pos);
@@ -110,6 +115,11 @@ static mr_err_t mr_pwm_write(mr_device_t device, mr_off_t pos, const void *buffe
     mr_pwm_t pwm = (mr_pwm_t)device;
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
     mr_size_t write_size = 0;
+
+    if (pos < 0)
+    {
+        return -MR_ERR_INVALID;
+    }
 
     while ((write_size += sizeof(*write_buffer)) <= size)
     {

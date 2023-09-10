@@ -60,6 +60,11 @@ static mr_ssize_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr
     mr_level_t *read_buffer = (mr_level_t *)buffer;
     mr_size_t read_size = 0;
 
+    if (pos < 0)
+    {
+        return -MR_ERR_INVALID;
+    }
+
     while ((read_size += sizeof(*read_buffer)) <= size)
     {
         *read_buffer = pin->ops->read(pin, pos);
@@ -74,6 +79,11 @@ static mr_ssize_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buf
     mr_pin_t pin = (mr_pin_t)device;
     mr_level_t *write_buffer = (mr_level_t *)buffer;
     mr_size_t write_size = 0;
+
+    if (pos < 0)
+    {
+        return -MR_ERR_INVALID;
+    }
 
     while ((write_size += sizeof(*write_buffer)) <= size)
     {
