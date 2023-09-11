@@ -83,7 +83,7 @@ mr_err_t drv_soft_i2c_bus_init(void)
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
-    return MR_ERR_OK;
+    return ret;
 }
 MR_INIT_DRIVER_EXPORT(drv_soft_i2c_bus_init);
 

@@ -151,7 +151,6 @@ static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_timer_config_t config)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-    TIM_ClearITPendingBit(timer_data->instance, TIM_IT_Update);
     TIM_ITConfig(timer_data->instance, TIM_IT_Update, ENABLE);
 
     TIM_TimeBaseInitStructure.TIM_Period = 0;
@@ -166,7 +165,7 @@ static void ch32_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
 {
     struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
 
-    if (timer->data->count_max == MR_TIMER_COUNT_MODE_UP)
+    if (timer->data->count_mode == MR_TIMER_COUNT_MODE_UP)
     {
         timer_data->instance->CNT = 0;
     } else
@@ -174,6 +173,7 @@ static void ch32_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
         timer_data->instance->CNT = period_reload - 1;
     }
     timer_data->instance->ATRLR = period_reload - 1;
+
     TIM_Cmd(timer_data->instance, ENABLE);
 }
 
@@ -304,7 +304,7 @@ mr_err_t drv_timer_init(void)
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
-    return MR_ERR_OK;
+    return ret;
 }
 MR_INIT_DRIVER_EXPORT(drv_timer_init);
 

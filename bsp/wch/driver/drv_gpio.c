@@ -318,7 +318,7 @@ mr_err_t drv_gpio_init(void)
     ret = mr_pin_device_add(&pin_device, "pin", &drv_ops, MR_NULL);
     MR_ASSERT(ret == MR_ERR_OK);
 
-    return MR_ERR_OK;
+    return ret;
 }
 MR_INIT_DRIVER_EXPORT(drv_gpio_init);
 

@@ -52,33 +52,54 @@ static mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
 
     for (count = 0; count <= 17; count++)
     {
-        if (((1 << count) & config->channel._mask) == MR_ENABLE)
+        if (count <= 7)
         {
-            if (count <= 7)
+            if (((1 << count) & config->channel._mask) == MR_ENABLE)
             {
                 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-                GPIOx = GPIOA;
-            } else if (count <= 10)
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+            } else
+            {
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            }
+            GPIOx = GPIOA;
+            GPIO_InitStructure.GPIO_Pin = (1 << count);
+            GPIO_Init(GPIOx, &GPIO_InitStructure);
+        } else if (count <= 10)
+        {
+            if (((1 << count) & config->channel._mask) == MR_ENABLE)
             {
                 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-                GPIOx = GPIOB;
-            } else if (count <= 15)
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+            } else
+            {
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            }
+            GPIOx = GPIOB;
+            GPIO_InitStructure.GPIO_Pin = (1 << count);
+            GPIO_Init(GPIOx, &GPIO_InitStructure);
+        } else if (count <= 15)
+        {
+            if (((1 << count) & config->channel._mask) == MR_ENABLE)
             {
                 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-                GPIOx = GPIOC;
-            } else if (count <= 17)
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+            } else
+            {
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            }
+            GPIOx = GPIOC;
+            GPIO_InitStructure.GPIO_Pin = (1 << count);
+            GPIO_Init(GPIOx, &GPIO_InitStructure);
+        } else if (count <= 17)
+        {
+            if (((1 << count) & config->channel._mask) == MR_ENABLE)
             {
                 ADC_TempSensorVrefintCmd(ENABLE);
+            } else
+            {
+                ADC_TempSensorVrefintCmd(DISABLE);
             }
-
-            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-            GPIO_InitStructure.GPIO_Pin = (1 << count);
-            GPIO_Init(GPIOx, &GPIO_InitStructure);
-        } else
-        {
-            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-            GPIO_InitStructure.GPIO_Pin = (1 << count);
-            GPIO_Init(GPIOx, &GPIO_InitStructure);
         }
     }
 
@@ -127,7 +148,7 @@ mr_err_t drv_adc_init(void)
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
-    return MR_ERR_OK;
+    return ret;
 }
 MR_INIT_DRIVER_EXPORT(drv_adc_init);
 
