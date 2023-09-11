@@ -132,7 +132,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags)
     /* Check whether the device supports opening in this mode */
     if (oflags != (oflags & device->sflags))
     {
-        MR_DEBUG_E(DEBUG_TAG, "[%s] open [%d] failed: [%d]\r\n", device->object.name, oflags, -MR_ERR_UNSUPPORTED);
+        MR_DEBUG_E(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, -MR_ERR_UNSUPPORTED);
         return -MR_ERR_UNSUPPORTED;
     }
 
@@ -152,7 +152,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags)
         ret = device->ops->open(device);
         if (ret != MR_ERR_OK)
         {
-            MR_DEBUG_E(DEBUG_TAG, "[%s] open [%d] failed: [%d]\r\n", device->object.name, oflags, ret);
+            MR_DEBUG_E(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, ret);
         }
         return ret;
     }
@@ -230,7 +230,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
         ret = device->ops->ioctl(device, cmd, args);
         if (ret != MR_ERR_OK)
         {
-            MR_DEBUG_E(DEBUG_TAG, "[%s] ioctl [%d] failed: [%d]\r\n", device->object.name, cmd, ret);
+            MR_DEBUG_E(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, ret);
         }
         return ret;
     }
