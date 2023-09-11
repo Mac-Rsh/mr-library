@@ -10,6 +10,10 @@
 
 #include "mrapi.h"
 
+#if (MR_CFG_DEVICE == MR_CFG_ENABLE)
+static mr_device_t console_device = MR_NULL;
+#endif
+
 #if (MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
 
 static int start(void)
@@ -74,7 +78,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
     }
 
     va_start(args, format);
-    mr_printf("[%s] [%s]: ", debug_level_name[level], tag);
+    mr_printf("[%s / %s]: ", debug_level_name[level], tag);
     size = mr_vsnprintf(buffer, sizeof(buffer) - 1, format, args);
     mr_printf_output(buffer, size);
     va_end(args);
@@ -88,13 +92,36 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
  */
 MR_WEAK void mr_assert_handle(char *file, int line)
 {
-    MR_DEBUG_A("[!!!]", "file: [%s], line: [%d], fail to run.\r\n", file, line);
+#define MR_DEBUG_TAG "!!!"
+    MR_DEBUG_A(MR_DEBUG_TAG, "file: [%s], line: [%d], fail to run.\r\n", file, line);
+#undef MR_DEBUG_TAG
 
     while (1)
     {
 
     }
 }
+
+#endif
+
+#if (MR_CFG_DEVICE == MR_CFG_ENABLE)
+
+/**
+ * @brief This function initializes the console device.
+ *
+ * @return MR_ERR_OK on success, otherwise an error code.
+ */
+mr_err_t mr_console_init(void)
+{
+    console_device = mr_device_find(MR_CFG_CONSOLE_NAME);
+    if(console_device == MR_NULL)
+    {
+        return -MR_ERR_NOT_FOUND;
+    }
+
+    return mr_device_open(console_device, MR_DEVICE_OFLAG_RDWR);
+}
+MR_INIT_DEVICE_EXPORT(mr_console_init);
 
 #endif
 
@@ -108,7 +135,16 @@ MR_WEAK void mr_assert_handle(char *file, int line)
  */
 MR_WEAK mr_size_t mr_printf_output(const char *buffer, mr_size_t size)
 {
+#if (MR_CFG_DEVICE == MR_CFG_ENABLE)
+    if(console_device == MR_NULL)
+    {
+        return 0;
+    }
+
+    return mr_device_write(console_device, -1, buffer, size);
+#else
     return 0;
+#endif
 }
 
 mr_size_t mr_printf(const char *format, ...)
@@ -148,16 +184,7 @@ MR_WEAK void mr_interrupt_enable(void)
  */
 MR_WEAK void mr_delay_us(mr_size_t us)
 {
-    volatile mr_size_t count = 0;
 
-#ifndef MR_BSP_SYSCLK_FREQ
-#define MR_BSP_SYSCLK_FREQ              14400000
-#endif
-
-    for (count = 0; count < us * (MR_BSP_SYSCLK_FREQ / 1000000u); count++)
-    {
-
-    }
 }
 
 /**
@@ -559,7 +586,7 @@ mr_size_t mr_rb_write_force(mr_rb_t rb, const void *buffer, mr_size_t size)
     return size;
 }
 
-static mr_int8_t mr_avl_get_height(mr_avl_t node)
+static mr_int32_t mr_avl_get_height(mr_avl_t node)
 {
     if (node == MR_NULL)
     {
@@ -569,14 +596,14 @@ static mr_int8_t mr_avl_get_height(mr_avl_t node)
     return node->height;
 }
 
-static mr_int8_t mr_avl_get_balance(mr_avl_t node)
+static mr_int32_t mr_avl_get_balance(mr_avl_t node)
 {
     if (node == MR_NULL)
     {
         return 0;
     }
 
-    return (mr_int8_t)(mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
+    return (mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
 }
 
 static void mr_avl_left_rotate(mr_avl_t *node)
@@ -635,7 +662,7 @@ void mr_avl_init(mr_avl_t node, mr_uint32_t value)
  */
 void mr_avl_insert(mr_avl_t *tree, mr_avl_t node)
 {
-    mr_int8_t balance = 0;
+    mr_int32_t balance = 0;
 
     if ((*tree) == MR_NULL)
     {
@@ -726,7 +753,7 @@ void mr_avl_remove(mr_avl_t *tree, mr_avl_t node)
 
     (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
-    mr_int8_t balance = mr_avl_get_balance(*tree);
+    mr_int32_t balance = mr_avl_get_balance(*tree);
 
     if (balance > 1 && mr_avl_get_balance((*tree)->left_child) >= 0)
     {
@@ -809,25 +836,4 @@ mr_size_t mr_avl_get_length(mr_avl_t tree)
     }
 
     return length;
-}
-
-/**
- * @brief This function get the hash of the avl tree.
- *
- * @param string The string to be hashed.
- * @param length The length of the string.
- *
- * @return The hash of the string.
- */
-mr_uint32_t mr_str2hash(const char *string, mr_size_t length)
-{
-    mr_uint32_t hash = 2166136261u;
-
-    for (mr_size_t count = 0; count < length; count++)
-    {
-        hash ^= (mr_uint32_t)string[count];
-        hash *= 16777619u;
-    }
-
-    return hash;
 }

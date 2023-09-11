@@ -31,51 +31,15 @@ extern "C" {
 #if (MR_CFG_DEBUG == MR_CFG_ENABLE)
 
 /**
- * @def Debug assert config
+ * @def Debug level config
  *
- * MR_CFG_DISABLE: Disable assert
- * MR_CFG_ENABLE: Enable assert
+ * MR_CFG_DISABLE: Disable one
+ * MR_CFG_ENABLE: Enable one
  */
 #define MR_CFG_DEBUG_ASSERT             MR_CFG_ENABLE
-
-/**
- * @def Debug error config
- *
- * MR_CFG_DISABLE: Disable error
- * MR_CFG_ENABLE: Enable error
- */
 #define MR_CFG_DEBUG_ERROR              MR_CFG_ENABLE
-
-/**
- * @def Debug warning config
- *
- * MR_CFG_DISABLE: Disable warning
- * MR_CFG_ENABLE: Enable warning
- */
 #define MR_CFG_DEBUG_WARNING            MR_CFG_ENABLE
-
-/**
- * @def Debug warning config
- *
- * MR_CFG_DISABLE: Disable warning
- * MR_CFG_ENABLE: Enable warning
- */
-#define MR_CFG_DEBUG_WARNING            MR_CFG_ENABLE
-
-/**
- * @def Debug info config
- *
- * MR_CFG_DISABLE: Disable info
- * MR_CFG_ENABLE: Enable info
- */
 #define MR_CFG_DEBUG_INFO               MR_CFG_ENABLE
-
-/**
- * @def Debug debug config
- *
- * MR_CFG_DISABLE: Disable debug
- * MR_CFG_ENABLE: Enable debug
- */
 #define MR_CFG_DEBUG_DEBUG              MR_CFG_ENABLE
 
 #endif
@@ -89,26 +53,6 @@ extern "C" {
 #define MR_CFG_AUTO_INIT                MR_CFG_ENABLE
 
 /**
- * @def Task config
- *
- * MR_CFG_DISABLE: Disable task
- * MR_CFG_ENABLE: Enable task
- */
-#define MR_CFG_TASK                     MR_CFG_ENABLE
-
-#if (MR_CFG_TASK == MR_CFG_ENABLE)
-
-/**
- * @def Task usage rate record config
- *
- * MR_CFG_DISABLE: Disable task usage rate record
- * MR_CFG_ENABLE: Enable task usage rate record
- */
-#define MR_CFG_TASK_USAGE               MR_CFG_ENABLE
-
-#endif
-
-/**
  * @def Device config
  *
  * MR_CFG_DISABLE: Disable device
@@ -119,9 +63,11 @@ extern "C" {
 #if (MR_CFG_DEVICE == MR_CFG_ENABLE)
 
 /**
- * @include Board support package
+ * @def Console name config
+ *
+ * Device name, default is "uart1"
  */
-#include "mrboard.h"
+#define MR_CFG_CONSOLE_NAME             "uart1"
 
 /**
  * @def ADC config
@@ -174,17 +120,11 @@ extern "C" {
 #if (MR_CFG_SERIAL == MR_CFG_ENABLE)
 
 /**
- * @def Serial RX buffer default size
+ * @def Serial RX/TX buffer default size
  *
  * If the default configuration is not required, set the value to 0
  */
 #define MR_CFG_SERIAL_RX_BUFSZ          32
-
-/**
- * @def Serial TX buffer default size
- *
- * If the default configuration is not required, set the value to 0
- */
 #define MR_CFG_SERIAL_TX_BUFSZ          0
 
 #endif
