@@ -218,7 +218,7 @@ MR_INLINE mr_size_t mr_slist_get_length(mr_slist_t list)
  */
 MR_INLINE mr_slist_t mr_slist_get_tail(mr_slist_t list)
 {
-    mr_slist_t temp_node = NULL;
+    mr_slist_t temp_node = list;
 
     while (temp_node->next != NULL)
     {
