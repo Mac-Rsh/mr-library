@@ -60,7 +60,6 @@ void mr_avl_insert(mr_avl_t *tree, mr_avl_t node);
 void mr_avl_remove(mr_avl_t *tree, mr_avl_t node);
 mr_avl_t mr_avl_find(mr_avl_t tree, mr_uint32_t value);
 mr_size_t mr_avl_get_length(mr_avl_t tree);
-mr_uint32_t mr_str2hash(const char *string, mr_size_t length);
 /** @} */
 
 /**
@@ -92,31 +91,6 @@ volatile void *mr_mutex_get_owner(mr_mutex_t mutex);
 void *mr_malloc(mr_size_t size);
 void mr_free(void *memory);
 mr_size_t mr_memory_get_allocated_size(void);
-/** @} */
-
-/**
- * @addtogroup Task
- * @{
- */
-#if (MR_CFG_TASK == MR_CFG_ENABLE)
-mr_task_t mr_task_find(const char *name);
-mr_err_t mr_task_add(mr_task_t task,
-                     const char *name,
-                     mr_task_table_t table,
-                     mr_size_t table_size,
-                     mr_size_t queue_size);
-mr_err_t mr_task_remove(mr_task_t task);
-void mr_task_update_tick(mr_task_t task, mr_uint32_t tick);
-void mr_task_handle(mr_task_t task);
-mr_err_t mr_task_start(mr_task_t task);
-mr_err_t mr_task_stop(mr_task_t task);
-mr_err_t mr_task_post_event(mr_task_t task, mr_uint8_t index, mr_uint8_t event);
-mr_err_t mr_task_timing(mr_task_t task, mr_uint8_t index, mr_uint32_t tick, mr_uint8_t flag);
-mr_err_t mr_task_transition_state(mr_task_t task, mr_uint8_t index);
-mr_uint8_t mr_task_get_event(mr_task_t task);
-mr_uint32_t mr_task_get_tick(mr_task_t task);
-mr_uint8_t mr_task_get_usage(mr_task_t task);
-#endif
 /** @} */
 
 /**

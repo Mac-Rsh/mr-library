@@ -26,7 +26,7 @@ extern "C" {
 /**
  * @version mr-library version
  */
-#define MR_LIBRARY_VERSION              "0.0.4"
+#define MR_LIBRARY_VERSION              "0.0.5"
 
 /**
  * @def Compiler related
@@ -107,7 +107,7 @@ typedef mr_int8_t mr_state_t;                                       /* Type for 
 /**
  * @def Null pointer
  */
-#define MR_NULL                         (void *)0                           /* Null pointer */
+#define MR_NULL                         (void *)0                   /* Null pointer */
 
 /**
  * @def Boolean value
@@ -175,6 +175,7 @@ typedef int (*init_fn_t)(void);
 #define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
 
 #else
+#define MR_INIT_DRIVER_EXPORT(fn)
 #define MR_INIT_DEVICE_EXPORT(fn)
 #define MR_INIT_MODULE_EXPORT(fn)
 #define MR_INIT_APP_EXPORT(fn)
@@ -239,8 +240,8 @@ typedef struct mr_rb *mr_rb_t;                                      /* Type for 
 enum mr_object_type
 {
     Mr_Object_Type_None = 0,                                        /* None object */
-    Mr_Object_Type_Task,                                            /* Task object */
     Mr_Object_Type_Device,                                          /* Device object */
+    Mr_Object_Type_Module,                                          /* Module object */
 };
 
 /**
@@ -276,68 +277,6 @@ struct mr_mutex
 typedef struct mr_mutex *mr_mutex_t;                                /* Type for mutex */
 
 /**
- * @addtogroup Task
- * @{
- */
-#if (MR_CFG_TASK == MR_CFG_ENABLE)
-
-/**
- * @def Task timing flag
- */
-#define MR_TASK_TIMING_FLAG_ONESHOT     0x00                        /* One-shot timing */
-#define MR_TASK_TIMING_FLAG_PERIODIC    0x01                        /* Periodic timing */
-
-/**
- * @def Task build-in event
- */
-#define MR_TASK_EVENT_TIMING             255                        /* Timing event */
-#define MR_TASK_EVENT_SM_ENTER           254                        /* Enter state machine event */
-#define MR_TASK_EVENT_SM                 253                        /* State machine event */
-#define MR_TASK_EVENT_SM_EXIT            252                        /* Exit state machine event */
-
-typedef struct mr_task_table *mr_task_table_t;                      /* Type for task table */
-
-/**
- * @struct Task
- */
-struct mr_task
-{
-    struct mr_object object;                                        /* Task object */
-
-    mr_uint16_t active: 1;                                          /* Task active */
-    mr_uint16_t sm_active: 1;                                       /* State machine active */
-    mr_uint16_t usage_max: 7;                                       /* Maximum usage rate */
-    mr_uint16_t reserved: 7;                                        /* Reserved */
-    mr_uint8_t event;                                               /* Trigger event */
-    mr_uint8_t sm;                                                  /* Current state machine */
-    mr_uint32_t tick;                                               /* Current tick */
-    struct mr_rb queue;                                             /* Event queue */
-    struct mr_list run;                                             /* Timing list */
-
-    mr_task_table_t table;                                          /* Task table */
-    mr_size_t table_size;                                           /* Task table size */
-};
-typedef struct mr_task *mr_task_t;                                  /* Type for task */
-
-/**
- * @struct Task table
- */
-struct mr_task_table
-{
-    mr_err_t (*cb)(mr_task_t task, void *args);                     /* Task callback */
-    void *args;                                                     /* Task arguments */
-
-    struct
-    {
-        mr_uint32_t interval;                                       /* Timing interval time */
-        mr_uint32_t timeout;                                        /* Timeout tick */
-        struct mr_list run;                                         /* Timing running list */
-    } timing;
-};
-
-#endif
-
-/**
  * @addtogroup Device
  * @{
  */
@@ -366,15 +305,15 @@ enum mr_device_type
 /**
  * @def Device open mode flags
  */
-#define MR_DEVICE_OPEN_FLAG_CLOSED      0x00                        /* Closed */
-#define MR_DEVICE_OPEN_FLAG_RDONLY      0x10                        /* Read only */
-#define MR_DEVICE_OPEN_FLAG_WRONLY      0x20                        /* Write only */
-#define MR_DEVICE_OPEN_FLAG_RDWR        0x30                        /* Read and write */
-#define MR_DEVICE_OPEN_FLAG_NONBLOCKING 0x40                        /* Non-blocking */
-#define MR_DEVICE_OPEN_FLAG_MASK        0xf0                        /* Mask for open mode flag */
+#define MR_DEVICE_OFLAG_CLOSED          0x00                        /* Closed */
+#define MR_DEVICE_OFLAG_RDONLY          0x10                        /* Read only */
+#define MR_DEVICE_OFLAG_WRONLY          0x20                        /* Write only */
+#define MR_DEVICE_OFLAG_RDWR            0x30                        /* Read and write */
+#define MR_DEVICE_OFLAG_NONBLOCKING     0x40                        /* Non-blocking */
+#define MR_DEVICE_OFLAG_MASK            0xf0                        /* Mask for open mode flag */
 
 /**
- * @def Device public command
+ * @def Device control flags
  */
 #define MR_DEVICE_CTRL_NONE             0x00000000                  /* None control */
 #define MR_DEVICE_CTRL_SET_CONFIG       0x10000000                  /* Set configure */

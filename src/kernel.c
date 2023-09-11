@@ -13,8 +13,8 @@
 static struct mr_object_container mr_object_container_table[] =
     {
         {Mr_Object_Type_None,   {&mr_object_container_table[Mr_Object_Type_None].list,   &mr_object_container_table[Mr_Object_Type_None].list}},
-        {Mr_Object_Type_Task,   {&mr_object_container_table[Mr_Object_Type_Task].list,   &mr_object_container_table[Mr_Object_Type_Task].list}},
         {Mr_Object_Type_Device, {&mr_object_container_table[Mr_Object_Type_Device].list, &mr_object_container_table[Mr_Object_Type_Device].list}},
+        {Mr_Object_Type_Module, {&mr_object_container_table[Mr_Object_Type_Module].list, &mr_object_container_table[Mr_Object_Type_Module].list}},
     };
 
 static mr_size_t mr_allocated_memory_size = 0;
