@@ -16,7 +16,7 @@ extern "C" {
 /**
  * @def Object name size config
  *
- * Recommend size: (4 * n) - 1.
+ * Recommend size: 4 * n.
  */
 #define MR_CFG_OBJECT_NAME_SIZE         12
 
