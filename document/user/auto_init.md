@@ -13,7 +13,7 @@
 | 3    | MR_INIT_MODULE_EXPORT   | 组件初始化   |
 | 4    | MR_INIT_APP_EXPORT      | 应用初始化   |
 
-![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/auto_init_process.jpg)
+![流程图](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/auto_init_process.jpg)
 
 自动初始化仅指定类型的函数：
 

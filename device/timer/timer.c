@@ -289,12 +289,10 @@ void mr_timer_device_isr(mr_timer_t timer, mr_uint32_t event)
         case MR_TIMER_EVENT_PIT_INT:
         {
             timer->overflow++;
+            timer->cycles--;
 
             /* Timeout */
-            if (timer->cycles != 0)
-            {
-                timer->cycles--;
-            } else
+            if (timer->cycles == 0)
             {
                 timer->cycles = timer->reload;
                 timer->overflow = 0;
