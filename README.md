@@ -63,18 +63,18 @@ mr_device_ioctl(spi0_device, MR_DEVICE_CTRL_CONNECT, "spi1");
 mr_device_ioctl(spi1_device, MR_DEVICE_CTRL_CONNECT, "spi1");
 
 /* 以可读可写的方式打开SPI设备 */
-mr_device_open(spi0_device, MR_DEVICE_OPEN_FLAG_RDWR);
-mr_device_open(spi1_device, MR_DEVICE_OPEN_FLAG_RDWR);
+mr_device_open(spi0_device, MR_DEVICE_OFLAG_RDWR);
+mr_device_open(spi1_device, MR_DEVICE_OFLAG_RDWR);
 
 /* 发送数据 */
 char buffer0[] = "hello";
 char buffer1[] = "world";
-mr_device_write(spi0_device, 0, buffer0, sizeof(buffer0) - 1);
-mr_device_write(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
+mr_device_write(spi0_device, -1, buffer0, sizeof(buffer0) - 1);
+mr_device_write(spi1_device, -1, buffer1, sizeof(buffer1) - 1);
 
 /* 读取数据 */
-mr_device_read(spi0_device, 0, buffer0, sizeof(buffer0) - 1);
-mr_device_read(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
+mr_device_read(spi0_device, -1, buffer0, sizeof(buffer0) - 1);
+mr_device_read(spi1_device, -1, buffer1, sizeof(buffer1) - 1);
 
 /* 关闭设备 */
 mr_device_close(spi0_device);
@@ -87,7 +87,7 @@ mr_device_close(spi1_device);
 
 组件是一种模块化的软件构建单元，专为嵌入式系统设计。组件设计充分考虑了嵌入式系统的资源限制，通过按需选择、自由组合的概念，极大提升了资源的利用率。
 
-每个组件都承担特定的功能或任务，例如任务管理组件专注于对程序任务的管理，使得裸机与RTOS程序可高效移植。
+每个组件都承担特定的功能或任务，例如任务管理组件专注于对程序任务的管理，使得裸机与RTOS程序可高效移植。开发者可自主选择需要的组件，添加到项目中。
 
  ----------
 
