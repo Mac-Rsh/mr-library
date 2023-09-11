@@ -4,7 +4,7 @@
 
 ## 操作流程图
 
-![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/device_process.jpg)
+![流程图](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/device_process.jpg)
 
 ## 设备模型
 
@@ -15,16 +15,15 @@ struct mr_device
 {
     struct mr_object object;                                        /* 设备对象基类 */
 
-    enum mr_device_type type;                                       /* 设备类型 */
-    mr_uint16_t support_flag;                                       /* 设备支持的打开方式 */
-    mr_uint16_t open_flag;                                          /* 设备打开方式 */
+    mr_uint8_t type;                                                /* 设备类型 */
+    mr_uint8_t sflags;                                              /* 设备支持的打开方式 */
+    mr_uint8_t oflags;                                              /* 设备打开方式 */
+    mr_uint8_t reserved;                                            /* 保留 */
     mr_size_t ref_count;                                            /* 设备被引用次数 */
-
     mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* 设备接收回调函数 */
     mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* 设备发送回调函数 */
 
     const struct mr_device_ops *ops;                                /* 设备操作方法 */
-    
     void *data;                                                     /* 设备数据 */
 };
 ```
@@ -57,17 +56,16 @@ enum mr_device_type
 设备只能以支持的打开方式打开，定义如下：
 
 ```c
-MR_OPEN_RDONLY                          0x1000                      /* 只读打开 */
-MR_OPEN_WRONLY                          0x2000                      /* 只写打开 */
-MR_OPEN_RDWR                            0x3000                      /* 可读可写 */
-
-MR_OPEN_NONBLOCKING                     0x4000                      /* 非阻塞 */
+MR_DEVICE_OFLAG_RDONLY                  0x10                        /* 只读打开 */
+MR_DEVICE_OFLAG_WRONLY                  0x20                        /* 只写打开 */
+MR_DEVICE_OFLAG_RDWR                    0x30                        /* 可读可写 */
+MR_DEVICE_OFLAG_NONBLOCKING             0x40                        /* 非阻塞 */
 ```
 
-打开方式可或使用，例如：
+非阻塞打开方式可与其他打开方式相或使用，例如：
 
 ```c
-(MR_OPEN_RDWR | MR_OPEN_NONBLOCKING)                                /* 非阻塞可读可写 */
+(MR_DEVICE_OFLAG_RDWR | MR_DEVICE_OFLAG_NONBLOCKING)                /* 非阻塞可读可写 */
 ```
 
 ### 设备操作方法
@@ -80,8 +78,8 @@ struct mr_device_ops
     mr_err_t (*open)(mr_device_t device);
     mr_err_t (*close)(mr_device_t device);
     mr_err_t (*ioctl)(mr_device_t device, int cmd, void *args);
-    mr_ssize_t (*read)(mr_device_t device, mr_pos_t pos, void *buffer, mr_size_t size);
-    mr_ssize_t (*write)(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
+    mr_ssize_t (*read)(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
+    mr_ssize_t (*write)(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 };
 ```
 
@@ -126,25 +124,24 @@ mr_device_t spi0_device = mr_device_find("spi10");
 mr_device_t spi1_device = mr_device_find("spi11");
 
 /* 挂载总线 */
-mr_device_ioctl(spi0_device, MR_CTRL_ATTACH, "spi1");
-mr_device_ioctl(spi1_device, MR_CTRL_ATTACH, "spi1");
+mr_device_ioctl(spi0_device, MR_DEVICE_CTRL_CONNECT, "spi1");
+mr_device_ioctl(spi1_device, MR_DEVICE_CTRL_CONNECT, "spi1");
 
 /* 以可读可写的方式打开 */
-mr_device_open(spi0_device, MR_OPEN_RDWR);
-mr_device_open(spi1_device, MR_OPEN_RDWR);
+mr_device_open(spi0_device, MR_DEVICE_OFLAG_RDWR);
+mr_device_open(spi1_device, MR_DEVICE_OFLAG_RDWR);
 
 /* 发送数据 */
 char buffer0[] = "hello";
 char buffer1[] = "world";
-mr_device_write(spi0_device, 0, buffer0, sizeof(buffer0) - 1);
-mr_device_write(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
+mr_device_write(spi0_device, -1, buffer0, sizeof(buffer0) - 1);
+mr_device_write(spi1_device, -1, buffer1, sizeof(buffer1) - 1);
 
 /* 读取数据 */
-mr_device_read(spi0_device, 0, buffer0, sizeof(buffer0) - 1);
-mr_device_read(spi1_device, 0, buffer1, sizeof(buffer1) - 1);
+mr_device_read(spi0_device, -1, buffer0, sizeof(buffer0) - 1);
+mr_device_read(spi1_device, -1, buffer1, sizeof(buffer1) - 1);
 
 /* 关闭设备 */
 mr_device_close(spi0_device);
 mr_device_close(spi1_device);
 ```
-

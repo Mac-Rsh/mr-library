@@ -8,24 +8,23 @@ ADC（模数转换器）是一种可以将连续的模拟信号转换为离散�
 
 ----------
 
-## 准备工作
+## 准备
 
-1. 引用 `mrdrv.h` 头文件以使用驱动部分。
-2. 调用ADC设备初始化函数（如果实现了自动初始化,则无需调用）。
-3. 使能 `mrconfig.h` 头文件中ADC宏开关。
+1. 调用ADC设备初始化函数（如果实现了自动初始化,则无需调用）。
+2. 使能 `mrconfig.h` 头文件中ADC宏开关。
 
 ----------
 
 ## 调用关系
 
-![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/adc_device.png)
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/adc_device.png)
 
 ----------
 
 ## 查找ADC设备
 
 ```c
-mr_device_t mr_device_find(const char *name);  
+mr_device_t mr_device_find(const char *name);
 ```
 
 | 参数      | 描述     |
@@ -40,21 +39,21 @@ mr_device_t mr_device_find(const char *name);
 ## 打开ADC设备
 
 ```c
-mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
+mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | ADC设备句柄 |
-| flags     | 打开方式    |
-| **返回**    |         |
-| MR_ERR_OK | 打开设备成功  |
-| 错误码       | 打开设备失败  |  
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | ADC设备  |
+| oflags    | 打开方式   |
+| **返回**    |        |
+| MR_ERR_OK | 打开设备成功 |
+| 错误码       | 打开设备失败 |  
 
 ADC设备支持以下打开方式：
 
 ```c
-MR_OPEN_RDONLY                                                      /* 只读 */
+MR_DEVICE_OFLAG_RDONLY                                                        /* 只读 */
 ```
 
 ----------
@@ -65,20 +64,20 @@ MR_OPEN_RDONLY                                                      /* 只读 */
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | ADC设备句柄 |
-| cmd       | 控制命令    |
-| args      | 控制参数    |
-| **返回**    |         |
-| MR_ERR_OK | 控制设备成功  |
-| 错误码       | 控制设备失败  |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | ADC设备  |
+| cmd       | 控制命令   |
+| args      | 控制参数   |
+| **返回**    |        |
+| MR_ERR_OK | 控制设备成功 |
+| 错误码       | 控制设备失败 |
 
 ADC设备支持以下命令：
 
 ```c
-MR_CTRL_SET_CONFIG                                                  /* 设置参数 */
-MR_CTRL_GET_CONFIG                                                  /* 获取参数 */
+MR_DEVICE_CTRL_SET_CONFIG                                                  /* 设置参数 */
+MR_DEVICE_CTRL_GET_CONFIG                                                  /* 获取参数 */
 ```
 
 ### 设置ADC设备通道
@@ -106,15 +105,15 @@ MR_ENABLE                               1                           /* 使能通
 mr_device_t adc_device = mr_device_find("adc1");
 
 /* 以只读方式打开 */
-mr_device_open(adc_device, MR_OPEN_RDONLY);
+mr_device_open(adc_device, MR_DEVICE_OFLAG_RDONLY);
 
 /* 获取参数 */
 struct mr_adc_config adc_config;
-mr_device_ioctl(adc_device, MR_CTRL_GET_CONFIG, &adc_config);
+mr_device_ioctl(adc_device, MR_DEVICE_CTRL_GET_CONFIG, &adc_config);
 
 /* 使能通道5 */
 adc_config.channel.ch5 = MR_ENABLE;
-mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
+mr_device_ioctl(adc_device, MR_DEVICE_CTRL_SET_CONFIG, &adc_config);
 ```
 
 ----------
@@ -122,22 +121,20 @@ mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
 ## 读取ADC设备通道输入值
 
 ```c
-mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | ADC设备句柄 |
-| pos       | 读取位置    |
-| buffer    | 读取数据地址  |
-| size      | 读取数据大小  |
-| **返回**    |         |
-| 实际读取的数据大小 |         |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | ADC设备  |
+| pos       | 读取位置   |
+| buffer    | 读取数据地址 |
+| size      | 读取数据大小 |
+| **返回**    |        |
+| 实际读取的数据大小 |        |
 
-- 读取位置：需要读取数据的通道。
-- 读取数据：ADC设备采集的输入值。
-
-ADC设备数据为uint32格式。
+- 读取位置：需要读取数据的通道，有效范围：0-31。
+- 读取数据：ADC设备采集的输入值，类型为：uint32。
 
 使用示例：
 
@@ -148,12 +145,12 @@ ADC设备数据为uint32格式。
 mr_device_t adc_device = mr_device_find("adc1");
 
 /* 以只读方式打开 */
-mr_device_open(adc_device, MR_OPEN_RDONLY);
+mr_device_open(adc_device, MR_DEVICE_OFLAG_RDONLY);
 
 /* 使能通道5 */
 struct mr_adc_config adc_config;
 adc_config.channel.ch5 = MR_ENABLE;
-mr_device_ioctl(adc_device, MR_CTRL_SET_CONFIG, &adc_config);
+mr_device_ioctl(adc_device, MR_DEVICE_CTRL_SET_CONFIG, &adc_config);
 
 /* 读取通道5输入值 */
 mr_uint32_t adc_value = 0;
