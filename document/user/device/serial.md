@@ -10,15 +10,14 @@ UART（Universal Asynchronous Receiver/Transmitter）即通用异步收发传输
 
 ## 调用关系
 
-![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/serial_device.png)
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/serial_device.png)
 
 ----------
 
-## 准备工作
+## 准备
 
-1. 引用 `mrdrv.h` 头文件以使用驱动部分。
-2. 调用SERIAL设备初始化函数（如果实现了自动初始化,则无需调用）。
-3. 使能 `mrconfig.h` 头文件中SERIAL宏开关。
+1. 调用SERIAL设备初始化函数（如果实现了自动初始化,则无需调用）。
+2. 使能 `mrconfig.h` 头文件中SERIAL宏开关。
 
 ----------
 
@@ -28,39 +27,39 @@ UART（Universal Asynchronous Receiver/Transmitter）即通用异步收发传输
 mr_device_t mr_device_find(const char *name);
 ```
 
-| 参数       | 描述        |
-|:---------|:----------|
-| name     | SERIAL设备名 |
-| **返回**   |           |
-| SERIAL句柄 | 查找设备成功    |
-| MR_NULL  | 查找设备失败    |
+| 参数       | 描述          |
+|:---------|:------------|
+| name     | SERIAL设备名   | 
+| **返回**   |             |
+| SERIAL   | 查找设备成功      |
+| MR_NULL  | 查找设备失败      |
 
 ----------
 
 ## 打开SERIAL设备
 
 ```c
-mr_err_t mr_device_open(mr_device_t device, mr_uint16_t flags);
+mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags);
 ```
 
-| 参数        | 描述         |
-|:----------|:-----------|
-| device    | SERIAL设备句柄 |
-| flags     | 打开方式       |
-| **返回**    |            |
-| MR_ERR_OK | 打开设备成功     |
-| 错误码       | 打开设备失败     |
+| 参数          | 描述         |
+|:------------|:-----------|
+| device      | SERIAL设备   |
+| oflags      | 打开方式       |
+| **返回**      |            |
+| MR_ERR_OK   | 打开设备成功     |
+| 错误码         | 打开设备失败     |
 
 SERIAL设备支持以下打开方式：
 
 ```c
-MR_OPEN_RDONLY                                                      /* 只读 */
-MR_OPEN_WRONLY                                                      /* 只写 */
-MR_OPEN_RDWR                                                        /* 可读可写 */
-MR_OPEN_NONBLOCKING                                                 /* 非阻塞 */
+MR_DEVICE_OFLAG_RDONLY                                              /* 只读 */
+MR_DEVICE_OFLAG_WRONLY                                              /* 只写 */
+MR_DEVICE_OFLAG_RDWR                                                /* 可读可写 */
+MR_DEVICE_OFLAG_NONBLOCKING                                         /* 非阻塞 */
 ```
 
-当打开方式|MR_OPEN_NONBLOCKING，对串口设备写入数据时将检测发送缓冲区空间是否为0，如果非0，数据将被压入发送缓冲区后通过中断发送。
+当打开方式|MR_DEVICE_OFLAG_NONBLOCKING，对串口设备写入数据时将检测发送缓冲区空间是否为0，如果非0，数据将被压入发送缓冲区后通过中断发送。
 
 | 缓冲区 | 打开方式 | 接收方式 | 发送方式 |
 |:----|:-----|:-----|:-----|
@@ -79,7 +78,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 
 | 参数        | 描述         |
 |:----------|:-----------|
-| device    | SERIAL设备句柄 |
+| device    | SERIAL设备   |
 | cmd       | 控制命令       |
 | args      | 控制参数       |
 | **返回**    |            |
@@ -89,12 +88,12 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 SERIAL设备支持以下命令：
 
 ```c
-MR_CTRL_SET_CONFIG                                                  /* 设置参数 */
-MR_CTRL_GET_CONFIG                                                  /* 获取参数 */
-MR_CTRL_SET_RX_CB                                                   /* 设置接收（接收中断）回调函数 */
-MR_CTRL_SET_TX_CB                                                   /* 设置发送（发送完成中断）回调函数 */     
-MR_CTRL_SET_RX_BUFSZ                                                /* 设置接收缓冲区大小 */
-MR_CTRL_SET_TX_BUFSZ                                                /* 设置发送缓冲区大小 */
+MR_DEVICE_CTRL_SET_CONFIG                                           /* 设置参数 */
+MR_DEVICE_CTRL_GET_CONFIG                                           /* 获取参数 */
+MR_DEVICE_CTRL_SET_RX_CB                                            /* 设置接收（接收中断）回调函数 */
+MR_DEVICE_CTRL_SET_TX_CB                                            /* 设置发送（发送完成中断）回调函数 */     
+MR_DEVICE_CTRL_SET_RX_BUFSZ                                         /* 设置接收缓冲区大小 */
+MR_DEVICE_CTRL_SET_TX_BUFSZ                                         /* 设置发送缓冲区大小 */
 ```
 
 ### 配置SERIAL设备
@@ -115,6 +114,9 @@ struct mr_serial_config
 - 数据位：表示每个字符所占的比特数。
 
 ```c
+MR_SERIAL_DATA_BITS_5                                               /* 数据位5 */
+MR_SERIAL_DATA_BITS_6                                               /* 数据位6 */
+MR_SERIAL_DATA_BITS_7                                               /* 数据位7 */
 MR_SERIAL_DATA_BITS_8                                               /* 数据位8 */
 MR_SERIAL_DATA_BITS_9                                               /* 数据位9 */
 ```
@@ -123,8 +125,9 @@ MR_SERIAL_DATA_BITS_9                                               /* 数据位
 
 ```c
 MR_SERIAL_STOP_BITS_1                                               /* 停止位1 */
-MR_SERIAL_STOP_BITS_1_5                                             /* 停止位1.5 */
 MR_SERIAL_STOP_BITS_2                                               /* 停止位2 */
+MR_SERIAL_STOP_BITS_3                                               /* 停止位3 */
+MR_SERIAL_STOP_BITS_4                                               /* 停止位4 */      
 ```
 
 - 奇偶校验：串口通信中的错误检测方式。
@@ -157,13 +160,13 @@ mr_device_t serial_device = mr_device_find("uart1");
 
 /* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;
-mr_device_ioctl(serial_device, MR_CTRL_SET_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_CONFIG, &serial_config);
 
 /* 获取参数 */
-mr_device_ioctl(serial_device, MR_CTRL_GET_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_GET_CONFIG, &serial_config);
 ```
 
-注：如未手动修改SERIAL设备参数，则默认使用默认参数。
+注：如未手动修改SERIAL设备参数，则打开设备将使用默认参数。
 
 ### 设置SERIAL设备接收（发送完成）回调函数
 
@@ -191,8 +194,8 @@ mr_err_t serial_device_tx_cb(mr_device_t device, void *args)
 mr_device_t serial_device = mr_device_find("uart1");
 
 /* 设置接收（发送完成）回调函数 */
-mr_device_ioctl(serial_device, MR_CTRL_SET_RX_CB, serial_device_rx_cb);
-mr_device_ioctl(serial_device, MR_CTRL_SET_TX_CB, serial_device_tx_cb);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_RX_CB, serial_device_rx_cb);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_TX_CB, serial_device_tx_cb);
 ```
 
 ### 设置SERIAL设备接收（发送）缓冲区大小
@@ -205,8 +208,8 @@ mr_device_t serial_device = mr_device_find("uart1");
 
 /* 设置接收（发送）缓冲区大小 */
 mr_size_t bufsz = 64;
-mr_device_ioctl(serial_device, MR_CTRL_SET_RX_BUFSZ, &bufsz);
-mr_device_ioctl(serial_device, MR_CTRL_SET_TX_BUFSZ, &bufsz);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_RX_BUFSZ, &bufsz);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_TX_BUFSZ, &bufsz);
 ```
 
 ----------
@@ -214,17 +217,17 @@ mr_device_ioctl(serial_device, MR_CTRL_SET_TX_BUFSZ, &bufsz);
 ## SERIAL设备读取数据
 
 ```c
-mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述           |
-|:----------|:-------------|
-| device    | SERIAL设备句柄   |
-| pos       | 读取位置         |
-| buffer    | 读取数据         |
-| size      | 读取数据大小       |
-| **返回**    |              |
-| 实际读取的数据大小 |              |
+| 参数          | 描述           |
+|:------------|:-------------|
+| device      | SERIAL设备     |
+| pos         | 读取位置         |
+| buffer      | 读取数据         |
+| size        | 读取数据大小       |
+| **返回**      |              |
+| 实际读取的数据大小   |              |
 
 使用示例：
 
@@ -233,15 +236,15 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_pos_t pos, const void *buffer, 
 mr_device_t serial_device = mr_device_find("uart1");
 
 /* 以可读可写方式打开 */
-mr_device_open(serial_device, MR_OPEN_RDWR);
+mr_device_open(serial_device, MR_DEVICE_OFLAG_RDWR);
 
 /* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;
-mr_device_ioctl(serial_device, MR_CTRL_SET_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_CONFIG, &serial_config);
 
 /* 读取数据 */
 char buffer[5] = {0};
-mr_device_write(serial_device, 0, buffer, sizeof(buffer));
+mr_device_read(serial_device, 0, buffer, sizeof(buffer));
 ```
 
 ----------
@@ -249,17 +252,17 @@ mr_device_write(serial_device, 0, buffer, sizeof(buffer));
 ## SERIAL设备写入数据
 
 ```c
-mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer, mr_size_t size);
+mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述         |
-|:----------|:-----------|
-| device    | SERIAL设备句柄 |
-| pos       | 写入位置       |
-| buffer    | 写入数据       |
-| size      | 写入数据大小     |
-| **返回**    |            |
-| 实际写入的数据大小 |            |
+| 参数        | 描述        |
+|:----------|:----------|
+| device    | SERIAL设备  |
+| pos       | 写入位置      |
+| buffer    | 写入数据      |
+| size      | 写入数据大小    |
+| **返回**    |           |
+| 实际写入的数据大小 |           |
 
 使用示例：
 
@@ -268,11 +271,11 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_pos_t pos, const void *buffer,
 mr_device_t serial_device = mr_device_find("uart1");
 
 /* 以非阻塞可读可写方式打开 */
-mr_device_open(serial_device, MR_OPEN_RDWR | MR_OPEN_NONBLOCKING);
+mr_device_open(serial_device, MR_DEVICE_OFLAG_RDWR | MR_DEVICE_OFLAG_NONBLOCKING);
 
 /* 设置默认参数 */
 struct mr_serial_config serial_config = MR_SERIAL_CONFIG_DEFAULT;
-mr_device_ioctl(serial_device, MR_CTRL_SET_CONFIG, &serial_config);
+mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_CONFIG, &serial_config);
 
 /* 写入数据 */
 char buffer[] = "hello";

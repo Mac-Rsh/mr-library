@@ -66,7 +66,7 @@ mr_device_ioctl(spi1_device, MR_DEVICE_CTRL_CONNECT, "spi1");
 mr_device_open(spi0_device, MR_DEVICE_OFLAG_RDWR);
 mr_device_open(spi1_device, MR_DEVICE_OFLAG_RDWR);
 
-/* 发送数据 */
+/* 写入数据 */
 char buffer0[] = "hello";
 char buffer1[] = "world";
 mr_device_write(spi0_device, -1, buffer0, sizeof(buffer0) - 1);

@@ -60,6 +60,9 @@ extern "C" {
 #define MR_SPI_POS_BITS_16              16
 #define MR_SPI_POS_BITS_32              32
 
+/**
+ * @def SPI device control transfer flag
+ */
 #define MR_DEVICE_CTRL_SPI_TRANSFER     0x01000000
 
 /**
