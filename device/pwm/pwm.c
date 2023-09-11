@@ -166,7 +166,7 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
     pwm->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&pwm->device, name, Mr_Device_Type_PWM, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
+    return mr_device_add(&pwm->device, name, Mr_Device_Type_PWM, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
 }
 
 #endif

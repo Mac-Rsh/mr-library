@@ -61,7 +61,7 @@ static mr_err_t mr_i2c_device_connect_bus(mr_i2c_device_t i2c_device, const char
             }
 
             i2c_device->bus = MR_NULL;
-            i2c_device->device.oflags = i2c_device->device.sflags = MR_DEVICE_OPEN_FLAG_CLOSED;
+            i2c_device->device.oflags = i2c_device->device.sflags = MR_DEVICE_OFLAG_CLOSED;
         }
 
         return MR_ERR_OK;
@@ -75,7 +75,7 @@ static mr_err_t mr_i2c_device_connect_bus(mr_i2c_device_t i2c_device, const char
     }
 
     /* Open the i2c-bus */
-    ret = mr_device_open(i2c_bus, MR_DEVICE_OPEN_FLAG_RDWR);
+    ret = mr_device_open(i2c_bus, MR_DEVICE_OFLAG_RDWR);
     if (ret != MR_ERR_OK)
     {
         return ret;
@@ -347,7 +347,7 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint
     return mr_device_add(&i2c_device->device,
                          name,
                          Mr_Device_Type_I2C,
-                         MR_DEVICE_OPEN_FLAG_CLOSED,
+                         MR_DEVICE_OFLAG_CLOSED,
                          &device_ops,
                          MR_NULL);
 }
@@ -487,7 +487,7 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
     i2c_bus->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&i2c_bus->device, name, Mr_Device_Type_I2CBUS, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
+    return mr_device_add(&i2c_bus->device, name, Mr_Device_Type_I2CBUS, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
 }
 
 static mr_err_t err_io_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus)

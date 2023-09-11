@@ -126,7 +126,7 @@ mr_err_t mr_pin_device_add(mr_pin_t pin, const char *name, struct mr_pin_ops *op
     pin->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&pin->device, name, Mr_Device_Type_Pin, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
+    return mr_device_add(&pin->device, name, Mr_Device_Type_Pin, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
 }
 
 /**

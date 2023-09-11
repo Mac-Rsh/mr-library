@@ -66,7 +66,7 @@ static mr_err_t mr_spi_device_connect_bus(mr_spi_device_t spi_device, const char
             }
 
             spi_device->bus = MR_NULL;
-            spi_device->device.oflags = spi_device->device.sflags = MR_DEVICE_OPEN_FLAG_CLOSED;
+            spi_device->device.oflags = spi_device->device.sflags = MR_DEVICE_OFLAG_CLOSED;
         }
 
         return MR_ERR_OK;
@@ -80,7 +80,7 @@ static mr_err_t mr_spi_device_connect_bus(mr_spi_device_t spi_device, const char
     }
 
     /* Open the spi-bus */
-    ret = mr_device_open(spi_bus, MR_DEVICE_OPEN_FLAG_RDWR);
+    ret = mr_device_open(spi_bus, MR_DEVICE_OFLAG_RDWR);
     if (ret != MR_ERR_OK)
     {
         return ret;
@@ -538,6 +538,7 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_off_
 
     MR_ASSERT(spi_device != MR_NULL);
     MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(cs_number >= 0);
 
     /* Initialize the private fields */
     spi_device->config.baud_rate = 0;
@@ -548,7 +549,7 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_off_
     return mr_device_add(&spi_device->device,
                          name,
                          Mr_Device_Type_SPI,
-                         MR_DEVICE_OPEN_FLAG_CLOSED,
+                         MR_DEVICE_OFLAG_CLOSED,
                          &device_ops,
                          MR_NULL);
 }
@@ -694,7 +695,7 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
     spi_bus->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&spi_bus->device, name, Mr_Device_Type_SPIBUS, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
+    return mr_device_add(&spi_bus->device, name, Mr_Device_Type_SPIBUS, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
 }
 
 /**

@@ -172,7 +172,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
     mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
     mr_size_t write_size = 0;
 
-    if (serial->tx_fifo.size == 0 || ((device->oflags & MR_DEVICE_OPEN_FLAG_NONBLOCKING) == MR_FALSE))
+    if (serial->tx_fifo.size == 0 || ((device->oflags & MR_DEVICE_OFLAG_NONBLOCKING) == MR_FALSE))
     {
         /* Blocking write */
         while ((write_size += sizeof(*write_buffer)) <= size)
@@ -218,7 +218,7 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
             mr_serial_read,
             mr_serial_write,
         };
-    mr_uint16_t support_flag = MR_DEVICE_OPEN_FLAG_RDWR;
+    mr_uint16_t support_flag = MR_DEVICE_OFLAG_RDWR;
 
     MR_ASSERT(serial != MR_NULL);
     MR_ASSERT(name != MR_NULL);
@@ -227,7 +227,7 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
     /* Non-blocking mode */
     if (ops->start_tx != MR_NULL && ops->stop_tx != MR_NULL)
     {
-        support_flag |= MR_DEVICE_OPEN_FLAG_NONBLOCKING;
+        support_flag |= MR_DEVICE_OFLAG_NONBLOCKING;
     }
 
     /* Initialize the private fields */

@@ -271,7 +271,7 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     timer->ops = ops;
 
     /* Add the container */
-    return mr_device_add(&timer->device, name, Mr_Device_Type_Timer, MR_DEVICE_OPEN_FLAG_RDWR, &device_ops, data);
+    return mr_device_add(&timer->device, name, Mr_Device_Type_Timer, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
 }
 
 /**

@@ -67,7 +67,7 @@ mr_err_t mr_device_add(mr_device_t device,
     /* Initialize the private fields */
     device->type = type;
     device->sflags = sflags;
-    device->oflags = MR_DEVICE_OPEN_FLAG_CLOSED;
+    device->oflags = MR_DEVICE_OFLAG_CLOSED;
     device->ref_count = 0;
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
@@ -137,7 +137,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags)
     }
 
     /* Update the device open flag and reference count */
-    device->oflags |= (oflags & MR_DEVICE_OPEN_FLAG_MASK);
+    device->oflags |= (oflags & MR_DEVICE_OFLAG_MASK);
     device->ref_count++;
 
     /* Device is already opened */
@@ -175,7 +175,7 @@ mr_err_t mr_device_close(mr_device_t device)
     MR_ASSERT(device->object.type == Mr_Object_Type_Device);
 
     /* Check if the device is already closed */
-    if (device->oflags == MR_DEVICE_OPEN_FLAG_CLOSED)
+    if (device->oflags == MR_DEVICE_OFLAG_CLOSED)
     {
         return MR_ERR_OK;
     }
@@ -190,7 +190,7 @@ mr_err_t mr_device_close(mr_device_t device)
     }
 
     /* Set the device status to closed */
-    device->oflags = MR_DEVICE_OPEN_FLAG_CLOSED;
+    device->oflags = MR_DEVICE_OFLAG_CLOSED;
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 
@@ -257,7 +257,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
-    if ((device->ref_count == 0) || ((device->oflags & MR_DEVICE_OPEN_FLAG_RDONLY) == 0))
+    if ((device->ref_count == 0) || ((device->oflags & MR_DEVICE_OFLAG_RDONLY) == 0))
     {
         return -MR_ERR_UNSUPPORTED;
     }
@@ -291,7 +291,7 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
-    if ((device->ref_count == 0) || ((device->oflags & MR_DEVICE_OPEN_FLAG_WRONLY) == 0))
+    if ((device->ref_count == 0) || ((device->oflags & MR_DEVICE_OFLAG_WRONLY) == 0))
     {
         return -MR_ERR_UNSUPPORTED;
     }

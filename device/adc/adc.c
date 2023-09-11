@@ -137,7 +137,7 @@ mr_err_t mr_adc_device_add(mr_adc_t adc, const char *name, struct mr_adc_ops *op
     adc->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&adc->device, name, Mr_Device_Type_ADC, MR_DEVICE_OPEN_FLAG_RDONLY, &device_ops, data);
+    return mr_device_add(&adc->device, name, Mr_Device_Type_ADC, MR_DEVICE_OFLAG_RDONLY, &device_ops, data);
 }
 
 #endif

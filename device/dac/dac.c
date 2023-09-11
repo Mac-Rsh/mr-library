@@ -137,7 +137,7 @@ mr_err_t mr_dac_device_add(mr_dac_t dac, const char *name, struct mr_dac_ops *op
     dac->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&dac->device, name, Mr_Device_Type_DAC, MR_DEVICE_OPEN_FLAG_WRONLY, &device_ops, data);
+    return mr_device_add(&dac->device, name, Mr_Device_Type_DAC, MR_DEVICE_OFLAG_WRONLY, &device_ops, data);
 }
 
 #endif
