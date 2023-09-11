@@ -12,5 +12,6 @@
 #define _DRV_GPIO_H_
 
 #include "device/pin/pin.h"
+#include "mrboard.h"
 
 #endif /* _DRV_GPIO_H_ */

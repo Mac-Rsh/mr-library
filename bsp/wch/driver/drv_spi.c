@@ -291,7 +291,7 @@ static mr_uint32_t ch32_spi_read(mr_spi_bus_t spi_bus)
 
 static void ch32_spi_cs_write(mr_spi_bus_t spi_bus, mr_off_t cs_number, mr_level_t level)
 {
-    if (cs_number < 0 || cs_number > MR_BSP_PIN_NUMBER)
+    if (cs_number > MR_BSP_PIN_NUMBER)
     {
         return;
     }
@@ -301,7 +301,7 @@ static void ch32_spi_cs_write(mr_spi_bus_t spi_bus, mr_off_t cs_number, mr_level
 
 static mr_level_t ch32_spi_cs_read(mr_spi_bus_t spi_bus, mr_off_t cs_number)
 {
-    if (cs_number < 0 || cs_number > MR_BSP_PIN_NUMBER)
+    if (cs_number > MR_BSP_PIN_NUMBER)
     {
         return 0;
     }

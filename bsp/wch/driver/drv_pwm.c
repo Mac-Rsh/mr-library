@@ -58,7 +58,7 @@ static struct ch32_pwm_data ch32_pwm_data[] =
                 {"pwm5",TIM5,RCC_APB1Periph_TIM5},
 #endif
 #ifdef MR_BSP_PWM_6
-                {"pwm5",TIM6,RCC_APB1Periph_TIM6},
+                {"pwm6",TIM6,RCC_APB1Periph_TIM6},
 #endif
 #ifdef MR_BSP_PWM_7
                 {"pwm7",TIM7,RCC_APB1Periph_TIM7},
@@ -74,7 +74,7 @@ static struct ch32_pwm_data ch32_pwm_data[] =
 #endif
         };
 
-static struct mr_pwm pwm_device[mr_array_number_of(ch32_pwm_data)];
+static struct mr_pwm pwm_device[mr_array_num(ch32_pwm_data)];
 
 static mr_err_t ch32_pwm_configure(mr_pwm_t pwm, mr_pwm_config_t config)
 {
@@ -99,7 +99,7 @@ mr_err_t drv_pwm_init(void)
                     ch32_pwm_write,
                     ch32_pwm_read,
             };
-    mr_size_t count = mr_array_number_of(pwm_device);
+    mr_size_t count = mr_array_num(pwm_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)

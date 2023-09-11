@@ -1,6 +1,12 @@
 #ifndef _MR_BOARD_H_
 #define _MR_BOARD_H_
 
+#include "mrapi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @include bsp head file
  */
@@ -86,5 +92,9 @@
 #define MR_BSP_TIMER_8
 #define MR_BSP_TIMER_9
 #define MR_BSP_TIMER_10
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _MR_BOARD_H_ */

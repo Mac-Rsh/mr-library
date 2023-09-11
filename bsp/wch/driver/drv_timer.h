@@ -12,6 +12,7 @@
 #define _DRV_TIMER_H_
 
 #include "device/timer/timer.h"
+#include "mrboard.h"
 
 #if (MR_CFG_TIMER == MR_CFG_ENABLE)
 

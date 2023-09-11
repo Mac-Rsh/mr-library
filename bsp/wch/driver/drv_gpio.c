@@ -193,7 +193,7 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
 
 static mr_level_t ch32_pin_read(mr_pin_t pin, mr_off_t number)
 {
-    if (number < 0 || number > MR_BSP_PIN_NUMBER)
+    if (number > MR_BSP_PIN_NUMBER)
     {
         return 0;
     }
@@ -203,7 +203,7 @@ static mr_level_t ch32_pin_read(mr_pin_t pin, mr_off_t number)
 
 static void ch32_pin_write(mr_pin_t pin, mr_off_t number, mr_level_t level)
 {
-    if (number < 0 || number > MR_BSP_PIN_NUMBER)
+    if (number > MR_BSP_PIN_NUMBER)
     {
         return;
     }

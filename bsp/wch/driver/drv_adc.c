@@ -90,7 +90,7 @@ static mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_off_t channel)
     struct ch32_adc_data *adc_data = (struct ch32_adc_data *)adc->device.data;
     mr_size_t i = 0;
 
-    if (channel < 0 || channel > 17)
+    if (channel > 17)
     {
         return 0;
     }
