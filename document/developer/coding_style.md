@@ -63,6 +63,7 @@
        Red,  
        Green,
        Blue,
+       Light_Pink,
    };
    ```
 
@@ -98,7 +99,7 @@
 
    ```c
    int num_times;
-   char *p;
+   char *pointer;
    ```
 
 3. 宏定义全部大写，下划线分隔。宏函数遵守函数命名规则。
