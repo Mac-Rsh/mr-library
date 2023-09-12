@@ -65,6 +65,8 @@ SPI设备支持以下命令：
 MR_DEVICE_CTRL_SET_CONFIG                                           /* 设置参数 */
 MR_DEVICE_CTRL_GET_CONFIG                                           /* 获取参数 */
 MR_DEVICE_CTRL_CONNECT                                              /* 连接总线 */
+MR_DEVICE_CTRL_SET_RX_CB                                            /* 设置接收（接收中断）回调函数 */
+MR_DEVICE_CTRL_SPI_TRANSFER                                         /* 同步传输 */
 ```
 
 ### 配置SPI设备
@@ -186,6 +188,37 @@ mr_device_t spi_device = mr_device_find("spi10");
 mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SET_RX_CB, spi_device_rx_cb);
 ```
 
+### SPI设备同步传输
+
+```c
+struct mr_spi_transfer
+{
+    void *write_buffer;                                             /* 写入数据 */
+    void *read_buffer;                                              /* 读取数据 */
+
+    mr_size_t size;                                                 /* 传输大小 */
+};
+```
+
+使用示例：
+
+```c
+/* 查找SPI1设备（在此之前请先添加设备并连接总线） */
+mr_device_t spi_device = mr_device_find("spi10");
+
+/* 以可读可写的方式打开SPI设备 */
+mr_device_open(spi_device, MR_DEVICE_OFLAG_RDWR);
+
+/* 传输数据 */
+mr_uint8_t buffer_w[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+mr_uint8_t buffer_r[10];
+struct mr_spi_transfer spi_transfer;
+spi_transfer.write_buffer = buffer_w;
+spi_transfer.read_buffer = buffer_r;
+spi_transfer.size = sizeof(buffer_w);
+mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SPI_TRANSFER, &spi_transfer);
+```
+
 ----------
 
 ## SPI设备读取数据
@@ -257,6 +290,8 @@ mr_device_write(spi_device, -1, buffer, sizeof(buffer) - 1);
 /* 向0x23地址写入数据*/
 mr_device_write(spi_device, 0x23, buffer, sizeof(buffer) - 1);
 ```
+
+
 
 ## 设置SPI总线接收缓冲区大小
 
