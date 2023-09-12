@@ -18,7 +18,7 @@
 自动初始化仅指定类型的函数：
 
 ```c
-typedef int (*init_fn_t)(void);
+typedef int (*mr_init_fn_t)(void);
 ```
 
 使用前请使能 `mrconfig.h` 头文件中 `MR_CFG_AUTO_INIT` 宏开关。

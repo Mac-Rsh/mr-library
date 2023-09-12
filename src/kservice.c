@@ -35,7 +35,7 @@ MR_INIT_EXPORT(end, "4.end");
  */
 int mr_auto_init(void)
 {
-    volatile const init_fn_t *fn = MR_NULL;
+    volatile const mr_init_fn_t *fn = MR_NULL;
 
     /* Auto-initialization */
     for (fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)

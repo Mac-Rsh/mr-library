@@ -392,7 +392,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
         case MR_DEVICE_CTRL_SET_RX_CB:
         {
-            device->rx_cb = args;
+            device->rx_cb = (mr_device_cb_t)args;
             return MR_ERR_OK;
         }
 

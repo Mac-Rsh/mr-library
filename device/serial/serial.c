@@ -108,13 +108,13 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
 
         case MR_DEVICE_CTRL_SET_RX_CB:
         {
-            device->rx_cb = args;
+            device->rx_cb = (mr_device_cb_t)args;
             return MR_ERR_OK;
         }
 
         case MR_DEVICE_CTRL_SET_TX_CB:
         {
-            device->tx_cb = args;
+            device->tx_cb = (mr_device_cb_t)args;
             return MR_ERR_OK;
         }
 

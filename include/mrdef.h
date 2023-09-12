@@ -146,13 +146,13 @@ typedef mr_int8_t mr_state_t;                                       /* Type for 
  */
 #if (MR_CFG_AUTO_INIT == MR_CFG_ENABLE)
 
-typedef int (*init_fn_t)(void);
+typedef int (*mr_init_fn_t)(void);
 
 /**
  * @def Auto-init export
  */
 #define MR_INIT_EXPORT(fn, level) \
-    MR_USED const init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
+    MR_USED const mr_init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
 
 /**
  * @def Driver auto-init export
@@ -325,6 +325,7 @@ enum mr_device_type
 #define MR_DEVICE_CTRL_CONNECT          0x70000000                  /* Connect device */
 
 typedef struct mr_device *mr_device_t;                              /* Type for device */
+typedef mr_err_t (*mr_device_cb_t)(mr_device_t device, void *args); /* Type for device callback */
 
 /**
  * @struct Device operations
