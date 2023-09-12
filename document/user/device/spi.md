@@ -186,19 +186,6 @@ mr_device_t spi_device = mr_device_find("spi10");
 mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SET_RX_CB, spi_device_rx_cb);
 ```
 
-### 设置SPI设备接收缓冲区大小
-
-使用示例：
-
-```c
-/* 查找SPI1设备 */
-mr_device_t spi_device = mr_device_find("spi10");
-
-/* 设置接收缓冲区大小 */
-mr_size_t bufsz = 64;
-mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SET_RX_BUFSZ, &bufsz);
-```
-
 ----------
 
 ## SPI设备读取数据
@@ -269,4 +256,20 @@ mr_device_write(spi_device, -1, buffer, sizeof(buffer) - 1);
 
 /* 向0x23地址写入数据*/
 mr_device_write(spi_device, 0x23, buffer, sizeof(buffer) - 1);
+```
+
+## 设置SPI总线接收缓冲区大小
+
+所有SPI设备共用挂载的总线接收缓冲区，并且只有当有从机设备独占总线且片选使能时，数据才会被存入接收缓冲区中。
+所有挂载的从机设备都能读取缓冲区数据（不建议挂载多个从机）。
+
+使用示例：
+
+```c
+/* 查找SPI1总线 */
+mr_device_t spi_bus = mr_device_find("spi1");
+
+/* 设置接收缓冲区大小 */
+mr_size_t bufsz = 64;
+mr_device_ioctl(spi_bus, MR_DEVICE_CTRL_SET_RX_BUFSZ, &bufsz);
 ```
