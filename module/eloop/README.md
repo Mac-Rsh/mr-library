@@ -8,7 +8,7 @@
 
 使用事件驱动的架构，不同模块之间的耦合度降低。模块之间通过事件进行通信，而不是直接依赖于彼此。这种解耦性使得系统更加灵活，模块之间可以独立地进行开发、测试和维护，同时也方便了新模块的加入和旧模块的替换。
 
-![流程图](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/eloop.jpg)
+![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/eloop.jpg)
 
 ----------
 

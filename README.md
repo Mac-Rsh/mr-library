@@ -14,7 +14,7 @@
 
 ### 项目结构
 
-![项目结构图](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/framework.png)
+![项目结构图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/framework.png)
 
  ----------
 

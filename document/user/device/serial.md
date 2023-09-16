@@ -10,7 +10,7 @@ UART（Universal Asynchronous Receiver/Transmitter）即通用异步收发传输
 
 ## 调用关系
 
-![调用关系](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/serial_device.png)
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/serial_device.png)
 
 ----------
 

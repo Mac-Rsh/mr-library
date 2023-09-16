@@ -17,7 +17,7 @@ ADC（模数转换器）是一种可以将连续的模拟信号转换为离散�
 
 ## 调用关系
 
-![调用关系](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/adc_device.png)
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/adc_device.png)
 
 ----------
 

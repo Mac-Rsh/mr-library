@@ -17,7 +17,7 @@ DAC（数模转换器）是一种可以将离散数字信号转换为连续模�
 
 ## 调用关系
 
-![调用关系](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/dac_device.png)
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/dac_device.png)
 
 ----------
 

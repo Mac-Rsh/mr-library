@@ -4,7 +4,7 @@
 
 ## 操作流程图
 
-![流程图](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/device_process.jpg)
+![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/device_process.jpg)
 
 ## 设备模型
 

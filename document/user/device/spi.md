@@ -18,7 +18,7 @@ SPI（Serial Peripheral Interface）是一种串行外设接口，用于连接�
 
 ## 调用关系
 
-![调用关系](https://gitee.com/MacRsh/mr-library/raw/develop/document/resource/spi_device.png)
+![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/spi_device.png)
 
 ----------
 
