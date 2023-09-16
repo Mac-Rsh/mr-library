@@ -99,7 +99,7 @@ static mr_err_t mr_timer_open(mr_device_t device)
     }
 
     /* Limit the frequency */
-    mr_limit_of(timer->config.freq, timer->data->freq_min, timer->data->freq_max);
+    mr_limit_range(timer->config.freq, timer->data->freq_min, timer->data->freq_max);
 
     return timer->ops->configure(timer, &timer->config);
 }
@@ -126,7 +126,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
             if (args)
             {
                 mr_timer_config_t config = (mr_timer_config_t)args;
-                mr_limit_of(config->freq, timer->data->freq_min, timer->data->freq_max);
+                mr_limit_range(config->freq, timer->data->freq_min, timer->data->freq_max);
                 ret = timer->ops->configure(timer, config);
                 if (ret == MR_ERR_OK)
                 {
