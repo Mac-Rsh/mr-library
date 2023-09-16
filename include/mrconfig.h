@@ -136,7 +136,6 @@ extern "C" {
  * MR_CFG_ENABLE: Enable serial dma
  */
 #define MR_CFG_SERIAL_DMA               MR_CFG_ENABLE
-//TODO：做一下串口DMA和空闲中断接管。DMA用FIFO，指令+数量。
 #endif
 
 /**
@@ -169,8 +168,6 @@ extern "C" {
 #endif
 
 //<------------------------------------ Module config ------------------------------------>
-
-#define MR_CFG_ELOOP                    MR_CFG_ENABLE
 
 #ifdef __cplusplus
 }
