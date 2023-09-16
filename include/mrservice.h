@@ -121,7 +121,7 @@ extern "C" {
  *
  * @return The limit of the value.
  */
-#define mr_limit_of(x, a, b)    do{ (x) = ((x) < (a)) ? (a) : ((x) > (b)) ? (b) : (x); }while(0)
+#define mr_limit_range(x, a, b)    do{ (x) = ((x) < (a)) ? (a) : ((x) > (b)) ? (b) : (x); }while(0)
 
 /**
  * @brief This function initialize a single list.
