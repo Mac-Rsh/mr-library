@@ -31,7 +31,7 @@ mr_device_t mr_device_find(const char *name);
 |:--------|:-------|
 | name    | ADC设备名 |
 | **返回**  |        |
-| ADC句柄   | 查找设备成功 |
+| ADC设备   | 查找设备成功 |
 | MR_NULL | 查找设备失败 |
 
 ----------
