@@ -11,7 +11,7 @@ extern "C" {
 #define MR_CFG_DISABLE                  0
 #define MR_CFG_ENABLE                   1
 
-//<------------------------------------ Configuration ------------------------------------>
+//<------------------------------------ Kernel config ------------------------------------>
 
 /**
  * @def Object name size config
@@ -51,6 +51,8 @@ extern "C" {
  * MR_CFG_ENABLE: Enable auto init
  */
 #define MR_CFG_AUTO_INIT                MR_CFG_ENABLE
+
+//<------------------------------------ Device config ------------------------------------>
 
 /**
  * @def Device config
@@ -127,6 +129,14 @@ extern "C" {
 #define MR_CFG_SERIAL_RX_BUFSZ          32
 #define MR_CFG_SERIAL_TX_BUFSZ          0
 
+/**
+ * @def Serial DMA config
+ *
+ * MR_CFG_DISABLE: Disable serial dma
+ * MR_CFG_ENABLE: Enable serial dma
+ */
+#define MR_CFG_SERIAL_DMA               MR_CFG_ENABLE
+//TODO：做一下串口DMA和空闲中断接管。DMA用FIFO，指令+数量。
 #endif
 
 /**
@@ -157,6 +167,10 @@ extern "C" {
 #define MR_CFG_TIMER                    MR_CFG_ENABLE
 
 #endif
+
+//<------------------------------------ Module config ------------------------------------>
+
+#define MR_CFG_ELOOP                    MR_CFG_ENABLE
 
 #ifdef __cplusplus
 }
