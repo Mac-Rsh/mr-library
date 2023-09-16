@@ -84,7 +84,7 @@ mr_err_t mr_device_add(mr_device_t device,
     ret = mr_object_add(&device->object, name, Mr_Object_Type_Device);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_E(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, ret);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, ret);
     }
 
     return ret;
@@ -108,7 +108,7 @@ mr_err_t mr_device_remove(mr_device_t device)
     ret = mr_object_remove(&device->object);
     if (ret != MR_ERR_OK)
     {
-        MR_DEBUG_E(DEBUG_TAG, "[%s] remove failed: [%d]\r\n", device->object.name, ret);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] remove failed: [%d]\r\n", device->object.name, ret);
     }
 
     return ret;
@@ -132,7 +132,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags)
     /* Check whether the device supports opening in this mode */
     if (oflags != (oflags & device->sflags))
     {
-        MR_DEBUG_E(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, -MR_ERR_UNSUPPORTED);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, -MR_ERR_UNSUPPORTED);
         return -MR_ERR_UNSUPPORTED;
     }
 
@@ -152,7 +152,7 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags)
         ret = device->ops->open(device);
         if (ret != MR_ERR_OK)
         {
-            MR_DEBUG_E(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, ret);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, ret);
         }
         return ret;
     }
@@ -200,7 +200,7 @@ mr_err_t mr_device_close(mr_device_t device)
         ret = device->ops->close(device);
         if (ret != MR_ERR_OK)
         {
-            MR_DEBUG_E(DEBUG_TAG, "[%s] close failed: [%d]\r\n", device->object.name, ret);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] close failed: [%d]\r\n", device->object.name, ret);
         }
         return ret;
     }
@@ -230,7 +230,7 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
         ret = device->ops->ioctl(device, cmd, args);
         if (ret != MR_ERR_OK)
         {
-            MR_DEBUG_E(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, ret);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, ret);
         }
         return ret;
     }
@@ -266,7 +266,7 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
     ret = device->ops->read(device, pos, buffer, size);
     if (ret < MR_ERR_OK)
     {
-        MR_DEBUG_E(DEBUG_TAG, "[%s] read [%d] failed: [%d]\r\n", device->object.name, pos, ret);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] read [%d] failed: [%d]\r\n", device->object.name, pos, ret);
     }
 
     return ret;
@@ -300,7 +300,7 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
     ret = device->ops->write(device, pos, buffer, size);
     if (ret < MR_ERR_OK)
     {
-        MR_DEBUG_E(DEBUG_TAG, "[%s] write [%d] failed: [%d]\r\n", device->object.name, pos, ret);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] write [%d] failed: [%d]\r\n", device->object.name, pos, ret);
     }
 
     return ret;
