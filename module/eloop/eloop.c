@@ -38,7 +38,7 @@ mr_eloop_t mr_eloop_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the eloop object from the container */
-    return (mr_eloop_t)mr_object_find(name, Mr_Object_Type_Module);
+    return (mr_eloop_t)mr_object_find(name, Mr_Object_Type_Eloop);
 }
 
 /**
@@ -73,7 +73,7 @@ mr_err_t mr_eloop_add(mr_eloop_t eloop, const char *name, mr_size_t queue_size)
     eloop->list = MR_NULL;
 
     /* Add the object to the container */
-    ret = mr_object_add(&eloop->object, name, Mr_Object_Type_Module);
+    ret = mr_object_add(&eloop->object, name, Mr_Object_Type_Eloop);
     if (ret != MR_ERR_OK)
     {
         MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, ret);
@@ -96,7 +96,7 @@ mr_err_t mr_eloop_remove(mr_eloop_t eloop)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
 
     /* Remove the object from the container */
     ret = mr_object_remove(&eloop->object);
@@ -127,7 +127,7 @@ void mr_eloop_handle(mr_eloop_t eloop)
     mr_uint32_t id = 0;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
 
     /* Get the number of current events */
     count = mr_rb_get_data_size(&eloop->queue);
@@ -136,14 +136,13 @@ void mr_eloop_handle(mr_eloop_t eloop)
     while (count != 0)
     {
         /* Read the event id */
-        mr_rb_read(&eloop->queue, &id, sizeof(id));
-        count -= sizeof(id);
+        count -= mr_rb_read(&eloop->queue, &id, sizeof(id));
 
         /* Find the event */
         mr_event_t event = (mr_event_t)mr_avl_find(eloop->list, id);
-        if (event == NULL)
+        if (event == MR_NULL)
         {
-            MR_DEBUG_D(DEBUG_TAG, "[%s] handle failed: [%d]\r\n", eloop->object.name, -MR_ERR_NOT_FOUND);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
             continue;
         }
 
@@ -167,20 +166,20 @@ mr_err_t mr_eloop_create_event(mr_eloop_t eloop, mr_uint32_t id, mr_err_t (*cb)(
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
     MR_ASSERT(cb != MR_NULL);
 
     /* Check if the event already exists */
     if (mr_avl_find(eloop->list, id) != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] watch event failed: [%d]\r\n", eloop->object.name, -MR_ERR_BUSY);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] created event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
         return -MR_ERR_BUSY;
     }
 
     event = (mr_event_t)mr_malloc(sizeof(struct mr_event));
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] watch event failed: [%d]\r\n", eloop->object.name, -MR_ERR_NO_MEMORY);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] created event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
         return -MR_ERR_NO_MEMORY;
     }
 
@@ -214,10 +213,15 @@ mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id)
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
 
     /* Check if the event already exists */
     event = (mr_event_t)mr_avl_find(eloop->list, id);
+    if (event == MR_NULL)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "[%s] delete event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
+        return -MR_ERR_NOT_FOUND;
+    }
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -245,11 +249,11 @@ mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id)
 mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id)
 {
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
 
     if (mr_rb_write(&eloop->queue, &id, sizeof(id)) != sizeof(id))
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] post event failed: [%d]\r\n", eloop->object.name, -MR_ERR_BUSY);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] notify event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
         return -MR_ERR_BUSY;
     }
 
@@ -267,13 +271,13 @@ mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id)
 mr_err_t mr_eloop_trigger_event(mr_eloop_t eloop, mr_uint32_t id)
 {
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
 
     /* Find the event */
     mr_event_t event = (mr_event_t)mr_avl_find(eloop->list, id);
-    if (event == NULL)
+    if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] handle failed: [%d]\r\n", eloop->object.name, -MR_ERR_NOT_FOUND);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] trigger event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
         return -MR_ERR_NOT_FOUND;
     }
 
