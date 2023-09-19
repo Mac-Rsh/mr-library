@@ -38,7 +38,7 @@ mr_eloop_t mr_eloop_find(const char *name)
     MR_ASSERT(name != MR_NULL);
 
     /* Find the eloop object from the container */
-    return (mr_eloop_t)mr_object_find(name, Mr_Object_Type_Eloop);
+    return (mr_eloop_t)mr_object_find(name, Mr_Object_Type_Module);
 }
 
 /**
@@ -73,7 +73,7 @@ mr_err_t mr_eloop_add(mr_eloop_t eloop, const char *name, mr_size_t queue_size)
     eloop->list = MR_NULL;
 
     /* Add the object to the container */
-    ret = mr_object_add(&eloop->object, name, Mr_Object_Type_Eloop);
+    ret = mr_object_add(&eloop->object, name, Mr_Object_Type_Module);
     if (ret != MR_ERR_OK)
     {
         MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, ret);
@@ -96,7 +96,7 @@ mr_err_t mr_eloop_remove(mr_eloop_t eloop)
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
 
     /* Remove the object from the container */
     ret = mr_object_remove(&eloop->object);
@@ -127,7 +127,7 @@ void mr_eloop_handle(mr_eloop_t eloop)
     mr_uint32_t id = 0;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
 
     /* Get the number of current events */
     count = mr_rb_get_data_size(&eloop->queue);
@@ -166,7 +166,7 @@ mr_err_t mr_eloop_create_event(mr_eloop_t eloop, mr_uint32_t id, mr_err_t (*cb)(
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
     MR_ASSERT(cb != MR_NULL);
 
     /* Check if the event already exists */
@@ -213,7 +213,7 @@ mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id)
     mr_event_t event = MR_NULL;
 
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
 
     /* Check if the event already exists */
     event = (mr_event_t)mr_avl_find(eloop->list, id);
@@ -249,7 +249,7 @@ mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id)
 mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id)
 {
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
 
     if (mr_rb_write(&eloop->queue, &id, sizeof(id)) != sizeof(id))
     {
@@ -271,7 +271,7 @@ mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id)
 mr_err_t mr_eloop_trigger_event(mr_eloop_t eloop, mr_uint32_t id)
 {
     MR_ASSERT(eloop != MR_NULL);
-    MR_ASSERT(eloop->object.type == Mr_Object_Type_Eloop);
+    MR_ASSERT(eloop->object.type == Mr_Object_Type_Module);
 
     /* Find the event */
     mr_event_t event = (mr_event_t)mr_avl_find(eloop->list, id);

@@ -242,8 +242,6 @@ enum mr_object_type
     Mr_Object_Type_None = 0,                                        /* None object */
     Mr_Object_Type_Device,                                          /* Device object */
     Mr_Object_Type_Module,                                          /* Module object */
-    Mr_Object_Type_Eloop,                                           /* Eloop object */
-    Mr_Object_Type_Eloop_Sp,                                        /* Eloop Sp object */
 };
 
 /**

@@ -12,7 +12,7 @@
 #define _ELOOP_H_
 
 #include "mrapi.h"
-
+#define MR_CFG_ELOOP MR_CFG_ENABLE
 #if (MR_CFG_ELOOP == MR_CFG_ENABLE)
 
 /**
