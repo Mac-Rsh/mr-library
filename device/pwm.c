@@ -8,7 +8,7 @@
  * 2023-06-12     MacRsh       first version
  */
 
-#include "device/pwm/pwm.h"
+#include "pwm.h"
 
 #if (MR_CFG_PWM == MR_CFG_ENABLE)
 

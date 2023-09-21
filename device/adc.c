@@ -8,7 +8,7 @@
  * 2023-04-23     MacRsh       first version
  */
 
-#include "device/adc/adc.h"
+#include "adc.h"
 
 #if (MR_CFG_ADC == MR_CFG_ENABLE)
 
