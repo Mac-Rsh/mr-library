@@ -12,9 +12,9 @@
 
 static struct mr_object_container mr_object_container_table[] =
     {
-        {Mr_Object_Type_None,   {&mr_object_container_table[Mr_Object_Type_None].list,   &mr_object_container_table[Mr_Object_Type_None].list}},
-        {Mr_Object_Type_Device, {&mr_object_container_table[Mr_Object_Type_Device].list, &mr_object_container_table[Mr_Object_Type_Device].list}},
-        {Mr_Object_Type_Module, {&mr_object_container_table[Mr_Object_Type_Module].list, &mr_object_container_table[Mr_Object_Type_Module].list}},
+        {Mr_Object_Type_None,   MR_OBJECT_MAGIC, {&mr_object_container_table[Mr_Object_Type_None].list,   &mr_object_container_table[Mr_Object_Type_None].list}},
+        {Mr_Object_Type_Device, MR_OBJECT_MAGIC, {&mr_object_container_table[Mr_Object_Type_Device].list, &mr_object_container_table[Mr_Object_Type_Device].list}},
+        {Mr_Object_Type_Module, MR_OBJECT_MAGIC, {&mr_object_container_table[Mr_Object_Type_Module].list, &mr_object_container_table[Mr_Object_Type_Module].list}},
     };
 
 static mr_size_t mr_allocated_memory_size = 0;
@@ -26,7 +26,7 @@ static mr_size_t mr_allocated_memory_size = 0;
  *
  * @return A pointer to the find container, or MR_NULL if not find.
  */
-mr_object_container_t mr_object_container_find(mr_uint32_t type)
+mr_object_container_t mr_object_container_find(mr_uint16_t type)
 {
     mr_size_t count = 0;
 
@@ -49,7 +49,7 @@ mr_object_container_t mr_object_container_find(mr_uint32_t type)
  *
  * @return A pointer to the find object, or MR_NULL if not find.
  */
-mr_object_t mr_object_find(const char *name, mr_uint32_t type)
+mr_object_t mr_object_find(const char *name, mr_uint16_t type)
 {
     mr_object_container_t container = MR_NULL;
     mr_list_t list = MR_NULL;
@@ -94,11 +94,12 @@ mr_object_t mr_object_find(const char *name, mr_uint32_t type)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint32_t type)
+mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint16_t type)
 {
     mr_object_container_t container = MR_NULL;
 
     MR_ASSERT(object != MR_NULL);
+    MR_ASSERT(object->magic != MR_OBJECT_MAGIC);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(type < mr_array_num(mr_object_container_table));
 
@@ -118,6 +119,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint32_t type)
     /* Initialize the private fields */
     mr_strncpy(object->name, name, MR_CFG_OBJECT_NAME_SIZE);
     object->type = type;
+    object->magic = MR_OBJECT_MAGIC;
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -141,6 +143,7 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint32_t type)
 mr_err_t mr_object_remove(mr_object_t object)
 {
     MR_ASSERT(object != MR_NULL);
+    MR_ASSERT(object->magic == MR_OBJECT_MAGIC);
 
     /* Check if the object already exists in the container */
     if (mr_object_find(object->name, object->type) == MR_NULL)
@@ -148,14 +151,14 @@ mr_err_t mr_object_remove(mr_object_t object)
         return -MR_ERR_NOT_FOUND;
     }
 
-    /* Reset the object type */
-    object->type = Mr_Object_Type_None;
-
     /* Disable interrupt */
     mr_interrupt_disable();
 
     /* Remove the object from the container's list */
     mr_list_remove(&(object->list));
+
+    /* Reset the object type */
+    object->magic = 0x0000;
 
     /* Enable interrupt */
     mr_interrupt_enable();
@@ -171,12 +174,13 @@ mr_err_t mr_object_remove(mr_object_t object)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-mr_err_t mr_object_change_type(mr_object_t object, mr_uint32_t type)
+mr_err_t mr_object_change_type(mr_object_t object, mr_uint16_t type)
 {
     mr_object_container_t container = MR_NULL;
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(object != MR_NULL);
+    MR_ASSERT(object->magic == MR_OBJECT_MAGIC);
     MR_ASSERT(type < mr_array_num(mr_object_container_table));
 
     /* Get the container for the specified type */

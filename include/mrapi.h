@@ -66,11 +66,11 @@ mr_size_t mr_avl_get_length(mr_avl_t tree);
  * @addtogroup Object
  * @{
  */
-mr_object_container_t mr_object_container_find(mr_uint32_t type);
-mr_object_t mr_object_find(const char *name, mr_uint32_t type);
-mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint32_t type);
+mr_object_container_t mr_object_container_find(mr_uint16_t type);
+mr_object_t mr_object_find(const char *name, mr_uint16_t type);
+mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint16_t type);
 mr_err_t mr_object_remove(mr_object_t object);
-mr_err_t mr_object_change_type(mr_object_t object, mr_uint32_t type);
+mr_err_t mr_object_change_type(mr_object_t object, mr_uint16_t type);
 void mr_object_rename(mr_object_t object, char *name);
 /** @} */
 
