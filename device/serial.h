@@ -114,8 +114,6 @@ struct mr_serial
     struct mr_device device;
 
     struct mr_serial_config config;
-    struct mr_rb rx_fifo;
-    struct mr_rb tx_fifo;
 
     const struct mr_serial_ops *ops;
 };

@@ -148,7 +148,6 @@ struct mr_spi_bus
 
     struct mr_spi_config config;
     struct mr_mutex lock;
-    struct mr_rb rx_fifo;
     mr_spi_device_t owner;
 
     const struct mr_spi_bus_ops *ops;
