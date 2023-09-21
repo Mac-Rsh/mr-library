@@ -11,7 +11,7 @@
 #ifndef _DRV_I2C_H_
 #define _DRV_I2C_H_
 
-#include "device/i2c/i2c.h"
+#include "device/i2c.h"
 #include "mrboard.h"
 
 #if (MR_CFG_I2C == MR_CFG_ENABLE)

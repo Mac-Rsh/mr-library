@@ -11,7 +11,7 @@
 #ifndef _DRV_ADC_H_
 #define _DRV_ADC_H_
 
-#include "device/adc/adc.h"
+#include "device/adc.h"
 #include "mrboard.h"
 
 #if (MR_CFG_ADC == MR_CFG_ENABLE)

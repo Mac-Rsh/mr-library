@@ -11,7 +11,7 @@
 #ifndef _DRV_SPI_H_
 #define _DRV_SPI_H_
 
-#include "device/spi/spi.h"
+#include "device/spi.h"
 #include "mrboard.h"
 
 #if (MR_CFG_SPI == MR_CFG_ENABLE)

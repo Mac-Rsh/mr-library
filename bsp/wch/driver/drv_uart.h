@@ -11,7 +11,7 @@
 #ifndef _DRV_UART_H_
 #define _DRV_UART_H_
 
-#include "device/serial/serial.h"
+#include "device/serial.h"
 #include "mrboard.h"
 
 #if (MR_CFG_SERIAL == MR_CFG_ENABLE)

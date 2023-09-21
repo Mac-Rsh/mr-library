@@ -11,7 +11,7 @@
 #ifndef _DRV_DAC_H_
 #define _DRV_DAC_H_
 
-#include "device/dac/dac.h"
+#include "device/dac.h"
 #include "mrboard.h"
 
 #if (MR_CFG_DAC == MR_CFG_ENABLE)

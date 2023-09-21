@@ -11,7 +11,7 @@
 #ifndef _DRV_PWM_H
 #define _DRV_PWM_H
 
-#include "device/pwm/pwm.h"
+#include "device/pwm.h"
 #include "mrboard.h"
 
 #if (MR_CFG_PWM == MR_CFG_ENABLE)
