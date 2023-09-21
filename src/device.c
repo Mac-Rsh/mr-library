@@ -61,6 +61,7 @@ mr_err_t mr_device_add(mr_device_t device,
     mr_err_t ret = MR_ERR_OK;
 
     MR_ASSERT(device != MR_NULL);
+    MR_ASSERT(device->object.magic != MR_OBJECT_MAGIC);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
@@ -69,6 +70,8 @@ mr_err_t mr_device_add(mr_device_t device,
     device->sflags = sflags;
     device->oflags = MR_DEVICE_OFLAG_CLOSED;
     device->ref_count = 0;
+    mr_rb_init(&device->rx_fifo, MR_NULL, 0);
+    mr_rb_init(&device->tx_fifo, MR_NULL, 0);
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 
@@ -109,7 +112,12 @@ mr_err_t mr_device_remove(mr_device_t device)
     if (ret != MR_ERR_OK)
     {
         MR_DEBUG_D(DEBUG_TAG, "[%s] remove failed: [%d]\r\n", device->object.name, ret);
+        return ret;
     }
+
+    /* Reset the device */
+    mr_rb_allocate_buffer(&device->rx_fifo, 0);
+    mr_rb_allocate_buffer(&device->tx_fifo, 0);
 
     return ret;
 }
@@ -191,6 +199,8 @@ mr_err_t mr_device_close(mr_device_t device)
 
     /* Set the device status to closed */
     device->oflags = MR_DEVICE_OFLAG_CLOSED;
+    mr_rb_reset(&device->rx_fifo);
+    mr_rb_reset(&device->tx_fifo);
     device->rx_cb = MR_NULL;
     device->tx_cb = MR_NULL;
 

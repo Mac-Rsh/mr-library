@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <malloc.h>
 #include <string.h>
 
 #ifdef __cplusplus
@@ -245,11 +244,17 @@ enum mr_object_type
 };
 
 /**
+ * @def Object magic number
+ */
+#define MR_OBJECT_MAGIC                 0x6D72                      /* Mr object magic number */
+
+/**
  * @struct Object container
  */
 struct mr_object_container
 {
-    mr_uint32_t type;                                               /* Object type */
+    mr_uint16_t type;                                               /* Object type */
+    mr_uint16_t magic;                                              /* Object magic number */
     struct mr_list list;                                            /* Container list */
 };
 typedef struct mr_object_container *mr_object_container_t;          /* Type for container */
@@ -260,7 +265,8 @@ typedef struct mr_object_container *mr_object_container_t;          /* Type for 
 struct mr_object
 {
     char name[MR_CFG_OBJECT_NAME_SIZE];                             /* Object name */
-    mr_uint32_t type;                                               /* Object type */
+    mr_uint16_t type;                                               /* Object type */
+    mr_uint16_t magic;                                              /* Object magic number */
     struct mr_list list;                                            /* Object list */
 };
 typedef struct mr_object *mr_object_t;                              /* Type for object */
@@ -351,6 +357,8 @@ struct mr_device
     mr_uint8_t oflags;                                              /* Open mode flags */
     mr_uint8_t reserved;                                            /* Reserved */
     mr_size_t ref_count;                                            /* Number of references */
+    struct mr_rb rx_fifo;                                           /* Receive FIFO */
+    struct mr_rb tx_fifo;                                           /* Transmit FIFO */
     mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* Receive the completed callback */
     mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* Send completion callback */
 
