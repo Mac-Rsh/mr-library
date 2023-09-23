@@ -240,7 +240,7 @@ mr_err_t mr_rb_allocate_buffer(mr_rb_t rb, mr_size_t size)
 
     /* Allocate new buffer */
     pool = mr_malloc(size);
-    if (pool == MR_NULL)
+    if (pool == MR_NULL && size != 0)
     {
         return -MR_ERR_NO_MEMORY;
     }
