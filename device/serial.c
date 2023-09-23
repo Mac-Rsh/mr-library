@@ -40,23 +40,6 @@ static void err_io_serial_stop_tx(mr_serial_t serial)
 static mr_err_t mr_serial_open(mr_device_t device)
 {
     mr_serial_t serial = (mr_serial_t)device;
-    struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
-
-    /* Enable serial using the default config */
-    if (serial->config.baud_rate == 0)
-    {
-        serial->config = default_config;
-    }
-
-    /* Allocate fifo using configuration size */
-    if(mr_rb_get_buffer_size(&device->rx_fifo) == 0)
-    {
-        mr_rb_allocate_buffer(&device->rx_fifo, MR_CFG_SERIAL_RX_BUFSZ);
-    }
-    if(mr_rb_get_buffer_size(&device->tx_fifo) == 0)
-    {
-        mr_rb_allocate_buffer(&device->rx_fifo, MR_CFG_SERIAL_TX_BUFSZ);
-    }
 
     return serial->ops->configure(serial, &serial->config);
 }
@@ -64,11 +47,13 @@ static mr_err_t mr_serial_open(mr_device_t device)
 static mr_err_t mr_serial_close(mr_device_t device)
 {
     mr_serial_t serial = (mr_serial_t)device;
+    struct mr_serial_config config = {0};
 
-    /* Disable serial */
-    serial->config.baud_rate = 0;
+    /* Reset fifo */
+    mr_rb_reset(&serial->rx_fifo);
+    mr_rb_reset(&serial->tx_fifo);
 
-    return serial->ops->configure(serial, &serial->config);
+    return serial->ops->configure(serial, &config);
 }
 
 static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
@@ -121,7 +106,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
             if (args)
             {
                 mr_size_t bufsz = *((mr_size_t *)args);
-                return mr_rb_allocate_buffer(&device->rx_fifo, bufsz);
+                return mr_rb_allocate_buffer(&serial->rx_fifo, bufsz);
             }
             return -MR_ERR_INVALID;
         }
@@ -131,7 +116,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
             if (args)
             {
                 mr_size_t bufsz = *((mr_size_t *)args);
-                return mr_rb_allocate_buffer(&device->tx_fifo, bufsz);
+                return mr_rb_allocate_buffer(&serial->tx_fifo, bufsz);
             }
             return -MR_ERR_INVALID;
         }
@@ -147,7 +132,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
     mr_uint8_t *read_buffer = (mr_uint8_t *)buffer;
     mr_size_t read_size = 0;
 
-    if (mr_rb_get_buffer_size(&device->rx_fifo) == 0)
+    if (mr_rb_get_buffer_size(&serial->rx_fifo) == 0)
     {
         /* Blocking read */
         while ((read_size += sizeof(*read_buffer)) <= size)
@@ -158,7 +143,7 @@ static mr_ssize_t mr_serial_read(mr_device_t device, mr_off_t pos, void *buffer,
     } else
     {
         /* Non-blocking read */
-        read_size = mr_rb_read(&device->rx_fifo, read_buffer, size);
+        read_size = mr_rb_read(&serial->rx_fifo, read_buffer, size);
     }
 
     return (mr_ssize_t)read_size;
@@ -170,7 +155,7 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
     mr_uint8_t *write_buffer = (mr_uint8_t *)buffer;
     mr_size_t write_size = 0;
 
-    if (mr_rb_get_buffer_size(&device->tx_fifo) == 0 || ((device->oflags & MR_DEVICE_OFLAG_NONBLOCKING) == MR_FALSE))
+    if (mr_rb_get_buffer_size(&serial->tx_fifo) == 0 || ((device->oflags & MR_DEVICE_OFLAG_NONBLOCKING) == MR_FALSE))
     {
         /* Blocking write */
         while ((write_size += sizeof(*write_buffer)) <= size)
@@ -181,16 +166,10 @@ static mr_ssize_t mr_serial_write(mr_device_t device, mr_off_t pos, const void *
     } else
     {
         /* Non-blocking write */
-        if (mr_rb_get_data_size(&device->tx_fifo) != 0)
-        {
-            write_size = mr_rb_write(&device->tx_fifo, write_buffer, size);
-        } else
-        {
-            write_size = mr_rb_write(&device->tx_fifo, write_buffer, size);
+        write_size = mr_rb_write(&serial->tx_fifo, write_buffer, size);
 
-            /* Start interrupt send */
-            serial->ops->start_tx(serial);
-        }
+        /* Start interrupt send */
+        serial->ops->start_tx(serial);
     }
 
     return (mr_ssize_t)write_size;
@@ -216,20 +195,27 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
             mr_serial_read,
             mr_serial_write,
         };
+    struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
     mr_uint16_t support_flag = MR_DEVICE_OFLAG_RDWR;
 
     MR_ASSERT(serial != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
+    /* Initialize the private fields */
+    serial->config = default_config;
+    mr_rb_init(&serial->rx_fifo, MR_NULL, 0);
+    mr_rb_init(&serial->tx_fifo, MR_NULL, 0);
+
+    /* Allocate fifo using configuration size */
+    mr_rb_allocate_buffer(&serial->rx_fifo, MR_CFG_SERIAL_RX_BUFSZ);
+    mr_rb_allocate_buffer(&serial->rx_fifo, MR_CFG_SERIAL_TX_BUFSZ);
+
     /* Non-blocking mode */
     if (ops->start_tx != MR_NULL && ops->stop_tx != MR_NULL)
     {
         support_flag |= MR_DEVICE_OFLAG_NONBLOCKING;
     }
-
-    /* Initialize the private fields */
-    serial->config.baud_rate = 0;
 
     /* Protect every operation of the serial device */
     ops->configure = ops->configure ? ops->configure : err_io_serial_configure;
@@ -259,12 +245,12 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
         {
             /* Save data to the fifo */
             mr_uint8_t data = serial->ops->read(serial);
-            mr_rb_push_force(&serial->device.rx_fifo, data);
+            mr_rb_push_force(&serial->rx_fifo, data);
 
             /* Call the receiving completion function */
             if (serial->device.rx_cb != MR_NULL)
             {
-                mr_size_t size = mr_rb_get_data_size(&serial->device.rx_fifo);
+                mr_size_t size = mr_rb_get_data_size(&serial->rx_fifo);
                 serial->device.rx_cb(&serial->device, &size);
             }
             break;
@@ -274,7 +260,7 @@ void mr_serial_device_isr(mr_serial_t serial, mr_uint32_t event)
         {
             /* Write data from the fifo */
             mr_uint8_t data = 0;
-            if (mr_rb_pop(&serial->device.tx_fifo, &data) == sizeof(data))
+            if (mr_rb_pop(&serial->tx_fifo, &data) == sizeof(data))
             {
                 serial->ops->write(serial, data);
             } else
