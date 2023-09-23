@@ -357,8 +357,6 @@ struct mr_device
     mr_uint8_t oflags;                                              /* Open mode flags */
     mr_uint8_t reserved;                                            /* Reserved */
     mr_size_t ref_count;                                            /* Number of references */
-    struct mr_rb rx_fifo;                                           /* Receive FIFO */
-    struct mr_rb tx_fifo;                                           /* Transmit FIFO */
     mr_err_t (*rx_cb)(mr_device_t device, void *args);              /* Receive the completed callback */
     mr_err_t (*tx_cb)(mr_device_t device, void *args);              /* Send completion callback */
 
