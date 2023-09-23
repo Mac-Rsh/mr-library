@@ -273,6 +273,16 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
         return MR_ERR_OK;
     }
 
+    if(mutex->owner == acquirer)
+    {
+        mutex->hold++;
+
+        /* Enable interrupt */
+        mr_interrupt_enable();
+
+        return MR_ERR_OK;
+    }
+
     /* Enable interrupt */
     mr_interrupt_enable();
 
