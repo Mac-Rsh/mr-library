@@ -39,6 +39,12 @@ extern "C" {
 #define MR_I2C_POS_BITS_32              32
 
 /**
+ * @def I2C device interrupt event
+ */
+#define MR_I2C_BUS_EVENT_RX_INT         0x10000000
+#define MR_I2C_BUS_EVENT_MASK           0xf0000000
+
+/**
  * @def I2C device default config
  */
 #define MR_I2C_CONFIG_DEFAULT           \
@@ -72,6 +78,8 @@ struct mr_i2c_device
     struct mr_device device;
 
     struct mr_i2c_config config;
+    struct mr_rb rx_fifo;
+    struct mr_rb tx_fifo;
     mr_uint32_t address;
     mr_i2c_bus_t bus;
 };
