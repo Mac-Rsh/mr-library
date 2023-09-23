@@ -68,8 +68,8 @@ extern "C" {
 /**
  * @def SPI device interrupt event
  */
-#define MR_SPI_BUS_EVENT_RX_INT          0x10000000
-#define MR_SPI_BUS_EVENT_MASK            0xf0000000
+#define MR_SPI_BUS_EVENT_RX_INT         0x10000000
+#define MR_SPI_BUS_EVENT_MASK           0xf0000000
 
 /**
  * @def SPI device default config
@@ -122,6 +122,8 @@ struct mr_spi_device
     struct mr_device device;
 
     struct mr_spi_config config;
+    struct mr_rb rx_fifo;
+    struct mr_rb tx_fifo;
     mr_off_t cs_number;
     mr_spi_bus_t bus;
 };
