@@ -427,7 +427,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
         case MR_DEVICE_CTRL_SPI_TRANSFER:
         {
-            if (args)
+            if (args && (device->oflags & MR_DEVICE_OFLAG_RDWR) == MR_DEVICE_OFLAG_RDWR)
             {
                 struct mr_spi_transfer *tf = (struct mr_spi_transfer *)args;
                 mr_ssize_t tf_size = 0;
@@ -639,6 +639,7 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
     /* Initialize the private fields */
     spi_bus->config.baud_rate = 0;
     mr_mutex_init(&spi_bus->lock);
+    spi_bus->owner = MR_NULL;
 
     /* Protect every operation of the spi-bus device */
     ops->configure = ops->configure ? ops->configure : err_io_spi_configure;
