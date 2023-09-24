@@ -95,6 +95,18 @@ extern "C" {
  */
 #define MR_CFG_I2C                      MR_CFG_ENABLE
 
+#if (MR_CFG_I2C == MR_CFG_ENABLE)
+
+/**
+ * @def I2C RX/TX buffer default size.
+ *
+ * If the default configuration is not required, set the value to 0.
+ */
+#define MR_CFG_I2C_RX_BUFSZ             0
+#define MR_CFG_I2C_TX_BUFSZ             0
+
+#endif
+
 /**
  * @def Pin config.
  *
@@ -142,19 +154,11 @@ extern "C" {
 #if (MR_CFG_SPI == MR_CFG_ENABLE)
 
 /**
- * @def SPI RX buffer default size.
+ * @def SPI RX/TX buffer default size.
  *
  * If the default configuration is not required, set the value to 0.
  */
 #define MR_CFG_SPI_RX_BUFSZ             32
-
-/**
- * @def SPI TX buffer default size.
- *
- * If the default configuration is not required, set the value to 0.
- *
- * @note Not yet enabled.
- */
 #define MR_CFG_SPI_TX_BUFSZ             0
 
 #endif

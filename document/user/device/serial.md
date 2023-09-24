@@ -200,6 +200,12 @@ mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_TX_CB, serial_device_tx_cb);
 
 ### 设置SERIAL设备接收（发送）缓冲区大小
 
+设备关闭时会重置缓冲区数据，请在关闭设备前确保数据不再需要。
+
+设备所有操作都不会主动释放缓冲区，如不再使用，请主动设置缓冲区为0。
+
+`mrconfig.h` 中配置的缓冲区大小将在`serial`类设备添加时自动申请设定字节大小的缓冲区。
+
 使用示例：
 
 ```c
