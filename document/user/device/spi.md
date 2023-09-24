@@ -66,6 +66,7 @@ MR_DEVICE_CTRL_SET_CONFIG                                           /* 设置参
 MR_DEVICE_CTRL_GET_CONFIG                                           /* 获取参数 */
 MR_DEVICE_CTRL_CONNECT                                              /* 连接总线 */
 MR_DEVICE_CTRL_SET_RX_CB                                            /* 设置接收（接收中断）回调函数 */
+MR_DEVICE_CTRL_SET_RX_BUFSZ                                         /* 设置接收缓冲区大小 */
 MR_DEVICE_CTRL_SPI_TRANSFER                                         /* 同步传输 */
 ```
 
@@ -134,7 +135,7 @@ MR_SPI_POS_BITS_32                                                  /* 32位位�
 
 ### SPI设备配置，连接、断开总线
 
-SPI设备添加后并不能立即进行读写操作，其读写操作依赖总线，所以当SPI设备未连接总线或从总线断开后，其不支持以任何形式打开。如果原先处于打开状态，其也会被强制关闭。
+SPI设备添加后并不能立即进行读写操作，其读写操作依赖总线。SPI从机设备挂载总线后其余设备将无法进行读写操作，直至从机设备断开连接。
 
 使用示例：
 
@@ -186,6 +187,19 @@ mr_device_t spi_device = mr_device_find("spi10");
 
 /* 设置接收回调函数 */
 mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SET_RX_CB, spi_device_rx_cb);
+```
+
+## 设置SPI设备接收缓冲区大小
+
+使用示例：
+
+```c
+/* 查找SPI1设备 */
+mr_device_t spi_device = mr_device_find("spi10");
+
+/* 设置接收缓冲区大小 */
+mr_size_t bufsz = 64;
+mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SET_RX_BUFSZ, &bufsz);
 ```
 
 ### SPI设备同步传输
@@ -289,22 +303,4 @@ mr_device_write(spi_device, -1, buffer, sizeof(buffer) - 1);
 
 /* 向0x23地址写入数据*/
 mr_device_write(spi_device, 0x23, buffer, sizeof(buffer) - 1);
-```
-
-
-
-## 设置SPI总线接收缓冲区大小
-
-所有SPI设备共用挂载的总线接收缓冲区，并且只有当有从机设备独占总线且片选使能时，数据才会被存入接收缓冲区中。
-所有挂载的从机设备都能读取缓冲区数据（不建议挂载多个从机）。
-
-使用示例：
-
-```c
-/* 查找SPI1总线 */
-mr_device_t spi_bus = mr_device_find("spi1");
-
-/* 设置接收缓冲区大小 */
-mr_size_t bufsz = 64;
-mr_device_ioctl(spi_bus, MR_DEVICE_CTRL_SET_RX_BUFSZ, &bufsz);
 ```
