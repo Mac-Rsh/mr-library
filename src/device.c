@@ -226,18 +226,20 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
     MR_ASSERT(device != MR_NULL);
     MR_ASSERT(device->object.type == Mr_Object_Type_Device);
 
-    /* Call the ioctl operation, if provided */
-    if (device->ops->ioctl != MR_NULL)
+    /* Check if the ioctl operation is supported */
+    if (device->ops->ioctl == MR_NULL)
     {
-        ret = device->ops->ioctl(device, cmd, args);
-        if (ret != MR_ERR_OK)
-        {
-            MR_DEBUG_D(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, ret);
-        }
-        return ret;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, -MR_ERR_UNSUPPORTED);
+        return -MR_ERR_UNSUPPORTED;
     }
 
-    return -MR_ERR_UNSUPPORTED;
+    /* Call the ioctl operation */
+    ret = device->ops->ioctl(device, cmd, args);
+    if (ret != MR_ERR_OK)
+    {
+        MR_DEBUG_D(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, ret);
+    }
+    return ret;
 }
 
 /**
@@ -259,8 +261,9 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
-    if ((device->ref_count == 0) || ((device->oflags & MR_DEVICE_OFLAG_RDONLY) == 0))
+    if ((device->oflags & MR_DEVICE_OFLAG_RDONLY) == MR_FALSE)
     {
+        MR_DEBUG_D(DEBUG_TAG, "[%s] read [%d] failed: [%d]\r\n", device->object.name, pos, -MR_ERR_UNSUPPORTED);
         return -MR_ERR_UNSUPPORTED;
     }
 
@@ -293,8 +296,9 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
     MR_ASSERT(buffer != MR_NULL);
 
     /* Check if the device is closed or unsupported */
-    if ((device->ref_count == 0) || ((device->oflags & MR_DEVICE_OFLAG_WRONLY) == 0))
+    if ((device->oflags & MR_DEVICE_OFLAG_WRONLY) == MR_FALSE)
     {
+        MR_DEBUG_D(DEBUG_TAG, "[%s] write [%d] failed: [%d]\r\n", device->object.name, pos, -MR_ERR_UNSUPPORTED);
         return -MR_ERR_UNSUPPORTED;
     }
 
