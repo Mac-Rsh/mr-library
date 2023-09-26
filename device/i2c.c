@@ -391,7 +391,7 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint
     mr_rb_allocate_buffer(&i2c_device->rx_fifo, MR_CFG_I2C_TX_BUFSZ);
 
     /* Add the device */
-    return mr_device_add(&i2c_device->device, name, Mr_Device_Type_I2C, MR_DEVICE_OFLAG_CLOSED, &device_ops, MR_NULL);
+    return mr_device_add(&i2c_device->device, name, Mr_Device_Type_I2C, MR_DEVICE_OFLAG_RDWR, &device_ops, MR_NULL);
 }
 
 static mr_err_t mr_i2c_bus_close(mr_device_t device)
