@@ -349,16 +349,16 @@ static mr_err_t mr_spi_device_open(mr_device_t device)
 {
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
 
+    /* Reset fifo */
+    mr_rb_reset(&spi_device->rx_fifo);
+    mr_rb_reset(&spi_device->tx_fifo);
+
     return mr_spi_device_configure_cs(spi_device, MR_ENABLE);
 }
 
 static mr_err_t mr_spi_device_close(mr_device_t device)
 {
     mr_spi_device_t spi_device = (mr_spi_device_t)device;
-
-    /* Reset fifo */
-    mr_rb_reset(&spi_device->rx_fifo);
-    mr_rb_reset(&spi_device->tx_fifo);
 
     return mr_spi_device_configure_cs(spi_device, MR_DISABLE);
 }

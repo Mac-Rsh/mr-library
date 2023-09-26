@@ -41,6 +41,10 @@ static mr_err_t mr_serial_open(mr_device_t device)
 {
     mr_serial_t serial = (mr_serial_t)device;
 
+    /* Reset fifo */
+    mr_rb_reset(&serial->rx_fifo);
+    mr_rb_reset(&serial->tx_fifo);
+
     return serial->ops->configure(serial, &serial->config);
 }
 
@@ -48,10 +52,6 @@ static mr_err_t mr_serial_close(mr_device_t device)
 {
     mr_serial_t serial = (mr_serial_t)device;
     struct mr_serial_config config = {0};
-
-    /* Reset fifo */
-    mr_rb_reset(&serial->rx_fifo);
-    mr_rb_reset(&serial->tx_fifo);
 
     return serial->ops->configure(serial, &config);
 }
