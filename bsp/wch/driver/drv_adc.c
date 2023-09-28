@@ -54,46 +54,41 @@ static mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
     {
         if (count <= 7)
         {
-            if (((1 << count) & config->channel._mask) == MR_ENABLE)
+            if (((1 << count) & config->channel._mask))
             {
                 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
                 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-            } else
-            {
-                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+
+                GPIOx = GPIOA;
+                GPIO_InitStructure.GPIO_Pin = (1 << count);
+                GPIO_Init(GPIOx, &GPIO_InitStructure);
             }
-            GPIOx = GPIOA;
-            GPIO_InitStructure.GPIO_Pin = (1 << count);
-            GPIO_Init(GPIOx, &GPIO_InitStructure);
+
         } else if (count <= 10)
         {
-            if (((1 << count) & config->channel._mask) == MR_ENABLE)
+            if (((1 << count) & config->channel._mask))
             {
                 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
                 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-            } else
-            {
-                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+
+                GPIOx = GPIOB;
+                GPIO_InitStructure.GPIO_Pin = (1 << count);
+                GPIO_Init(GPIOx, &GPIO_InitStructure);
             }
-            GPIOx = GPIOB;
-            GPIO_InitStructure.GPIO_Pin = (1 << count);
-            GPIO_Init(GPIOx, &GPIO_InitStructure);
         } else if (count <= 15)
         {
-            if (((1 << count) & config->channel._mask) == MR_ENABLE)
+            if (((1 << count) & config->channel._mask))
             {
                 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
                 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-            } else
-            {
-                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+
+                GPIOx = GPIOC;
+                GPIO_InitStructure.GPIO_Pin = (1 << count);
+                GPIO_Init(GPIOx, &GPIO_InitStructure);
             }
-            GPIOx = GPIOC;
-            GPIO_InitStructure.GPIO_Pin = (1 << count);
-            GPIO_Init(GPIOx, &GPIO_InitStructure);
         } else if (count <= 17)
         {
-            if (((1 << count) & config->channel._mask) == MR_ENABLE)
+            if (((1 << count) & config->channel._mask))
             {
                 ADC_TempSensorVrefintCmd(ENABLE);
             } else
