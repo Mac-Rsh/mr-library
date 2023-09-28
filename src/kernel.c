@@ -70,7 +70,7 @@ mr_object_t mr_object_find(const char *name, mr_uint16_t type)
     /* Walk through the container looking for objects */
     for (list = container->list.next; list != &container->list; list = list->next)
     {
-        mr_object_t object = mr_container_of(list, struct mr_object, list);
+        mr_object_t object = (mr_object_t)mr_container_of(list, struct mr_object, list);
         if (mr_strncmp(object->name, name, MR_CFG_OBJECT_NAME_SIZE) == 0)
         {
             /* Enable interrupt */

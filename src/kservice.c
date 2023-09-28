@@ -72,7 +72,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
     mr_size_t size = 0;
     va_list args;
 
-    if(level > 4)
+    if (level > 4)
     {
         return;
     }
@@ -92,7 +92,7 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
  */
 MR_WEAK void mr_assert_handle(char *file, int line)
 {
-#define MR_DEBUG_TAG "!!!"
+#define MR_DEBUG_TAG "assert"
     MR_DEBUG_A(MR_DEBUG_TAG, "file: [%s], line: [%d], fail to run.\r\n", file, line);
 #undef MR_DEBUG_TAG
 
@@ -114,7 +114,7 @@ MR_WEAK void mr_assert_handle(char *file, int line)
 mr_err_t mr_console_init(void)
 {
     console_device = mr_device_find(MR_CFG_CONSOLE_NAME);
-    if(console_device == MR_NULL)
+    if (console_device == MR_NULL)
     {
         return -MR_ERR_NOT_FOUND;
     }
@@ -136,7 +136,7 @@ MR_INIT_DEVICE_EXPORT(mr_console_init);
 MR_WEAK mr_size_t mr_printf_output(const char *buffer, mr_size_t size)
 {
 #if (MR_CFG_DEVICE == MR_CFG_ENABLE)
-    if(console_device == MR_NULL)
+    if (console_device == MR_NULL)
     {
         return 0;
     }
@@ -184,7 +184,12 @@ MR_WEAK void mr_interrupt_enable(void)
  */
 MR_WEAK void mr_delay_us(mr_size_t us)
 {
+    volatile mr_size_t tick = 0;
 
+    while (tick < us)
+    {
+        tick++;
+    }
 }
 
 /**
