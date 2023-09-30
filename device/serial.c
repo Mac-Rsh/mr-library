@@ -209,7 +209,7 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
 
     /* Allocate fifo using configuration size */
     mr_rb_allocate_buffer(&serial->rx_fifo, MR_CFG_SERIAL_RX_BUFSZ);
-    mr_rb_allocate_buffer(&serial->rx_fifo, MR_CFG_SERIAL_TX_BUFSZ);
+    mr_rb_allocate_buffer(&serial->tx_fifo, MR_CFG_SERIAL_TX_BUFSZ);
 
     /* Non-blocking mode */
     if (ops->start_tx != MR_NULL && ops->stop_tx != MR_NULL)
