@@ -362,6 +362,8 @@ static mr_ssize_t mr_i2c_device_write(mr_device_t device, mr_off_t pos, const vo
  * @param name The name of the i2c device.
  * @param address The address of the i2c device.
  *
+ * @note The address is the one that has not been moved left by 1 bit.
+ *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
 mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint32_t address)
