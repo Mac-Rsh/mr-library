@@ -80,17 +80,32 @@ static struct ch32_timer_data ch32_timer_data[] =
 #endif
     };
 
-static struct mr_timer_data timer_device_data = {10000000, 5000, 0xffff, MR_TIMER_COUNT_MODE_UP};
+static struct mr_timer_data timer_device_data = {144000000, 0xffff, 0xffff, MR_TIMER_COUNT_MODE_UP};
 
 static struct mr_timer timer_device[mr_array_num(ch32_timer_data)];
 
-static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_timer_config_t config)
+static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_state_t state)
 {
     struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     RCC_ClocksTypeDef RCC_ClockStructure = {0};
     mr_uint32_t pclk_freq = 0;
+
+    if (state == MR_DISABLE)
+    {
+        if ((uint32_t)timer_data->instance > APB2PERIPH_BASE)
+        {
+            RCC_APB2PeriphClockCmd(timer_data->timer_periph_clock, DISABLE);
+        } else
+        {
+            RCC_APB1PeriphClockCmd(timer_data->timer_periph_clock, DISABLE);
+        }
+
+        TIM_ITConfig(timer_data->instance, TIM_IT_Update, DISABLE);
+        TIM_Cmd(timer_data->instance, DISABLE);
+        return MR_ERR_OK;
+    }
 
     RCC_GetClocksFreq(&RCC_ClockStructure);
 
@@ -115,6 +130,7 @@ static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_timer_config_t config)
             pclk_freq = 2 * RCC_ClockStructure.PCLK1_Frequency;
         }
     }
+    timer->data->clk = pclk_freq;
 
     switch (timer->data->count_mode)
     {
@@ -127,18 +143,6 @@ static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_timer_config_t config)
         case MR_TIMER_COUNT_MODE_DOWN:
         {
             TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Down;
-            break;
-        }
-
-        default:
-            return -MR_ERR_INVALID;
-    }
-
-    switch (timer->data->count_max)
-    {
-        case 0xFFFF:
-        {
-            TIM_TimeBaseInitStructure.TIM_Prescaler = (pclk_freq / config->freq) - 1;
             break;
         }
 
@@ -161,7 +165,7 @@ static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_timer_config_t config)
     return MR_ERR_OK;
 }
 
-static void ch32_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
+static void ch32_timer_start(mr_timer_t timer, mr_uint32_t prescaler, mr_uint32_t period)
 {
     struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
 
@@ -170,9 +174,10 @@ static void ch32_timer_start(mr_timer_t timer, mr_uint32_t period_reload)
         timer_data->instance->CNT = 0;
     } else
     {
-        timer_data->instance->CNT = period_reload - 1;
+        timer_data->instance->CNT = period - 1;
     }
-    timer_data->instance->ATRLR = period_reload - 1;
+    timer_data->instance->PSC = prescaler - 1;
+    timer_data->instance->ATRLR = period - 1;
 
     TIM_Cmd(timer_data->instance, ENABLE);
 }

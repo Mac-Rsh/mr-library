@@ -42,7 +42,6 @@ extern "C" {
  */
 #define MR_TIMER_CONFIG_DEFAULT         \
 {                                       \
-    1000,                               \
     MR_TIMER_MODE_PERIOD,               \
 }
 
@@ -51,7 +50,6 @@ extern "C" {
  */
 struct mr_timer_config
 {
-    mr_uint32_t freq;
     mr_uint32_t mode: 1;
     mr_uint32_t reserved: 31;
 };
@@ -62,9 +60,9 @@ typedef struct mr_timer_config *mr_timer_config_t;
  */
 struct mr_timer_data
 {
-    mr_uint32_t freq_max;
-    mr_uint32_t freq_min;
-    mr_uint32_t count_max;
+    mr_uint32_t clk;
+    mr_uint32_t prescaler_max;
+    mr_uint32_t period_max;
     mr_uint32_t count_mode: 1;
     mr_uint32_t reserved: 31;
 };
@@ -76,8 +74,8 @@ typedef struct mr_timer *mr_timer_t;
  */
 struct mr_timer_ops
 {
-    mr_err_t (*configure)(mr_timer_t timer, mr_timer_config_t config);
-    void (*start)(mr_timer_t timer, mr_uint32_t period_reload);
+    mr_err_t (*configure)(mr_timer_t timer, mr_state_t state);
+    void (*start)(mr_timer_t timer, mr_uint32_t prescaler, mr_uint32_t period);
     void (*stop)(mr_timer_t timer);
     mr_uint32_t (*get_count)(mr_timer_t timer);
 };
@@ -91,11 +89,11 @@ struct mr_timer
 
     struct mr_timer_config config;
     mr_uint32_t reload;
-    mr_uint32_t cycles;
     mr_uint32_t overflow;
+    mr_uint32_t count;
     mr_uint32_t timeout;
 
-    const struct mr_timer_data *data;
+    struct mr_timer_data *data;
     const struct mr_timer_ops *ops;
 };
 
