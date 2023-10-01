@@ -32,13 +32,21 @@ static mr_uint32_t err_io_timer_get_count(mr_timer_t timer)
     return 0;
 }
 
-static void mr_timer_calculate(mr_timer_t timer, mr_uint32_t timeout, mr_uint32_t *prescaler, mr_uint32_t *period)
+static mr_err_t mr_timer_calculate(mr_timer_t timer, mr_uint32_t timeout, mr_uint32_t *prescaler, mr_uint32_t *period)
 {
-    mr_uint32_t error = 0, error_min = timeout, temp_period = 0, temp_reload = 0;
+    mr_uint32_t clk_mhz = 0, temp_period = 0, temp_reload = 0, error = 0, error_min = timeout;
     mr_uint32_t i = 0;
 
+    /* Check the clock */
+    clk_mhz = timer->data->clk / 1000000u;
+    if (clk_mhz == 0)
+    {
+        return -MR_ERR_GENERIC;
+    }
+
     /* Calculate the prescaler */
-    for (*prescaler = (timer->data->clk / 1000000u); *prescaler <= (timer->data->prescaler_max / 10); *prescaler *= 10)
+    *prescaler = clk_mhz;
+    for (; *prescaler <= (timer->data->prescaler_max / 10); *prescaler *= 10)
     {
         if (timeout % 10 != 0)
         {
@@ -75,7 +83,8 @@ static void mr_timer_calculate(mr_timer_t timer, mr_uint32_t timeout, mr_uint32_
         }
     }
 
-    for (i = 9; i > 1; i--)
+    /* Calculate the optimal reload */
+    for (i = 2; i <= 9; i++)
     {
         while ((timer->reload % i) == 0)
         {
@@ -88,11 +97,19 @@ static void mr_timer_calculate(mr_timer_t timer, mr_uint32_t timeout, mr_uint32_
             {
                 break;
             }
+            if (timer->reload > *period && timer->reload < timer->data->period_max)
+            {
+                timer->reload = timer->reload ^ *period;
+                *period = timer->reload ^ *period;
+                timer->reload = timer->reload ^ *period;
+            }
         }
     }
 
     timer->count = *period;
-    timer->timeout = (*prescaler) * (*period) / (timer->data->clk / 1000000u);
+    timer->timeout = (*prescaler) * (*period) / clk_mhz;
+
+    return MR_ERR_OK;
 }
 
 static mr_err_t mr_timer_open(mr_device_t device)
@@ -166,7 +183,6 @@ static mr_ssize_t mr_timer_read(mr_device_t device, mr_off_t pos, void *buffer, 
 
         *read_buffer = timer->overflow * timer->timeout + count * timer->timeout / timer->count;
 
-        printf("time %d\r\n", *read_buffer);
         read_buffer++;
     }
 
@@ -179,6 +195,7 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *b
     mr_uint32_t *write_buffer = (mr_uint32_t *)buffer;
     mr_uint32_t timeout = 0, prescaler = 0, period = 0;
     mr_size_t write_size = 0;
+    mr_err_t ret = MR_ERR_OK;
 
     while ((write_size += sizeof(*write_buffer)) <= size)
     {
@@ -190,15 +207,13 @@ static mr_ssize_t mr_timer_write(mr_device_t device, mr_off_t pos, const void *b
     timer->overflow = 0;
     if (timeout != 0)
     {
-        mr_timer_calculate(timer, timeout, &prescaler, &period);
+        ret = mr_timer_calculate(timer, timeout, &prescaler, &period);
+        if (ret != MR_ERR_OK)
+        {
+            return ret;
+        }
         timer->ops->start(timer, prescaler, period);
     }
-
-    printf("timeout: %d, count: %d, reload: %d, overflow: %d\n",
-           timer->timeout,
-           timer->count,
-           timer->reload,
-           timer->overflow);
 
     return (mr_ssize_t)write_size;
 }
@@ -242,7 +257,7 @@ mr_err_t mr_timer_device_add(mr_timer_t timer,
     timer->config = default_config;
     timer->reload = 0;
     timer->overflow = 0;
-    timer->count = 0;
+    timer->count = 1;
     timer->timeout = 0;
     timer->data = timer_data;
 
