@@ -9,13 +9,6 @@ SPI（Serial Peripheral Interface）是一种串行外设接口，用于连接�
 
 ----------
 
-## 准备
-
-1. 调用SPI设备初始化函数（如果实现了自动初始化,则无需调用）。
-2. 使能 `mrconfig.h` 头文件中SPI宏开关。
-
-----------
-
 ## 调用关系
 
 ![调用关系](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/spi_device.png)
