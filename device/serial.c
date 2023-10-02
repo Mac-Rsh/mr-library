@@ -196,7 +196,7 @@ mr_err_t mr_serial_device_add(mr_serial_t serial, const char *name, struct mr_se
             mr_serial_write,
         };
     struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
-    mr_uint16_t support_flag = MR_DEVICE_OFLAG_RDWR;
+    mr_uint8_t support_flag = MR_DEVICE_OFLAG_RDWR;
 
     MR_ASSERT(serial != MR_NULL);
     MR_ASSERT(name != MR_NULL);
