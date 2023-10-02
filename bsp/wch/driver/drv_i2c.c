@@ -27,14 +27,14 @@ static struct ch32_soft_i2c_bus_data ch32_soft_i2c_bus_data[] =
 
 static struct mr_soft_i2c_bus soft_i2c_bus_device[mr_array_num(ch32_soft_i2c_bus_data)];
 
-static mr_err_t ch32_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus)
+static mr_err_t ch32_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus, mr_state_t state)
 {
     struct ch32_soft_i2c_bus_data *soft_i2c_bus_data = (struct ch32_soft_i2c_bus_data *)i2c_bus->i2c_bus.device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
 
     RCC_APB2PeriphClockCmd(soft_i2c_bus_data->gpio_periph_clock, ENABLE);
     GPIO_InitStructure.GPIO_Pin = soft_i2c_bus_data->scl_gpio_pin | soft_i2c_bus_data->sda_gpio_pin;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Mode = state == MR_ENABLE ? GPIO_Mode_Out_PP : GPIO_Mode_IN_FLOATING;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(soft_i2c_bus_data->gpio_port, &GPIO_InitStructure);
 
