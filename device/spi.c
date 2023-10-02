@@ -130,25 +130,28 @@ static mr_err_t mr_spi_device_connect_bus(mr_spi_device_t spi_device, const char
             {
                 return ret;
             }
-            spi_device->bus = MR_NULL;
         }
 
         /* Set the spi-bus */
         spi_device->bus = (mr_spi_bus_t)spi_bus;
 
-        /* Slave mode monopolizes the bus */
-        if (spi_device->config.host_slave == MR_SPI_SLAVE)
+        /* Connect the new spi-bus */
+        if (spi_device->bus != MR_NULL)
         {
-            ret = mr_spi_device_take_bus(spi_device);
-            if (ret != MR_ERR_OK)
+            /* Slave mode monopolizes the bus */
+            if (spi_device->config.host_slave == MR_SPI_SLAVE)
             {
-                spi_device->bus = MR_NULL;
-                return ret;
+                ret = mr_spi_device_take_bus(spi_device);
+                if (ret != MR_ERR_OK)
+                {
+                    spi_device->bus = MR_NULL;
+                    return ret;
+                }
             }
-        }
 
-        /* Open the spi-bus */
-        return mr_device_open(spi_bus, MR_DEVICE_OFLAG_RDWR);
+            /* Open the spi-bus */
+            return mr_device_open(spi_bus, MR_DEVICE_OFLAG_BUS);
+        }
     }
 
     return MR_ERR_OK;
@@ -600,15 +603,19 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_off_
     return mr_device_add(&spi_device->device, name, Mr_Device_Type_SPI, MR_DEVICE_OFLAG_RDWR, &device_ops, MR_NULL);
 }
 
-static mr_err_t mr_spi_bus_close(mr_device_t device)
+static mr_err_t mr_spi_bus_open(mr_device_t device)
 {
     mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
 
-    /* Disable spi */
-    spi_bus->config.baud_rate = 0;
-    mr_mutex_init(&spi_bus->lock);
-
     return spi_bus->ops->configure(spi_bus, &spi_bus->config);
+}
+
+static mr_err_t mr_spi_bus_close(mr_device_t device)
+{
+    mr_spi_bus_t spi_bus = (mr_spi_bus_t)device;
+    struct mr_spi_config config = {0};
+
+    return spi_bus->ops->configure(spi_bus, &config);
 }
 
 /**
@@ -625,19 +632,20 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
 {
     static struct mr_device_ops device_ops =
         {
-            MR_NULL,
+            mr_spi_bus_open,
             mr_spi_bus_close,
             MR_NULL,
             MR_NULL,
             MR_NULL,
         };
+    struct mr_spi_config default_config = MR_SPI_CONFIG_DEFAULT;
 
     MR_ASSERT(spi_bus != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Initialize the private fields */
-    spi_bus->config.baud_rate = 0;
+    spi_bus->config = default_config;
     mr_mutex_init(&spi_bus->lock);
     spi_bus->owner = MR_NULL;
 
@@ -650,7 +658,7 @@ mr_err_t mr_spi_bus_add(mr_spi_bus_t spi_bus, const char *name, struct mr_spi_bu
     spi_bus->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&spi_bus->device, name, Mr_Device_Type_SPIBUS, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
+    return mr_device_add(&spi_bus->device, name, Mr_Device_Type_SPIBUS, MR_DEVICE_OFLAG_BUS, &device_ops, data);
 }
 
 /**
