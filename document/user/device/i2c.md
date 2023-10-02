@@ -31,6 +31,8 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint
 | MR_ERR_OK  | 添加设备成功   |
 | 错误码        | 添加设备失败   |
 
+I2C设备地址为未向左移1位的地址。
+
 ## 控制I2C设备
 
 ```c
