@@ -33,7 +33,7 @@ extern "C" {
     1000,                               \
     MR_PWM_MODE_NORMAL,                 \
     0,                                  \
-    0,                                  \
+    {0},                                \
 }
 
 /**

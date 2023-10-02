@@ -30,13 +30,6 @@ static mr_uint32_t err_io_pwm_read(mr_pwm_t pwm, mr_off_t channel)
 static mr_err_t mr_pwm_open(mr_device_t device)
 {
     mr_pwm_t pwm = (mr_pwm_t)device;
-    struct mr_pwm_config default_config = MR_PWM_CONFIG_DEFAULT;
-
-    /* Enable pwm using default config */
-    if (pwm->config.freq == 0)
-    {
-        pwm->config = default_config;
-    }
 
     return pwm->ops->configure(pwm, &pwm->config);
 }
@@ -44,12 +37,9 @@ static mr_err_t mr_pwm_open(mr_device_t device)
 static mr_err_t mr_pwm_close(mr_device_t device)
 {
     mr_pwm_t pwm = (mr_pwm_t)device;
+    struct mr_pwm_config config = {0};
 
-    /* Disable pwm */
-    pwm->config.freq = 0;
-    pwm->config.channel._mask = 0;
-
-    return pwm->ops->configure(pwm, &pwm->config);
+    return pwm->ops->configure(pwm, &config);
 }
 
 static mr_err_t mr_pwm_ioctl(mr_device_t device, int cmd, void *args)
@@ -150,14 +140,14 @@ mr_err_t mr_pwm_device_add(mr_pwm_t pwm, const char *name, struct mr_pwm_ops *op
             mr_pwm_read,
             mr_pwm_write,
         };
+    struct mr_pwm_config default_config = MR_PWM_CONFIG_DEFAULT;
 
     MR_ASSERT(pwm != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Initialize the private fields */
-    pwm->config.freq = 0;
-    pwm->config.channel._mask = 0;
+    pwm->config = default_config;
 
     /* Protect every operation of the pwm device */
     ops->configure = ops->configure ? ops->configure : err_io_pwm_configure;
