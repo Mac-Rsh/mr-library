@@ -118,7 +118,7 @@ typedef struct mr_soft_i2c_bus *mr_soft_i2c_bus_t;
  */
 struct mr_soft_i2c_ops
 {
-    mr_err_t (*configure)(mr_soft_i2c_bus_t i2c_bus);
+    mr_err_t (*configure)(mr_soft_i2c_bus_t i2c_bus, mr_state_t state);
     void (*scl_write)(mr_soft_i2c_bus_t i2c_bus, mr_level_t level);
     void (*sda_write)(mr_soft_i2c_bus_t i2c_bus, mr_level_t level);
     mr_level_t (*sda_read)(mr_soft_i2c_bus_t i2c_bus);

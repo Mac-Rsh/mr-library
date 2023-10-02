@@ -123,25 +123,28 @@ static mr_err_t mr_i2c_device_connect_bus(mr_i2c_device_t i2c_device, const char
             {
                 return ret;
             }
-            i2c_device->bus = MR_NULL;
         }
 
         /* Set the i2c-bus */
         i2c_device->bus = (mr_i2c_bus_t)i2c_bus;
 
-        /* Slave mode monopolizes the bus */
-        if (i2c_device->config.host_slave == MR_I2C_SLAVE)
+        /* Connect the new i2c-bus */
+        if (i2c_device->bus != MR_NULL)
         {
-            ret = mr_i2c_device_take_bus(i2c_device);
-            if (ret != MR_ERR_OK)
+            /* Slave mode monopolizes the bus */
+            if (i2c_device->config.host_slave == MR_I2C_SLAVE)
             {
-                i2c_device->bus = MR_NULL;
-                return ret;
+                ret = mr_i2c_device_take_bus(i2c_device);
+                if (ret != MR_ERR_OK)
+                {
+                    i2c_device->bus = MR_NULL;
+                    return ret;
+                }
             }
-        }
 
-        /* Open the i2c-bus */
-        return mr_device_open(i2c_bus, MR_DEVICE_OFLAG_RDWR);
+            /* Open the i2c-bus */
+            return mr_device_open(i2c_bus, MR_DEVICE_OFLAG_BUS);
+        }
     }
 
     return MR_ERR_OK;
@@ -161,7 +164,7 @@ MR_INLINE void mr_i2c_device_send_address(mr_i2c_device_t i2c_device, mr_state_t
     }
 }
 
-static mr_err_t mr_i2c_device_close(mr_device_t device)
+static mr_err_t mr_i2c_device_open(mr_device_t device)
 {
     mr_i2c_device_t i2c_device = (mr_i2c_device_t)device;
 
@@ -370,8 +373,8 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint
 {
     static struct mr_device_ops device_ops =
         {
+            mr_i2c_device_open,
             MR_NULL,
-            mr_i2c_device_close,
             mr_i2c_device_ioctl,
             mr_i2c_device_read,
             mr_i2c_device_write,
@@ -396,15 +399,19 @@ mr_err_t mr_i2c_device_add(mr_i2c_device_t i2c_device, const char *name, mr_uint
     return mr_device_add(&i2c_device->device, name, Mr_Device_Type_I2C, MR_DEVICE_OFLAG_RDWR, &device_ops, MR_NULL);
 }
 
-static mr_err_t mr_i2c_bus_close(mr_device_t device)
+static mr_err_t mr_i2c_bus_open(mr_device_t device)
 {
     mr_i2c_bus_t i2c_bus = (mr_i2c_bus_t)device;
 
-    /* Disable i2c */
-    i2c_bus->config.baud_rate = 0;
-    mr_mutex_init(&i2c_bus->lock);
-
     return i2c_bus->ops->configure(i2c_bus, &i2c_bus->config);
+}
+
+static mr_err_t mr_i2c_bus_close(mr_device_t device)
+{
+    mr_i2c_bus_t i2c_bus = (mr_i2c_bus_t)device;
+    struct mr_i2c_config config = {0};
+
+    return i2c_bus->ops->configure(i2c_bus, &config);
 }
 
 /**
@@ -421,19 +428,20 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
 {
     static struct mr_device_ops device_ops =
         {
-            MR_NULL,
+            mr_i2c_bus_open,
             mr_i2c_bus_close,
             MR_NULL,
             MR_NULL,
             MR_NULL,
         };
+    struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
 
     MR_ASSERT(i2c_bus != MR_NULL);
     MR_ASSERT(name != MR_NULL);
     MR_ASSERT(ops != MR_NULL);
 
     /* Initialize the private fields */
-    i2c_bus->config.baud_rate = 0;
+    i2c_bus->config = default_config;
     mr_mutex_init(&i2c_bus->lock);
     i2c_bus->owner = MR_NULL;
 
@@ -446,10 +454,10 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
     i2c_bus->ops = ops;
 
     /* Add the device */
-    return mr_device_add(&i2c_bus->device, name, Mr_Device_Type_I2CBUS, MR_DEVICE_OFLAG_RDWR, &device_ops, data);
+    return mr_device_add(&i2c_bus->device, name, Mr_Device_Type_I2CBUS, MR_DEVICE_OFLAG_BUS, &device_ops, data);
 }
 
-static mr_err_t err_io_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus)
+static mr_err_t err_io_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus, mr_state_t state)
 {
     return -MR_ERR_IO;
 }
@@ -507,9 +515,15 @@ static void mr_soft_i2c_bus_send_ack(mr_soft_i2c_bus_t soft_i2c_bus, mr_state_t 
 static mr_err_t mr_soft_i2c_bus_configure(mr_i2c_bus_t i2c_bus, struct mr_i2c_config *config)
 {
     mr_soft_i2c_bus_t soft_i2c_bus = (mr_soft_i2c_bus_t)i2c_bus;
+    mr_state_t state = MR_DISABLE;
 
-    soft_i2c_bus->delay = 1000000u / config->baud_rate;
-    return soft_i2c_bus->ops->configure(soft_i2c_bus);
+    if (config->baud_rate != 0)
+    {
+        state = MR_ENABLE;
+        soft_i2c_bus->delay = 1000000u / config->baud_rate;
+    }
+
+    return soft_i2c_bus->ops->configure(soft_i2c_bus, state);
 }
 
 static void mr_soft_i2c_bus_start(mr_i2c_bus_t i2c_bus)
