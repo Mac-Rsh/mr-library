@@ -374,6 +374,7 @@ struct mr_device_channel
 {
     union
     {
+        mr_uint32_t _mask;
         struct
         {
             mr_uint32_t ch0: 1;
@@ -409,7 +410,6 @@ struct mr_device_channel
             mr_uint32_t ch30: 1;
             mr_uint32_t ch31: 1;
         };
-        mr_uint32_t _mask;
     };
 };
 typedef struct mr_device_channel *mr_device_channel_t;              /* Type for device channel */
