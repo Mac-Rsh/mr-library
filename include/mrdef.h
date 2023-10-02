@@ -305,6 +305,8 @@ enum mr_device_type
     Mr_Device_Type_PWM,                                             /* PWM device */
     Mr_Device_Type_Timer,                                           /* TIMER device */
     Mr_Device_Type_Flash,                                           /* FLASH device */
+    Mr_Device_Type_MSGBUS,                                          /* MSG-BUS device */
+    Mr_Device_Type_MSG,                                             /* MSG device */
     /* ... */
 };
 
@@ -316,6 +318,7 @@ enum mr_device_type
 #define MR_DEVICE_OFLAG_WRONLY          0x20                        /* Write only */
 #define MR_DEVICE_OFLAG_RDWR            0x30                        /* Read and write */
 #define MR_DEVICE_OFLAG_NONBLOCKING     0x40                        /* Non-blocking */
+#define MR_DEVICE_OFLAG_BUS             0x80                        /* Bus mode */
 #define MR_DEVICE_OFLAG_MASK            0xf0                        /* Mask for open mode flag */
 
 /**
