@@ -190,15 +190,12 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
 
                 if (config->host_slave != i2c_device->config.host_slave)
                 {
-                    if (config->host_slave == MR_I2C_HOST)
+                    if (i2c_device->bus != MR_NULL)
                     {
-                        if (i2c_device->bus != MR_NULL)
+                        if (config->host_slave == MR_I2C_HOST)
                         {
                             mr_i2c_device_release_bus(i2c_device);
-                        }
-                    } else
-                    {
-                        if (i2c_device->bus != MR_NULL)
+                        } else
                         {
                             /* Slave mode monopolizes the bus */
                             ret = mr_i2c_device_take_bus(i2c_device);

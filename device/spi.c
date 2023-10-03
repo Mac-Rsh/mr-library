@@ -381,15 +381,13 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
                 if (config->host_slave != spi_device->config.host_slave)
                 {
-                    if (config->host_slave == MR_SPI_HOST)
+                    if (spi_device->bus != MR_NULL)
                     {
-                        if (spi_device->bus != MR_NULL)
+                        if (config->host_slave == MR_SPI_HOST)
                         {
                             mr_spi_device_release_bus(spi_device);
-                        }
-                    } else
-                    {
-                        if (spi_device->bus != MR_NULL)
+
+                        } else
                         {
                             /* Slave mode monopolizes the bus */
                             ret = mr_spi_device_take_bus(spi_device);
