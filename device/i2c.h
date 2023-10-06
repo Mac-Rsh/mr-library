@@ -28,8 +28,8 @@ extern "C" {
 /**
  * @def I2C device address bits
  */
-#define MR_I2C_ADDR_BITS_7               7
-#define MR_I2C_ADDR_BITS_10              10
+#define MR_I2C_ADDR_BITS_7              7
+#define MR_I2C_ADDR_BITS_10             10
 
 /**
  * @def I2C device position bits
