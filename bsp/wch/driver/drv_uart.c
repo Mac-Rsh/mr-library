@@ -15,32 +15,32 @@
 enum
 {
 #ifdef MR_BSP_UART_1
-    CH32_UART_1_INDEX,
+    DRV_UART_1_INDEX,
 #endif
 #ifdef MR_BSP_UART_2
-    CH32_UART_2_INDEX,
+    DRV_UART_2_INDEX,
 #endif
 #ifdef MR_BSP_UART_3
-    CH32_UART_3_INDEX,
+    DRV_UART_3_INDEX,
 #endif
 #ifdef MR_BSP_UART_4
-    CH32_UART_4_INDEX,
+    DRV_UART_4_INDEX,
 #endif
 #ifdef MR_BSP_UART_5
-    CH32_UART_5_INDEX,
+    DRV_UART_5_INDEX,
 #endif
 #ifdef MR_BSP_UART_6
-    CH32_UART_6_INDEX,
+    DRV_UART_6_INDEX,
 #endif
 #ifdef MR_BSP_UART_7
-    CH32_UART_7_INDEX,
+    DRV_UART_7_INDEX,
 #endif
 #ifdef MR_BSP_UART_8
-    CH32_UART_8_INDEX,
+    DRV_UART_8_INDEX,
 #endif
 };
 
-static struct ch32_uart_data ch32_uart_data[] =
+static struct drv_uart_data drv_uart_data[] =
     {
 #ifdef MR_BSP_UART_1
         {"uart1", USART1, RCC_APB2Periph_USART1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_9, GPIOA, GPIO_Pin_10,
@@ -73,11 +73,11 @@ static struct ch32_uart_data ch32_uart_data[] =
 #endif
     };
 
-static struct mr_serial serial_device[mr_array_num(ch32_uart_data)];
+static struct mr_serial serial_device[mr_array_num(drv_uart_data)];
 
-static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
+static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
-    struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     USART_InitTypeDef USART_InitStructure = {0};
@@ -211,9 +211,9 @@ static mr_err_t ch32_serial_configure(mr_serial_t serial, struct mr_serial_confi
     return MR_ERR_OK;
 }
 
-static void ch32_serial_write(mr_serial_t serial, mr_uint8_t data)
+static void drv_serial_write(mr_serial_t serial, mr_uint8_t data)
 {
-    struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
     mr_size_t i = 0;
 
     while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_TC) == RESET)
@@ -227,9 +227,9 @@ static void ch32_serial_write(mr_serial_t serial, mr_uint8_t data)
     uart_data->instance->DATAR = data;
 }
 
-static mr_uint8_t ch32_serial_read(mr_serial_t serial)
+static mr_uint8_t drv_serial_read(mr_serial_t serial)
 {
-    struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
     mr_size_t i = 0;
 
     while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_RXNE) == RESET)
@@ -244,23 +244,23 @@ static mr_uint8_t ch32_serial_read(mr_serial_t serial)
     return uart_data->instance->DATAR & 0xff;
 }
 
-static void ch32_serial_start_tx(mr_serial_t serial)
+static void drv_serial_start_tx(mr_serial_t serial)
 {
-    struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
 
     USART_ITConfig(uart_data->instance, USART_IT_TXE, ENABLE);
 }
 
-static void ch32_serial_stop_tx(mr_serial_t serial)
+static void drv_serial_stop_tx(mr_serial_t serial)
 {
-    struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
 
     USART_ITConfig(uart_data->instance, USART_IT_TXE, DISABLE);
 }
 
-static void ch32_serial_isr(mr_serial_t serial)
+static void drv_serial_isr(mr_serial_t serial)
 {
-    struct ch32_uart_data *uart_data = (struct ch32_uart_data *)serial->device.data;
+    struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
 
     if (USART_GetITStatus(uart_data->instance, USART_IT_RXNE) != RESET)
     {
@@ -279,7 +279,7 @@ static void ch32_serial_isr(mr_serial_t serial)
 void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART1_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_1_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_1_INDEX]);
 }
 #endif
 
@@ -287,7 +287,7 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART2_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_2_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_2_INDEX]);
 }
 #endif
 
@@ -295,7 +295,7 @@ void USART2_IRQHandler(void)
 void USART3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART3_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_3_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_3_INDEX]);
 }
 #endif
 
@@ -303,7 +303,7 @@ void USART3_IRQHandler(void)
 void UART4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART4_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_4_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_4_INDEX]);
 }
 #endif
 
@@ -311,7 +311,7 @@ void UART4_IRQHandler(void)
 void UART5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART5_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_5_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_5_INDEX]);
 }
 #endif
 
@@ -319,7 +319,7 @@ void UART5_IRQHandler(void)
 void UART6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART6_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_6_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_6_INDEX]);
 }
 #endif
 
@@ -327,7 +327,7 @@ void UART6_IRQHandler(void)
 void UART7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART7_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_7_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_7_INDEX]);
 }
 #endif
 
@@ -335,7 +335,7 @@ void UART7_IRQHandler(void)
 void UART8_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART8_IRQHandler(void)
 {
-    ch32_serial_isr(&serial_device[CH32_UART_8_INDEX]);
+    drv_serial_isr(&serial_device[DRV_UART_8_INDEX]);
 }
 #endif
 
@@ -343,18 +343,18 @@ mr_err_t drv_uart_init(void)
 {
     static struct mr_serial_ops drv_ops =
         {
-            ch32_serial_configure,
-            ch32_serial_write,
-            ch32_serial_read,
-            ch32_serial_start_tx,
-            ch32_serial_stop_tx,
+            drv_serial_configure,
+            drv_serial_write,
+            drv_serial_read,
+            drv_serial_start_tx,
+            drv_serial_stop_tx,
         };
     mr_size_t count = mr_array_num(serial_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)
     {
-        ret = mr_serial_device_add(&serial_device[count], ch32_uart_data[count].name, &drv_ops, &ch32_uart_data[count]);
+        ret = mr_serial_device_add(&serial_device[count], drv_uart_data[count].name, &drv_ops, &drv_uart_data[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

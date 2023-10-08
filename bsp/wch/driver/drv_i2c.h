@@ -16,7 +16,10 @@
 
 #if (MR_CFG_I2C == MR_CFG_ENABLE)
 
-struct ch32_soft_i2c_bus_data
+/**
+ * @struct Driver soft i2c bus data
+ */
+struct drv_soft_i2c_bus_data
 {
     const char *name;
 

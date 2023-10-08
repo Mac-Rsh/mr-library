@@ -17,9 +17,9 @@
 #if (MR_CFG_SERIAL == MR_CFG_ENABLE)
 
 /**
- * @struct ch32 UART data
+ * @struct Driver uart data
  */
-struct ch32_uart_data
+struct drv_uart_data
 {
     const char *name;
 

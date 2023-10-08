@@ -17,9 +17,9 @@
 #if (MR_CFG_ADC == MR_CFG_ENABLE)
 
 /**
- * @struct ch32 ADC data
+ * @struct Driver adc data
  */
-struct ch32_adc_data
+struct drv_adc_data
 {
     const char *name;
 

@@ -17,9 +17,9 @@
 #if (MR_CFG_TIMER == MR_CFG_ENABLE)
 
 /**
- * @struct ch32 Timer data
+ * @struct Driver timer data
  */
-struct ch32_timer_data
+struct drv_timer_data
 {
     const char *name;
 

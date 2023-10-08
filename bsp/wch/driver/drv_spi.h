@@ -17,9 +17,9 @@
 #if (MR_CFG_SPI == MR_CFG_ENABLE)
 
 /**
- * @struct ch32 SPI bus data
+ * @struct Driver spi bus data
  */
-struct ch32_spi_bus_data
+struct drv_spi_bus_data
 {
     const char *name;
 

@@ -16,20 +16,20 @@
 #define PIN_STPORT(pin)     ((GPIO_TypeDef *)(GPIOA_BASE + (0x400u * PIN_PORT(pin))))
 #define PIN_STPIN(pin)      ((uint16_t)(1u << (mr_uint8_t)(pin & 0x0Fu)))
 
-enum ch32_spi_index
+enum drv_spi_index
 {
 #ifdef MR_BSP_SPI_1
-    CH32_SPI_1_INDEX,
+    DRV_SPI_1_INDEX,
 #endif
 #ifdef MR_BSP_SPI_2
-    CH32_SPI_2_INDEX,
+    DRV_SPI_2_INDEX,
 #endif
 #ifdef MR_BSP_SPI_3
-    CH32_SPI_3_INDEX
+    DRV_SPI_3_INDEX
 #endif
 };
 
-static struct ch32_spi_bus_data ch32_spi_bus_data[] =
+static struct drv_spi_bus_data drv_spi_bus_data[] =
     {
 #ifdef MR_BSP_SPI_1
         {"spi1", SPI1, RCC_APB2Periph_SPI1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_5, GPIO_Pin_6, GPIO_Pin_7, SPI1_IRQn},
@@ -43,7 +43,7 @@ static struct ch32_spi_bus_data ch32_spi_bus_data[] =
 #endif
     };
 
-static struct mr_spi_bus spi_bus_device[mr_array_num(ch32_spi_bus_data)];
+static struct mr_spi_bus spi_bus_device[mr_array_num(drv_spi_bus_data)];
 
 static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32_t baud_rate)
 {
@@ -77,9 +77,9 @@ static mr_uint16_t ch32_spi_baud_rate_prescaler(mr_uint32_t pclk_freq, mr_uint32
     return SPI_BaudRatePrescaler_2;
 }
 
-static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
+static mr_err_t drv_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
 {
-    struct ch32_spi_bus_data *spi_bus_data = (struct ch32_spi_bus_data *)spi_bus->device.data;
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     SPI_InitTypeDef SPI_InitStructure = {0};
@@ -256,9 +256,9 @@ static mr_err_t ch32_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
     return MR_ERR_OK;
 }
 
-static void ch32_spi_write(mr_spi_bus_t spi_bus, mr_uint32_t data)
+static void drv_spi_write(mr_spi_bus_t spi_bus, mr_uint32_t data)
 {
-    struct ch32_spi_bus_data *spi_bus_data = (struct ch32_spi_bus_data *)spi_bus->device.data;
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->device.data;
     mr_size_t i = 0;
 
     while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_TXE) == RESET)
@@ -272,9 +272,9 @@ static void ch32_spi_write(mr_spi_bus_t spi_bus, mr_uint32_t data)
     SPI_I2S_SendData(spi_bus_data->instance, data);
 }
 
-static mr_uint32_t ch32_spi_read(mr_spi_bus_t spi_bus)
+static mr_uint32_t drv_spi_read(mr_spi_bus_t spi_bus)
 {
-    struct ch32_spi_bus_data *spi_bus_data = (struct ch32_spi_bus_data *)spi_bus->device.data;
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->device.data;
     mr_size_t i = 0;
 
     while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_RXNE) == RESET)
@@ -289,7 +289,7 @@ static mr_uint32_t ch32_spi_read(mr_spi_bus_t spi_bus)
     return SPI_I2S_ReceiveData(spi_bus_data->instance);
 }
 
-static void ch32_spi_cs_write(mr_spi_bus_t spi_bus, mr_off_t cs_number, mr_level_t level)
+static void drv_spi_cs_write(mr_spi_bus_t spi_bus, mr_off_t cs_number, mr_level_t level)
 {
     if (cs_number > MR_BSP_PIN_NUMBER)
     {
@@ -299,7 +299,7 @@ static void ch32_spi_cs_write(mr_spi_bus_t spi_bus, mr_off_t cs_number, mr_level
     GPIO_WriteBit(PIN_STPORT(cs_number), PIN_STPIN(cs_number), (BitAction)level);
 }
 
-static mr_level_t ch32_spi_cs_read(mr_spi_bus_t spi_bus, mr_off_t cs_number)
+static mr_level_t drv_spi_cs_read(mr_spi_bus_t spi_bus, mr_off_t cs_number)
 {
     if (cs_number > MR_BSP_PIN_NUMBER)
     {
@@ -309,9 +309,9 @@ static mr_level_t ch32_spi_cs_read(mr_spi_bus_t spi_bus, mr_off_t cs_number)
     return (mr_level_t)GPIO_ReadOutputDataBit(PIN_STPORT(cs_number), PIN_STPIN(cs_number));
 }
 
-static void ch32_spi_isr(mr_spi_bus_t spi_bus)
+static void drv_spi_isr(mr_spi_bus_t spi_bus)
 {
-    struct ch32_spi_bus_data *spi_bus_data = (struct ch32_spi_bus_data *)spi_bus->device.data;
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->device.data;
 
     if (SPI_I2S_GetITStatus(spi_bus_data->instance, SPI_I2S_IT_RXNE) != RESET)
     {
@@ -324,7 +324,7 @@ static void ch32_spi_isr(mr_spi_bus_t spi_bus)
 void SPI1_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
 void SPI1_IRQHandler(void)
 {
-    ch32_spi_isr(&spi_bus_device[CH32_SPI_1_INDEX]);
+    drv_spi_isr(&spi_bus_device[DRV_SPI_1_INDEX]);
 }
 #endif
 
@@ -332,7 +332,7 @@ void SPI1_IRQHandler(void)
 void SPI2_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
 void SPI2_IRQHandler(void)
 {
-    ch32_spi_isr(&spi_bus_device[CH32_SPI_2_INDEX]);
+    drv_spi_isr(&spi_bus_device[DRV_SPI_2_INDEX]);
 }
 #endif
 
@@ -340,7 +340,7 @@ void SPI2_IRQHandler(void)
 void SPI3_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
 void SPI3_IRQHandler(void)
 {
-    ch32_spi_isr(&spi_bus_device[CH32_SPI_3_INDEX]);
+    drv_spi_isr(&spi_bus_device[DRV_SPI_3_INDEX]);
 }
 #endif
 
@@ -348,11 +348,11 @@ mr_err_t drv_spi_bus_init(void)
 {
     static struct mr_spi_bus_ops drv_ops =
         {
-            ch32_spi_configure,
-            ch32_spi_write,
-            ch32_spi_read,
-            ch32_spi_cs_write,
-            ch32_spi_cs_read,
+            drv_spi_configure,
+            drv_spi_write,
+            drv_spi_read,
+            drv_spi_cs_write,
+            drv_spi_cs_read,
         };
     mr_size_t count = mr_array_num(spi_bus_device);
     mr_err_t ret = MR_ERR_OK;
@@ -360,7 +360,7 @@ mr_err_t drv_spi_bus_init(void)
     while (count--)
     {
         ret =
-            mr_spi_bus_add(&spi_bus_device[count], ch32_spi_bus_data[count].name, &drv_ops, &ch32_spi_bus_data[count]);
+            mr_spi_bus_add(&spi_bus_device[count], drv_spi_bus_data[count].name, &drv_ops, &drv_spi_bus_data[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

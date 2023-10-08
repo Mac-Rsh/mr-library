@@ -12,7 +12,7 @@
 
 #if (MR_CFG_ADC == MR_CFG_ENABLE)
 
-static struct ch32_adc_data ch32_adc_data[] =
+static struct drv_adc_data drv_adc_data[] =
     {
 #ifdef MR_BSP_ADC_1
         {"adc1", ADC1, RCC_APB2Periph_ADC1},
@@ -22,11 +22,11 @@ static struct ch32_adc_data ch32_adc_data[] =
 #endif
     };
 
-static struct mr_adc adc_device[mr_array_num(ch32_adc_data)];
+static struct mr_adc adc_device[mr_array_num(drv_adc_data)];
 
-static mr_err_t ch32_adc_configure(mr_adc_t adc, mr_state_t state)
+static mr_err_t drv_adc_configure(mr_adc_t adc, mr_state_t state)
 {
-    struct ch32_adc_data *adc_data = (struct ch32_adc_data *)adc->device.data;
+    struct drv_adc_data *adc_data = (struct drv_adc_data *)adc->device.data;
     ADC_InitTypeDef ADC_InitStructure = {0};
 
     RCC_APB2PeriphClockCmd(adc_data->periph_clock, (FunctionalState)state);
@@ -44,7 +44,7 @@ static mr_err_t ch32_adc_configure(mr_adc_t adc, mr_state_t state)
     return MR_ERR_OK;
 }
 
-static mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
+static mr_err_t drv_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
 {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     GPIO_TypeDef *GPIOx = {0};
@@ -101,9 +101,9 @@ static mr_err_t ch32_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
     return MR_ERR_OK;
 }
 
-static mr_uint32_t ch32_adc_read(mr_adc_t adc, mr_off_t channel)
+static mr_uint32_t drv_adc_read(mr_adc_t adc, mr_off_t channel)
 {
-    struct ch32_adc_data *adc_data = (struct ch32_adc_data *)adc->device.data;
+    struct drv_adc_data *adc_data = (struct drv_adc_data *)adc->device.data;
     mr_size_t i = 0;
 
     if (channel > 17)
@@ -130,16 +130,16 @@ mr_err_t drv_adc_init(void)
 {
     static struct mr_adc_ops drv_ops =
         {
-            ch32_adc_configure,
-            ch32_adc_channel_configure,
-            ch32_adc_read,
+            drv_adc_configure,
+            drv_adc_channel_configure,
+            drv_adc_read,
         };
     mr_size_t count = mr_array_num(adc_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)
     {
-        ret = mr_adc_device_add(&adc_device[count], ch32_adc_data[count].name, &drv_ops, &ch32_adc_data[count]);
+        ret = mr_adc_device_add(&adc_device[count], drv_adc_data[count].name, &drv_ops, &drv_adc_data[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

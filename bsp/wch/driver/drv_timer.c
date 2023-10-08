@@ -15,38 +15,38 @@
 enum
 {
 #ifdef MR_BSP_TIMER_1
-    CH32_TIMER_1_INDEX,
+    DRV_TIMER_1_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_2
-    CH32_TIMER_2_INDEX,
+    DRV_TIMER_2_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_3
-    CH32_TIMER_3_INDEX,
+    DRV_TIMER_3_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_4
-    CH32_TIMER_4_INDEX,
+    DRV_TIMER_4_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_5
-    CH32_TIMER_5_INDEX,
+    DRV_TIMER_5_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_6
-    CH32_TIMER_6_INDEX,
+    DRV_TIMER_6_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_7
-    CH32_TIMER_7_INDEX,
+    DRV_TIMER_7_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_8
-    CH32_TIMER_8_INDEX,
+    DRV_TIMER_8_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_9
-    CH32_TIMER_9_INDEX,
+    DRV_TIMER_9_INDEX,
 #endif
 #ifdef MR_BSP_TIMER_10
-    CH32_TIMER_10_INDEX,
+    DRV_TIMER_10_INDEX,
 #endif
 };
 
-static struct ch32_timer_data ch32_timer_data[] =
+static struct drv_timer_data drv_timer_data[] =
     {
 #ifdef MR_BSP_TIMER_1
         {"timer1", TIM1, RCC_APB2Periph_TIM1, TIM1_UP_IRQn},
@@ -82,11 +82,11 @@ static struct ch32_timer_data ch32_timer_data[] =
 
 static struct mr_timer_data timer_device_data = {144000000, 0xffff, 0xffff, MR_TIMER_COUNT_MODE_UP};
 
-static struct mr_timer timer_device[mr_array_num(ch32_timer_data)];
+static struct mr_timer timer_device[mr_array_num(drv_timer_data)];
 
-static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_state_t state)
+static mr_err_t drv_timer_configure(mr_timer_t timer, mr_state_t state)
 {
-    struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
+    struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->device.data;
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     RCC_ClocksTypeDef RCC_ClockStructure = {0};
@@ -165,9 +165,9 @@ static mr_err_t ch32_timer_configure(mr_timer_t timer, mr_state_t state)
     return MR_ERR_OK;
 }
 
-static void ch32_timer_start(mr_timer_t timer, mr_uint32_t prescaler, mr_uint32_t period)
+static void drv_timer_start(mr_timer_t timer, mr_uint32_t prescaler, mr_uint32_t period)
 {
-    struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
+    struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->device.data;
 
     if (timer->data->count_mode == MR_TIMER_COUNT_MODE_UP)
     {
@@ -182,23 +182,23 @@ static void ch32_timer_start(mr_timer_t timer, mr_uint32_t prescaler, mr_uint32_
     TIM_Cmd(timer_data->instance, ENABLE);
 }
 
-static void ch32_timer_stop(mr_timer_t timer)
+static void drv_timer_stop(mr_timer_t timer)
 {
-    struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
+    struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->device.data;
 
     TIM_Cmd(timer_data->instance, DISABLE);
 }
 
-static mr_uint32_t ch32_timer_get_count(mr_timer_t timer)
+static mr_uint32_t drv_timer_get_count(mr_timer_t timer)
 {
-    struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
+    struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->device.data;
 
     return timer_data->instance->CNT;
 }
 
-static void ch32_timer_isr(mr_timer_t timer)
+static void drv_timer_isr(mr_timer_t timer)
 {
-    struct ch32_timer_data *timer_data = (struct ch32_timer_data *)timer->device.data;
+    struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->device.data;
 
     if (TIM_GetITStatus(timer_data->instance, TIM_IT_Update) != RESET)
     {
@@ -211,7 +211,7 @@ static void ch32_timer_isr(mr_timer_t timer)
 void TIM1_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM1_UP_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_1_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_1_INDEX]);
 }
 #endif
 
@@ -219,7 +219,7 @@ void TIM1_UP_IRQHandler(void)
 void TIM2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM2_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_2_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_2_INDEX]);
 }
 #endif
 
@@ -227,7 +227,7 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM3_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_3_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_3_INDEX]);
 }
 #endif
 
@@ -235,7 +235,7 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM4_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_4_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_4_INDEX]);
 }
 #endif
 
@@ -243,7 +243,7 @@ void TIM4_IRQHandler(void)
 void TIM5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM5_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_5_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_5_INDEX]);
 }
 #endif
 
@@ -251,7 +251,7 @@ void TIM5_IRQHandler(void)
 void TIM6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM6_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_6_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_6_INDEX]);
 }
 #endif
 
@@ -259,7 +259,7 @@ void TIM6_IRQHandler(void)
 void TIM7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM7_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_7_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_7_INDEX]);
 }
 #endif
 
@@ -267,7 +267,7 @@ void TIM7_IRQHandler(void)
 void TIM8_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM8_UP_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_8_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_8_INDEX]);
 }
 #endif
 
@@ -275,7 +275,7 @@ void TIM8_UP_IRQHandler(void)
 void TIM9_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM9_UP_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_9_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_9_INDEX]);
 }
 #endif
 
@@ -283,7 +283,7 @@ void TIM9_UP_IRQHandler(void)
 void TIM10_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM10_UP_IRQHandler(void)
 {
-    ch32_timer_isr(&timer_device[CH32_TIMER_10_INDEX]);
+    drv_timer_isr(&timer_device[DRV_TIMER_10_INDEX]);
 }
 #endif
 
@@ -291,10 +291,10 @@ mr_err_t drv_timer_init(void)
 {
     static struct mr_timer_ops drv_ops =
         {
-            ch32_timer_configure,
-            ch32_timer_start,
-            ch32_timer_stop,
-            ch32_timer_get_count,
+            drv_timer_configure,
+            drv_timer_start,
+            drv_timer_stop,
+            drv_timer_get_count,
         };
     mr_size_t count = mr_array_num(timer_device);
     mr_err_t ret = MR_ERR_OK;
@@ -302,10 +302,10 @@ mr_err_t drv_timer_init(void)
     while (count--)
     {
         ret = mr_timer_device_add(&timer_device[count],
-                                  ch32_timer_data[count].name,
+                                  drv_timer_data[count].name,
                                   &drv_ops,
                                   &timer_device_data,
-                                  &ch32_timer_data[count]);
+                                  &drv_timer_data[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 

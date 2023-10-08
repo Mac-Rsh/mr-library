@@ -17,9 +17,9 @@
 #if (MR_CFG_DAC == MR_CFG_ENABLE)
 
 /**
- * @struct ch32 DAC data
+ * @struct Driver dac data
  */
-struct ch32_dac_data
+struct drv_dac_data
 {
     const char *name;
 

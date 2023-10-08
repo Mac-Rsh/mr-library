@@ -56,7 +56,7 @@ static mr_off_t irq_mask[16] = {-1,
 
 static struct mr_pin pin_device;
 
-static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
+static mr_err_t drv_pin_configure(mr_pin_t pin, mr_pin_config_t config)
 {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     EXTI_InitTypeDef EXTI_InitStructure = {0};
@@ -191,7 +191,7 @@ static mr_err_t ch32_pin_configure(mr_pin_t pin, mr_pin_config_t config)
     return MR_ERR_OK;
 }
 
-static mr_level_t ch32_pin_read(mr_pin_t pin, mr_off_t number)
+static mr_level_t drv_pin_read(mr_pin_t pin, mr_off_t number)
 {
     if (number > MR_BSP_PIN_NUMBER)
     {
@@ -201,7 +201,7 @@ static mr_level_t ch32_pin_read(mr_pin_t pin, mr_off_t number)
     return (mr_level_t)GPIO_ReadInputDataBit(PIN_STPORT(number), PIN_STPIN(number));
 }
 
-static void ch32_pin_write(mr_pin_t pin, mr_off_t number, mr_level_t level)
+static void drv_pin_write(mr_pin_t pin, mr_off_t number, mr_level_t level)
 {
     if (number > MR_BSP_PIN_NUMBER)
     {
@@ -309,9 +309,9 @@ mr_err_t drv_gpio_init(void)
 {
     static struct mr_pin_ops drv_ops =
         {
-            ch32_pin_configure,
-            ch32_pin_read,
-            ch32_pin_write,
+            drv_pin_configure,
+            drv_pin_read,
+            drv_pin_write,
         };
     mr_err_t ret = MR_ERR_OK;
 

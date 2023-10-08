@@ -12,7 +12,7 @@
 
 #if (MR_CFG_DAC == MR_CFG_ENABLE)
 
-static struct ch32_dac_data ch32_dac_data[] =
+static struct drv_dac_data drv_dac_data[] =
     {
 #ifdef MR_BSP_DAC_1
         {"dac1", DAC_Channel_1, RCC_APB1Periph_DAC},
@@ -22,11 +22,11 @@ static struct ch32_dac_data ch32_dac_data[] =
 #endif
     };
 
-static struct mr_dac dac_device[mr_array_num(ch32_dac_data)];
+static struct mr_dac dac_device[mr_array_num(drv_dac_data)];
 
-static mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
+static mr_err_t drv_dac_configure(mr_dac_t dac, mr_state_t state)
 {
-    struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
+    struct drv_dac_data *dac_data = (struct drv_dac_data *)dac->device.data;
     DAC_InitTypeDef DAC_InitStructure = {0};
 
     RCC_APB1PeriphClockCmd(dac_data->periph_clock, (FunctionalState)state);
@@ -54,9 +54,9 @@ static mr_err_t ch32_dac_configure(mr_dac_t dac, mr_state_t state)
     return MR_ERR_OK;
 }
 
-static mr_err_t ch32_dac_channel_configure(mr_dac_t dac, mr_dac_config_t config)
+static mr_err_t drv_dac_channel_configure(mr_dac_t dac, mr_dac_config_t config)
 {
-    struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
+    struct drv_dac_data *dac_data = (struct drv_dac_data *)dac->device.data;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
@@ -91,9 +91,9 @@ static mr_err_t ch32_dac_channel_configure(mr_dac_t dac, mr_dac_config_t config)
     return MR_ERR_OK;
 }
 
-static void ch32_dac_write(mr_dac_t dac, mr_off_t channel, mr_uint32_t value)
+static void drv_dac_write(mr_dac_t dac, mr_off_t channel, mr_uint32_t value)
 {
-    struct ch32_dac_data *dac_data = (struct ch32_dac_data *)dac->device.data;
+    struct drv_dac_data *dac_data = (struct drv_dac_data *)dac->device.data;
 
     switch (dac_data->channel)
     {
@@ -113,16 +113,16 @@ mr_err_t drv_dac_init(void)
 {
     static struct mr_dac_ops drv_ops =
         {
-            ch32_dac_configure,
-            ch32_dac_channel_configure,
-            ch32_dac_write,
+            drv_dac_configure,
+            drv_dac_channel_configure,
+            drv_dac_write,
         };
     mr_size_t count = mr_array_num(dac_device);
     mr_err_t ret = MR_ERR_OK;
 
     while (count--)
     {
-        ret = mr_dac_device_add(&dac_device[count], ch32_dac_data[count].name, &drv_ops, &ch32_dac_data[count]);
+        ret = mr_dac_device_add(&dac_device[count], drv_dac_data[count].name, &drv_ops, &drv_dac_data[count]);
         MR_ASSERT(ret == MR_ERR_OK);
     }
 
