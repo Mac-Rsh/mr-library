@@ -26,7 +26,7 @@ static int end(void)
 {
     return 0;
 }
-MR_INIT_EXPORT(end, "4.end");
+MR_INIT_EXPORT(end, "5.end");
 
 /**
  * @brief This function is auto initialized.
@@ -92,10 +92,6 @@ void mr_log_output(mr_base_t level, const char *tag, const char *format, ...)
  */
 MR_WEAK void mr_assert_handle(char *file, int line)
 {
-#define MR_DEBUG_TAG "assert"
-    MR_DEBUG_A(MR_DEBUG_TAG, "file: [%s], line: [%d], fail to run.\r\n", file, line);
-#undef MR_DEBUG_TAG
-
     while (1)
     {
 

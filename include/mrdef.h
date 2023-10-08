@@ -154,26 +154,32 @@ typedef int (*mr_init_fn_t)(void);
     MR_USED const mr_init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
 
 /**
+ * @def Board auto-init export
+ */
+#define MR_INIT_BOARD_EXPORT(fn)        MR_INIT_EXPORT(fn, "1")
+
+/**
  * @def Driver auto-init export
  */
-#define MR_INIT_DRIVER_EXPORT(fn)       MR_INIT_EXPORT(fn, "1")
+#define MR_INIT_DRIVER_EXPORT(fn)       MR_INIT_EXPORT(fn, "2")
 
 /**
  * @def Device auto-init export
  */
-#define MR_INIT_DEVICE_EXPORT(fn)       MR_INIT_EXPORT(fn, "2")
+#define MR_INIT_DEVICE_EXPORT(fn)       MR_INIT_EXPORT(fn, "3")
 
 /**
  * @def Module auto-init export
  */
-#define MR_INIT_MODULE_EXPORT(fn)       MR_INIT_EXPORT(fn, "3")
+#define MR_INIT_MODULE_EXPORT(fn)       MR_INIT_EXPORT(fn, "4")
 
 /**
  * @def App auto-init export
  */
-#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
+#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "5")
 
 #else
+#define MR_INIT_BOARD_EXPORT(fn)
 #define MR_INIT_DRIVER_EXPORT(fn)
 #define MR_INIT_DEVICE_EXPORT(fn)
 #define MR_INIT_MODULE_EXPORT(fn)

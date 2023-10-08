@@ -6,14 +6,17 @@
 
 自动初始化支持不同等级导出：
 
-| 执行顺序 | 宏                       | 描述      |
-|:-----|:------------------------|:--------|
-| 1    | MR_INIT_DRIVER_EXPORT   | 驱动程序初始化 |
-| 2    | MR_INIT_DEVICE_EXPORT   | 设备初始化   |
-| 3    | MR_INIT_MODULE_EXPORT   | 组件初始化   |
-| 4    | MR_INIT_APP_EXPORT      | 应用初始化   |
+| 执行顺序 | 宏                     | 描述             |
+|:-----|:----------------------|:---------------|
+| 1    | MR_INIT_BOARD_EXPORT  | 板级初始化（运行环境初始化） |
+| 2    | MR_INIT_DRIVER_EXPORT | 驱动程序初始化        |
+| 3    | MR_INIT_DEVICE_EXPORT | 设备初始化          |
+| 4    | MR_INIT_MODULE_EXPORT | 组件初始化          |
+| 5    | MR_INIT_APP_EXPORT    | 应用初始化          |
 
 ![流程图](https://gitee.com/MacRsh/mr-library/raw/master/document/resource/auto_init_process.jpg)
+
+板级初始化未出现在上图中，板级初始化为最优先调用，如无特殊需求，默认不使用。
 
 自动初始化仅指定类型的函数：
 
