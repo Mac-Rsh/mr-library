@@ -50,12 +50,16 @@ extern "C" {
 /**
  * @def Assert
  */
-#define MR_ASSERT(EX)                           \
-    do{                                         \
-        if (!(EX))                              \
-        {                                       \
-          mr_assert_handle(__FILE__, __LINE__); \
-        }                                       \
+#define MR_ASSERT(EX)                               \
+    do{                                             \
+        if (!(EX))                                  \
+        {                                           \
+            MR_DEBUG_A("assert",                    \
+            "file: [%s], "                          \
+            "line: [%d], "                          \
+            "fail to run.\r\n", __FILE__, __LINE__);\
+            mr_assert_handle(__FILE__, __LINE__);   \
+        }                                           \
     }while(0)
 #else
 #define MR_ASSERT(EX)
