@@ -343,7 +343,7 @@ volatile void *mr_mutex_get_owner(mr_mutex_t mutex)
  *
  * @return A pointer to the allocated memory, or MR_NULL if failed.
  */
-void *mr_malloc(mr_size_t size)
+MR_WEAK void *mr_malloc(mr_size_t size)
 {
     void *memory = MR_NULL;
 
@@ -351,10 +351,6 @@ void *mr_malloc(mr_size_t size)
     mr_interrupt_disable();
 
     memory = malloc(size);
-    if (memory != MR_NULL)
-    {
-        mr_allocated_memory_size += size;
-    }
 
     /* Enable interrupt */
     mr_interrupt_enable();
@@ -367,23 +363,10 @@ void *mr_malloc(mr_size_t size)
  *
  * @param memory The memory to be freed.
  */
-void mr_free(void *memory)
+MR_WEAK void mr_free(void *memory)
 {
-    int *size = ((int *)memory) - 5;
-
     if (memory != MR_NULL)
     {
-        mr_allocated_memory_size -= *size;
         free(memory);
     }
-}
-
-/**
- * @brief This function get the allocated size.
- *
- * @return The allocated size.
- */
-mr_size_t mr_memory_get_allocated_size(void)
-{
-    return mr_allocated_memory_size;
 }

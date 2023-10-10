@@ -90,7 +90,6 @@ volatile void *mr_mutex_get_owner(mr_mutex_t mutex);
  */
 void *mr_malloc(mr_size_t size);
 void mr_free(void *memory);
-mr_size_t mr_memory_get_allocated_size(void);
 /** @} */
 
 /**
