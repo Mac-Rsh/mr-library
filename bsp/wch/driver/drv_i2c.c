@@ -34,7 +34,7 @@ static mr_err_t drv_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus, mr_state_t
 
     RCC_APB2PeriphClockCmd(soft_i2c_bus_data->gpio_periph_clock, ENABLE);
     GPIO_InitStructure.GPIO_Pin = soft_i2c_bus_data->scl_gpio_pin | soft_i2c_bus_data->sda_gpio_pin;
-    GPIO_InitStructure.GPIO_Mode = state == MR_ENABLE ? GPIO_Mode_Out_PP : GPIO_Mode_IN_FLOATING;
+    GPIO_InitStructure.GPIO_Mode = state == MR_ENABLE ? GPIO_Mode_Out_OD : GPIO_Mode_IN_FLOATING;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(soft_i2c_bus_data->gpio_port, &GPIO_InitStructure);
 
