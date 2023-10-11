@@ -12,7 +12,7 @@
 #define _ETASK_H_
 
 #include "mrapi.h"
-
+#define MR_CFG_ETASK 1
 #if (MR_CFG_ETASK == MR_CFG_ENABLE)
 
 /**

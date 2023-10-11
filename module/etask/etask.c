@@ -94,6 +94,24 @@ void mr_etask_timing(mr_etask_t etask, mr_event_t event, mr_uint32_t time)
     mr_interrupt_enable();
 }
 
+static void mr_etask_free_task(mr_avl_t tree)
+{
+    if (tree->left_child != MR_NULL)
+    {
+        mr_etask_free_task(tree->left_child);
+        tree->left_child = MR_NULL;
+    }
+
+    if(tree->right_child != MR_NULL)
+    {
+        mr_etask_free_task(tree->right_child);
+        tree->right_child = MR_NULL;
+    }
+
+    mr_event_t event = (mr_event_t)mr_container_of(tree, struct mr_event, list);
+    mr_free(event);
+}
+
 /**
  * @brief This function finds a etask.
  *
@@ -179,6 +197,9 @@ mr_err_t mr_etask_remove(mr_etask_t etask)
     /* Free the queue */
     mr_free(etask->queue.buffer);
     mr_rb_init(&etask->queue, MR_NULL, 0);
+    mr_etask_free_task(etask->list);
+    etask->list = MR_NULL;
+    mr_list_init(&etask->tlist);
 
     return MR_ERR_OK;
 }
