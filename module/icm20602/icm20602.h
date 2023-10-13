@@ -20,32 +20,32 @@ extern "C" {
 #if (MR_CFG_SPI != MR_CFG_ENABLE)
 #error "Please enable SPI first!"
 #else
-#define MR_CONF_ICM20602 MR_CFG_ENABLE
-#if (MR_CONF_ICM20602 == MR_CFG_ENABLE)
+
+#if (MR_CFG_ICM20602 == MR_CFG_ENABLE)
 
 /**
  * @def ICM20602 Acc Range
  */
-#define ICM20602_ACC_RANGE_2G           2
-#define ICM20602_ACC_RANGE_4G           4
-#define ICM20602_ACC_RANGE_8G           8
-#define ICM20602_ACC_RANGE_16G          16
+#define MR_ICM20602_ACC_RANGE_2G        2
+#define MR_ICM20602_ACC_RANGE_4G        4
+#define MR_ICM20602_ACC_RANGE_8G        8
+#define MR_ICM20602_ACC_RANGE_16G       16
 
 /**
  * @def ICM20602 Gyro Range
  */
-#define ICM20602_GYRO_RANGE_250DPS      250
-#define ICM20602_GYRO_RANGE_500DPS      500
-#define ICM20602_GYRO_RANGE_1000DPS     1000
-#define ICM20602_GYRO_RANGE_2000DPS     2000
+#define MR_ICM20602_GYRO_RANGE_250DPS   250
+#define MR_ICM20602_GYRO_RANGE_500DPS   500
+#define MR_ICM20602_GYRO_RANGE_1000DPS  1000
+#define MR_ICM20602_GYRO_RANGE_2000DPS  2000
 
 /**
  * @def ICM20602 default config
  */
 #define ICM20602_CONFIG_DEFAULT         \
 {                                       \
-    ICM20602_ACC_RANGE_8G,              \
-    ICM20602_GYRO_RANGE_2000DPS,        \
+    MR_ICM20602_ACC_RANGE_8G,           \
+    MR_ICM20602_GYRO_RANGE_2000DPS,     \
 }
 
 /**
@@ -84,6 +84,7 @@ typedef struct mr_icm20602 *mr_icm20602_t;
  * @addtogroup ICM20602
  * @{
  */
+mr_icm20602_t mr_icm20602_find(const char *name);
 mr_err_t mr_icm20602_add(mr_icm20602_t icm20602, const char *name, mr_uint16_t cs_number, const char *bus_name);
 mr_err_t mr_icm20602_config(mr_icm20602_t icm20602, mr_icm20602_config_t config);
 struct mr_icm20602_3_axis mr_icm20602_read_acc_3_axis(mr_icm20602_t icm20602);

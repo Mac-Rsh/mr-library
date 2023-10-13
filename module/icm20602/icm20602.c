@@ -10,7 +10,7 @@
 
 #include "icm20602.h"
 
-#if (MR_CONF_ICM20602 == MR_CFG_ENABLE)
+#if (MR_CFG_ICM20602 == MR_CFG_ENABLE)
 
 #define DEBUG_TAG "icm20602"
 
@@ -170,16 +170,16 @@ mr_err_t mr_icm20602_config(mr_icm20602_t icm20602, mr_icm20602_config_t config)
 
     switch (config->acc_range)
     {
-        case ICM20602_ACC_RANGE_2G:
+        case MR_ICM20602_ACC_RANGE_2G:
             icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x00);
             break;
-        case ICM20602_ACC_RANGE_4G:
+        case MR_ICM20602_ACC_RANGE_4G:
             icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x08);
             break;
-        case ICM20602_ACC_RANGE_8G:
+        case MR_ICM20602_ACC_RANGE_8G:
             icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x10);
             break;
-        case ICM20602_ACC_RANGE_16G:
+        case MR_ICM20602_ACC_RANGE_16G:
             icm20602_write_reg(icm20602, ICM20602_ACCEL_CONFIG, 0x18);
             break;
 
@@ -189,16 +189,16 @@ mr_err_t mr_icm20602_config(mr_icm20602_t icm20602, mr_icm20602_config_t config)
 
     switch (config->gyro_range)
     {
-        case ICM20602_GYRO_RANGE_250DPS:
+        case MR_ICM20602_GYRO_RANGE_250DPS:
             icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x00);
             break;
-        case ICM20602_GYRO_RANGE_500DPS:
+        case MR_ICM20602_GYRO_RANGE_500DPS:
             icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x08);
             break;
-        case ICM20602_GYRO_RANGE_1000DPS:
+        case MR_ICM20602_GYRO_RANGE_1000DPS:
             icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x10);
             break;
-        case ICM20602_GYRO_RANGE_2000DPS:
+        case MR_ICM20602_GYRO_RANGE_2000DPS:
             icm20602_write_reg(icm20602, ICM20602_GYRO_CONFIG, 0x18);
             break;
 
