@@ -89,6 +89,71 @@ mr_device_close(spi1_device);
 
 每个组件都承担特定的功能或任务，例如任务管理组件专注于对程序任务的管理，使得裸机与RTOS程序可高效移植。开发者可自主选择需要的组件，添加到项目中。
 
+### etask组件
+
+事件任务框架是一种用于处理异步事件和任务的编程模型。它提供了结构化的方式来管理和调度事件和任务，在并发环境中实现高效处理。
+使用事件任务框架可以抽象和管理复杂的并发处理逻辑，提高代码的可维护性和可扩展性。使开发人员能够专注于事件处理逻辑，而无需关注底层的并发细节。
+事件任务框架支持动态添加和移除事件任务，通过添加或替换事件任务来实现新增功能或修改业务逻辑，而无需修改其他代码。这种可插拔性使系统更灵活、能快速响应需求变化。
+
+使用示例：
+
+```c
+/* 定义事件 */
+#define EVENT_1                         1234
+#define EVENT_2                         "event_3"
+#define EVENT_3                         3456
+
+/* 定义事件回调 */
+mr_err_t event1_cb(mr_etask_t etask, void *args)
+{
+    printf("event1_cb\r\n");
+    return MR_ERR_OK;
+}
+
+mr_err_t event2_cb(mr_etask_t etask, void *args)
+{
+    printf("event2_cb\r\n");
+    return MR_ERR_OK;
+}
+
+mr_err_t event3_cb(mr_etask_t etask, void *args)
+{
+    printf("event3_cb\r\n");
+    return MR_ERR_OK;
+}
+
+/* 定义事件任务 */
+struct mr_etask etask;
+
+int main(void)
+{
+    /* 添加事件任务 */
+    mr_etask_add(&etask, "etask", 3);
+    
+    /* 启动普通事件 */
+    mr_etask_start(&etask, EVENT_1, MR_ETASK_SFLAG_EVENT, 0, event1_cb, NULL);
+    mr_etask_start(&etask, mr_etask_str_to_id(EVENT_2), MR_ETASK_SFLAG_EVENT, 0, event2_cb, NULL);
+    
+    /* 启动定时事件 */
+    mr_etask_start(&etask, EVENT_3, MR_ETASK_SFLAG_TIMER | MR_ETASK_SFLAG_HARD, 5, event3_cb, NULL);
+    
+    /* 延迟唤醒事件1 */
+    mr_etask_wakeup(&etask, EVENT_1, MR_ETASK_WFLAG_DELAY);
+    /* 立即唤醒事件2 */
+    mr_etask_wakeup(&etask, mr_etask_str_to_id(EVENT_2), MR_ETASK_WFLAG_NOW);
+
+    while (1)
+    {
+        /* 更新事件任务时钟 */
+        mr_etask_tick_update(&etask);
+        /* 事件任务处理 */
+        mr_etask_handle(&etask);
+    }
+}
+```
+
+### 更多组件请查看 `module` 目录
+
  ----------
 
 # 代码目录
