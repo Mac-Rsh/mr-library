@@ -130,14 +130,14 @@ typedef mr_int8_t mr_state_t;                                       /* Type for 
  * @def Error code
  */
 #define MR_ERR_OK                       0                           /* There is no error */
-#define MR_ERR_GENERIC                  1                           /* Generic error happens */
-#define MR_ERR_NO_MEMORY                2                           /* No memory */
-#define MR_ERR_IO                       3                           /* IO error */
-#define MR_ERR_TIMEOUT                  4                           /* Timed out */
-#define MR_ERR_BUSY                     5                           /* Busy */
-#define MR_ERR_NOT_FOUND                6                           /* Not found */
-#define MR_ERR_UNSUPPORTED              7                           /* Unsupported feature */
-#define MR_ERR_INVALID                  8                           /* Invalid parameter */
+#define MR_ERR_GENERIC                  (-1)                        /* Generic error happens */
+#define MR_ERR_NO_MEMORY                (-2)                        /* No memory */
+#define MR_ERR_IO                       (-3)                        /* IO error */
+#define MR_ERR_TIMEOUT                  (-4)                        /* Timed out */
+#define MR_ERR_BUSY                     (-5)                        /* Busy */
+#define MR_ERR_NOT_FOUND                (-6)                        /* Not found */
+#define MR_ERR_UNSUPPORTED              (-7)                        /* Unsupported feature */
+#define MR_ERR_INVALID                  (-8)                        /* Invalid parameter */
 
 /**
  * @addtogroup Auto init

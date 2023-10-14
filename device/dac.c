@@ -14,12 +14,12 @@
 
 static mr_err_t err_io_dac_configure(mr_dac_t dac, mr_state_t state)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static mr_err_t err_io_dac_channel_configure(mr_dac_t dac, struct mr_dac_config *config)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static void err_io_dac_write(mr_dac_t dac, mr_off_t channel, mr_uint32_t value)
@@ -63,7 +63,7 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
                 }
                 return ret;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_GET_CONFIG:
@@ -74,11 +74,11 @@ static mr_err_t mr_dac_ioctl(mr_device_t device, int cmd, void *args)
                 *config = dac->config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 
@@ -90,7 +90,7 @@ static mr_ssize_t mr_dac_write(mr_device_t device, mr_off_t pos, const void *buf
 
     if (pos < 0)
     {
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     while ((write_size += sizeof(*write_buffer)) <= size)

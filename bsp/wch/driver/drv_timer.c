@@ -147,7 +147,7 @@ static mr_err_t drv_timer_configure(mr_timer_t timer, mr_state_t state)
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     NVIC_InitStructure.NVIC_IRQChannel = timer_data->irqno;

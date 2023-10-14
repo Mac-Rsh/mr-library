@@ -22,7 +22,7 @@
 
 static mr_err_t err_io_spi_configure(mr_spi_bus_t spi_bus, struct mr_spi_config *config)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static void err_io_spi_write(mr_spi_bus_t spi_bus, mr_uint32_t data)
@@ -53,7 +53,7 @@ mr_err_t mr_spi_device_take_bus(mr_spi_device_t spi_device)
     /* Check if the spi-bus is valid */
     if (spi_bus == MR_NULL)
     {
-        return -MR_ERR_UNSUPPORTED;
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Take the mutex lock of the spi-bus */
@@ -109,7 +109,7 @@ static mr_err_t mr_spi_device_connect_bus(mr_spi_device_t spi_device, const char
         spi_bus = mr_device_find(name);
         if (spi_bus == MR_NULL || spi_bus->type != Mr_Device_Type_SPIBUS)
         {
-            return -MR_ERR_NOT_FOUND;
+            return MR_ERR_NOT_FOUND;
         }
     }
 
@@ -229,7 +229,7 @@ static mr_ssize_t mr_spi_device_transfer(mr_spi_device_t spi_device,
             }
 
             default:
-                return -MR_ERR_INVALID;
+                return MR_ERR_INVALID;
         }
     } else if (rw == MR_SPI_RD)
     {
@@ -272,7 +272,7 @@ static mr_ssize_t mr_spi_device_transfer(mr_spi_device_t spi_device,
             }
 
             default:
-                return -MR_ERR_INVALID;
+                return MR_ERR_INVALID;
         }
     } else
     {
@@ -318,7 +318,7 @@ static mr_ssize_t mr_spi_device_transfer(mr_spi_device_t spi_device,
             }
 
             default:
-                return -MR_ERR_INVALID;
+                return MR_ERR_INVALID;
         }
     }
 
@@ -401,7 +401,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
                 spi_device->config = *config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_GET_CONFIG:
@@ -412,7 +412,7 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
                 *config = spi_device->config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_SET_RX_CB:
@@ -462,11 +462,11 @@ static mr_err_t mr_spi_device_ioctl(mr_device_t device, int cmd, void *args)
 
                 return (mr_err_t)tf_size;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 

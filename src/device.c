@@ -16,12 +16,12 @@
 
 static mr_ssize_t err_io_read(mr_device_t device, mr_off_t pos, void *buffer, mr_size_t size)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static mr_ssize_t err_io_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 /**
@@ -134,8 +134,8 @@ mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags)
     /* Check whether the device supports opening in this mode */
     if (oflags != (oflags & device->sflags))
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, -MR_ERR_UNSUPPORTED);
-        return -MR_ERR_UNSUPPORTED;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] open [%x] failed: [%d]\r\n", device->object.name, oflags, MR_ERR_UNSUPPORTED);
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Update the device open flag and reference count */
@@ -229,8 +229,8 @@ mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args)
     /* Check if the ioctl operation is supported */
     if (device->ops->ioctl == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, -MR_ERR_UNSUPPORTED);
-        return -MR_ERR_UNSUPPORTED;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] ioctl [%x] failed: [%d]\r\n", device->object.name, cmd, MR_ERR_UNSUPPORTED);
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Call the ioctl operation */
@@ -263,8 +263,8 @@ mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, void *buffer, mr_siz
     /* Check if the device is closed or unsupported */
     if ((device->oflags & MR_DEVICE_OFLAG_RDONLY) == MR_FALSE)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] read [%d] failed: [%d]\r\n", device->object.name, pos, -MR_ERR_UNSUPPORTED);
-        return -MR_ERR_UNSUPPORTED;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] read [%d] failed: [%d]\r\n", device->object.name, pos, MR_ERR_UNSUPPORTED);
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Call the read operation */
@@ -298,8 +298,8 @@ mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer,
     /* Check if the device is closed or unsupported */
     if ((device->oflags & MR_DEVICE_OFLAG_WRONLY) == MR_FALSE)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] write [%d] failed: [%d]\r\n", device->object.name, pos, -MR_ERR_UNSUPPORTED);
-        return -MR_ERR_UNSUPPORTED;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] write [%d] failed: [%d]\r\n", device->object.name, pos, MR_ERR_UNSUPPORTED);
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Call the write operation */

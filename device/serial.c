@@ -14,7 +14,7 @@
 
 static mr_err_t err_io_serial_configure(mr_serial_t serial, struct mr_serial_config *config)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static void err_io_serial_write(mr_serial_t serial, mr_uint8_t data)
@@ -75,7 +75,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
                 }
                 return ret;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_GET_CONFIG:
@@ -86,7 +86,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
                 *config = serial->config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_SET_RX_CB:
@@ -108,7 +108,7 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
                 mr_size_t bufsz = *((mr_size_t *)args);
                 return mr_rb_allocate_buffer(&serial->rx_fifo, bufsz);
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_SET_TX_BUFSZ:
@@ -118,11 +118,11 @@ static mr_err_t mr_serial_ioctl(mr_device_t device, int cmd, void *args)
                 mr_size_t bufsz = *((mr_size_t *)args);
                 return mr_rb_allocate_buffer(&serial->tx_fifo, bufsz);
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 

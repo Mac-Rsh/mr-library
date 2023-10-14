@@ -14,7 +14,7 @@
 
 static mr_err_t err_io_pin_configure(mr_pin_t pin, struct mr_pin_config *config)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static mr_level_t err_io_pin_read(mr_pin_t pin, mr_off_t number)
@@ -40,7 +40,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
                 mr_pin_config_t config = (mr_pin_config_t)args;
                 return pin->ops->configure(pin, config);
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_SET_RX_CB:
@@ -50,7 +50,7 @@ static mr_err_t mr_pin_ioctl(mr_device_t device, int cmd, void *args)
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 
@@ -62,7 +62,7 @@ static mr_ssize_t mr_pin_read(mr_device_t device, mr_off_t pos, void *buffer, mr
 
     if (pos < 0)
     {
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     while ((read_size += sizeof(*read_buffer)) <= size)
@@ -82,7 +82,7 @@ static mr_ssize_t mr_pin_write(mr_device_t device, mr_off_t pos, const void *buf
 
     if (pos < 0)
     {
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     while ((write_size += sizeof(*write_buffer)) <= size)

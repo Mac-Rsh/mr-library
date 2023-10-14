@@ -107,13 +107,13 @@ mr_err_t mr_object_add(mr_object_t object, const char *name, mr_uint16_t type)
     container = mr_object_container_find(type);
     if (container == MR_NULL)
     {
-        return -MR_ERR_UNSUPPORTED;
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Check if the object already exists in the container */
     if (mr_object_find(name, type) != MR_NULL)
     {
-        return -MR_ERR_BUSY;
+        return MR_ERR_BUSY;
     }
 
     /* Initialize the private fields */
@@ -148,7 +148,7 @@ mr_err_t mr_object_remove(mr_object_t object)
     /* Check if the object already exists in the container */
     if (mr_object_find(object->name, object->type) == MR_NULL)
     {
-        return -MR_ERR_NOT_FOUND;
+        return MR_ERR_NOT_FOUND;
     }
 
     /* Disable interrupt */
@@ -187,13 +187,13 @@ mr_err_t mr_object_change_type(mr_object_t object, mr_uint16_t type)
     container = mr_object_container_find(type);
     if (container == MR_NULL)
     {
-        return -MR_ERR_UNSUPPORTED;
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Check if the object already exists in the container */
     if (mr_object_find(object->name, object->type) == MR_NULL)
     {
-        return -MR_ERR_NOT_FOUND;
+        return MR_ERR_NOT_FOUND;
     }
 
     /* Change the object type */
@@ -256,7 +256,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
     /* Check if the acquirer is valid */
     if (acquirer == MR_NULL)
     {
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     /* Disable interrupt */
@@ -286,7 +286,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
     /* Enable interrupt */
     mr_interrupt_enable();
 
-    return -MR_ERR_BUSY;
+    return MR_ERR_BUSY;
 }
 
 /**
@@ -319,7 +319,7 @@ mr_err_t mr_mutex_release(mr_mutex_t mutex, void *owner)
         return MR_ERR_OK;
     }
 
-    return -MR_ERR_INVALID;
+    return MR_ERR_INVALID;
 }
 
 /**

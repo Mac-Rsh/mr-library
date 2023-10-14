@@ -112,7 +112,7 @@ mr_err_t mr_console_init(void)
     console_device = mr_device_find(MR_CFG_CONSOLE_NAME);
     if (console_device == MR_NULL)
     {
-        return -MR_ERR_NOT_FOUND;
+        return MR_ERR_NOT_FOUND;
     }
 
     return mr_device_open(console_device, MR_DEVICE_OFLAG_RDWR);
@@ -243,7 +243,7 @@ mr_err_t mr_rb_allocate_buffer(mr_rb_t rb, mr_size_t size)
     pool = mr_malloc(size);
     if (pool == MR_NULL && size != 0)
     {
-        return -MR_ERR_NO_MEMORY;
+        return MR_ERR_NO_MEMORY;
     }
     mr_rb_init(rb, pool, size);
 

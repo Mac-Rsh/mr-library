@@ -141,7 +141,7 @@ static mr_err_t drv_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->mode)
@@ -175,7 +175,7 @@ static mr_err_t drv_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->data_bits)
@@ -193,7 +193,7 @@ static mr_err_t drv_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->bit_order)
@@ -211,7 +211,7 @@ static mr_err_t drv_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->cs_active)
@@ -230,7 +230,7 @@ static mr_err_t drv_spi_configure(mr_spi_bus_t spi_bus, mr_spi_config_t config)
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     NVIC_InitStructure.NVIC_IRQChannel = spi_bus_data->irqno;

@@ -14,7 +14,7 @@
 
 static mr_err_t err_io_timer_configure(mr_timer_t timer, mr_state_t state)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static void err_io_timer_start(mr_timer_t timer, mr_uint32_t prescaler, mr_uint32_t period)
@@ -41,7 +41,7 @@ static mr_err_t mr_timer_calculate(mr_timer_t timer, mr_uint32_t timeout, mr_uin
     clk_mhz = timer->data->clk / 1000000u;
     if (clk_mhz == 0)
     {
-        return -MR_ERR_GENERIC;
+        return MR_ERR_GENERIC;
     }
 
     /* Calculate the prescaler */
@@ -141,7 +141,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
                 timer->config = *config;
                 return ret;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_GET_CONFIG:
@@ -152,7 +152,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
                 *config = timer->config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_SET_RX_CB:
@@ -162,7 +162,7 @@ static mr_err_t mr_timer_ioctl(mr_device_t device, int cmd, void *args)
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 

@@ -17,7 +17,7 @@
 
 static mr_err_t err_io_i2c_configure(mr_i2c_bus_t i2c_bus, mr_i2c_config_t config)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static void err_io_i2c_start(mr_i2c_bus_t i2c_bus)
@@ -48,7 +48,7 @@ static mr_err_t mr_i2c_device_take_bus(mr_i2c_device_t i2c_device)
     /* Check if the i2c-bus is valid */
     if (i2c_bus == MR_NULL)
     {
-        return -MR_ERR_UNSUPPORTED;
+        return MR_ERR_UNSUPPORTED;
     }
 
     /* Take the mutex lock of the i2c-bus */
@@ -102,7 +102,7 @@ static mr_err_t mr_i2c_device_connect_bus(mr_i2c_device_t i2c_device, const char
         i2c_bus = mr_device_find(name);
         if (i2c_bus == MR_NULL || i2c_bus->type != Mr_Device_Type_I2CBUS)
         {
-            return -MR_ERR_NOT_FOUND;
+            return MR_ERR_NOT_FOUND;
         }
     }
 
@@ -209,7 +209,7 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
                 i2c_device->config = *config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_GET_CONFIG:
@@ -220,7 +220,7 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
                 *config = i2c_device->config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_CONNECT:
@@ -229,7 +229,7 @@ static mr_err_t mr_i2c_device_ioctl(mr_device_t device, int cmd, void *args)
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 
@@ -456,7 +456,7 @@ mr_err_t mr_i2c_bus_add(mr_i2c_bus_t i2c_bus, const char *name, struct mr_i2c_bu
 
 static mr_err_t err_io_soft_i2c_bus_configure(mr_soft_i2c_bus_t i2c_bus, mr_state_t state)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static void err_io_soft_i2c_scl_write(mr_soft_i2c_bus_t i2c_bus, mr_level_t level)

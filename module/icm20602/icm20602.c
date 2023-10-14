@@ -120,8 +120,8 @@ mr_err_t mr_icm20602_add(mr_icm20602_t icm20602, const char *name, mr_uint16_t c
     /* Configure ICM20602 */
     if (icm20602_self_check(icm20602) == MR_FALSE)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] self check failed: [%d]\r\n", name, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] self check failed: [%d]\r\n", name, MR_ERR_NOT_FOUND);
+        return MR_ERR_NOT_FOUND;
     }
 
     icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x80);
@@ -136,7 +136,7 @@ mr_err_t mr_icm20602_add(mr_icm20602_t icm20602, const char *name, mr_uint16_t c
     if (count == 200)
     {
         MR_DEBUG_D(DEBUG_TAG, "%s failed to reset\r\n", name);
-        return -MR_ERR_NOT_FOUND;
+        return MR_ERR_NOT_FOUND;
     }
 
     icm20602_write_reg(icm20602, ICM20602_PWR_MGMT_1, 0x01);
@@ -184,7 +184,7 @@ mr_err_t mr_icm20602_config(mr_icm20602_t icm20602, mr_icm20602_config_t config)
             break;
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 
     switch (config->gyro_range)
@@ -203,7 +203,7 @@ mr_err_t mr_icm20602_config(mr_icm20602_t icm20602, mr_icm20602_config_t config)
             break;
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
     icm20602->config = *config;
 

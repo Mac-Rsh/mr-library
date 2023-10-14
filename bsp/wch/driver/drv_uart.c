@@ -118,7 +118,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->stop_bits)
@@ -136,7 +136,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->parity)
@@ -160,7 +160,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->bit_order)
@@ -171,7 +171,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     switch (config->invert)
@@ -182,7 +182,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
         }
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     GPIO_InitStructure.GPIO_Pin = uart_data->tx_gpio_pin;

@@ -14,12 +14,12 @@
 
 static mr_err_t err_io_adc_configure(mr_adc_t adc, mr_state_t state)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static mr_err_t err_io_adc_channel_configure(mr_adc_t adc, mr_adc_config_t config)
 {
-    return -MR_ERR_IO;
+    return MR_ERR_IO;
 }
 
 static mr_uint32_t err_io_adc_read(mr_adc_t adc, mr_off_t channel)
@@ -63,7 +63,7 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
                 }
                 return ret;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         case MR_DEVICE_CTRL_GET_CONFIG:
@@ -74,11 +74,11 @@ static mr_err_t mr_adc_ioctl(mr_device_t device, int cmd, void *args)
                 *config = adc->config;
                 return MR_ERR_OK;
             }
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
         }
 
         default:
-            return -MR_ERR_UNSUPPORTED;
+            return MR_ERR_UNSUPPORTED;
     }
 }
 
@@ -90,7 +90,7 @@ static mr_ssize_t mr_adc_read(mr_device_t device, mr_off_t pos, void *buffer, mr
 
     if (pos < 0)
     {
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     while ((read_size += sizeof(*read_buffer)) <= size)

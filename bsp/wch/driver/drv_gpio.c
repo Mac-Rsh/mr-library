@@ -65,7 +65,7 @@ static mr_err_t drv_pin_configure(mr_pin_t pin, mr_pin_config_t config)
 
     if (config->number < 0)
     {
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     RCC_APB2PeriphClockCmd(PIN_RCC(config->number), ENABLE);
@@ -134,7 +134,7 @@ static mr_err_t drv_pin_configure(mr_pin_t pin, mr_pin_config_t config)
     {
         if ((irq_mask[exti_line] != -1 && irq_mask[exti_line] != config->number))
         {
-            return -MR_ERR_BUSY;
+            return MR_ERR_BUSY;
         }
 
         irq_mask[exti_line] = config->number;

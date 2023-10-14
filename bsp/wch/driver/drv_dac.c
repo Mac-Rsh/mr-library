@@ -41,7 +41,7 @@ static mr_err_t drv_dac_configure(mr_dac_t dac, mr_state_t state)
             break;
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     DAC_InitStructure.DAC_Trigger = DAC_Trigger_None;
@@ -71,7 +71,7 @@ static mr_err_t drv_dac_channel_configure(mr_dac_t dac, mr_dac_config_t config)
             break;
 
         default:
-            return -MR_ERR_INVALID;
+            return MR_ERR_INVALID;
     }
 
     if (config->channel._mask != 0)
