@@ -24,6 +24,7 @@ extern "C" {
  */
 #define MR_ETASK_WFLAG_NOW              0x00                        /* Wakeup immediately */
 #define MR_ETASK_WFLAG_DELAY            0x01                        /* Wakeup after delay */
+#define MR_ETASK_WFLAG_STATE            0x02                        /* Wakeup by state */
 
 /**
  * @def Etask start flag
@@ -44,6 +45,7 @@ struct mr_etask
     struct mr_rb queue;                                             /* Queue */
     mr_avl_t list;                                                  /* Event list */
     struct mr_list tlist;                                           /* Timing list */
+    void *state;                                                    /* State */
 };
 typedef struct mr_etask *mr_etask_t;                                /* Type for etask */
 
@@ -64,9 +66,13 @@ mr_err_t mr_etask_start(mr_etask_t etask,
                         void *args);
 mr_err_t mr_etask_stop(mr_etask_t etask, mr_uint32_t id);
 mr_err_t mr_etask_wakeup(mr_etask_t etask, mr_uint32_t id, mr_uint8_t wflag);
-mr_uint32_t mr_etask_str_to_id(const char *string);
+mr_uint32_t mr_etask_str2id(const char *string);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _ETASK_H_ */

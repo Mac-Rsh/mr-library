@@ -94,17 +94,17 @@ void mr_etask_timing(mr_etask_t etask, mr_event_t event, mr_uint32_t time)
     mr_interrupt_enable();
 }
 
-static void mr_etask_free_task(mr_avl_t tree)
+static void mr_etask_free_event(mr_avl_t tree)
 {
     if (tree->left_child != MR_NULL)
     {
-        mr_etask_free_task(tree->left_child);
+        mr_etask_free_event(tree->left_child);
         tree->left_child = MR_NULL;
     }
 
-    if(tree->right_child != MR_NULL)
+    if (tree->right_child != MR_NULL)
     {
-        mr_etask_free_task(tree->right_child);
+        mr_etask_free_event(tree->right_child);
         tree->right_child = MR_NULL;
     }
 
@@ -151,8 +151,8 @@ mr_err_t mr_etask_add(mr_etask_t etask, const char *name, mr_size_t size)
     pool = mr_malloc(size * sizeof(mr_uint32_t));
     if (pool == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, -MR_ERR_NO_MEMORY);
-        return -MR_ERR_NO_MEMORY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, MR_ERR_NO_MEMORY);
+        return MR_ERR_NO_MEMORY;
     }
 
     /* Initialize the private fields */
@@ -160,6 +160,7 @@ mr_err_t mr_etask_add(mr_etask_t etask, const char *name, mr_size_t size)
     mr_rb_init(&etask->queue, pool, size * sizeof(mr_uint32_t));
     etask->list = MR_NULL;
     mr_list_init(&etask->tlist);
+    etask->state = MR_NULL;
 
     /* Add the object to the container */
     ret = mr_object_add(&etask->object, name, Mr_Object_Type_Module);
@@ -197,9 +198,10 @@ mr_err_t mr_etask_remove(mr_etask_t etask)
     /* Free the queue */
     mr_free(etask->queue.buffer);
     mr_rb_init(&etask->queue, MR_NULL, 0);
-    mr_etask_free_task(etask->list);
+    mr_etask_free_event(etask->list);
     etask->list = MR_NULL;
     mr_list_init(&etask->tlist);
+    etask->state = MR_NULL;
 
     return MR_ERR_OK;
 }
@@ -273,11 +275,19 @@ void mr_etask_handle(mr_etask_t etask)
         mr_event_t event = (mr_event_t)mr_avl_find(etask->list, id);
         if (event == MR_NULL)
         {
-            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", etask->object.name, id, -MR_ERR_NOT_FOUND);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%u] failed: [%d]\r\n", etask->object.name, id, MR_ERR_NOT_FOUND);
             continue;
         }
 
         /* Call the event callback */
+        event->cb(etask, event->args);
+    }
+
+    if (etask->state != MR_NULL)
+    {
+        mr_event_t event = (mr_event_t)etask->state;
+
+        /* Call the state callback */
         event->cb(etask, event->args);
     }
 }
@@ -305,22 +315,22 @@ mr_err_t mr_etask_start(mr_etask_t etask,
 
     MR_ASSERT(etask != MR_NULL);
     MR_ASSERT(etask->object.type == Mr_Object_Type_Module);
-    MR_ASSERT(((sflags & MR_ETASK_SFLAG_TIMER) == 0) || time != 0);
+    MR_ASSERT(((sflags & MR_ETASK_SFLAG_TIMER) != MR_ETASK_SFLAG_TIMER) || time != 0);
     MR_ASSERT(cb != MR_NULL);
 
     /* Check if the event already exists */
     if (mr_avl_find(etask->list, id) != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] start [%d] failed: [%d]\r\n", etask->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_BUSY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] start [%u] failed: [%d]\r\n", etask->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_BUSY;
     }
 
     /* Allocate the event */
     event = (mr_event_t)mr_malloc(sizeof(struct mr_event));
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] start [%d] failed: [%d]\r\n", etask->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_NO_MEMORY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] start [%u] failed: [%d]\r\n", etask->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_NO_MEMORY;
     }
 
     /* Initialize the private fields */
@@ -364,8 +374,8 @@ mr_err_t mr_etask_stop(mr_etask_t etask, mr_uint32_t id)
     event = (mr_event_t)mr_avl_find(etask->list, id);
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] stop [%d] failed: [%d]\r\n", etask->object.name, id, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] stop [%u] failed: [%d]\r\n", etask->object.name, id, MR_ERR_NOT_FOUND);
+        return MR_ERR_NOT_FOUND;
     }
 
     /* Disable interrupt */
@@ -400,14 +410,14 @@ mr_err_t mr_etask_wakeup(mr_etask_t etask, mr_uint32_t id, mr_uint8_t wflag)
 {
     MR_ASSERT(etask != MR_NULL);
     MR_ASSERT(etask->object.type == Mr_Object_Type_Module);
-    MR_ASSERT(wflag == MR_ETASK_WFLAG_NOW || wflag == MR_ETASK_WFLAG_DELAY);
+    MR_ASSERT(wflag == MR_ETASK_WFLAG_DELAY || wflag == MR_ETASK_WFLAG_NOW || wflag == MR_ETASK_WFLAG_STATE);
 
     if (wflag == MR_ETASK_WFLAG_DELAY)
     {
         if (mr_rb_write(&etask->queue, &id, sizeof(id)) != sizeof(id))
         {
-            MR_DEBUG_D(DEBUG_TAG, "[%s] wakeup [%d] failed: [%d]\r\n", etask->object.name, id, -MR_ERR_BUSY);
-            return -MR_ERR_BUSY;
+            MR_DEBUG_D(DEBUG_TAG, "[%s] wakeup [%u] failed: [%d]\r\n", etask->object.name, id, MR_ERR_BUSY);
+            return MR_ERR_BUSY;
         }
     } else
     {
@@ -415,15 +425,22 @@ mr_err_t mr_etask_wakeup(mr_etask_t etask, mr_uint32_t id, mr_uint8_t wflag)
         if (event == MR_NULL)
         {
             MR_DEBUG_D(DEBUG_TAG,
-                       "[%s] wakeup [%d] failed: [%d]\r\n",
+                       "[%s] wakeup [%u] failed: [%d]\r\n",
                        etask->object.name,
                        id,
-                       -MR_ERR_NOT_FOUND);
-            return -MR_ERR_NOT_FOUND;
+                       MR_ERR_NOT_FOUND);
+            return MR_ERR_NOT_FOUND;
         }
 
-        /* Call the event callback */
-        event->cb(etask, event->args);
+        if (wflag == MR_ETASK_WFLAG_NOW)
+        {
+            /* Call the event callback */
+            event->cb(etask, event->args);
+        } else
+        {
+            /* Set the state machine */
+            etask->state = (void *)event;
+        }
     }
 
     return MR_ERR_OK;
@@ -436,7 +453,7 @@ mr_err_t mr_etask_wakeup(mr_etask_t etask, mr_uint32_t id, mr_uint8_t wflag)
  *
  * @return The id of the string.
  */
-mr_uint32_t mr_etask_str_to_id(const char *string)
+mr_uint32_t mr_etask_str2id(const char *string)
 {
     mr_uint32_t id = 2166136261u;
 

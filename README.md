@@ -132,7 +132,7 @@ int main(void)
     
     /* 启动普通事件 */
     mr_etask_start(&etask, EVENT_1, MR_ETASK_SFLAG_EVENT, 0, event1_cb, NULL);
-    mr_etask_start(&etask, mr_etask_str_to_id(EVENT_2), MR_ETASK_SFLAG_EVENT, 0, event2_cb, NULL);
+    mr_etask_start(&etask, mr_etask_str2id(EVENT_2), MR_ETASK_SFLAG_EVENT, 0, event2_cb, NULL);
     
     /* 启动定时事件 */
     mr_etask_start(&etask, EVENT_3, MR_ETASK_SFLAG_TIMER | MR_ETASK_SFLAG_HARD, 5, event3_cb, NULL);
@@ -140,7 +140,9 @@ int main(void)
     /* 延迟唤醒事件1 */
     mr_etask_wakeup(&etask, EVENT_1, MR_ETASK_WFLAG_DELAY);
     /* 立即唤醒事件2 */
-    mr_etask_wakeup(&etask, mr_etask_str_to_id(EVENT_2), MR_ETASK_WFLAG_NOW);
+    mr_etask_wakeup(&etask, mr_etask_str2id(EVENT_2), MR_ETASK_WFLAG_NOW);
+    /* 状态唤醒事件2 */
+    mr_etask_wakeup(&etask, mr_etask_str2id(EVENT_2), MR_ETASK_WFLAG_STATE);
 
     while (1)
     {

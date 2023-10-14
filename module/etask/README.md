@@ -1,4 +1,4 @@
-# Etask使用指南
+# etask使用指南
 
 事件任务框架是是一种用于处理异步事件和任务的编程模型。它提供了一种结构化的方式来管理和调度事件和任务，以便在单线程、多线程或多任务环境中实现高效的并发处理。
 
@@ -10,7 +10,7 @@
 
 ## 准备
 
-1. 在 `mrconfig.h` 中 `Module config` 下添加宏开关启用Etask组件。
+1. 在 `mrconfig.h` 中 `Module config` 下添加宏开关启用etask组件。
 
 ```c
 //<------------------------------------ Module config ------------------------------------>
@@ -101,6 +101,8 @@ void mr_etask_handle(mr_etask_t etask);
 
 按事件发生顺序处理（FIFO），仅会处理进入处理函数前已发生的事件，防止单一事件循环触发阻塞系统。
 
+状态事件将在每次事件任务处理结束后运行。
+
 ----------
 
 ## 启动事件
@@ -175,12 +177,15 @@ mr_err_t mr_etask_wakeup(mr_etask_t etask, mr_uint32_t id, mr_uint8_t wflag);
 | MR_ERR_OK | 通知成功 |
 | 错误码       | 通知失败 |
 
-- wflag：事件唤醒标志可分为立即唤醒和延迟唤醒，立即唤醒将在调用处直接处理，延迟唤醒则将事件加入事件队列中等待处理。
+- wflag：事件唤醒标志可分为立即唤醒、延迟唤醒和状态唤醒，立即唤醒将在调用处直接处理，延迟唤醒将事件加入事件队列中等待处理，状态唤醒将事件转换为etask状态事件。
 
 ```c
 MR_ETASK_WFLAG_NOW                                                  /* 立即唤醒 */
 MR_ETASK_WFLAG_DELAY                                                /* 延迟唤醒 */
+MR_ETASK_WFLAG_STATE                                                /* 状态唤醒 */
 ```
+
+状态事件将在每次事件任务处理结束后运行（有且仅有一个状态事件，默认无状态事件）。
 
 当唤醒事件发生失败（错误码 -5）时，请增加缓冲队列大小或提高事件处理频率（缓冲队列已满，无法及时响应事件，导致事件丢失）。
 
@@ -189,7 +194,7 @@ MR_ETASK_WFLAG_DELAY                                                /* 延迟唤
 ## 字符串转事件ID
 
 ```c
-mr_uint32_t mr_etask_str_to_id(const char *string);
+mr_uint32_t mr_etask_str2id(const char *string);
 ```
 
 | 参数     | 描述    |
@@ -239,7 +244,7 @@ int main(void)
     
     /* 启动普通事件 */
     mr_etask_start(&etask, EVENT_1, MR_ETASK_SFLAG_EVENT, 0, event1_cb, NULL);
-    mr_etask_start(&etask, mr_etask_str_to_id(EVENT_2), MR_ETASK_SFLAG_EVENT, 0, event2_cb, NULL);
+    mr_etask_start(&etask, mr_etask_str2id(EVENT_2), MR_ETASK_SFLAG_EVENT, 0, event2_cb, NULL);
     
     /* 启动定时事件 */
     mr_etask_start(&etask, EVENT_3, MR_ETASK_SFLAG_TIMER | MR_ETASK_SFLAG_HARD, 5, event3_cb, NULL);
@@ -247,7 +252,9 @@ int main(void)
     /* 延迟唤醒事件1 */
     mr_etask_wakeup(&etask, EVENT_1, MR_ETASK_WFLAG_DELAY);
     /* 立即唤醒事件2 */
-    mr_etask_wakeup(&etask, mr_etask_str_to_id(EVENT_2), MR_ETASK_WFLAG_NOW);
+    mr_etask_wakeup(&etask, mr_etask_str2id(EVENT_2), MR_ETASK_WFLAG_NOW);
+    /* 状态唤醒事件2 */
+    mr_etask_wakeup(&etask, mr_etask_str2id(EVENT_2), MR_ETASK_WFLAG_STATE);
 
     while (1)
     {
