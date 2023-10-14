@@ -19,9 +19,7 @@ extern "C" {
 
 #if (MR_CFG_SPI != MR_CFG_ENABLE)
 #error "Please enable SPI first!"
-#else
-
-#if (MR_CFG_ICM20602 == MR_CFG_ENABLE)
+#elif (MR_CFG_ICM20602 == MR_CFG_ENABLE)
 
 /**
  * @def ICM20602 Acc Range
@@ -91,7 +89,6 @@ struct mr_icm20602_3_axis mr_icm20602_read_acc_3_axis(mr_icm20602_t icm20602);
 struct mr_icm20602_3_axis mr_icm20602_read_gyro_3_axis(mr_icm20602_t icm20602);
 /** @} */
 
-#endif
 #endif
 
 #ifdef __cplusplus
