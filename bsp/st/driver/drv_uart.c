@@ -274,7 +274,7 @@ void UART5_IRQHandler(void)
 #endif
 
 #ifdef MR_BSP_UART_6
-void UART6_IRQHandler(void)
+void USART6_IRQHandler(void)
 {
     drv_serial_isr(&serial_device[DRV_UART_6_INDEX]);
 }
