@@ -72,12 +72,12 @@ mr_err_t mr_eloop_add(mr_eloop_t eloop, const char *name, mr_size_t queue_size);
 mr_err_t mr_eloop_remove(mr_eloop_t eloop);
 ```
 
-| 参数         | 描述     |
-|:-----------|:-------|
-| eloop      | 事件循环   |
-| **返回**     |        |
-| MR_ERR_OK  | 移除成功   |
-| 错误码        | 移除失败   |
+| 参数        | 描述   |
+|:----------|:-----|
+| eloop     | 事件循环 |
+| **返回**    |      |
+| MR_ERR_OK | 移除成功 |
+| 错误码       | 移除失败 |
 
 ----------
 
@@ -87,9 +87,9 @@ mr_err_t mr_eloop_remove(mr_eloop_t eloop);
 void mr_eloop_handle(mr_eloop_t eloop);
 ```
 
-| 参数         | 描述     |
-|:-----------|:-------|
-| eloop      | 事件循环   |
+| 参数    | 描述   |
+|:------|:-----|
+| eloop | 事件循环 |
 
 按事件发生顺序处理（FIFO），仅会处理进入处理函数前已发生的事件，防止单一事件循环触发阻塞系统。
 
@@ -101,15 +101,15 @@ void mr_eloop_handle(mr_eloop_t eloop);
 mr_err_t mr_eloop_create_event(mr_eloop_t eloop, mr_uint32_t id, mr_err_t (*cb)(mr_eloop_t ep, void *args), void *args);
 ```
 
-| 参数           | 描述       |
-|:-------------|:---------|
-| eloop        | 事件循环     |
-| id           | 事件ID     |
-| cb           | 事件回调函数   |
-| args         | 回调函数参数   |
-| **返回**       |          |
-| MR_ERR_OK    | 创建成功     |
-| 错误码          | 创建失败     |
+| 参数        | 描述     |
+|:----------|:-------|
+| eloop     | 事件循环   |
+| id        | 事件ID   |
+| cb        | 事件回调函数 |
+| args      | 回调函数参数 |
+| **返回**    |        |
+| MR_ERR_OK | 创建成功   |
+| 错误码       | 创建失败   |
 
 当与RTOS线程组合使用时可实现真正意义上的高效并发，并且可根据线程优先级控制事件的响应速度。
 但是也会引入新的问题，当事件回调中使用任何能使线程挂起的功能时，可能会导致其余所有事件无法响应（等同于所有事件被挂起等待），因此事件处理函数中不因使用类似功能（事件回调应能直接处理无需等待）。
@@ -124,13 +124,13 @@ mr_err_t mr_eloop_create_event(mr_eloop_t eloop, mr_uint32_t id, mr_err_t (*cb)(
 mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id);
 ```
 
-| 参数           | 描述       |
-|:-------------|:---------|
-| eloop        | 事件循环     |
-| id           | 事件ID     |
-| **返回**       |          |
-| MR_ERR_OK    | 删除成功     |
-| 错误码          | 删除失败     |
+| 参数        | 描述   |
+|:----------|:-----|
+| eloop     | 事件循环 |
+| id        | 事件ID |
+| **返回**    |      |
+| MR_ERR_OK | 删除成功 |
+| 错误码       | 删除失败 |
 
 ----------
 
@@ -140,13 +140,13 @@ mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id);
 mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id);
 ```
 
-| 参数           | 描述       |
-|:-------------|:---------|
-| eloop        | 事件循环     |
-| id           | 事件ID     |
-| **返回**       |          |
-| MR_ERR_OK    | 通知成功     |
-| 错误码          | 通知失败     |
+| 参数        | 描述   |
+|:----------|:-----|
+| eloop     | 事件循环 |
+| id        | 事件ID |
+| **返回**    |      |
+| MR_ERR_OK | 通知成功 |
+| 错误码       | 通知失败 |
 
 通知事件为异步操作，实际处理将在事件处理中进行。
 当通知事件发生失败（错误码 -5）时，请增加缓冲队列大小或提高事件处理频率（缓冲队列已满，无法及时响应事件，导致事件丢失）。
@@ -159,13 +159,13 @@ mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id);
 mr_err_t mr_eloop_trigger_event(mr_eloop_t eloop, mr_uint32_t id);
 ```
 
-| 参数           | 描述       |
-|:-------------|:---------|
-| eloop        | 事件循环     |
-| id           | 事件ID     |
-| **返回**       |          |
-| MR_ERR_OK    | 触发成功     |
-| 错误码          | 触发失败     |
+| 参数        | 描述   |
+|:----------|:-----|
+| eloop     | 事件循环 |
+| id        | 事件ID |
+| **返回**    |      |
+| MR_ERR_OK | 触发成功 |
+| 错误码       | 触发失败 |
 
 此操作为同步操作，实际处理将在触发处立即执行。
 

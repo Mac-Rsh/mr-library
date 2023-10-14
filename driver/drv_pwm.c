@@ -69,7 +69,7 @@ mr_err_t drv_pwm_init(void)
     {
         ret = mr_pwm_device_add(&pwm_device[count],
                                 drv_pwm_data[count].name,
-                                &drv_ops,&drv_pwm_data[count]
+                                &drv_ops, &drv_pwm_data[count]
         );
         MR_ASSERT(ret == MR_ERR_OK);
     }

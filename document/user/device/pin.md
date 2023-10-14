@@ -27,12 +27,12 @@ GPIO（通用目的输入/输出）是一种可以通过软件进行控制的硬
 mr_device_t mr_device_find(const char *name);
 ```
 
-| 参数        | 描述        |
-|:----------|:----------|
-| name      | PIN设备名    |
-| **返回**    |           |
-| PIN       | 查找设备成功    |
-| MR_NULL   | 查找设备失败    |
+| 参数      | 描述     |
+|:--------|:-------|
+| name    | PIN设备名 |
+| **返回**  |        |
+| PIN     | 查找设备成功 |
+| MR_NULL | 查找设备失败 |
 
 ----------
 
@@ -42,13 +42,13 @@ mr_device_t mr_device_find(const char *name);
 mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags);
 ```
 
-| 参数          | 描述     |
-|:------------|:-------|
-| device      | PIN设备  |
-| oflags      | 打开方式   |
-| **返回**      |        |
-| MR_ERR_OK   | 打开设备成功 |
-| 错误码         | 打开设备失败 |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | PIN设备  |
+| oflags    | 打开方式   |
+| **返回**    |        |
+| MR_ERR_OK | 打开设备成功 |
+| 错误码       | 打开设备失败 |
 
 PIN设备支持以下打开方式：
 
@@ -66,14 +66,14 @@ MR_DEVICE_OFLAG_RDWR                                                /* 可读可
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | PIN设备   |
-| cmd       | 控制命令    |
-| args      | 控制参数    |
-| **返回**    |         |
-| MR_ERR_OK | 控制设备成功  |
-| 错误码       | 控制设备失败  |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | PIN设备  |
+| cmd       | 控制命令   |
+| args      | 控制参数   |
+| **返回**    |        |
+| MR_ERR_OK | 控制设备成功 |
+| 错误码       | 控制设备失败 |
 
 PIN设备支持以下命令：
 
@@ -177,14 +177,14 @@ mr_device_ioctl(pin_device, MR_DEVICE_CTRL_SET_RX_CB, pin_device_cb);
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | PIN设备   |
-| pos       | 读取位置    |
-| buffer    | 读取数据    |
-| size      | 读取数据大小  |
-| **返回**    |         |
-| 实际读取的数据大小 |         |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | PIN设备  |
+| pos       | 读取位置   |
+| buffer    | 读取数据   |
+| size      | 读取数据大小 |
+| **返回**    |        |
+| 实际读取的数据大小 |        |
 
 - 读取位置：需要读取的IO编号，如读取B13，则pos = 29，有效范围：>=0。
 - 读取数据：PIN设备IO输入电平，类型为：int8。
@@ -219,14 +219,14 @@ mr_device_read(pin_device, PIN_NUMBER, &pin_level, sizeof(pin_level));
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | PIN设备   |
-| pos       | 写入位置    |
-| buffer    | 写入数据    |
-| size      | 写入数据大小  |
-| **返回**    |         |
-| 实际写入的数据大小 |         |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | PIN设备  |
+| pos       | 写入位置   |
+| buffer    | 写入数据   |
+| size      | 写入数据大小 |
+| **返回**    |        |
+| 实际写入的数据大小 |        |
 
 - 写入位置：需要写入的IO编号，如读取B13，则pos = 29，有效范围：>=0。
 - 写入数据：PIN设备IO输出电平，类型为：int8。

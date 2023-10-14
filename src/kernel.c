@@ -17,8 +17,6 @@ static struct mr_object_container mr_object_container_table[] =
         {Mr_Object_Type_Module, MR_OBJECT_MAGIC, {&mr_object_container_table[Mr_Object_Type_Module].list, &mr_object_container_table[Mr_Object_Type_Module].list}},
     };
 
-static mr_size_t mr_allocated_memory_size = 0;
-
 /**
  * @brief This function find the object container.
  *
@@ -273,7 +271,7 @@ mr_err_t mr_mutex_take(mr_mutex_t mutex, void *acquirer)
         return MR_ERR_OK;
     }
 
-    if(mutex->owner == acquirer)
+    if (mutex->owner == acquirer)
     {
         mutex->hold++;
 

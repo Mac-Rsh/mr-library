@@ -8,17 +8,17 @@
 
 代码包含以下文件：
 
-| 名称         | 描述      |
-|:-----------|:--------|
-| mr_library |         |
-| -bsp       | 板级支持包   |
-| -device    | 设备文件    |
-| -document  | 文档      |
-| -driver    | 驱动文件    |
-| -include   | 库头文件    |
-| -module    | 组件      |
-| -package   | 软件包     |
-| -src       | 库源文件    |
+| 名称         | 描述    |
+|:-----------|:------|
+| mr_library |       |
+| -bsp       | 板级支持包 |
+| -device    | 设备文件  |
+| -document  | 文档    |
+| -driver    | 驱动文件  |
+| -include   | 库头文件  |
+| -module    | 组件    |
+| -package   | 软件包   |
+| -src       | 库源文件  |
 
 选择需要的文件：
 

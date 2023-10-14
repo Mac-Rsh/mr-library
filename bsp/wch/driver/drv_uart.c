@@ -240,7 +240,6 @@ static mr_uint8_t drv_serial_read(mr_serial_t serial)
             return 0;
         }
     }
-
     return uart_data->instance->DATAR & 0xff;
 }
 

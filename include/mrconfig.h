@@ -108,6 +108,19 @@ extern "C" {
 #endif
 
 /**
+ * @def Message config.
+ *
+ * MR_CFG_DISABLE: Disable msg.
+ * MR_CFG_ENABLE: Enable msg.
+ */
+#define MR_CFG_MSG                      MR_CFG_ENABLE
+
+#if (MR_CFG_MSG == MR_CFG_ENABLE)
+
+#define MR_CFG_MSG_RX_BUFSZ             32
+#endif
+
+/**
  * @def Pin config.
  *
  * MR_CFG_DISABLE: Disable pin.

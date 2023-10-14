@@ -21,12 +21,12 @@
 mr_device_t mr_device_find(const char *name);
 ```
 
-| 参数        | 描述           |
-|:----------|:-------------|
-| name      | TIMER设备名     | 
-| **返回**    |              |
-| TIMER     | 查找设备成功       |
-| MR_NULL   | 查找设备失败       |
+| 参数      | 描述       |
+|:--------|:---------|
+| name    | TIMER设备名 | 
+| **返回**  |          |
+| TIMER   | 查找设备成功   |
+| MR_NULL | 查找设备失败   |
 
 ----------
 
@@ -36,13 +36,13 @@ mr_device_t mr_device_find(const char *name);
 mr_err_t mr_device_open(mr_device_t device, mr_uint8_t oflags);
 ```
 
-| 参数          | 描述         |
-|:------------|:-----------|
-| device      | TIMER设备    |
-| oflags      | 打开方式       |
-| **返回**      |            |
-| MR_ERR_OK   | 打开设备成功     |
-| 错误码         | 打开设备失败     |
+| 参数        | 描述      |
+|:----------|:--------|
+| device    | TIMER设备 |
+| oflags    | 打开方式    |
+| **返回**    |         |
+| MR_ERR_OK | 打开设备成功  |
+| 错误码       | 打开设备失败  |
 
 TIMER设备支持以下打开方式：
 
@@ -60,15 +60,14 @@ MR_DEVICE_OFLAG_RDWR                                                /* 可读可
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 ```
 
-| 参数        | 描述          |
-|:----------|:------------|
-| device    | TIMER设备     |
-| cmd       | 控制命令        |
-| args      | 控制参数        |
-| **返回**    |             |
-| MR_ERR_OK | 控制设备成功      |
-| 错误码       | 控制设备失败      |
-
+| 参数        | 描述      |
+|:----------|:--------|
+| device    | TIMER设备 |
+| cmd       | 控制命令    |
+| args      | 控制参数    |
+| **返回**    |         |
+| MR_ERR_OK | 控制设备成功  |
+| 错误码       | 控制设备失败  |
 
 TIMER设备支持以下命令：
 
@@ -134,14 +133,14 @@ mr_device_ioctl(serial_device, MR_DEVICE_CTRL_SET_RX_CB, timer_device_rx_cb);
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数          | 描述            |
-|:------------|:--------------|
-| device      | TIMER设备       |
-| pos         | 读取位置          |
-| buffer      | 读取数据          |
-| size        | 读取数据大小        |
-| **返回**      |               |
-| 实际读取的数据大小   |               |
+| 参数        | 描述      |
+|:----------|:--------|
+| device    | TIMER设备 |
+| pos       | 读取位置    |
+| buffer    | 读取数据    |
+| size      | 读取数据大小  |
+| **返回**    |         |
+| 实际读取的数据大小 |         |
 
 - 读取数据：TIMER设备已运行时间（单位us），类型为：uint32。
 
@@ -169,14 +168,14 @@ mr_device_read(serial_device, 0, &buffer, sizeof(buffer));
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数        | 描述         |
-|:----------|:-----------|
-| device    | TIMER设备    |
-| pos       | 写入位置       |
-| buffer    | 写入数据       |
-| size      | 写入数据大小     |
-| **返回**    |            |
-| 实际写入的数据大小 |            |
+| 参数        | 描述      |
+|:----------|:--------|
+| device    | TIMER设备 |
+| pos       | 写入位置    |
+| buffer    | 写入数据    |
+| size      | 写入数据大小  |
+| **返回**    |         |
+| 实际写入的数据大小 |         |
 
 - 写入数据：TIMER设备定时时间（单位us），定时范围1us-4294.967295s,类型为：uint32。写入多个数据时将取最后一个有效数据。
 

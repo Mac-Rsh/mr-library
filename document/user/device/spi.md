@@ -43,14 +43,14 @@ mr_err_t mr_spi_device_add(mr_spi_device_t spi_device, const char *name, mr_off_
 mr_err_t mr_device_ioctl(mr_device_t device, int cmd, void *args);
 ```
 
-| 参数        | 描述      |
-|:----------|:--------|
-| device    | SPI设备   |
-| cmd       | 控制命令    |
-| args      | 控制参数    |
-| **返回**    |         |
-| MR_ERR_OK | 控制设备成功  |
-| 错误码       | 控制设备失败  |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | SPI设备  |
+| cmd       | 控制命令   |
+| args      | 控制参数   |
+| **返回**    |        |
+| MR_ERR_OK | 控制设备成功 |
+| 错误码       | 控制设备失败 |
 
 SPI设备支持以下命令：
 
@@ -240,14 +240,14 @@ mr_device_ioctl(spi_device, MR_DEVICE_CTRL_SPI_TRANSFER, &spi_transfer);
 mr_ssize_t mr_device_read(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数          | 描述     |
-|:------------|:-------|
-| device      | SPI设备  |
-| pos         | 读取位置   |
-| buffer      | 读取数据   |
-| size        | 读取数据大小 |
-| **返回**      |        |
-| 实际读取的数据大小   |        |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | SPI设备  |
+| pos       | 读取位置   |
+| buffer    | 读取数据   |
+| size      | 读取数据大小 |
+| **返回**    |        |
+| 实际读取的数据大小 |        |
 
 - 读取位置：需要读取的（寄存器）地址，如读取0x23地址数据，则pos = 0x23，有效范围：0-2147483647。地址长度根据设置的pos_bits，如不使用时请赋值：-1。
 
@@ -276,14 +276,14 @@ mr_device_read(spi_device, 0x23, buffer, sizeof(buffer));
 mr_ssize_t mr_device_write(mr_device_t device, mr_off_t pos, const void *buffer, mr_size_t size);
 ```
 
-| 参数          | 描述     |
-|:------------|:-------|
-| device      | SPI设备  |
-| pos         | 写入位置   |
-| buffer      | 写入数据   |
-| size        | 写入数据大小 |
-| **返回**      |        |
-| 实际写入的数据大小   |        |
+| 参数        | 描述     |
+|:----------|:-------|
+| device    | SPI设备  |
+| pos       | 写入位置   |
+| buffer    | 写入数据   |
+| size      | 写入数据大小 |
+| **返回**    |        |
+| 实际写入的数据大小 |        |
 
 - 写入位置：需要写入的（寄存器）地址，如写入0x23地址数据，则pos = 0x23，有效范围：0-2147483647。地址长度根据设置的pos_bits，如不使用时请赋值：-1。
 

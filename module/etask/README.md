@@ -68,12 +68,12 @@ mr_err_t mr_etask_add(mr_etask_t etask, const char *name, mr_size_t size);
 mr_err_t mr_etask_remove(mr_etask_t etask);
 ```
 
-| 参数         | 描述     |
-|:-----------|:-------|
-| etask      | 事件任务   |
-| **返回**     |        |
-| MR_ERR_OK  | 移除成功   |
-| 错误码        | 移除失败   |
+| 参数        | 描述   |
+|:----------|:-----|
+| etask     | 事件任务 |
+| **返回**    |      |
+| MR_ERR_OK | 移除成功 |
+| 错误码       | 移除失败 |
 
 ----------
 
@@ -83,9 +83,9 @@ mr_err_t mr_etask_remove(mr_etask_t etask);
 void mr_etask_tick_update(mr_etask_t etask);
 ```
 
-| 参数         | 描述     |
-|:-----------|:-------|
-| etask      | 事件任务   |
+| 参数    | 描述   |
+|:------|:-----|
+| etask | 事件任务 |
 
 ----------
 
@@ -95,9 +95,9 @@ void mr_etask_tick_update(mr_etask_t etask);
 void mr_etask_handle(mr_etask_t etask);
 ```
 
-| 参数         | 描述     |
-|:-----------|:-------|
-| etask      | 事件任务   |
+| 参数    | 描述   |
+|:------|:-----|
+| etask | 事件任务 |
 
 按事件发生顺序处理（FIFO），仅会处理进入处理函数前已发生的事件，防止单一事件循环触发阻塞系统。
 
@@ -129,7 +129,7 @@ mr_err_t mr_etask_start(mr_etask_t etask,
 | 错误码       | 启动失败   |
 
 - sflags: 事件分为普通事件与定时事件。定时事件可分为单次/周期和软件/硬件，单次定时事件在发生完成后将释放自身，周期定时事件在发生完成后将自动重启直至用户停止该事件。
-软件定时事件在超时发生时将事件加入事件队列中等待处理，而硬件定时器将在任务时钟更新处直接处理。
+  软件定时事件在超时发生时将事件加入事件队列中等待处理，而硬件定时器将在任务时钟更新处直接处理。
 
 ```c
 MR_ETASK_SFLAG_EVENT                                                /* 普通事件 */
@@ -152,13 +152,13 @@ MR_ETASK_SFLAG_TIMER | MR_ETASK_SFLAG_ONESHOT | MR_ETASK_SFLAG_HARD /* 定时事
 mr_err_t mr_etask_stop(mr_etask_t etask, mr_uint32_t id);
 ```
 
-| 参数           | 描述   |
-|:-------------|:-----|
-| etask        | 事件任务 |
-| id           | 事件ID |
-| **返回**       |      |
-| MR_ERR_OK    | 停止成功 |
-| 错误码          | 停止失败 |
+| 参数        | 描述   |
+|:----------|:-----|
+| etask     | 事件任务 |
+| id        | 事件ID |
+| **返回**    |      |
+| MR_ERR_OK | 停止成功 |
+| 错误码       | 停止失败 |
 
 ----------
 
@@ -197,11 +197,11 @@ MR_ETASK_WFLAG_STATE                                                /* 状态唤
 mr_uint32_t mr_etask_str2id(const char *string);
 ```
 
-| 参数     | 描述    |
-|:-------|:------|
-| string | 字符串   |
-| **返回** |       |
-| 事件ID   |       |
+| 参数     | 描述  |
+|:-------|:----|
+| string | 字符串 |
+| **返回** |     |
+| 事件ID   |     |
 
 当事件数量过多且字符串内容相近时可能会出现哈希碰撞。
 
