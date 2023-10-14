@@ -12,7 +12,11 @@
 #define _ELOOP_H_
 
 #include "mrapi.h"
-#define MR_CFG_ELOOP MR_CFG_ENABLE
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if (MR_CFG_ELOOP == MR_CFG_ENABLE)
 
 /**
@@ -42,6 +46,10 @@ mr_err_t mr_eloop_trigger_event(mr_eloop_t eloop, mr_uint32_t id);
 mr_uint32_t mr_eloop_string_to_id(const char *string, mr_size_t size);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _ELOOP_H_ */

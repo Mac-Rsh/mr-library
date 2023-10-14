@@ -13,6 +13,10 @@
 
 #include "mrapi.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if (MR_CFG_ELOOP_SP == MR_CFG_ENABLE)
 
 /**
@@ -45,6 +49,10 @@ mr_err_t mr_eloop_sp_notify_event(mr_eloop_sp_t eloop, mr_uint8_t id);
 mr_err_t mr_eloop_sp_trigger_event(mr_eloop_sp_t eloop, mr_uint8_t id);
 /** @} */
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _ELOOP_SP_H_ */

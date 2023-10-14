@@ -65,16 +65,16 @@ mr_err_t mr_eloop_sp_add(mr_eloop_sp_t eloop, const char *name, mr_size_t queue_
     queue_mem = mr_malloc(queue_size * sizeof(*queue_mem));
     if (queue_mem == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, -MR_ERR_NO_MEMORY);
-        return -MR_ERR_NO_MEMORY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, MR_ERR_NO_MEMORY);
+        return MR_ERR_NO_MEMORY;
     }
 
     list_mem = mr_malloc(event_size * sizeof(struct mr_event_sp));
     if (list_mem == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, -MR_ERR_NO_MEMORY);
+        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, MR_ERR_NO_MEMORY);
         mr_free(queue_mem);
-        return -MR_ERR_NO_MEMORY;
+        return MR_ERR_NO_MEMORY;
     }
     mr_memset(list_mem, 0, event_size * sizeof(struct mr_event_sp));
 
@@ -157,7 +157,7 @@ void mr_eloop_sp_handle(mr_eloop_sp_t eloop)
 
         if (event[id].cb == MR_NULL)
         {
-            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_NOT_FOUND);
             continue;
         }
 
@@ -192,15 +192,15 @@ mr_err_t mr_eloop_sp_create_event(mr_eloop_sp_t eloop,
     /* Check if the event id is valid */
     if (id >= eloop->list_size)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] create event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_INVALID);
-        return -MR_ERR_INVALID;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] create event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_INVALID);
+        return MR_ERR_INVALID;
     }
 
     /* Check if the event is busy */
     if (event[id].cb != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] create event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_BUSY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] create event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_BUSY;
     }
 
     /* Initialize the private fields */
@@ -228,8 +228,8 @@ mr_err_t mr_eloop_sp_delete_event(mr_eloop_sp_t eloop, mr_uint8_t id)
     /* Check if the event id is valid */
     if (id >= eloop->list_size)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] delete event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_INVALID);
-        return -MR_ERR_INVALID;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] delete event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_INVALID);
+        return MR_ERR_INVALID;
     }
 
     /* Check if the event is idle */
@@ -262,13 +262,13 @@ mr_err_t mr_eloop_sp_notify_event(mr_eloop_sp_t eloop, mr_uint8_t id)
     if (id >= eloop->list_size)
     {
         MR_DEBUG_D(DEBUG_TAG, "[%s] notify event [%d] failed: [%d]\r\n", eloop->object.name, id - MR_ERR_INVALID);
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     if (mr_rb_push(&eloop->queue, id) != sizeof(id))
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] notify event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_BUSY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] notify event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_BUSY;
     }
 
     return MR_ERR_OK;
@@ -293,14 +293,14 @@ mr_err_t mr_eloop_sp_trigger_event(mr_eloop_sp_t eloop, mr_uint8_t id)
     if (id >= eloop->list_size)
     {
         MR_DEBUG_D(DEBUG_TAG, "[%s] trigger event [%d] failed: [%d]\r\n", eloop->object.name, id - MR_ERR_INVALID);
-        return -MR_ERR_INVALID;
+        return MR_ERR_INVALID;
     }
 
     /* Check if the event is idle */
     if (event[id].cb == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_NOT_FOUND);
+        return MR_ERR_NOT_FOUND;
     }
 
     /* Call the event callback */

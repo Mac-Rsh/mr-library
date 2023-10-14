@@ -64,8 +64,8 @@ mr_err_t mr_eloop_add(mr_eloop_t eloop, const char *name, mr_size_t queue_size)
     mem = mr_malloc(queue_size * sizeof(*mem));
     if (mem == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, -MR_ERR_NO_MEMORY);
-        return -MR_ERR_NO_MEMORY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] add failed: [%d]\r\n", name, MR_ERR_NO_MEMORY);
+        return MR_ERR_NO_MEMORY;
     }
 
     /* Initialize the private fields */
@@ -142,7 +142,7 @@ void mr_eloop_handle(mr_eloop_t eloop)
         mr_event_t event = (mr_event_t)mr_avl_find(eloop->list, id);
         if (event == MR_NULL)
         {
-            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
+            MR_DEBUG_D(DEBUG_TAG, "[%s] handle [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_NOT_FOUND);
             continue;
         }
 
@@ -172,15 +172,15 @@ mr_err_t mr_eloop_create_event(mr_eloop_t eloop, mr_uint32_t id, mr_err_t (*cb)(
     /* Check if the event already exists */
     if (mr_avl_find(eloop->list, id) != MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] created event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_BUSY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] created event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_BUSY;
     }
 
     event = (mr_event_t)mr_malloc(sizeof(struct mr_event));
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] created event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_NO_MEMORY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] created event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_NO_MEMORY;
     }
 
     /* Initialize the private fields */
@@ -219,8 +219,8 @@ mr_err_t mr_eloop_delete_event(mr_eloop_t eloop, mr_uint32_t id)
     event = (mr_event_t)mr_avl_find(eloop->list, id);
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] delete event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] delete event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_NOT_FOUND);
+        return MR_ERR_NOT_FOUND;
     }
 
     /* Disable interrupt */
@@ -253,8 +253,8 @@ mr_err_t mr_eloop_notify_event(mr_eloop_t eloop, mr_uint32_t id)
 
     if (mr_rb_write(&eloop->queue, &id, sizeof(id)) != sizeof(id))
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] notify event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_BUSY);
-        return -MR_ERR_BUSY;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] notify event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_BUSY);
+        return MR_ERR_BUSY;
     }
 
     return MR_ERR_OK;
@@ -277,8 +277,8 @@ mr_err_t mr_eloop_trigger_event(mr_eloop_t eloop, mr_uint32_t id)
     mr_event_t event = (mr_event_t)mr_avl_find(eloop->list, id);
     if (event == MR_NULL)
     {
-        MR_DEBUG_D(DEBUG_TAG, "[%s] trigger event [%d] failed: [%d]\r\n", eloop->object.name, id, -MR_ERR_NOT_FOUND);
-        return -MR_ERR_NOT_FOUND;
+        MR_DEBUG_D(DEBUG_TAG, "[%s] trigger event [%d] failed: [%d]\r\n", eloop->object.name, id, MR_ERR_NOT_FOUND);
+        return MR_ERR_NOT_FOUND;
     }
 
     /* Call the event callback */
