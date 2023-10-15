@@ -24,7 +24,7 @@ struct drv_uart_data
     const char *name;
 
     UART_HandleTypeDef handle;
-    USART_TypeDef *Instance;
+    USART_TypeDef *instance;
     IRQn_Type irq_type;
 };
 

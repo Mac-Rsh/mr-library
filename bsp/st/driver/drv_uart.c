@@ -74,7 +74,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
 {
     struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
 
-    uart_data->handle.Instance = uart_data->Instance;
+    uart_data->handle.Instance = uart_data->instance;
 
     switch (config->data_bits)
     {
@@ -168,7 +168,7 @@ static mr_err_t drv_serial_configure(mr_serial_t serial, struct mr_serial_config
         return MR_ERR_GENERIC;
     }
 
-    HAL_NVIC_SetPriority(uart_data->irq_type, 0, 0);
+    HAL_NVIC_SetPriority(uart_data->irq_type, 1, 0);
     HAL_NVIC_EnableIRQ(uart_data->irq_type);
     __HAL_UART_ENABLE_IT(&uart_data->handle, UART_IT_RXNE);
 
@@ -188,7 +188,7 @@ static void drv_serial_write(mr_serial_t serial, mr_uint8_t data)
             return;
         }
     }
-    uart_data->Instance->DR = data;
+    uart_data->instance->DR = data;
 }
 
 static mr_uint8_t drv_serial_read(mr_serial_t serial)
@@ -204,7 +204,7 @@ static mr_uint8_t drv_serial_read(mr_serial_t serial)
             return 0;
         }
     }
-    return uart_data->Instance->DR & 0xff;
+    return uart_data->instance->DR & 0xff;
 }
 
 static void drv_serial_start_tx(mr_serial_t serial)
@@ -225,16 +225,16 @@ static void drv_serial_isr(mr_serial_t serial)
 {
     struct drv_uart_data *uart_data = (struct drv_uart_data *)serial->device.data;
 
-    if (__HAL_UART_GET_IT_SOURCE(&uart_data->handle, UART_IT_RXNE) != RESET)
+    if (__HAL_UART_GET_FLAG(&uart_data->handle, UART_FLAG_RXNE) != RESET &&
+        __HAL_UART_GET_IT_SOURCE(&uart_data->handle, UART_IT_RXNE) != RESET)
     {
         mr_serial_device_isr(serial, MR_SERIAL_EVENT_RX_INT);
-        __HAL_UART_CLEAR_FLAG(&uart_data->handle, UART_FLAG_RXNE);
     }
 
-    if (__HAL_UART_GET_IT_SOURCE(&uart_data->handle, UART_IT_TXE) != RESET)
+    if (__HAL_UART_GET_FLAG(&uart_data->handle, UART_FLAG_TXE) != RESET &&
+        __HAL_UART_GET_IT_SOURCE(&uart_data->handle, UART_IT_TXE) != RESET)
     {
         mr_serial_device_isr(serial, MR_SERIAL_EVENT_TX_INT);
-        __HAL_UART_CLEAR_FLAG(&uart_data->handle, UART_IT_TXE);
     }
 }
 
