@@ -115,7 +115,13 @@ mr_err_t mr_console_init(void)
         return MR_ERR_NOT_FOUND;
     }
 
-    return mr_device_open(console_device, MR_DEVICE_OFLAG_RDWR);
+    if ((console_device->sflags & MR_DEVICE_OFLAG_NONBLOCKING) == MR_DEVICE_OFLAG_NONBLOCKING)
+    {
+        return mr_device_open(console_device, MR_DEVICE_OFLAG_RDWR | MR_DEVICE_OFLAG_NONBLOCKING);
+    } else
+    {
+        return mr_device_open(console_device, MR_DEVICE_OFLAG_RDWR);
+    }
 }
 MR_INIT_DEVICE_EXPORT(mr_console_init);
 
