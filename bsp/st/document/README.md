@@ -8,6 +8,12 @@
 
 注：keil开发环境下，无需做自动初始化适配，可直接使用。
 
+----------
+
+视频教程：
+
+<video src="https://gitee.com/MacRsh/mr-library/raw/master/bsp/st/document/build.mkv"></video>
+
  ----------
 
 ## ADC外设
