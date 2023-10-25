@@ -12,7 +12,7 @@
 
 视频教程：
 
-<iframe height=500 width=800 src="https://gitee.com/MacRsh/mr-library/raw/master/bsp/st/document/build.mkv">
+[下载链接](https://gitee.com/MacRsh/mr-library/blob/master/bsp/st/document/build.mkv)
 
  ----------
 
