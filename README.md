@@ -8,7 +8,7 @@
 
 ### 应用场景
 
-- MCU开发中硬件（gpio、uart、spi、i2c、pwm等）标准化管理。
+- MCU开发中硬件（gpio、uart_dev、spi、i2c、pwm等）标准化管理。
 - RTOS实时操作系统的外挂设备框架。
 - 各类Iot和智能硬件产品的快速开发。
 
