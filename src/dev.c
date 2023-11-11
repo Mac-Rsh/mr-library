@@ -6,7 +6,7 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 static struct mr_dev *dev_find_from_list(struct mr_list *list, const char *name)
 {
@@ -47,8 +47,8 @@ static void dev_register_list(struct mr_dev *dev, const char *name, struct mr_li
     mr_interrupt_enable();
 }
 
-#define MR_FIND                        (0)
-#define MR_REGISTER                    (1)
+#define MR_FIND                         (0)
+#define MR_REGISTER                     (1)
 
 static struct mr_dev *dev_find_or_register(const char *name, struct mr_dev *dev, int find_or_register)
 {
@@ -467,6 +467,9 @@ struct mr_desc
     struct mr_dev *dev;                                             /* Device */
     uint32_t oflags;                                                /* Open flags */
     int offset;                                                     /* Offset */
+#ifndef MR_CFG_DESC_MAX
+#define MR_CFG_DESC_MAX                 (32)
+#endif /* MR_CFG_DESC_MAX */
 } mr_desc_map[MR_CFG_DESC_MAX] = {0};
 
 #define desc_of(desc)                   (mr_desc_map[(desc)])

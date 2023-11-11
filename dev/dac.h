@@ -9,7 +9,7 @@
 #ifndef _MR_DAC_H_
 #define _MR_DAC_H_
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,8 +20,8 @@ extern "C" {
 /**
  * @brief DAC enable/disable.
  */
-#define MR_DAC_DISABLE                 MR_DISABLE                 /**< DAC disabled */
-#define MR_DAC_ENABLE                  MR_ENABLE                  /**< DAC enabled */
+#define MR_DAC_DISABLE                  MR_DISABLE                  /**< DAC disabled */
+#define MR_DAC_ENABLE                   MR_ENABLE                   /**< DAC enabled */
 
 /**
  * @brief DAC configuration structure.
@@ -37,7 +37,7 @@ struct mr_dac_config
  */
 struct mr_dac
 {
-    struct mr_dev dev;                                             /**< Device */
+    struct mr_dev dev;                                              /**< Device */
 
     uint32_t channel;                                               /**< Channel */
 };

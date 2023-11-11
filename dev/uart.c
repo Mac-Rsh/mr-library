@@ -240,6 +240,12 @@ int mr_uart_register(struct mr_uart *uart, const char *name, struct mr_drv *drv)
     uart->config = default_config;
     mr_ringbuf_init(&uart->rd_fifo, MR_NULL, 0);
     mr_ringbuf_init(&uart->wr_fifo, MR_NULL, 0);
+#ifndef MR_CFG_UART_RD_BUFSZ_INIT
+#define MR_CFG_UART_RD_BUFSZ_INIT       (0)
+#endif /* MR_CFG_UART_RD_BUFSZ_INIT */
+#ifndef MR_CFG_UART_WR_BUFSZ_INIT
+#define MR_CFG_UART_WR_BUFSZ_INIT       (0)
+#endif /* MR_CFG_UART_WR_BUFSZ_INIT */
     uart->rd_bufsz = MR_CFG_UART_RD_BUFSZ_INIT;
     uart->wr_bufsz = MR_CFG_UART_WR_BUFSZ_INIT;
 

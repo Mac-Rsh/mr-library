@@ -66,7 +66,7 @@ extern "C" {
  * @param value The value to check.
  * @param mask The mask to check.
  */
-#define mr_bits_is_set(value, mask)    (((value) & (mask)) == (mask))
+#define mr_bits_is_set(value, mask)     (((value) & (mask)) == (mask))
 
 /**
  * @brief This macro function sets a value.
@@ -74,7 +74,7 @@ extern "C" {
  * @param value The value to set.
  * @param mask The mask to set.
  */
-#define mr_bits_set(value, mask)       ((value) |= (mask))
+#define mr_bits_set(value, mask)        ((value) |= (mask))
 
 /**
  * @brief This macro function clears a value.
@@ -82,7 +82,7 @@ extern "C" {
  * @param value The value to clear.
  * @param mask The mask to clear.
  */
-#define mr_bits_clr(value, mask)       ((value) &= ~(mask))
+#define mr_bits_clr(value, mask)        ((value) &= ~(mask))
 
 /**
  * @brief This macro function gets the number of elements in an array.
@@ -91,7 +91,17 @@ extern "C" {
  *
  * @return The number of elements in the array.
  */
-#define mr_array_num(array)            (sizeof(array)/sizeof((array)[0]))
+#define mr_array_num(array)             (sizeof(array)/sizeof((array)[0]))
+
+/**
+ * @brief This macro function creates a local variable.
+ *
+ * @param type The type of the variable.
+ * @param value The value of the variable.
+ *
+ * @return A pointer to the variable.
+ */
+#define mr_make_local(type, value)      (&((type){(value)}))
 
 /**
  * @brief This macro function checks if a list is empty.
@@ -100,7 +110,7 @@ extern "C" {
  *
  * @return True if the list is empty, mr_false otherwise.
  */
-#define mr_list_is_empty(list)         (((list)->next) == (list))
+#define mr_list_is_empty(list)          (((list)->next) == (list))
 
 /**
 * @brief This function initialize a double list.

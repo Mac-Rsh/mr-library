@@ -9,25 +9,38 @@
 #ifndef _MR_BOARD_H_
 #define _MR_BOARD_H_
 
-#define MR_CFG_SYS_CLK
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#define MR_USING_ADC1
+#define MR_USING_ADC2
+
+#define MR_USING_GPIOA
+#define MR_USING_GPIOB
+#define MR_USING_GPIOC
+#define MR_USING_GPIOD
+#define MR_USING_GPIOE
 
 #define MR_USING_UART1
 #define MR_CFG_UART1_GROUP              1
-
 #define MR_USING_UART2
-#define MR_USING_UART3
-#define MR_USING_UART4
-#define MR_USING_UART5
-#define MR_USING_UART6
-#define MR_USING_UART7
-#define MR_USING_UART8
-
 #define MR_CFG_UART2_GROUP              1
+#define MR_USING_UART3
 #define MR_CFG_UART3_GROUP              1
+#define MR_USING_UART4
 #define MR_CFG_UART4_GROUP              1
+#define MR_USING_UART5
 #define MR_CFG_UART5_GROUP              1
+#define MR_USING_UART6
 #define MR_CFG_UART6_GROUP              1
+#define MR_USING_UART7
 #define MR_CFG_UART7_GROUP              1
+#define MR_USING_UART8
 #define MR_CFG_UART8_GROUP              1
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* _MR_BOARD_H_ */

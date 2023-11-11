@@ -25,7 +25,7 @@ extern "C" {
 /**
  * @brief MR version.
  */
-#define MR_VERSION                     "0.0.6"
+#define MR_VERSION                      "0.0.6"
 
 /**
  * @brief Compiler related.
@@ -76,14 +76,19 @@ typedef int (*mr_init_fn_t)(void);
 #define MR_INIT_BOARD_EXPORT(fn)        MR_INIT_EXPORT(fn, "1")
 
 /**
+ * @brief Exports a console auto initialization function.
+ */
+#define MR_INIT_CONSOLE_EXPORT(fn)      MR_INIT_EXPORT(fn, "2")
+
+/**
  * @brief Exports a driver auto initialization function.
  */
-#define MR_INIT_DRV_EXPORT(fn)          MR_INIT_EXPORT(fn, "2")
+#define MR_INIT_DRV_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")
 
 /**
  * @brief Exports a device auto initialization function.
  */
-#define MR_INIT_DEV_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")
+#define MR_INIT_DEV_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
 
 /**
  * @brief Exports a app auto initialization function.
@@ -141,14 +146,14 @@ struct mr_ringbuf
  */
 enum mr_drv_type
 {
-    Mr_Drv_Type_Gpio = 0,                                          /**< GPIO */
-    Mr_Drv_Type_Spi,                                               /**< SPI */
-    Mr_Drv_Type_I2c,                                               /**< I2C */
-    Mr_Drv_Type_Uart,                                              /**< UART */
-    Mr_Drv_Type_Adc,                                               /**< ADC */
-    Mr_Drv_Type_Dac,                                               /**< DAC */
-    Mr_Drv_Type_Timer,                                             /**< Timer */
-    Mr_Drv_Type_Pwm,                                               /**< PWM */
+    Mr_Drv_Type_Gpio = 0,                                           /**< GPIO */
+    Mr_Drv_Type_Spi,                                                /**< SPI */
+    Mr_Drv_Type_I2c,                                                /**< I2C */
+    Mr_Drv_Type_Uart,                                               /**< UART */
+    Mr_Drv_Type_Adc,                                                /**< ADC */
+    Mr_Drv_Type_Dac,                                                /**< DAC */
+    Mr_Drv_Type_Timer,                                              /**< Timer */
+    Mr_Drv_Type_Pwm,                                                /**< PWM */
 };
 
 /**
@@ -271,7 +276,10 @@ struct mr_dev_ops
 struct mr_dev
 {
     uint32_t magic;                                                 /**< Magic number */
-    char name[MR_CFG_NAME_MAX];                                         /**< Name */
+#ifndef MR_CFG_NAME_MAX
+#define MR_CFG_NAME_MAX                 (8)
+#endif /* MR_CFG_NAME_MAX */
+    char name[MR_CFG_NAME_MAX];                                     /**< Name */
     struct mr_list list;                                            /**< List */
     struct mr_list slist;                                           /**< Slave list */
     void *link;                                                     /**< Link */

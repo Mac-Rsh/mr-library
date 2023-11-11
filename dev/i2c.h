@@ -9,7 +9,7 @@
 #ifndef _MR_I2C_H_
 #define _MR_I2C_H_
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,24 +20,24 @@ extern "C" {
 /**
 * @brief I2C host/slave.
 */
-#define MR_I2C_HOST                    (0)                         /**< I2C host */
-#define MR_I2C_SLAVE                   (1)                         /**< I2C slave */
+#define MR_I2C_HOST                     (0)                         /**< I2C host */
+#define MR_I2C_SLAVE                    (1)                         /**< I2C slave */
 
 /**
  * @brief I2C offset bits.
  */
-#define MR_I2C_OFF_BITS_8              (8)                        /**< 8 bits offset */
-#define MR_I2C_OFF_BITS_16             (16)                       /**< 16 bits offset */
-#define MR_I2C_OFF_BITS_32             (32)                       /**< 32 bits offset */
+#define MR_I2C_OFF_BITS_8               (8)                         /**< 8 bits offset */
+#define MR_I2C_OFF_BITS_16              (16)                        /**< 16 bits offset */
+#define MR_I2C_OFF_BITS_32              (32)                        /**< 32 bits offset */
 
 /**
  * @brief I2C default configuration.
  */
-#define MR_I2C_CONFIG_DEFAULT          \
-{                                      \
-    100000,                            \
-    MR_I2C_HOST,                       \
-    MR_I2C_OFF_BITS_8,                 \
+#define MR_I2C_CONFIG_DEFAULT           \
+{                                       \
+    100000,                             \
+    MR_I2C_HOST,                        \
+    MR_I2C_OFF_BITS_8,                  \
 }
 
 /**
@@ -56,9 +56,9 @@ struct mr_i2c_config
  */
 struct mr_i2c_bus
 {
-    struct mr_dev dev;                                             /**< Device */
+    struct mr_dev dev;                                              /**< Device */
 
-    struct mr_i2c_config config;                                   /**< Configuration */
+    struct mr_i2c_config config;                                    /**< Configuration */
     volatile uint32_t lock;                                         /**< Lock */
     void *owner;                                                    /**< Owner */
 };
@@ -78,18 +78,18 @@ struct mr_i2c_bus_ops
 /**
  * @brief I2C device address bits.
  */
-#define MR_I2C_ADDR_BITS_7             (7)                         /**< 7 bit address */
-#define MR_I2C_ADDR_BITS_10            (10)                        /**< 10 bit address */
+#define MR_I2C_ADDR_BITS_7              (7)                         /**< 7 bit address */
+#define MR_I2C_ADDR_BITS_10             (10)                        /**< 10 bit address */
 
 /**
  * @struct I2C device structure.
  */
 struct mr_i2c_dev
 {
-    struct mr_dev dev;                                             /**< Device */
+    struct mr_dev dev;                                              /**< Device */
 
-    struct mr_i2c_config config;                                   /**< Configuration */
-    struct mr_ringbuf rd_fifo;                                     /**< Read FIFO */
+    struct mr_i2c_config config;                                    /**< Configuration */
+    struct mr_ringbuf rd_fifo;                                      /**< Read FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
     uint32_t addr: 10;                                              /**< Address */
     uint32_t addr_bits: 22;                                         /**< Address bits */

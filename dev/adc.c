@@ -70,25 +70,31 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
+                struct mr_adc_config *config = (struct mr_adc_config *)args;
+
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
                 {
                     return MR_EINVAL;
                 }
 
-                struct mr_adc_config *config = (struct mr_adc_config *)args;
-                int ret = ops->channel_configure(adc, off, config->enable);
-                if (ret == MR_EOK)
+                /* Check if the channel is enabled */
+                if(config->enable != mr_bits_is_set(adc->channel, (1 << off)))
                 {
-                    if (config->enable == MR_ADC_ENABLE)
+                    int ret = ops->channel_configure(adc, off, config->enable);
+                    if (ret == MR_EOK)
                     {
-                        mr_bits_set(adc->channel, (1 << off));
-                    } else
-                    {
-                        mr_bits_clr(adc->channel, (1 << off));
+                        if (config->enable == MR_ADC_ENABLE)
+                        {
+                            mr_bits_set(adc->channel, (1 << off));
+                        } else
+                        {
+                            mr_bits_clr(adc->channel, (1 << off));
+                        }
                     }
+                    return ret;
                 }
-                return ret;
+                return MR_EOK;
             }
             return MR_EINVAL;
         }

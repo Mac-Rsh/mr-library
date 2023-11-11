@@ -9,7 +9,7 @@
 #ifndef _MR_SPI_H_
 #define _MR_SPI_H_
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,36 +20,36 @@ extern "C" {
 /**
  * @brief SPI host/slave.
  */
-#define MR_SPI_HOST                    (0)                         /**< SPI host */
-#define MR_SPI_SLAVE                   (1)                         /**< SPI slave */
+#define MR_SPI_HOST                     (0)                         /**< SPI host */
+#define MR_SPI_SLAVE                    (1)                         /**< SPI slave */
 
 /**
  * @brief SPI mode.
  */
-#define MR_SPI_MODE_0                  (0)                         /**< CPOL = 0, CPHA = 0 */
-#define MR_SPI_MODE_1                  (1)                         /**< CPOL = 0, CPHA = 1 */
-#define MR_SPI_MODE_2                  (2)                         /**< CPOL = 1, CPHA = 0 */
-#define MR_SPI_MODE_3                  (3)                         /**< CPOL = 1, CPHA = 1 */
+#define MR_SPI_MODE_0                   (0)                         /**< CPOL = 0, CPHA = 0 */
+#define MR_SPI_MODE_1                   (1)                         /**< CPOL = 0, CPHA = 1 */
+#define MR_SPI_MODE_2                   (2)                         /**< CPOL = 1, CPHA = 0 */
+#define MR_SPI_MODE_3                   (3)                         /**< CPOL = 1, CPHA = 1 */
 
 /**
  * @brief SPI data bits.
  */
-#define MR_SPI_DATA_BITS_8             (8)                         /**< 8 bits data */
-#define MR_SPI_DATA_BITS_16            (16)                        /**< 16 bits data */
-#define MR_SPI_DATA_BITS_32            (32)                        /**< 32 bits data */
+#define MR_SPI_DATA_BITS_8              (8)                         /**< 8 bits data */
+#define MR_SPI_DATA_BITS_16             (16)                        /**< 16 bits data */
+#define MR_SPI_DATA_BITS_32             (32)                        /**< 32 bits data */
 
 /**
  * @brief SPI bit order.
  */
-#define MR_SPI_BIT_ORDER_MSB           (0)                         /**< MSB first */
-#define MR_SPI_BIT_ORDER_LSB           (1)                         /**< LSB first */
+#define MR_SPI_BIT_ORDER_MSB            (0)                         /**< MSB first */
+#define MR_SPI_BIT_ORDER_LSB            (1)                         /**< LSB first */
 
 /**
  * @brief SPI offset bits.
  */
-#define MR_SPI_OFF_BITS_8               (8)                        /**< 8 bits offset */
-#define MR_SPI_OFF_BITS_16              (16)                       /**< 16 bits offset */
-#define MR_SPI_OFF_BITS_32              (32)                       /**< 32 bits offset */
+#define MR_SPI_OFF_BITS_8               (8)                         /**< 8 bits offset */
+#define MR_SPI_OFF_BITS_16              (16)                        /**< 16 bits offset */
+#define MR_SPI_OFF_BITS_32              (32)                        /**< 32 bits offset */
 
 /**
  * @brief SPI default configuration.
@@ -81,7 +81,7 @@ struct mr_spi_config
 /**
  * @brief SPI control command.
  */
-#define MR_IOCTL_SPI_TRANSFER          ((0x1|0x80) << 16)          /**< Transfer */
+#define MR_IOCTL_SPI_TRANSFER           ((0x1|0x80) << 16)          /**< Transfer */
 
 /**
  * @brief SPI transfer structure.
@@ -98,9 +98,9 @@ struct mr_spi_transfer
  */
 struct mr_spi_bus
 {
-    struct mr_dev dev;                                             /**< Device */
+    struct mr_dev dev;                                              /**< Device */
 
-    struct mr_spi_config config;                                   /**< Configuration */
+    struct mr_spi_config config;                                    /**< Configuration */
     volatile uint32_t lock;                                         /**< Lock */
     void *owner;                                                    /**< Owner */
 };
@@ -120,19 +120,19 @@ struct mr_spi_bus_ops
 /**
  * @brief SPI CS active level.
  */
-#define MR_SPI_CS_ACTIVE_LOW           (0)                         /**< Active low */
-#define MR_SPI_CS_ACTIVE_HIGH          (1)                         /**< Active high */
-#define MR_SPI_CS_ACTIVE_HARDWARE      (2)                         /**< Hardware */
+#define MR_SPI_CS_ACTIVE_LOW            (0)                         /**< Active low */
+#define MR_SPI_CS_ACTIVE_HIGH           (1)                         /**< Active high */
+#define MR_SPI_CS_ACTIVE_HARDWARE       (2)                         /**< Hardware */
 
 /**
  * @struct SPI device structure.
  */
 struct mr_spi_dev
 {
-    struct mr_dev dev;                                             /**< Device */
+    struct mr_dev dev;                                              /**< Device */
 
-    struct mr_spi_config config;                                   /**< Config */
-    struct mr_ringbuf rd_fifo;                                     /**< Read FIFO */
+    struct mr_spi_config config;                                    /**< Config */
+    struct mr_ringbuf rd_fifo;                                      /**< Read FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
     uint32_t cs_pin: 30;                                            /**< CS pin */
     uint32_t cs_active: 2;                                          /**< CS active level */

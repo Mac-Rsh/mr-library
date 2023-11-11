@@ -14,7 +14,7 @@
 #error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_UART."
 #endif
 
-enum drv_index
+enum uart_drv_index
 {
 #ifdef MR_USING_UART1
     DRV_INDEX_UART1,
@@ -737,56 +737,56 @@ static struct mr_drv uart_drv[mr_array_num(uart_drv_data)] =
     {
 #ifdef MR_USING_UART1
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART1]
         },
 #endif /* MR_USING_UART1 */
 #ifdef MR_USING_UART2
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART2]
         },
 #endif /* MR_USING_UART2 */
 #ifdef MR_USING_UART3
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART3]
         },
 #endif /* MR_USING_UART3 */
 #ifdef MR_USING_UART4
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART4]
         },
 #endif /* MR_USING_UART4 */
 #ifdef MR_USING_UART5
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART5]
         },
 #endif /* MR_USING_UART5 */
 #ifdef MR_USING_UART6
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART6]
         },
 #endif /* MR_USING_UART6 */
 #ifdef MR_USING_UART7
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART7]
         },
 #endif /* MR_USING_UART7 */
 #ifdef MR_USING_UART8
         {
-            Mr_Dev_Type_Uart,
+            Mr_Drv_Type_Uart,
             &uart_drv_ops,
             &uart_drv_data[DRV_INDEX_UART8]
         },
@@ -803,6 +803,6 @@ int drv_uart_init(void)
     }
     return MR_EOK;
 }
-MR_INIT_DRV_EXPORT(drv_uart_init);
+MR_INIT_CONSOLE_EXPORT(drv_uart_init);
 
 #endif /* MR_USING_UART */

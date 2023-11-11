@@ -6,7 +6,7 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 static int start(void)
 {
@@ -116,7 +116,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 {
     static int console = -1;
 
-    if (console == -1)
+    if (console < 0)
     {
         console = mr_dev_open(MR_CFG_CONSOLE_NAME, MR_OFLAG_RDWR);
         if (console < 0)

@@ -9,7 +9,7 @@
 #ifndef _MR_UART_H_
 #define _MR_UART_H_
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,50 +20,50 @@ extern "C" {
 /**
  * @brief UART data bits.
  */
-#define MR_UART_DATA_BITS_5            (5)                         /**< 5 bits data */
-#define MR_UART_DATA_BITS_6            (6)                         /**< 6 bits data */
-#define MR_UART_DATA_BITS_7            (7)                         /**< 7 bits data */
-#define MR_UART_DATA_BITS_8            (8)                         /**< 8 bits data */
-#define MR_UART_DATA_BITS_9            (9)                         /**< 9 bits data */
+#define MR_UART_DATA_BITS_5             (5)                         /**< 5 bits data */
+#define MR_UART_DATA_BITS_6             (6)                         /**< 6 bits data */
+#define MR_UART_DATA_BITS_7             (7)                         /**< 7 bits data */
+#define MR_UART_DATA_BITS_8             (8)                         /**< 8 bits data */
+#define MR_UART_DATA_BITS_9             (9)                         /**< 9 bits data */
 
 /**
  * @brief UART stop bits.
  */
-#define MR_UART_STOP_BITS_1            (1)                         /**< 1 bit stop */
-#define MR_UART_STOP_BITS_2            (2)                         /**< 2 bit stop */
-#define MR_UART_STOP_BITS_3            (3)                         /**< 3 bit stop */
-#define MR_UART_STOP_BITS_4            (4)                         /**< 4 bit stop */
+#define MR_UART_STOP_BITS_1             (1)                         /**< 1 bit stop */
+#define MR_UART_STOP_BITS_2             (2)                         /**< 2 bit stop */
+#define MR_UART_STOP_BITS_3             (3)                         /**< 3 bit stop */
+#define MR_UART_STOP_BITS_4             (4)                         /**< 4 bit stop */
 
 /**
  * @brief UART parity.
  */
-#define MR_UART_PARITY_NONE            (0)                         /**< No parity */
-#define MR_UART_PARITY_EVEN            (1)                         /**< Even parity */
-#define MR_UART_PARITY_ODD             (2)                         /**< Odd parity */
+#define MR_UART_PARITY_NONE             (0)                         /**< No parity */
+#define MR_UART_PARITY_EVEN             (1)                         /**< Even parity */
+#define MR_UART_PARITY_ODD              (2)                         /**< Odd parity */
 
 /**
  * @brief UART bit order.
  */
-#define MR_UART_BIT_ORDER_LSB          (0)                         /**< LSB first */
-#define MR_UART_BIT_ORDER_MSB          (1)                         /**< MSB first */
+#define MR_UART_BIT_ORDER_LSB           (0)                         /**< LSB first */
+#define MR_UART_BIT_ORDER_MSB           (1)                         /**< MSB first */
 
 /**
  * @brief UART polarity.
  */
-#define MR_UART_NRZ_NORMAL             (0)                         /**< Normal polarity */
-#define MR_UART_NRZ_INVERTED           (1)                         /**< Inverted polarity */
+#define MR_UART_NRZ_NORMAL              (0)                         /**< Normal polarity */
+#define MR_UART_NRZ_INVERTED            (1)                         /**< Inverted polarity */
 
 /**
  * @brief UART default configuration.
  */
-#define MR_UART_CONFIG_DEFAULT         \
-{                                      \
-    115200,                            \
-    MR_UART_DATA_BITS_8,               \
-    MR_UART_STOP_BITS_1,               \
-    MR_UART_PARITY_NONE,               \
-    MR_UART_BIT_ORDER_LSB,             \
-    MR_UART_NRZ_NORMAL,                \
+#define MR_UART_CONFIG_DEFAULT          \
+{                                       \
+    115200,                             \
+    MR_UART_DATA_BITS_8,                \
+    MR_UART_STOP_BITS_1,                \
+    MR_UART_PARITY_NONE,                \
+    MR_UART_BIT_ORDER_LSB,              \
+    MR_UART_NRZ_NORMAL,                 \
 }
 
 /**
@@ -85,11 +85,11 @@ struct mr_uart_config
  */
 struct mr_uart
 {
-    struct mr_dev dev;                                             /**< Device structure */
+    struct mr_dev dev;                                              /**< Device structure */
 
-    struct mr_uart_config config;                                  /**< Configuration */
-    struct mr_ringbuf rd_fifo;                                     /**< Read FIFO */
-    struct mr_ringbuf wr_fifo;                                     /**< Write FIFO */
+    struct mr_uart_config config;                                   /**< Configuration */
+    struct mr_ringbuf rd_fifo;                                      /**< Read FIFO */
+    struct mr_ringbuf wr_fifo;                                      /**< Write FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
     size_t wr_bufsz;                                                /**< Write buffer size */
 };

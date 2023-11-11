@@ -9,7 +9,7 @@
 #ifndef _MR_ADC_H_
 #define _MR_ADC_H_
 
-#include "inc/mr_api.h"
+#include "mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,8 +20,8 @@ extern "C" {
 /**
  * @brief ADC enable/disable.
  */
-#define MR_ADC_DISABLE                 MR_DISABLE                 /**< ADC disabled */
-#define MR_ADC_ENABLE                  MR_ENABLE                  /**< ADC enabled */
+#define MR_ADC_DISABLE                  MR_DISABLE                  /**< ADC disabled */
+#define MR_ADC_ENABLE                   MR_ENABLE                   /**< ADC enabled */
 
 /**
  * @brief ADC configuration structure.
@@ -37,7 +37,7 @@ struct mr_adc_config
  */
 struct mr_adc
 {
-    struct mr_dev dev;                                             /**< Device */
+    struct mr_dev dev;                                              /**< Device */
 
     uint32_t channel;                                               /**< Channel */
 };

@@ -14,9 +14,9 @@
 #include "gpio.h"
 #endif /* MR_CFG_GPIO */
 
-#define MR_SPI_RD                      (0)
-#define MR_SPI_WR                      (1)
-#define MR_SPI_RDWR                    (2)
+#define MR_SPI_RD                       (0)
+#define MR_SPI_WR                       (1)
+#define MR_SPI_RDWR                     (2)
 
 static ssize_t spi_bus_transfer(struct mr_spi_bus *spi_bus,
                                 void *rd_buf,
@@ -688,6 +688,9 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
     /* Initialize the fields */
     spi_dev->config = default_config;
     mr_ringbuf_init(&spi_dev->rd_fifo, MR_NULL, 0);
+#ifndef MR_CFG_SPI_RD_BUFSZ_INIT
+#define MR_CFG_SPI_RD_BUFSZ_INIT        (0)
+#endif /* MR_CFG_SPI_RD_BUFSZ_INIT */
     spi_dev->rd_bufsz = MR_CFG_SPI_RD_BUFSZ_INIT;
     spi_dev->cs_pin = cs_pin;
     spi_dev->cs_active = (cs_pin >= 0) ? cs_active : MR_SPI_CS_ACTIVE_HARDWARE;

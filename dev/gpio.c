@@ -63,13 +63,14 @@ static int mr_gpio_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
+                struct mr_gpio_config *config = (struct mr_gpio_config *)args;
+
                 /* Check offset is valid */
                 if (off < 0)
                 {
                     return MR_EINVAL;
                 }
 
-                struct mr_gpio_config *config = (struct mr_gpio_config *)args;
                 return ops->configure(gpio, off, config->mode);
             }
             return MR_EINVAL;

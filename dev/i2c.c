@@ -10,8 +10,8 @@
 
 #ifdef MR_USING_I2C
 
-#define MR_I2C_RD                      (0)
-#define MR_I2C_WR                      (1)
+#define MR_I2C_RD                       (0)
+#define MR_I2C_WR                       (1)
 
 MR_INLINE void i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int rdwr)
 {
@@ -431,6 +431,9 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
     /* Initialize the fields */
     i2c_dev->config = default_config;
     mr_ringbuf_init(&i2c_dev->rd_fifo, MR_NULL, 0);
+#ifndef MR_CFG_I2C_RD_BUFSZ_INIT
+#define MR_CFG_I2C_RD_BUFSZ_INIT        (0)
+#endif /* MR_CFG_I2C_RD_BUFSZ_INIT */
     i2c_dev->rd_bufsz = MR_CFG_I2C_RD_BUFSZ_INIT;
     i2c_dev->addr = addr;
     i2c_dev->addr_bits = addr_bits;

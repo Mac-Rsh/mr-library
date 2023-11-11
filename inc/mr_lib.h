@@ -10,6 +10,6 @@
 #define _MR_LIB_H_
 
 #include "mr_api.h"
-
+#include "mr_drv.h"
 
 #endif /* _MR_LIB_H_ */
