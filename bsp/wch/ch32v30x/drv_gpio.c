@@ -292,6 +292,12 @@ static int drv_gpio_configure(struct mr_gpio *gpio, int pin, int mode)
 
     switch (mode)
     {
+        case MR_GPIO_MODE_NONE:
+        {
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            break;
+        }
+
         case MR_GPIO_MODE_OUTPUT:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -345,7 +351,6 @@ static int drv_gpio_configure(struct mr_gpio *gpio, int pin, int mode)
 
         default:
         {
-            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
             break;
         }
     }

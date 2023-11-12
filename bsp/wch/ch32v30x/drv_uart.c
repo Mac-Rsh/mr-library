@@ -552,7 +552,7 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
         GPIO_Init(uart_data->rx_port, &GPIO_InitStructure);
     } else
     {
-        /* Configure TX/RX GPIO */
+        /* Reset TX/RX GPIO */
         GPIO_InitStructure.GPIO_Pin = uart_data->tx_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
         GPIO_Init(uart_data->tx_port, &GPIO_InitStructure);

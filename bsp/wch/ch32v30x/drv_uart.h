@@ -23,9 +23,9 @@ struct drv_uart_data
     uint32_t clock;
     uint32_t gpio_clock;
     GPIO_TypeDef *rx_port;
-    uint16_t rx_pin;
+    uint32_t rx_pin;
     GPIO_TypeDef *tx_port;
-    uint16_t tx_pin;
+    uint32_t tx_pin;
     IRQn_Type irq;
     uint32_t remap;
 };
