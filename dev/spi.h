@@ -113,8 +113,6 @@ struct mr_spi_bus_ops
     int (*configure)(struct mr_spi_bus *spi_bus, struct mr_spi_config *config);
     void (*write)(struct mr_spi_bus *spi_bus, uint32_t data);
     uint32_t (*read)(struct mr_spi_bus *spi_bus);
-    void (*cs_write)(struct mr_spi_bus *spi_bus, int cs_pin, int level);
-    int (*cs_read)(struct mr_spi_bus *spi_bus, int cs_pin);
 };
 
 /**
@@ -136,6 +134,7 @@ struct mr_spi_dev
     size_t rd_bufsz;                                                /**< Read buffer size */
     uint32_t cs_pin: 30;                                            /**< CS pin */
     uint32_t cs_active: 2;                                          /**< CS active level */
+    int cs_desc;                                                    /**< CS descriptor */
 };
 
 /**
