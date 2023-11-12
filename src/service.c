@@ -148,6 +148,38 @@ int mr_printf(const char *fmt, ...)
 }
 
 /**
+ * @brief This function get the error message.
+ *
+ * @param err The error code.
+ *
+ * @return The error message.
+ */
+const char *mr_strerror(int err)
+{
+    switch (err)
+    {
+        case MR_EOK:
+            return "no error";
+        case MR_ENOMEM:
+            return "no enough memory";
+        case MR_EIO:
+            return "I/O error";
+        case MR_ENOTFOUND:
+            return "not found";
+        case MR_EBUSY:
+            return "resource busy";
+        case MR_EEXIST:
+            return "exists";
+        case MR_ENOTSUP:
+            return "operation not supported";
+        case MR_EINVAL:
+            return "invalid argument";
+        default:
+            return "unknown error";
+    }
+}
+
+/**
  * @brief This function initialize the ringbuffer.
  *
  * @param ringbuf The ringbuffer to initialize.

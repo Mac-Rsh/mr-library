@@ -39,6 +39,14 @@ extern "C" {
 #define MR_USING_UART8
 #define MR_CFG_UART8_GROUP              1
 
+#define MR_USING_SPI1
+#define MR_USING_SPI2
+#define MR_USING_SPI3
+
+#define MR_CFG_SPI1_GROUP               1
+#define MR_CFG_SPI2_GROUP               1
+#define MR_CFG_SPI3_GROUP               1
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

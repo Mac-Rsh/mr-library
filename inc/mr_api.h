@@ -50,6 +50,7 @@ void mr_auto_init(void);
  */
 int mr_printf_output(const char *buf, size_t size);
 int mr_printf(const char *fmt, ...);
+const char *mr_strerror(int err);
 /** @} */
 
 /**

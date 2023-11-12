@@ -113,10 +113,10 @@ typedef int (*mr_init_fn_t)(void);
 #define MR_NULL                         ((void *)0)
 
 /**
- * @brief Enable/Disable.
+ * @brief Disable/enable.
  */
-#define MR_ENABLE                       (1)                         /**< Enable */
 #define MR_DISABLE                      (0)                         /**< Disable */
+#define MR_ENABLE                       (1)                         /**< Enable */
 
 /**
  * @brief Double linked list structure.
