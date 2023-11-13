@@ -229,11 +229,6 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             {
                 struct mr_spi_config *config = (struct mr_spi_config *)args;
 
-                if (spi_bus->lock > 0)
-                {
-                    return MR_EBUSY;
-                }
-
                 if (config->host_slave == MR_SPI_HOST)
                 {
                     int ret = ops->configure(spi_bus, config);
@@ -267,16 +262,9 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             {
                 struct mr_spi_transfer *transfer = (struct mr_spi_transfer *)args;
 
-                if (spi_bus->lock > 0)
-                {
-                    return MR_EBUSY;
-                }
-                spi_bus->lock++;
-
                 int ret =
                     (int)spi_bus_transfer(spi_bus, transfer->rd_buf, transfer->wr_buf, transfer->size, MR_SPI_RDWR);
 
-                spi_bus->lock--;
                 return ret;
             }
             return MR_EINVAL;
@@ -302,7 +290,7 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
 
             uint32_t data = ops->read(spi_bus);
 #ifdef MR_USING_GPIO
-            if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+            if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
             {
                 uint8_t level = !spi_dev->cs_active;
                 mr_dev_read(spi_dev->cs_desc, &level, sizeof(level));
@@ -373,7 +361,7 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
         return;
     }
 
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
         struct mr_gpio_config config = {0};
 
@@ -458,9 +446,9 @@ MR_INLINE int spi_dev_release_bus(struct mr_spi_dev *spi_dev)
 MR_INLINE void spi_dev_cs_set(struct mr_spi_dev *spi_dev, int state)
 {
 #ifdef MR_USING_GPIO
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
-        mr_dev_write(spi_dev->cs_desc, mr_make_local(uint8_t, state), sizeof(uint8_t));
+        mr_dev_write(spi_dev->cs_desc, mr_make_local(uint8_t, !(state ^ spi_dev->cs_active)), sizeof(uint8_t));
     }
 #endif /* MR_USING_GPIO */
 }
@@ -470,7 +458,7 @@ static int mr_spi_dev_open(struct mr_dev *dev)
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
 #ifdef MR_USING_GPIO
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
         spi_dev->cs_desc = mr_dev_open("gpio", MR_OFLAG_RDWR);
         spi_dev_cs_configure(spi_dev, MR_ENABLE);
@@ -486,7 +474,7 @@ static int mr_spi_dev_close(struct mr_dev *dev)
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
 #ifdef MR_USING_GPIO
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_HARDWARE)
+    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
         spi_dev_cs_configure(spi_dev, MR_DISABLE);
         mr_dev_close(spi_dev->cs_desc);
@@ -695,7 +683,7 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
 
     mr_assert(spi_dev != MR_NULL);
     mr_assert(name != MR_NULL);
-    mr_assert((cs_active >= MR_SPI_CS_ACTIVE_LOW) && (cs_active <= MR_SPI_CS_ACTIVE_HARDWARE));
+    mr_assert((cs_active >= MR_SPI_CS_ACTIVE_LOW) && (cs_active <= MR_SPI_CS_ACTIVE_NONE));
 
     /* Initialize the fields */
     spi_dev->config = default_config;
@@ -705,7 +693,7 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
 #endif /* MR_CFG_SPI_RD_BUFSZ_INIT */
     spi_dev->rd_bufsz = MR_CFG_SPI_RD_BUFSZ_INIT;
     spi_dev->cs_pin = cs_pin;
-    spi_dev->cs_active = (cs_pin >= 0) ? cs_active : MR_SPI_CS_ACTIVE_HARDWARE;
+    spi_dev->cs_active = (cs_pin >= 0) ? cs_active : MR_SPI_CS_ACTIVE_NONE;
     spi_dev->cs_desc = -1;
 
     /* Register the spi-device */

@@ -120,7 +120,7 @@ struct mr_spi_bus_ops
  */
 #define MR_SPI_CS_ACTIVE_LOW            (0)                         /**< Active low */
 #define MR_SPI_CS_ACTIVE_HIGH           (1)                         /**< Active high */
-#define MR_SPI_CS_ACTIVE_HARDWARE       (2)                         /**< Hardware */
+#define MR_SPI_CS_ACTIVE_NONE           (2)                         /**< No active */
 
 /**
  * @struct SPI device structure.
