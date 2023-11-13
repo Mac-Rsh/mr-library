@@ -539,7 +539,7 @@ static struct mr_gpio_ops gpio_drv_ops =
 static struct mr_drv gpio_drv =
     {
         Mr_Drv_Type_Gpio,
-        &gpio_dev,
+        &gpio_drv_ops,
         &gpio_drv_ops
     };
 
