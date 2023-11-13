@@ -101,7 +101,6 @@ struct mr_spi_bus
     struct mr_dev dev;                                              /**< Device */
 
     struct mr_spi_config config;                                    /**< Configuration */
-    volatile uint32_t lock;                                         /**< Lock */
     void *owner;                                                    /**< Owner */
 };
 

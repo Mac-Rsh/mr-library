@@ -229,17 +229,24 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             {
                 struct mr_spi_config *config = (struct mr_spi_config *)args;
 
-                if (config->host_slave == MR_SPI_HOST)
+                /* The bus is held by another device */
+                if (spi_bus->owner != MR_NULL)
                 {
-                    int ret = ops->configure(spi_bus, config);
-                    if (ret == MR_EOK)
-                    {
-                        spi_bus->config = *config;
-                    }
-                    spi_bus->owner = MR_NULL;
-                    return MR_EOK;
+                    return MR_EBUSY;
                 }
-                return MR_EINVAL;
+
+                /* The bus requires a device to be mounted to be configured in slave mode */
+                if (config->host_slave == MR_SPI_SLAVE)
+                {
+                    return MR_EINVAL;
+                }
+
+                int ret = ops->configure(spi_bus, config);
+                if (ret == MR_EOK)
+                {
+                    spi_bus->config = *config;
+                }
+                return MR_EOK;
             }
             return MR_EINVAL;
         }
@@ -345,7 +352,6 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
 
     /* Initialize the fields */
     spi_bus->config = default_config;
-    spi_bus->lock = 0;
     spi_bus->owner = MR_NULL;
 
     /* Register the spi-bus */
@@ -403,8 +409,9 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
         return MR_EBUSY;
     }
 
-    if (spi_bus->owner == MR_NULL)
+    if (spi_dev != spi_bus->owner)
     {
+        /* Reconfigure the bus */
         if (spi_dev->config.baud_rate != spi_bus->config.baud_rate
             || spi_dev->config.host_slave != spi_bus->config.host_slave
             || spi_dev->config.mode != spi_bus->config.mode
@@ -414,15 +421,12 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
             int ret = ops->configure(spi_bus, &spi_dev->config);
             if (ret != MR_EOK)
             {
-                spi_bus->lock--;
                 return ret;
             }
         }
         spi_bus->config = spi_dev->config;
         spi_bus->owner = spi_dev;
-        spi_bus->lock = 0;
     }
-    spi_bus->lock++;
     return MR_EOK;
 }
 
@@ -435,8 +439,8 @@ MR_INLINE int spi_dev_release_bus(struct mr_spi_dev *spi_dev)
         return MR_EINVAL;
     }
 
-    spi_bus->lock--;
-    if (spi_bus->lock == 0)
+    /* If it is a host, release the bus. The slave needs to hold the bus at all times */
+    if (spi_dev->config.host_slave == MR_SPI_HOST)
     {
         spi_bus->owner = MR_NULL;
     }
@@ -555,19 +559,22 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_spi_config *config = (struct mr_spi_config *)args;
 
 #ifdef MR_USING_GPIO
+                /* Reconfigure CS */
                 if (config->host_slave != spi_dev->config.host_slave)
                 {
                     spi_dev_cs_configure(spi_dev, MR_ENABLE);
                 }
 #endif /* MR_USING_GPIO */
-
-                spi_dev->config = *config;
+                /* Release the bus */
                 if (spi_dev == spi_bus->owner)
                 {
                     spi_bus->owner = MR_NULL;
                 }
+
+                spi_dev->config = *config;
                 if (config->host_slave == MR_SPI_SLAVE)
                 {
+                    /* Retry to take the bus */
                     int ret = spi_dev_take_bus(spi_dev);
                     if (ret != MR_EOK)
                     {
