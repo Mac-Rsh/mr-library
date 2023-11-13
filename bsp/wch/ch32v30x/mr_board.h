@@ -46,6 +46,11 @@ extern "C" {
 #define MR_USING_SPI3
 #define MR_CFG_SPI3_GROUP               1
 
+#define MR_USING_I2C1
+#define MR_CFG_I2C1_GROUP               1
+#define MR_USING_I2C2
+#define MR_CFG_I2C2_GROUP               1
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

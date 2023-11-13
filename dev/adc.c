@@ -79,7 +79,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 }
 
                 /* Check if the channel is enabled */
-                if(config->enable != mr_bits_is_set(adc->channel, (1 << off)))
+                if (config->enable != mr_bits_is_set(adc->channel, (1 << off)))
                 {
                     int ret = ops->channel_configure(adc, off, config->enable);
                     if (ret == MR_EOK)

@@ -38,5 +38,4 @@ struct drv_spi_bus_data
 }
 #endif /* __cplusplus */
 
-
 #endif /* _DRV_SPI_H_ */

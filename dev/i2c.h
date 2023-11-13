@@ -59,7 +59,6 @@ struct mr_i2c_bus
     struct mr_dev dev;                                              /**< Device */
 
     struct mr_i2c_config config;                                    /**< Configuration */
-    volatile uint32_t lock;                                         /**< Lock */
     void *owner;                                                    /**< Owner */
 };
 
@@ -68,7 +67,7 @@ struct mr_i2c_bus
  */
 struct mr_i2c_bus_ops
 {
-    int (*configure)(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config);
+    int (*configure)(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits);
     void (*start)(struct mr_i2c_bus *i2c_bus);
     void (*stop)(struct mr_i2c_bus *i2c_bus);
     ssize_t (*write)(struct mr_i2c_bus *i2c_bus, const void *buf, size_t size);

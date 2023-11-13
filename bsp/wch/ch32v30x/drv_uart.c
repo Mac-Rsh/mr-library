@@ -14,7 +14,7 @@
 #error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_UART."
 #endif
 
-enum uart_drv_index
+enum drv_uart_index
 {
 #ifdef MR_USING_UART1
     DRV_INDEX_UART1,

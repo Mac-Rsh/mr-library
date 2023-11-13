@@ -14,7 +14,7 @@
 #error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_GPIO."
 #endif
 
-enum spi_drv_index
+enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
     DRV_INDEX_SPI1,
@@ -43,7 +43,7 @@ static const char *spi_bus_name[] =
 static struct drv_spi_bus_data spi_bus_drv_data[] =
     {
 #ifdef MR_USING_SPI1
-        #if (MR_CFG_SPI1_GROUP == 1)
+#if (MR_CFG_SPI1_GROUP == 1)
         {
             SPI1,
             RCC_APB2Periph_SPI1,
@@ -76,7 +76,7 @@ static struct drv_spi_bus_data spi_bus_drv_data[] =
 #endif /* MR_CFG_SPI1_GROUP */
 #endif /* MR_USING_SPI1 */
 #ifdef MR_USING_SPI2
-        #if (MR_CFG_SPI2_GROUP == 1)
+#if (MR_CFG_SPI2_GROUP == 1)
         {
             SPI2,
             RCC_APB1Periph_SPI2,
@@ -95,7 +95,7 @@ static struct drv_spi_bus_data spi_bus_drv_data[] =
 #endif /* MR_CFG_SPI2_GROUP */
 #endif /* MR_USING_SPI2 */
 #ifdef MR_USING_SPI3
-        #if (MR_CFG_SPI3_GROUP == 1)
+#if (MR_CFG_SPI3_GROUP == 1)
         {
             SPI3,
             RCC_APB1Periph_SPI3,
@@ -451,7 +451,7 @@ static struct mr_drv spi_bus_drv[mr_array_num(spi_bus_drv_data)] =
 
 int drv_spi_bus_init(void)
 {
-    int index = 0 ;
+    int index = 0;
 
     for (index = 0; index < mr_array_num(spi_bus_dev); index++)
     {
