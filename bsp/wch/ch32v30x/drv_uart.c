@@ -419,7 +419,7 @@ static struct mr_uart uart_dev[mr_array_num(uart_drv_data)];
 static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *config)
 {
     struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
-    int state = (config->baud_rate == 0) ? MR_DISABLE : MR_ENABLE;
+    int state = (config->baud_rate == 0) ? DISABLE : ENABLE;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     USART_InitTypeDef USART_InitStructure = {0};
@@ -447,7 +447,7 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
     }
 #endif /* MR_USING_UART1_GROUP >= 3 */
 
-    if (state == MR_ENABLE)
+    if (state == ENABLE)
     {
         switch (config->data_bits)
         {
@@ -567,7 +567,7 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
     NVIC_InitStructure.NVIC_IRQChannelCmd = state;
     NVIC_Init(&NVIC_InitStructure);
     USART_ITConfig(uart_data->instance, USART_IT_RXNE, state);
-    if (state == MR_DISABLE)
+    if (state == DISABLE)
     {
         USART_ITConfig(uart_data->instance, USART_IT_TXE, DISABLE);
     }

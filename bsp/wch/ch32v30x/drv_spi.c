@@ -27,7 +27,7 @@ enum spi_drv_index
 #endif /* MR_USING_SPI3 */
 };
 
-static const char *spi_name[] =
+static const char *spi_bus_name[] =
     {
 #ifdef MR_USING_SPI1
         "spi1",
@@ -40,7 +40,7 @@ static const char *spi_name[] =
 #endif /* MR_USING_SPI3 */
     };
 
-static struct drv_spi_bus_data spi_drv_data[] =
+static struct drv_spi_bus_data spi_bus_drv_data[] =
     {
 #ifdef MR_USING_SPI1
         #if (MR_CFG_SPI1_GROUP == 1)
@@ -129,12 +129,12 @@ static struct drv_spi_bus_data spi_drv_data[] =
 #endif /* MR_USING_SPI3 */
     };
 
-static struct mr_spi_bus spi_bus_dev[mr_array_num(spi_drv_data)];
+static struct mr_spi_bus spi_bus_dev[mr_array_num(spi_bus_drv_data)];
 
 static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_config *config)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
-    int state = (config->baud_rate == 0) ? MR_DISABLE : MR_ENABLE;
+    int state = (config->baud_rate == 0) ? DISABLE : ENABLE;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     SPI_InitTypeDef SPI_InitStructure = {0};
@@ -176,7 +176,7 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     } else if (psc >= 4)
     {
         SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
-    } else if (psc >= 2)
+    } else
     {
         SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
     }
@@ -188,7 +188,7 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         GPIO_PinRemapConfig(spi_bus_data->remap, state);
     }
 
-    if (state == MR_ENABLE)
+    if (state == ENABLE)
     {
         switch (config->host_slave)
         {
@@ -342,11 +342,123 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     }
 
     /* Configure SPI */
+    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(spi_bus_data->instance, &SPI_InitStructure);
     SPI_Cmd(spi_bus_data->instance, state);
     return MR_EOK;
 }
+
+static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
+{
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
+    int i = 0;
+
+    while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_TXE) == RESET)
+    {
+        i++;
+        if (i > UINT16_MAX)
+        {
+            return;
+        }
+    }
+    SPI_I2S_SendData(spi_bus_data->instance, data);
+}
+
+static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
+{
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
+    int i = 0;
+
+    while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_RXNE) == RESET)
+    {
+        i++;
+        if (i > UINT16_MAX)
+        {
+            return 0;
+        }
+    }
+    return SPI_I2S_ReceiveData(spi_bus_data->instance);
+}
+
+static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
+{
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
+
+    if (SPI_I2S_GetITStatus(spi_bus_data->instance, SPI_I2S_IT_RXNE) != RESET)
+    {
+        mr_dev_isr(&spi_bus->dev, MR_ISR_EVENT_RD_INTER, NULL);
+        SPI_I2S_ClearITPendingBit(spi_bus_data->instance, SPI_I2S_IT_RXNE);
+    }
+}
+
+#ifdef MR_USING_SPI1
+void SPI1_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI1_IRQHandler(void)
+{
+    drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI1]);
+}
+#endif /* MR_USING_SPI1 */
+
+#ifdef MR_USING_SPI2
+void SPI2_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI2_IRQHandler(void)
+{
+    drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI2]);
+}
+#endif /* MR_USING_SPI2 */
+
+#ifdef MR_USING_SPI3
+void SPI3_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI3_IRQHandler(void)
+{
+    drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI3]);
+}
+#endif /* MR_USING_SPI3 */
+
+static struct mr_spi_bus_ops spi_bus_drv_ops =
+    {
+        drv_spi_bus_configure,
+        drv_spi_bus_write,
+        drv_spi_bus_read,
+    };
+
+static struct mr_drv spi_bus_drv[mr_array_num(spi_bus_drv_data)] =
+    {
+#ifdef MR_USING_SPI1
+        {
+            Mr_Drv_Type_Spi,
+            &spi_bus_drv_ops,
+            &spi_bus_drv_data[DRV_INDEX_SPI1],
+        },
+#endif /* MR_USING_SPI1 */
+#ifdef MR_USING_SPI2
+        {
+            Mr_Drv_Type_Spi,
+            &spi_bus_drv_ops,
+            &spi_bus_drv_data[DRV_INDEX_SPI2],
+        },
+#endif /* MR_USING_SPI2 */
+#ifdef MR_USING_SPI3
+        {
+            Mr_Drv_Type_Spi,
+            &spi_bus_drv_ops,
+            &spi_bus_drv_data[DRV_INDEX_SPI3],
+        },
+#endif /* MR_USING_SPI3 */
+    };
+
+int drv_spi_bus_init(void)
+{
+    int index = 0 ;
+
+    for (index = 0; index < mr_array_num(spi_bus_dev); index++)
+    {
+        mr_spi_bus_register(&spi_bus_dev[index], spi_bus_name[index], &spi_bus_drv[index]);
+    }
+    return MR_EOK;
+}
+MR_INIT_DRV_EXPORT(drv_spi_bus_init);
 
 #endif /* MR_USING_SPI */
