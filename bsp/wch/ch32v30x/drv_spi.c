@@ -11,7 +11,7 @@
 #ifdef MR_USING_SPI
 
 #if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3)
-#error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_GPIO."
+#error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
 #endif
 
 enum drv_spi_bus_index
@@ -350,22 +350,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     return MR_EOK;
 }
 
-static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
-{
-    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
-    int i = 0;
-
-    while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_TXE) == RESET)
-    {
-        i++;
-        if (i > UINT16_MAX)
-        {
-            return;
-        }
-    }
-    SPI_I2S_SendData(spi_bus_data->instance, data);
-}
-
 static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
@@ -382,6 +366,22 @@ static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
     return SPI_I2S_ReceiveData(spi_bus_data->instance);
 }
 
+static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
+{
+    struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
+    int i = 0;
+
+    SPI_I2S_SendData(spi_bus_data->instance, data);
+    while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_TXE) == RESET)
+    {
+        i++;
+        if (i > UINT16_MAX)
+        {
+            return;
+        }
+    }
+}
+
 static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
@@ -394,7 +394,7 @@ static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
 }
 
 #ifdef MR_USING_SPI1
-void SPI1_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void SPI1_IRQHandler(void)
 {
     drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI1]);
@@ -402,7 +402,7 @@ void SPI1_IRQHandler(void)
 #endif /* MR_USING_SPI1 */
 
 #ifdef MR_USING_SPI2
-void SPI2_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void SPI2_IRQHandler(void)
 {
     drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI2]);
@@ -410,7 +410,7 @@ void SPI2_IRQHandler(void)
 #endif /* MR_USING_SPI2 */
 
 #ifdef MR_USING_SPI3
-void SPI3_IRQHandler(void)  __attribute__((interrupt("WCH-Interrupt-fast")));
+void SPI3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void SPI3_IRQHandler(void)
 {
     drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI3]);
@@ -420,8 +420,8 @@ void SPI3_IRQHandler(void)
 static struct mr_spi_bus_ops spi_bus_drv_ops =
     {
         drv_spi_bus_configure,
-        drv_spi_bus_write,
         drv_spi_bus_read,
+        drv_spi_bus_write,
     };
 
 static struct mr_drv spi_bus_drv[mr_array_num(spi_bus_drv_data)] =

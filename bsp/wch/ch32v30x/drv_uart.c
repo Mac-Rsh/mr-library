@@ -596,10 +596,10 @@ static ssize_t drv_uart_read(struct mr_uart *uart, uint8_t *buf, size_t size)
             i++;
             if (i > UINT16_MAX)
             {
-                break;
+                return rd_size;
             }
         }
-        buf[rd_size] = uart_data->instance->DATAR & 0xff;
+        buf[rd_size] = USART_ReceiveData(uart_data->instance);
     }
     return rd_size;
 }
@@ -614,15 +614,15 @@ static ssize_t drv_uart_write(struct mr_uart *uart, const uint8_t *buf, size_t s
         int i = 0;
 
         /* Write data */
+        USART_SendData(uart_data->instance, buf[wr_size]);
         while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_TC) == RESET)
         {
             i++;
             if (i > UINT16_MAX)
             {
-                break;
+                return wr_size;
             }
         }
-        uart_data->instance->DATAR = buf[wr_size];
     }
     return wr_size;
 }
@@ -631,7 +631,7 @@ static void drv_uart_start_tx(struct mr_uart *uart)
 {
     struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
 
-    /* Enable TXE */
+    /* Enable TX interrupt */
     USART_ITConfig(uart_data->instance, USART_IT_TXE, ENABLE);
 }
 
@@ -639,7 +639,7 @@ static void drv_uart_stop_tx(struct mr_uart *uart)
 {
     struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
 
-    /* Disable TXE */
+    /* Disable TX interrupt */
     USART_ITConfig(uart_data->instance, USART_IT_TXE, DISABLE);
 }
 

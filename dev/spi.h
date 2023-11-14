@@ -110,8 +110,8 @@ struct mr_spi_bus
 struct mr_spi_bus_ops
 {
     int (*configure)(struct mr_spi_bus *spi_bus, struct mr_spi_config *config);
-    void (*write)(struct mr_spi_bus *spi_bus, uint32_t data);
     uint32_t (*read)(struct mr_spi_bus *spi_bus);
+    void (*write)(struct mr_spi_bus *spi_bus, uint32_t data);
 };
 
 /**
