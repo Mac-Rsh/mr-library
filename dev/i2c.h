@@ -69,9 +69,10 @@ struct mr_i2c_bus_ops
 {
     int (*configure)(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits);
     void (*start)(struct mr_i2c_bus *i2c_bus);
+    void (*send_addr)(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits);
     void (*stop)(struct mr_i2c_bus *i2c_bus);
-    ssize_t (*write)(struct mr_i2c_bus *i2c_bus, const void *buf, size_t size);
-    ssize_t (*read)(struct mr_i2c_bus *i2c_bus, void *buf, size_t size);
+    ssize_t (*read)(struct mr_i2c_bus *i2c_bus, uint8_t *buf, size_t size);
+    ssize_t (*write)(struct mr_i2c_bus *i2c_bus, const uint8_t *buf, size_t size);
 };
 
 /**

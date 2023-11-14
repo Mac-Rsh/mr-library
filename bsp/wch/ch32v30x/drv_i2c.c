@@ -10,6 +10,10 @@
 
 #ifdef MR_USING_I2C
 
+#if !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2)
+#error "Please define at least one I2C macro like MR_USING_I2C1. Otherwise undefine MR_USING_I2C."
+#endif
+
 enum drv_i2c_index
 {
 #ifdef MR_USING_I2C1
@@ -20,7 +24,7 @@ enum drv_i2c_index
 #endif /* MR_USING_I2C2 */
 };
 
-static const char *i2c_name[] =
+static const char *i2c_bus_name[] =
     {
 #ifdef MR_USING_I2C1
         "i2c1",
@@ -42,7 +46,7 @@ static struct drv_i2c_bus_data i2c_bus_drv_data[] =
             GPIO_Pin_6,
             GPIOB,
             GPIO_Pin_7,
-            I2C1_IRQn,
+            I2C1_EV_IRQn,
             0
         },
 #elif (MR_CFG_I2C1_GROUP == 2)
@@ -54,7 +58,7 @@ static struct drv_i2c_bus_data i2c_bus_drv_data[] =
             GPIO_Pin_8,
             GPIOB,
             GPIO_Pin_9,
-            I2C1_IRQn,
+            I2C1_EV_IRQn,
             GPIO_Remap_I2C1
         },
 #else
@@ -71,7 +75,7 @@ static struct drv_i2c_bus_data i2c_bus_drv_data[] =
             GPIO_Pin_10,
             GPIOB,
             GPIO_Pin_11,
-            I2C2_IRQn,
+            I2C2_EV_IRQn,
             0
         }
 #else
@@ -87,10 +91,11 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
     int state = (config->baud_rate == 0) ? DISABLE : ENABLE;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
+    NVIC_InitTypeDef NVIC_InitStructure = {0};
     I2C_InitTypeDef I2C_InitStructure = {0};
 
     RCC_APB2PeriphClockCmd(i2c_bus_data->gpio_clock, ENABLE);
-    RCC_APB2PeriphClockCmd(i2c_bus_data->clock, state);
+    RCC_APB1PeriphClockCmd(i2c_bus_data->clock, state);
 
     /* Configure remap */
     if (i2c_bus_data->remap != 0)
@@ -121,7 +126,7 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
 
             case MR_I2C_ADDR_BITS_10:
             {
-                I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_10bit;
+                I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_10bit;
                 break;
             }
 
@@ -154,6 +159,13 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = state;
     NVIC_Init(&NVIC_InitStructure);
+    if (config->host_slave == MR_I2C_HOST)
+    {
+        I2C_ITConfig(i2c_bus_data->instance, I2C_IT_EVT, DISABLE);
+    } else
+    {
+        I2C_ITConfig(i2c_bus_data->instance, I2C_IT_EVT, state);
+    }
 
     /* Configure I2C */
     I2C_InitStructure.I2C_ClockSpeed = config->baud_rate;
@@ -165,5 +177,171 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
     I2C_Cmd(i2c_bus_data->instance, state);
     return MR_EOK;
 }
+
+static void drv_i2c_bus_start(struct mr_i2c_bus *i2c_bus)
+{
+    struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
+    int i = 0;
+
+    I2C_GenerateSTART(i2c_bus_data->instance, ENABLE);
+    while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_MODE_SELECT) == RESET)
+    {
+        i++;
+        if (i > UINT16_MAX)
+        {
+            return;
+        }
+    }
+}
+
+static void drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
+{
+    struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
+    int i = 0;
+
+    I2C_SendData(i2c_bus_data->instance, addr);
+    while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == RESET)
+    {
+        i++;
+        if (i > UINT16_MAX)
+        {
+            return;
+        }
+    }
+
+    if (addr_bits == MR_I2C_ADDR_BITS_10)
+    {
+        I2C_SendData(i2c_bus_data->instance, (addr >> 8));
+        i = 0;
+        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
+        {
+            i++;
+            if (i > UINT16_MAX)
+            {
+                return;
+            }
+        }
+    }
+}
+
+static void drv_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
+{
+    struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
+
+    I2C_GenerateSTOP(i2c_bus_data->instance, ENABLE);
+}
+
+static ssize_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *buf, size_t size)
+{
+    struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
+    ssize_t rd_size = 0;
+
+    for (rd_size = 0; rd_size < size; rd_size++)
+    {
+        int i = 0;
+
+        /* Read data */
+        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET);
+        {
+            i++;
+            if (i > UINT16_MAX)
+            {
+                return rd_size;
+            }
+        }
+        buf[rd_size] = I2C_ReceiveData(i2c_bus_data->instance);
+    }
+    return rd_size;
+}
+
+static ssize_t drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, const uint8_t *buf, size_t size)
+{
+    struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
+    ssize_t wr_size = 0;
+
+    for (wr_size = 0; wr_size < size; wr_size++)
+    {
+        int i = 0;
+
+        /* Write data */
+        I2C_SendData(i2c_bus_data->instance, buf[wr_size]);
+        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
+        {
+            i++;
+            if (i > UINT16_MAX)
+            {
+                return wr_size;
+            }
+        }
+    }
+    return wr_size;
+}
+
+static void drv_i2c_bus_isr(struct mr_i2c_bus *i2c_bus)
+{
+    struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
+
+    if (I2C_GetITStatus(i2c_bus_data->instance, I2C_IT_RXNE) != RESET)
+    {
+        mr_dev_isr(&i2c_bus->dev, MR_ISR_EVENT_RD_INTER, NULL);
+        I2C_ClearITPendingBit(i2c_bus_data->instance, I2C_IT_RXNE);
+    }
+}
+
+#ifdef MR_USING_I2C1
+void I2C1_EV_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void I2C1_EV_IRQHandler(void)
+{
+    drv_i2c_bus_isr(&i2c_bus_dev[DRV_INDEX_I2C1]);
+}
+#endif /* MR_USING_I2C1 */
+
+#ifdef MR_USING_I2C2
+void I2C2_EV_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void I2C2_EV_IRQHandler(void)
+{
+    drv_i2c_bus_isr(&i2c_bus_dev[DRV_INDEX_I2C2]);
+}
+#endif /* MR_USING_I2C2 */
+
+static struct mr_i2c_bus_ops i2c_bus_drv_ops =
+    {
+        drv_i2c_bus_configure,
+        drv_i2c_bus_start,
+        drv_i2c_bus_send_addr,
+        drv_i2c_bus_stop,
+        drv_i2c_bus_read,
+        drv_i2c_bus_write,
+    };
+
+static struct mr_drv i2c_bus_drv[mr_array_num(i2c_bus_drv_data)] =
+    {
+#ifdef MR_USING_I2C1
+        {
+            Mr_Dev_Type_I2c,
+            &i2c_bus_drv_ops,
+            &i2c_bus_drv_data[DRV_INDEX_I2C1]
+        },
+#endif /* MR_USING_I2C1 */
+#ifdef MR_USING_I2C2
+        {
+            Mr_Dev_Type_I2c,
+            &i2c_bus_drv_ops,
+            &i2c_bus_drv_data[DRV_INDEX_I2C2]
+        },
+#endif /* MR_USING_I2C2 */
+    };
+
+int drv_i2c_bus_init(void)
+{
+    int index = 0;
+
+    for (index = 0; index < mr_array_num(i2c_bus_dev); index++)
+    {
+        mr_i2c_bus_register(&i2c_bus_dev[index], i2c_bus_name[index], &i2c_bus_drv[index]);
+    }
+    return MR_EOK;
+}
+MR_INIT_DRV_EXPORT(drv_i2c_bus_init);
 
 #endif /* MR_USING_I2C */

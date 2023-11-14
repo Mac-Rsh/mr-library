@@ -17,20 +17,25 @@ MR_INLINE void i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int rdwr)
 {
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
-    uint8_t addr[2] = {0, 0};
+    int addr = 0;
 
     if (i2c_dev != MR_NULL)
     {
-        addr[1] = ((i2c_dev->addr >> 3) & 0x7f);
-        addr[0] = ((i2c_dev->addr >> 1) & 0x07) | 0x80;
+        if (i2c_dev->addr_bits == MR_I2C_ADDR_BITS_7)
+        {
+            addr = i2c_dev->addr;
+        } else
+        {
+            addr = ((0xf0 | ((i2c_dev->addr >> 7) & 0x06)) << 8) | (i2c_dev->addr & 0xff);
+        }
+    }
+    if (rdwr == MR_I2C_RD)
+    {
+        addr |= 0x01;
     }
 
     ops->start(i2c_bus);
-    if (rdwr == MR_I2C_RD)
-    {
-        addr[1] |= 0x01;
-    }
-    ops->write(i2c_bus, &addr, (i2c_dev->addr_bits >> 3) + 1);
+    ops->send_addr(i2c_bus, addr, i2c_dev->addr_bits);
 }
 
 static int mr_i2c_bus_open(struct mr_dev *dev)
@@ -60,7 +65,7 @@ static ssize_t mr_i2c_bus_read(struct mr_dev *dev, int off, void *buf, size_t si
         if (off >= 0)
         {
             i2c_bus_send_addr(i2c_bus, MR_I2C_WR);
-            ops->write(i2c_bus, &off, i2c_bus->config.off_bits);
+            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.off_bits);
         }
 
         i2c_bus_send_addr(i2c_bus, MR_I2C_RD);
@@ -83,7 +88,7 @@ static ssize_t mr_i2c_bus_write(struct mr_dev *dev, int off, const void *buf, si
         i2c_bus_send_addr(i2c_bus, MR_I2C_WR);
         if (off >= 0)
         {
-            ops->write(i2c_bus, &off, i2c_bus->config.off_bits);
+            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.off_bits);
         }
 
         ssize_t ret = ops->write(i2c_bus, buf, size);
@@ -229,7 +234,8 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
         if (i2c_dev->config.baud_rate != i2c_bus->config.baud_rate
             || i2c_dev->config.host_slave != i2c_bus->config.host_slave)
         {
-            int ret = ops->configure(i2c_bus, &i2c_dev->config, i2c_dev->addr, i2c_dev->addr_bits);
+            int addr = (i2c_dev->config.host_slave == MR_I2C_SLAVE) ? i2c_dev->addr : 0x01;
+            int ret = ops->configure(i2c_bus, &i2c_dev->config, addr, i2c_dev->addr_bits);
             if (ret != MR_EOK)
             {
                 return ret;
