@@ -88,7 +88,7 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -103,7 +103,7 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_SET_RD_BUFSZ:
+        case MR_CTRL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -119,7 +119,7 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_SET_WR_BUFSZ:
+        case MR_CTRL_SET_WR_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -136,7 +136,7 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_GET_CONFIG:
+        case MR_CTRL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -147,7 +147,7 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_GET_RD_BUFSZ:
+        case MR_CTRL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -156,7 +156,7 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_GET_WR_BUFSZ:
+        case MR_CTRL_GET_WR_BUFSZ:
         {
             if (args != MR_NULL)
             {

@@ -293,20 +293,20 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_RD_CB:
+        case MR_CTRL_SET_RD_CB:
         {
             dev->rd_cb.desc = desc;
             dev->rd_cb.cb = (int (*)(int desc, void *args))args;
             return MR_EOK;
         }
-        case MR_IOCTL_SET_WR_CB:
+        case MR_CTRL_SET_WR_CB:
         {
             dev->wr_cb.desc = desc;
             dev->wr_cb.cb = (int (*)(int desc, void *args))args;
             return MR_EOK;
         }
 
-        case MR_IOCTL_GET_RD_CB:
+        case MR_CTRL_GET_RD_CB:
         {
             if (args != MR_NULL)
             {
@@ -315,7 +315,7 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_GET_WR_CB:
+        case MR_CTRL_GET_WR_CB:
         {
             if (args != MR_NULL)
             {
@@ -639,7 +639,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_OFFSET:
+        case MR_CTRL_SET_OFFSET:
         {
             if (args != MR_NULL)
             {
@@ -649,7 +649,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_GET_OFFSET:
+        case MR_CTRL_GET_OFFSET:
         {
             if (args != MR_NULL)
             {

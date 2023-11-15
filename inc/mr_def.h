@@ -192,28 +192,28 @@ struct mr_dev;
 /**
  * @brief Descriptor control command.
  */
-#define MR_IOCTL_SET_OFFSET             ((0x1|0x8) << 28)           /**< Set offset */
-#define MR_IOCTL_GET_OFFSET             ((0x2|0x0) << 28)           /**< Get offset */
+#define MR_CTRL_SET_OFFSET              ((0x1|0x8) << 28)           /**< Set offset */
+#define MR_CTRL_GET_OFFSET              ((0x2|0x0) << 28)           /**< Get offset */
 
 /**
  * @brief Device control general command.
  */
-#define MR_IOCTL_SET_RD_CB              ((0x1|0x8) << 24)           /**< Set read callback */
-#define MR_IOCTL_SET_WR_CB              ((0x2|0x8) << 24)           /**< Set write callback */
-#define MR_IOCTL_SET_SLEEP              ((0x3|0x8) << 24)           /**< Set sleep */
-#define MR_IOCTL_SET_WAKEUP             ((0x4|0x8) << 24)           /**< Set wakeup */
-#define MR_IOCTL_GET_RD_CB              ((0x1|0x0) << 24)           /**< Get read callback */
-#define MR_IOCTL_GET_WR_CB              ((0x2|0x0) << 24)           /**< Get write callback */
+#define MR_CTRL_SET_RD_CB               ((0x1|0x8) << 24)           /**< Set read callback */
+#define MR_CTRL_SET_WR_CB               ((0x2|0x8) << 24)           /**< Set write callback */
+#define MR_CTRL_SET_SLEEP               ((0x3|0x8) << 24)           /**< Set sleep */
+#define MR_CTRL_SET_WAKEUP              ((0x4|0x8) << 24)           /**< Set wakeup */
+#define MR_CTRL_GET_RD_CB               ((0x1|0x0) << 24)           /**< Get read callback */
+#define MR_CTRL_GET_WR_CB               ((0x2|0x0) << 24)           /**< Get write callback */
 
 /**
  * @brief Device control command.
  */
-#define MR_IOCTL_SET_CONFIG             ((0x1|0x8) << 20)           /**< Set configuration */
-#define MR_IOCTL_SET_RD_BUFSZ           ((0x2|0x8) << 20)           /**< Set read buffer size */
-#define MR_IOCTL_SET_WR_BUFSZ           ((0x3|0x8) << 20)           /**< Set write buffer size */
-#define MR_IOCTL_GET_CONFIG             ((0x1|0x0) << 20)           /**< Get configuration */
-#define MR_IOCTL_GET_RD_BUFSZ           ((0x2|0x0) << 20)           /**< Get read buffer size */
-#define MR_IOCTL_GET_WR_BUFSZ           ((0x3|0x0) << 20)           /**< Get write buffer size */
+#define MR_CTRL_SET_CONFIG              ((0x1|0x8) << 20)           /**< Set configuration */
+#define MR_CTRL_SET_RD_BUFSZ            ((0x2|0x8) << 20)           /**< Set read buffer size */
+#define MR_CTRL_SET_WR_BUFSZ            ((0x3|0x8) << 20)           /**< Set write buffer size */
+#define MR_CTRL_GET_CONFIG              ((0x1|0x0) << 20)           /**< Get configuration */
+#define MR_CTRL_GET_RD_BUFSZ            ((0x2|0x0) << 20)           /**< Get read buffer size */
+#define MR_CTRL_GET_WR_BUFSZ            ((0x3|0x0) << 20)           /**< Get write buffer size */
 
 /**
  * @brief ISR event.

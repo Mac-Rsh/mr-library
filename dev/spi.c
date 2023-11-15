@@ -223,7 +223,7 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -251,7 +251,7 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_GET_CONFIG:
+        case MR_CTRL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -263,7 +263,7 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_SPI_TRANSFER:
+        case MR_CTRL_SPI_TRANSFER:
         {
             if (args != MR_NULL)
             {
@@ -371,7 +371,7 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
     {
         struct mr_gpio_config config = {0};
 
-        mr_dev_ioctl(desc, MR_IOCTL_SET_OFFSET, mr_make_local(int, spi_dev->cs_pin));
+        mr_dev_ioctl(desc, MR_CTRL_SET_OFFSET, mr_make_local(int, spi_dev->cs_pin));
 
         if (state == MR_ENABLE)
         {
@@ -388,12 +388,12 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
                     config.mode = MR_GPIO_MODE_INPUT_DOWN;
                 }
             }
-            mr_dev_ioctl(desc, MR_IOCTL_SET_CONFIG, &config);
+            mr_dev_ioctl(desc, MR_CTRL_SET_CONFIG, &config);
             mr_dev_write(desc, mr_make_local(uint8_t, spi_dev->cs_active), sizeof(uint8_t));
         } else
         {
             config.mode = MR_GPIO_MODE_NONE;
-            mr_dev_ioctl(desc, MR_IOCTL_SET_CONFIG, &config);
+            mr_dev_ioctl(desc, MR_CTRL_SET_CONFIG, &config);
         }
     }
 }
@@ -551,7 +551,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -585,7 +585,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_SET_RD_BUFSZ:
+        case MR_CTRL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -602,7 +602,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_GET_CONFIG:
+        case MR_CTRL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -613,7 +613,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_GET_RD_BUFSZ:
+        case MR_CTRL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -623,7 +623,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_SPI_TRANSFER:
+        case MR_CTRL_SPI_TRANSFER:
         {
             if (args != MR_NULL)
             {
