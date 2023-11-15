@@ -59,7 +59,7 @@ static int mr_gpio_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_MODE:
+        case MR_CTRL_GPIO_SET_PIN_MODE:
         {
             if (args != MR_NULL)
             {

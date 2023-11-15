@@ -18,10 +18,16 @@ extern "C" {
 #ifdef MR_USING_ADC
 
 /**
- * @brief ADC enable/disable.
+ * @brief ADC channel state.
  */
-#define MR_ADC_MODE_DISABLE             MR_DISABLE                  /**< ADC disabled */
-#define MR_ADC_MODE_ENABLE              MR_ENABLE                   /**< ADC enabled */
+#define MR_ADC_STATE_DISABLE            MR_DISABLE                  /**< ADC disabled */
+#define MR_ADC_STATE_ENABLE             MR_ENABLE                   /**< ADC enabled */
+
+/**
+ * @brief ADC channel state command.
+ */
+#define MR_CTRL_ADC_SET_CHANNEL_STATE   ((0x01|0x80) << 16)         /**< Set channel state */
+#define MR_CTRL_ADC_GET_CHANNEL_STATE   ((0x01|0x00) << 16)         /**< Get channel state */
 
 /**
  * @brief ADC structure.

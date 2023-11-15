@@ -66,7 +66,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_MODE:
+        case MR_CTRL_ADC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -84,7 +84,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     int ret = ops->channel_configure(adc, off, mode);
                     if (ret == MR_EOK)
                     {
-                        if (mode == MR_ADC_MODE_ENABLE)
+                        if (mode == MR_ADC_STATE_ENABLE)
                         {
                             mr_bits_set(adc->channel, (1 << off));
                         } else
@@ -99,7 +99,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_MODE:
+        case MR_CTRL_ADC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {

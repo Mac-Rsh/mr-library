@@ -18,10 +18,16 @@ extern "C" {
 #ifdef MR_USING_DAC
 
 /**
- * @brief DAC enable/disable.
+ * @brief DAC channel state.
  */
-#define MR_DAC_MODE_DISABLE             MR_DISABLE                  /**< DAC disabled */
-#define MR_DAC_MODE_ENABLE              MR_ENABLE                   /**< DAC enabled */
+#define MR_DAC_STATE_DISABLE            MR_DISABLE                  /**< DAC disabled */
+#define MR_DAC_STATE_ENABLE             MR_ENABLE                   /**< DAC enabled */
+
+/**
+ * @brief DAC channel state command.
+ */
+#define MR_CTRL_DAC_SET_CHANNEL_STATE   ((0x01|0x80) << 16)         /**< Set channel state */
+#define MR_CTRL_DAC_GET_CHANNEL_STATE   ((0x01|0x00) << 16)         /**< Get channel state */
 
 /**
  * @brief DAC structure.

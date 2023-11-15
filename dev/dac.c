@@ -66,7 +66,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_MODE:
+        case MR_CTRL_DAC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -78,11 +78,10 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                struct mr_dac_config *config = (struct mr_dac_config *)args;
                 int ret = ops->channel_configure(dac, off, mode);
                 if (ret == MR_EOK)
                 {
-                    if (mode == MR_DAC_MODE_ENABLE)
+                    if (mode == MR_DAC_STATE_ENABLE)
                     {
                         mr_bits_set(dac->channel, (1 << off));
                     } else
@@ -95,7 +94,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_MODE:
+        case MR_CTRL_DAC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {

@@ -34,13 +34,18 @@ extern "C" {
 #define MR_GPIO_MODE_INPUT_UP           (5)                         /* Input pull-up mode */
 
 /**
- * @brief GPIO interrupt mode.
+ * @brief GPIO mode-interrupt.
  */
 #define MR_GPIO_MODE_IRQ_RISING         (6)                         /* Interrupt rising edge */
 #define MR_GPIO_MODE_IRQ_FALLING        (7)                         /* Interrupt falling edge */
 #define MR_GPIO_MODE_IRQ_EDGE           (8)                         /* Interrupt edge */
 #define MR_GPIO_MODE_IRQ_LOW            (9)                         /* Interrupt low level */
 #define MR_GPIO_MODE_IRQ_HIGH           (10)                        /* Interrupt high level */
+
+/**
+ * @brief GPIO pin mode command.
+ */
+#define MR_CTRL_GPIO_SET_PIN_MODE       ((0x01|0x80) << 16)         /**< Set pin mode */
 
 /**
  * @brief GPIO structure.
