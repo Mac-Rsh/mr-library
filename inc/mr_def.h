@@ -192,36 +192,34 @@ struct mr_dev;
 /**
  * @brief Descriptor control command.
  */
-#define MR_CTRL_SET_OFFSET              ((0x1|0x8) << 28)           /**< Set offset */
-#define MR_CTRL_GET_OFFSET              ((0x2|0x0) << 28)           /**< Get offset */
+#define MR_CTRL_SET_OFFSET              ((0x01|0x80) << 28)         /**< Set offset */
+#define MR_CTRL_GET_OFFSET              ((0x02|0x00) << 28)         /**< Get offset */
 
 /**
  * @brief Device control general command.
  */
-#define MR_CTRL_SET_RD_CB               ((0x1|0x8) << 24)           /**< Set read callback */
-#define MR_CTRL_SET_WR_CB               ((0x2|0x8) << 24)           /**< Set write callback */
-#define MR_CTRL_SET_SLEEP               ((0x3|0x8) << 24)           /**< Set sleep */
-#define MR_CTRL_SET_WAKEUP              ((0x4|0x8) << 24)           /**< Set wakeup */
-#define MR_CTRL_GET_RD_CB               ((0x1|0x0) << 24)           /**< Get read callback */
-#define MR_CTRL_GET_WR_CB               ((0x2|0x0) << 24)           /**< Get write callback */
+#define MR_CTRL_SET_RD_CB               ((0x01|0x80) << 24)         /**< Set read callback */
+#define MR_CTRL_SET_WR_CB               ((0x02|0x80) << 24)         /**< Set write callback */
+#define MR_CTRL_SET_SLEEP               ((0x03|0x80) << 24)         /**< Set sleep */
+#define MR_CTRL_SET_WAKEUP              ((0x04|0x80) << 24)         /**< Set wakeup */
+#define MR_CTRL_GET_RD_CB               ((0x01|0x00) << 24)         /**< Get read callback */
+#define MR_CTRL_GET_WR_CB               ((0x02|0x00) << 24)         /**< Get write callback */
 
 /**
  * @brief Device control command.
  */
-#define MR_CTRL_SET_CONFIG              ((0x1|0x8) << 20)           /**< Set configuration */
-#define MR_CTRL_SET_RD_BUFSZ            ((0x2|0x8) << 20)           /**< Set read buffer size */
-#define MR_CTRL_SET_WR_BUFSZ            ((0x3|0x8) << 20)           /**< Set write buffer size */
-#define MR_CTRL_SET_MODE                ((0x4|0x8) << 20)           /**< Set mode */
-#define MR_CTRL_GET_CONFIG              ((0x1|0x0) << 20)           /**< Get configuration */
-#define MR_CTRL_GET_RD_BUFSZ            ((0x2|0x0) << 20)           /**< Get read buffer size */
-#define MR_CTRL_GET_WR_BUFSZ            ((0x3|0x0) << 20)           /**< Get write buffer size */
-#define MR_CTRL_GET_MODE                ((0x4|0x0) << 20)           /**< Get mode */
+#define MR_CTRL_SET_CONFIG              ((0x01|0x80) << 20)         /**< Set configuration */
+#define MR_CTRL_SET_RD_BUFSZ            ((0x02|0x80) << 20)         /**< Set read buffer size */
+#define MR_CTRL_SET_WR_BUFSZ            ((0x03|0x80) << 20)         /**< Set write buffer size */
+#define MR_CTRL_GET_CONFIG              ((0x01|0x00) << 20)         /**< Get configuration */
+#define MR_CTRL_GET_RD_BUFSZ            ((0x02|0x00) << 20)         /**< Get read buffer size */
+#define MR_CTRL_GET_WR_BUFSZ            ((0x03|0x00) << 20)         /**< Get write buffer size */
 
 /**
  * @brief ISR event.
  */
-#define MR_ISR_EVENT_RD_INTER           ((0x1) << 28)               /**< Read interrupt */
-#define MR_ISR_EVENT_WR_INTER           ((0x2) << 28)               /**< Write interrupt */
+#define MR_ISR_EVENT_RD_INTER           ((0x01) << 24)              /**< Read interrupt */
+#define MR_ISR_EVENT_WR_INTER           ((0x02) << 24)              /**< Write interrupt */
 
 /**
  * @brief Device operations structure.
