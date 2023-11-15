@@ -109,7 +109,7 @@ static int mr_i2c_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_i2c_config *config = (struct mr_i2c_config *)args;
+                struct mr_i2c_config config = *(struct mr_i2c_config *)args;
 
                 /* The bus is held by another device */
                 if (i2c_bus->owner != MR_NULL)
@@ -118,15 +118,15 @@ static int mr_i2c_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 }
 
                 /* The bus requires a device to be mounted to be configured in slave mode */
-                if (config->host_slave == MR_I2C_SLAVE)
+                if (config.host_slave == MR_I2C_SLAVE)
                 {
                     return MR_EINVAL;
                 }
 
-                int ret = ops->configure(i2c_bus, config, 0x00, MR_I2C_ADDR_BITS_7);
+                int ret = ops->configure(i2c_bus, &config, 0x00, MR_I2C_ADDR_BITS_7);
                 if (ret == MR_EOK)
                 {
-                    i2c_bus->config = *config;
+                    i2c_bus->config = config;
                 }
                 return MR_EOK;
             }
@@ -340,7 +340,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             if (args != MR_NULL)
             {
                 struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev->link;
-                struct mr_i2c_config *config = (struct mr_i2c_config *)args;
+                struct mr_i2c_config config = *(struct mr_i2c_config *)args;
 
                 /* Release the bus */
                 if (i2c_dev == i2c_bus->owner)
@@ -348,8 +348,8 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     i2c_bus->owner = MR_NULL;
                 }
 
-                i2c_dev->config = *config;
-                if (config->host_slave == MR_I2C_SLAVE)
+                i2c_dev->config = config;
+                if (config.host_slave == MR_I2C_SLAVE)
                 {
                     /* Retry to take the bus */
                     int ret = i2c_dev_take_bus(i2c_dev);

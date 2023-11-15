@@ -227,7 +227,7 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_spi_config *config = (struct mr_spi_config *)args;
+                struct mr_spi_config config = *(struct mr_spi_config *)args;
 
                 /* The bus is held by another device */
                 if (spi_bus->owner != MR_NULL)
@@ -236,15 +236,15 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 }
 
                 /* The bus requires a device to be mounted to be configured in slave mode */
-                if (config->host_slave == MR_SPI_SLAVE)
+                if (config.host_slave == MR_SPI_SLAVE)
                 {
                     return MR_EINVAL;
                 }
 
-                int ret = ops->configure(spi_bus, config);
+                int ret = ops->configure(spi_bus, &config);
                 if (ret == MR_EOK)
                 {
-                    spi_bus->config = *config;
+                    spi_bus->config = config;
                 }
                 return MR_EOK;
             }
@@ -267,10 +267,10 @@ static int mr_spi_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_spi_transfer *transfer = (struct mr_spi_transfer *)args;
+                struct mr_spi_transfer transfer = *(struct mr_spi_transfer *)args;
 
                 int ret =
-                    (int)spi_bus_transfer(spi_bus, transfer->rd_buf, transfer->wr_buf, transfer->size, MR_SPI_RDWR);
+                    (int)spi_bus_transfer(spi_bus, transfer.rd_buf, transfer.wr_buf, transfer.size, MR_SPI_RDWR);
 
                 return ret;
             }
@@ -388,11 +388,11 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
                     mode = MR_GPIO_MODE_INPUT_DOWN;
                 }
             }
-            mr_dev_ioctl(desc, MR_CTRL_SET_MODE, &mode);
+            mr_dev_ioctl(desc, MR_CTRL_GPIO_SET_PIN_MODE, &mode);
             mr_dev_write(desc, mr_make_local(uint8_t, !spi_dev->cs_active), sizeof(uint8_t));
         } else
         {
-            mr_dev_ioctl(desc, MR_CTRL_SET_MODE, mr_make_local(int, MR_GPIO_MODE_NONE));
+            mr_dev_ioctl(desc, MR_CTRL_GPIO_SET_PIN_MODE, mr_make_local(int, MR_GPIO_MODE_NONE));
         }
     }
 }
@@ -555,11 +555,11 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             if (args != MR_NULL)
             {
                 struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)dev->link;
-                struct mr_spi_config *config = (struct mr_spi_config *)args;
+                struct mr_spi_config config = *(struct mr_spi_config *)args;
 
 #ifdef MR_USING_GPIO
                 /* Reconfigure CS */
-                if (config->host_slave != spi_dev->config.host_slave)
+                if (config.host_slave != spi_dev->config.host_slave)
                 {
                     spi_dev_cs_configure(spi_dev, MR_ENABLE);
                 }
@@ -570,8 +570,8 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     spi_bus->owner = MR_NULL;
                 }
 
-                spi_dev->config = *config;
-                if (config->host_slave == MR_SPI_SLAVE)
+                spi_dev->config = config;
+                if (config.host_slave == MR_SPI_SLAVE)
                 {
                     /* Retry to take the bus */
                     int ret = spi_dev_take_bus(spi_dev);
@@ -626,7 +626,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_spi_transfer *transfer = (struct mr_spi_transfer *)args;
+                struct mr_spi_transfer transfer = *(struct mr_spi_transfer *)args;
 
                 int ret = spi_dev_take_bus(spi_dev);
                 if (ret != MR_EOK)
@@ -638,17 +638,17 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 {
                     spi_dev_cs_set(spi_dev, MR_ENABLE);
                     ret = (int)spi_bus_transfer(dev->link,
-                                                transfer->rd_buf,
-                                                transfer->wr_buf,
-                                                transfer->size,
+                                                transfer.rd_buf,
+                                                transfer.wr_buf,
+                                                transfer.size,
                                                 MR_SPI_RDWR);
                     spi_dev_cs_set(spi_dev, MR_DISABLE);
                 } else
                 {
                     ret = (int)spi_bus_transfer(dev->link,
-                                                transfer->rd_buf,
-                                                transfer->wr_buf,
-                                                transfer->size,
+                                                transfer.rd_buf,
+                                                transfer.wr_buf,
+                                                transfer.size,
                                                 MR_SPI_RDWR);
                 }
 

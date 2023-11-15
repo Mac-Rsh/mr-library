@@ -79,9 +79,9 @@ struct mr_spi_config
 };
 
 /**
- * @brief SPI control command.
+ * @brief SPI transfer command.
  */
-#define MR_CTRL_SPI_TRANSFER            ((0x1|0x80) << 16)          /**< Transfer */
+#define MR_CTRL_SPI_TRANSFER            ((0x01|0x80) << 16)         /**< Transfer */
 
 /**
  * @brief SPI transfer structure.

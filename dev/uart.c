@@ -92,12 +92,12 @@ static int mr_uart_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_uart_config *config = (struct mr_uart_config *)args;
+                struct mr_uart_config config = *(struct mr_uart_config *)args;
 
-                int ret = ops->configure(uart, config);
+                int ret = ops->configure(uart, &config);
                 if (ret == MR_EOK)
                 {
-                    uart->config = *config;
+                    uart->config = config;
                 }
                 return ret;
             }
