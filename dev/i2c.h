@@ -91,8 +91,8 @@ struct mr_i2c_dev
     struct mr_i2c_config config;                                    /**< Configuration */
     struct mr_ringbuf rd_fifo;                                      /**< Read FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
-    uint32_t addr: 10;                                              /**< Address */
-    uint32_t addr_bits: 22;                                         /**< Address bits */
+    uint32_t addr: 16;                                              /**< Address */
+    uint32_t addr_bits: 16;                                         /**< Address bits */
 };
 
 /**

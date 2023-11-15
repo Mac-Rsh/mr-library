@@ -17,25 +17,23 @@ MR_INLINE void i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int rdwr)
 {
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
-    int addr = 0;
+    int addr = 0, addr_bits = MR_I2C_ADDR_BITS_7;
 
+    /* Get the address, otherwise use the 0x00 */
     if (i2c_dev != MR_NULL)
     {
-        if (i2c_dev->addr_bits == MR_I2C_ADDR_BITS_7)
-        {
-            addr = i2c_dev->addr;
-        } else
-        {
-            addr = ((0xf0 | ((i2c_dev->addr >> 7) & 0x06)) << 8) | (i2c_dev->addr & 0xff);
-        }
+        addr = i2c_dev->addr;
+        addr_bits = i2c_dev->addr_bits;
     }
+
+    /* Set the read command */
     if (rdwr == MR_I2C_RD)
     {
         addr |= 0x01;
     }
 
     ops->start(i2c_bus);
-    ops->send_addr(i2c_bus, addr, i2c_dev->addr_bits);
+    ops->send_addr(i2c_bus, addr, addr_bits);
 }
 
 static int mr_i2c_bus_open(struct mr_dev *dev)
@@ -43,7 +41,7 @@ static int mr_i2c_bus_open(struct mr_dev *dev)
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)dev->drv->ops;
 
-    return ops->configure(i2c_bus, &i2c_bus->config, 0x01, MR_I2C_ADDR_BITS_7);
+    return ops->configure(i2c_bus, &i2c_bus->config, 0x00, MR_I2C_ADDR_BITS_7);
 }
 
 static int mr_i2c_bus_close(struct mr_dev *dev)
@@ -107,7 +105,7 @@ static int mr_i2c_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -125,7 +123,7 @@ static int mr_i2c_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                int ret = ops->configure(i2c_bus, config, 0x01, MR_I2C_ADDR_BITS_7);
+                int ret = ops->configure(i2c_bus, config, 0x00, MR_I2C_ADDR_BITS_7);
                 if (ret == MR_EOK)
                 {
                     i2c_bus->config = *config;
@@ -135,7 +133,7 @@ static int mr_i2c_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_GET_CONFIG:
+        case MR_CTRL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -234,7 +232,7 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
         if (i2c_dev->config.baud_rate != i2c_bus->config.baud_rate
             || i2c_dev->config.host_slave != i2c_bus->config.host_slave)
         {
-            int addr = (i2c_dev->config.host_slave == MR_I2C_SLAVE) ? i2c_dev->addr : 0x01;
+            int addr = (i2c_dev->config.host_slave == MR_I2C_SLAVE) ? i2c_dev->addr : 0x00;
             int ret = ops->configure(i2c_bus, &i2c_dev->config, addr, i2c_dev->addr_bits);
             if (ret != MR_EOK)
             {
@@ -337,7 +335,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_IOCTL_SET_CONFIG:
+        case MR_CTRL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -364,7 +362,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_SET_RD_BUFSZ:
+        case MR_CTRL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -381,7 +379,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_IOCTL_GET_CONFIG:
+        case MR_CTRL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -392,7 +390,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOCTL_GET_RD_BUFSZ:
+        case MR_CTRL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -442,7 +440,7 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
 #define MR_CFG_I2C_RD_BUFSZ_INIT        (0)
 #endif /* MR_CFG_I2C_RD_BUFSZ_INIT */
     i2c_dev->rd_bufsz = MR_CFG_I2C_RD_BUFSZ_INIT;
-    i2c_dev->addr = addr;
+    i2c_dev->addr = (addr_bits == MR_I2C_ADDR_BITS_7) ? addr : ((0xf0 | ((addr >> 7) & 0x06)) << 8) | (addr & 0xff);
     i2c_dev->addr_bits = addr_bits;
 
     /* Register the i2c-device */
