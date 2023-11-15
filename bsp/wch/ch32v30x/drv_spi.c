@@ -12,9 +12,9 @@
 
 #if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3)
 #error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
-#endif
+#else
 
-enum drv_spi_bus_index
+static enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
     DRV_INDEX_SPI1,
@@ -460,5 +460,7 @@ int drv_spi_bus_init(void)
     return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_spi_bus_init);
+
+#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) */
 
 #endif /* MR_USING_SPI */

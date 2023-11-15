@@ -12,9 +12,9 @@
 
 #if !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2)
 #error "Please define at least one ADC macro like MR_USING_ADC1. Otherwise undefine MR_USING_ADC."
-#endif
+#else
 
-enum adc_drv_index
+static enum drv_adc_index
 {
 #ifdef MR_USING_ADC1
     DRV_INDEX_ADC1,
@@ -31,6 +31,16 @@ static const char *adc_name[] =
 #endif /* MR_USING_ADC1 */
 #ifdef MR_USING_ADC2
         "adc2",
+#endif /* MR_USING_ADC2 */
+    };
+
+static struct drv_adc_data adc_drv_data[] =
+    {
+#ifdef MR_USING_ADC1
+        {ADC1, RCC_APB2Periph_ADC1},
+#endif /* MR_USING_ADC1 */
+#ifdef MR_USING_ADC2
+        {ADC2, RCC_APB2Periph_ADC2},
 #endif /* MR_USING_ADC2 */
     };
 
@@ -56,16 +66,6 @@ static struct drv_adc_channel_data adc_channel_drv_data[] =
         {ADC_Channel_17, 0, MR_NULL,                  0},
     };
 
-static struct drv_adc_data adc_drv_data[] =
-    {
-#ifdef MR_USING_ADC1
-        {ADC1, RCC_APB2Periph_ADC1},
-#endif /* MR_USING_ADC1 */
-#ifdef MR_USING_ADC2
-        {ADC2, RCC_APB2Periph_ADC2},
-#endif /* MR_USING_ADC2 */
-    };
-
 static struct mr_adc adc_dev[mr_array_num(adc_drv_data)];
 
 static struct drv_adc_channel_data *drv_adc_get_channel_data(int channel)
@@ -83,7 +83,7 @@ static int drv_adc_configure(struct mr_adc *adc, int state)
     ADC_InitTypeDef ADC_InitStructure = {0};
 
     /* Configure clock */
-    RCC_APB2PeriphClockCmd(adc_data->clock, (FunctionalState)state);
+    RCC_APB2PeriphClockCmd(adc_data->clock, state);
     RCC_ADCCLKConfig(RCC_PCLK2_Div8);
 
     /* Configure ADC */
@@ -94,7 +94,7 @@ static int drv_adc_configure(struct mr_adc *adc, int state)
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_NbrOfChannel = 1;
     ADC_Init(adc_data->instance, &ADC_InitStructure);
-    ADC_Cmd(adc_data->instance, (FunctionalState)state);
+    ADC_Cmd(adc_data->instance, state);
     return MR_EOK;
 }
 
@@ -123,15 +123,7 @@ static int drv_adc_channel_configure(struct mr_adc *adc, int channel, int state)
     /* Configure temp-sensor */
     if ((adc_channel_data->channel == ADC_Channel_16) || (adc_channel_data->channel == ADC_Channel_17))
     {
-        static uint8_t mask = 0;
-        mask = (state == MR_ENABLE) ? (mask + 1) : (mask - 1);
-        if (mask > 0)
-        {
-            ADC_TempSensorVrefintCmd(MR_ENABLE);
-        } else
-        {
-            ADC_TempSensorVrefintCmd(MR_DISABLE);
-        }
+        ADC_TempSensorVrefintCmd(ENABLE);
     }
     return MR_EOK;
 }
@@ -199,5 +191,7 @@ int drv_adc_init(void)
     return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_adc_init);
+
+#endif /* !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2) */
 
 #endif /* MR_USING_ADC */

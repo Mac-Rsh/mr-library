@@ -12,9 +12,9 @@
 
 #if !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8)
 #error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_UART."
-#endif
+#else
 
-enum drv_uart_index
+static enum drv_uart_index
 {
 #ifdef MR_USING_UART1
     DRV_INDEX_UART1,
@@ -804,5 +804,7 @@ int drv_uart_init(void)
     return MR_EOK;
 }
 MR_INIT_CONSOLE_EXPORT(drv_uart_init);
+
+#endif /* !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8) */
 
 #endif /* MR_USING_UART */

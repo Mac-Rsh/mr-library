@@ -10,9 +10,9 @@
 
 #ifdef MR_USING_GPIO
 
-#if !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD) && !defined(MR_USING_GPIOE) && !defined(MR_USING_GPIOF)
+#if !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD) && !defined(MR_USING_GPIOE)
 #error "Please define at least one GPIO macro like MR_USING_GPIOA. Otherwise undefine MR_USING_GPIO."
-#endif
+#else
 
 static IRQn_Type gpio_irq_map[] =
     {
@@ -548,5 +548,7 @@ int drv_gpio_init(void)
     return mr_gpio_register(&gpio_dev, "gpio", &gpio_drv);
 }
 MR_INIT_DRV_EXPORT(drv_gpio_init);
+
+#endif /* !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD) && !defined(MR_USING_GPIOE) */
 
 #endif /* MR_USING_GPIO */

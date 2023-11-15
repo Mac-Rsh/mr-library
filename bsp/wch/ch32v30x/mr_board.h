@@ -16,6 +16,8 @@ extern "C" {
 #define MR_USING_ADC1
 #define MR_USING_ADC2
 
+#define MR_USING_DAC1
+
 #define MR_USING_GPIOA
 #define MR_USING_GPIOB
 #define MR_USING_GPIOC

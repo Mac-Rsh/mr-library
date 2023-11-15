@@ -12,9 +12,9 @@
 
 #if !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2)
 #error "Please define at least one I2C macro like MR_USING_I2C1. Otherwise undefine MR_USING_I2C."
-#endif
+#else
 
-enum drv_i2c_index
+static enum drv_i2c_index
 {
 #ifdef MR_USING_I2C1
     DRV_INDEX_I2C1,
@@ -343,5 +343,7 @@ int drv_i2c_bus_init(void)
     return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_i2c_bus_init);
+
+#endif /* !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2) */
 
 #endif /* MR_USING_I2C */
