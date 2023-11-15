@@ -101,7 +101,7 @@ extern "C" {
  *
  * @return A pointer to the variable.
  */
-#define mr_make_local(type, value)      (&((type){(value)}))
+#define mr_make_local(type, ...)        (&((type){__VA_ARGS__}))
 
 /**
  * @brief This macro function checks if a list is empty.
