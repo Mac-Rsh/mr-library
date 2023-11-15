@@ -23,6 +23,7 @@ extern "C" {
 #define MR_USING_I2C
 #define MR_USING_SPI
 #define MR_USING_UART
+#define MR_USING_PWM
 
 #define MR_CFG_CONSOLE_NAME             "uart1"
 #define MR_CFG_UART_RD_BUFSZ_INIT       32

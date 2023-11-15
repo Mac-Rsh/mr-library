@@ -43,15 +43,6 @@ extern "C" {
 #define MR_GPIO_MODE_IRQ_HIGH           (10)                        /* Interrupt high level */
 
 /**
- * @brief GPIO configuration.
- */
-struct mr_gpio_config
-{
-    uint32_t mode: 4;                                               /**< GPIO mode */
-    uint32_t reserved: 28;
-};
-
-/**
  * @brief GPIO structure.
  */
 struct mr_gpio

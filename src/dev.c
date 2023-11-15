@@ -166,7 +166,6 @@ MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
 {
     if (dev_find_or_register(name, dev, MR_REGISTER) != MR_NULL)
     {
-        mr_log("%s register", name);
         return MR_EOK;
     }
     return MR_EINVAL;

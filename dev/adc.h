@@ -20,17 +20,8 @@ extern "C" {
 /**
  * @brief ADC enable/disable.
  */
-#define MR_ADC_DISABLE                  MR_DISABLE                  /**< ADC disabled */
-#define MR_ADC_ENABLE                   MR_ENABLE                   /**< ADC enabled */
-
-/**
- * @brief ADC configuration structure.
- */
-struct mr_adc_config
-{
-    uint32_t enable: 1;                                             /**< ADC enable */
-    uint32_t reserved: 31;
-};
+#define MR_ADC_MODE_DISABLE             MR_DISABLE                  /**< ADC disabled */
+#define MR_ADC_MODE_ENABLE              MR_ENABLE                   /**< ADC enabled */
 
 /**
  * @brief ADC structure.

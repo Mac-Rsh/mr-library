@@ -369,31 +369,30 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 
     if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
-        struct mr_gpio_config config = {0};
-
         mr_dev_ioctl(desc, MR_CTRL_SET_OFFSET, mr_make_local(int, spi_dev->cs_pin));
 
         if (state == MR_ENABLE)
         {
+            int mode = MR_GPIO_MODE_NONE;
+
             if (spi_dev->config.host_slave == MR_SPI_HOST)
             {
-                config.mode = MR_GPIO_MODE_OUTPUT;
+                mode = MR_GPIO_MODE_OUTPUT;
             } else
             {
                 if (spi_dev->cs_active == MR_SPI_CS_ACTIVE_LOW)
                 {
-                    config.mode = MR_GPIO_MODE_INPUT_UP;
+                    mode = MR_GPIO_MODE_INPUT_UP;
                 } else
                 {
-                    config.mode = MR_GPIO_MODE_INPUT_DOWN;
+                    mode = MR_GPIO_MODE_INPUT_DOWN;
                 }
             }
-            mr_dev_ioctl(desc, MR_CTRL_SET_CONFIG, &config);
-            mr_dev_write(desc, mr_make_local(uint8_t, spi_dev->cs_active), sizeof(uint8_t));
+            mr_dev_ioctl(desc, MR_CTRL_SET_MODE, &mode);
+            mr_dev_write(desc, mr_make_local(uint8_t, !spi_dev->cs_active), sizeof(uint8_t));
         } else
         {
-            config.mode = MR_GPIO_MODE_NONE;
-            mr_dev_ioctl(desc, MR_CTRL_SET_CONFIG, &config);
+            mr_dev_ioctl(desc, MR_CTRL_SET_MODE, mr_make_local(int, MR_GPIO_MODE_NONE));
         }
     }
 }

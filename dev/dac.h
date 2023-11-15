@@ -20,17 +20,8 @@ extern "C" {
 /**
  * @brief DAC enable/disable.
  */
-#define MR_DAC_DISABLE                  MR_DISABLE                  /**< DAC disabled */
-#define MR_DAC_ENABLE                   MR_ENABLE                   /**< DAC enabled */
-
-/**
- * @brief DAC configuration structure.
- */
-struct mr_dac_config
-{
-    uint32_t enable: 1;                                             /**< DAC enable */
-    uint32_t reserved: 31;
-};
+#define MR_DAC_MODE_DISABLE             MR_DISABLE                  /**< DAC disabled */
+#define MR_DAC_MODE_ENABLE              MR_ENABLE                   /**< DAC enabled */
 
 /**
  * @brief DAC structure.

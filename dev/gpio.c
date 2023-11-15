@@ -59,11 +59,11 @@ static int mr_gpio_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_CTRL_SET_MODE:
         {
             if (args != MR_NULL)
             {
-                struct mr_gpio_config *config = (struct mr_gpio_config *)args;
+                int mode = *((int *)args);
 
                 /* Check offset is valid */
                 if (off < 0)
@@ -71,14 +71,14 @@ static int mr_gpio_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                return ops->configure(gpio, off, config->mode);
+                return ops->configure(gpio, off, mode);
             }
             return MR_EINVAL;
         }
 
         default:
         {
-            return MR_EINVAL;
+            return MR_ENOTSUP;
         }
     }
 }

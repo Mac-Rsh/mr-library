@@ -93,7 +93,7 @@ typedef int (*mr_init_fn_t)(void);
 /**
  * @brief Exports a app auto initialization function.
  */
-#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
+#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "5")
 
 /**
  * @brief Error code.
@@ -211,9 +211,11 @@ struct mr_dev;
 #define MR_CTRL_SET_CONFIG              ((0x1|0x8) << 20)           /**< Set configuration */
 #define MR_CTRL_SET_RD_BUFSZ            ((0x2|0x8) << 20)           /**< Set read buffer size */
 #define MR_CTRL_SET_WR_BUFSZ            ((0x3|0x8) << 20)           /**< Set write buffer size */
+#define MR_CTRL_SET_MODE                ((0x4|0x8) << 20)           /**< Set mode */
 #define MR_CTRL_GET_CONFIG              ((0x1|0x0) << 20)           /**< Get configuration */
 #define MR_CTRL_GET_RD_BUFSZ            ((0x2|0x0) << 20)           /**< Get read buffer size */
 #define MR_CTRL_GET_WR_BUFSZ            ((0x3|0x0) << 20)           /**< Get write buffer size */
+#define MR_CTRL_GET_MODE                ((0x4|0x0) << 20)           /**< Get mode */
 
 /**
  * @brief ISR event.

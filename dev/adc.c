@@ -66,11 +66,11 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_CTRL_SET_MODE:
         {
             if (args != MR_NULL)
             {
-                struct mr_adc_config *config = (struct mr_adc_config *)args;
+                int mode = *((int *)args);
 
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
@@ -79,12 +79,12 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 }
 
                 /* Check if the channel is enabled */
-                if (config->enable != mr_bits_is_set(adc->channel, (1 << off)))
+                if (mode != mr_bits_is_set(adc->channel, (1 << off)))
                 {
-                    int ret = ops->channel_configure(adc, off, config->enable);
+                    int ret = ops->channel_configure(adc, off, mode);
                     if (ret == MR_EOK)
                     {
-                        if (config->enable == MR_ADC_ENABLE)
+                        if (mode == MR_ADC_MODE_ENABLE)
                         {
                             mr_bits_set(adc->channel, (1 << off));
                         } else
@@ -99,18 +99,19 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_CTRL_GET_MODE:
         {
             if (args != MR_NULL)
             {
+                int *mode = (int *)args;
+
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
                 {
                     return MR_EINVAL;
                 }
 
-                struct mr_adc_config *config = (struct mr_adc_config *)args;
-                config->enable = mr_bits_is_set(adc->channel, (1 << off));
+                *mode = mr_bits_is_set(adc->channel, (1 << off));
                 return MR_EOK;
             }
             return MR_EINVAL;
@@ -118,7 +119,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
         default:
         {
-            return MR_EINVAL;
+            return MR_ENOTSUP;
         }
     }
 }
