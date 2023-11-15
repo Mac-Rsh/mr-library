@@ -83,10 +83,20 @@ MR_WEAK void mr_delay_us(uint32_t us)
 {
     volatile uint32_t i = 0;
 
-    for (i = 0; i < us; i++)
+#ifndef MR_CFG_SYSCLK_FREQ
+#define MR_CFG_SYSCLK_FREQ              (72000000)
+#endif /* MR_CFG_SYSCLK_FREQ */
+#if (MR_CFG_SYSCLK_FREQ > 1000000)
+#define MR_DELAY_COUNT                  (MR_CFG_SYSCLK_FREQ / 1000000)
+#else
+#define MR_DELAY_COUNT                  (1)
+#endif /* (MR_CFG_SYSCLK_FREQ > 1000000) */
+    for (i = 0; i < us * MR_DELAY_COUNT; i++)
     {
         __asm__("nop");
     }
+#undef MR_DELAY_COUNT
+#undef MR_CFG_SYSCLK_FREQ
 }
 
 /**
@@ -114,6 +124,7 @@ MR_WEAK void mr_delay_ms(uint32_t ms)
  */
 MR_WEAK int mr_printf_output(const char *buf, size_t size)
 {
+#ifdef MR_CFG_CONSOLE_NAME
     static int console = -1;
 
     if (console < 0)
@@ -125,6 +136,9 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
         }
     }
     return (int)mr_dev_write(console, buf, size);
+#else
+    return 0;
+#endif /* MR_CFG_CONSOLE_NAME */
 }
 
 /**
