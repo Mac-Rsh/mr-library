@@ -164,10 +164,18 @@ MR_INLINE void dev_lock_release(struct mr_dev *dev, int release)
 
 MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
 {
+    /* Enable interrupt */
+    mr_interrupt_enable();
+
     if (dev_find_or_register(name, dev, MR_REGISTER) != MR_NULL)
     {
+        /* Disable interrupt */
+        mr_interrupt_disable();
         return MR_EOK;
     }
+
+    /* Disable interrupt */
+    mr_interrupt_disable();
     return MR_EINVAL;
 }
 
@@ -238,11 +246,19 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
 #ifdef MR_USING_RDWR_CTRL
     do
     {
+        /* Enable interrupt */
+        mr_interrupt_enable();
+
         int ret = dev_lock_take(dev, MR_LFLAG_RD | MR_LFLAG_SLEEP, MR_LFLAG_RD);
         if (ret != MR_EOK)
         {
+            /* Disable interrupt */
+            mr_interrupt_disable();
             return ret;
         }
+
+        /* Disable interrupt */
+        mr_interrupt_disable();
     } while (0);
 #endif /* MR_USING_RDWR_CTRL */
 
@@ -260,13 +276,21 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
 #ifdef MR_USING_RDWR_CTRL
     do
     {
+        /* Enable interrupt */
+        mr_interrupt_enable();
+
         int ret = dev_lock_take(dev,
                                 MR_LFLAG_WR | MR_LFLAG_SLEEP | (sync_or_async == MR_SYNC ? MR_LFLAG_NONBLOCK : 0),
                                 MR_LFLAG_WR);
         if (ret != MR_EOK)
         {
+            /* Disable interrupt */
+            mr_interrupt_disable();
             return ret;
         }
+
+        /* Disable interrupt */
+        mr_interrupt_disable();
     } while (0);
 #endif /* MR_USING_RDWR_CTRL */
 
@@ -277,7 +301,13 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
     dev_lock_release(dev, MR_LFLAG_WR);
     if ((sync_or_async == MR_ASYNC) && (ret != 0))
     {
+        /* Enable interrupt */
+        mr_interrupt_enable();
+
         dev_lock_take(dev, 0, MR_LFLAG_NONBLOCK);
+
+        /* Disable interrupt */
+        mr_interrupt_disable();
     }
 #endif /* MR_USING_RDWR_CTRL */
     return ret;
@@ -329,12 +359,20 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 #ifdef MR_USING_RDWR_CTRL
             do
             {
+                /* Enable interrupt */
+                mr_interrupt_enable();
+
                 int ret =
                     dev_lock_take(dev, MR_LFLAG_RDWR | MR_LFLAG_SLEEP | MR_LFLAG_NONBLOCK, MR_LFLAG_RDWR);
                 if (ret != MR_EOK)
                 {
+                    /* Disable interrupt */
+                    mr_interrupt_disable();
                     return ret;
                 }
+
+                /* Disable interrupt */
+                mr_interrupt_disable();
             } while (0);
 #endif /* MR_USING_RDWR_CTRL */
 
@@ -440,7 +478,7 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
                 if (ret == 0)
                 {
 #ifdef MR_USING_RDWR_CTRL
-                    dev_lock_take(dev, 0, MR_LFLAG_NONBLOCK);
+                    dev_lock_release(dev, MR_LFLAG_NONBLOCK);
 #endif /* MR_USING_RDWR_CTRL */
                     if (dev->wr_cb.cb != MR_NULL)
                     {
