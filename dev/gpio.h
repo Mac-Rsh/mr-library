@@ -48,6 +48,11 @@ extern "C" {
 #define MR_CTRL_GPIO_SET_PIN_MODE       ((0x01|0x80) << 16)         /**< Set pin mode */
 
 /**
+ * @brief GPIO data type.
+ */
+typedef uint8_t mr_gpio_data_t;                                     /**< GPIO read/write data type */
+
+/**
  * @brief GPIO structure.
  */
 struct mr_gpio

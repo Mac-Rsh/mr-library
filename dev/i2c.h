@@ -52,6 +52,11 @@ struct mr_i2c_config
 };
 
 /**
+ * @brief I2C data type.
+ */
+typedef uint8_t mr_i2c_data_t;                                      /**< I2C read/write data type */
+
+/**
  * @brief I2C bus structure.
  */
 struct mr_i2c_bus

@@ -94,6 +94,11 @@ struct mr_spi_transfer
 };
 
 /**
+ * @brief SPI data type.
+ */
+typedef uint8_t mr_spi_data_t;                                      /**< SPI read/write data type */
+
+/**
  * @brief SPI bus structure.
  */
 struct mr_spi_bus

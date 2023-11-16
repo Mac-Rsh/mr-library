@@ -30,6 +30,11 @@ extern "C" {
 #define MR_CTRL_ADC_GET_CHANNEL_STATE   ((0x01|0x00) << 16)         /**< Get channel state */
 
 /**
+ * @brief ADC data type.
+ */
+typedef uint32_t mr_adc_data_t;                                     /**< ADC read data type */
+
+/**
  * @brief ADC structure.
  */
 struct mr_adc
