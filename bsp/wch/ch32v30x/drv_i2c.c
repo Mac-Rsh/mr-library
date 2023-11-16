@@ -14,7 +14,7 @@
 #error "Please define at least one I2C macro like MR_USING_I2C1. Otherwise undefine MR_USING_I2C."
 #else
 
-static enum drv_i2c_index
+enum drv_i2c_index
 {
 #ifdef MR_USING_I2C1
     DRV_INDEX_I2C1,

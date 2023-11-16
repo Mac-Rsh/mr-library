@@ -14,7 +14,7 @@
 #error "Please define at least one ADC macro like MR_USING_ADC1. Otherwise undefine MR_USING_ADC."
 #else
 
-static enum drv_adc_index
+enum drv_adc_index
 {
 #ifdef MR_USING_ADC1
     DRV_INDEX_ADC1,

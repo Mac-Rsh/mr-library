@@ -14,7 +14,7 @@
 #error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
 #else
 
-static enum drv_spi_bus_index
+enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
     DRV_INDEX_SPI1,

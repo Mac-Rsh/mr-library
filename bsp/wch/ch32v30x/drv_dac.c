@@ -17,9 +17,7 @@
 static struct drv_dac_data dac_drv_data[] =
     {
 #ifdef MR_USING_DAC1
-        {
-            RCC_APB1Periph_DAC,
-        }
+        {RCC_APB1Periph_DAC}
 #endif /* MR_USING_DAC1 */
     };
 

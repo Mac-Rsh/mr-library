@@ -13,6 +13,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include "ch32v30x.h"
+
 #define MR_USING_ADC1
 #define MR_USING_ADC2
 

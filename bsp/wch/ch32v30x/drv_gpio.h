@@ -20,6 +20,10 @@ extern "C" {
 struct drv_gpio_data
 {
     GPIO_TypeDef *port;
+};
+
+struct drv_gpio_pin_data
+{
     uint32_t pin;
 };
 
