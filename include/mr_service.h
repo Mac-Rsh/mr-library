@@ -104,6 +104,26 @@ extern "C" {
 #define mr_make_local(type, ...)        (&((type){__VA_ARGS__}))
 
 /**
+ * @brief This macro function gets the maximum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The maximum of the two values.
+ */
+#define mr_max(a, b)                    ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+
+/**
+ * @brief This macro function gets the minimum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The minimum of the two values.
+ */
+#define mr_min(a, b)                    ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+
+/**
  * @brief This macro function checks if a list is empty.
  *
  * @param list The list to check.

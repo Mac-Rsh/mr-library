@@ -96,6 +96,17 @@ size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t s
 size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, size_t size);
 /** @} */
 
+/**
+ * @addtogroup AVL tree.
+ * @{
+ */
+void mr_avl_init(struct mr_avl *node, uint32_t value);
+void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node);
+void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node);
+struct mr_avl *mr_avl_find(struct mr_avl *tree, uint32_t value);
+size_t mr_avl_get_length(struct mr_avl *tree);
+/** @} */
+
 #ifdef __cplusplus
 }
 #endif

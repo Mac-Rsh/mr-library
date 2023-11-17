@@ -119,6 +119,12 @@ typedef int (*mr_init_fn_t)(void);
 #define MR_ENABLE                       (1)                         /**< Enable */
 
 /**
+ * @brief True/false.
+ */
+#define MR_FALSE                        (0)                         /**< False */
+#define MR_TRUE                         (1)                         /**< True */
+
+/**
  * @brief Double linked list structure.
  */
 struct mr_list
@@ -139,6 +145,17 @@ struct mr_ringbuf
     uint16_t reserved: 14;                                          /**< Reserved */
     uint16_t read_index;                                            /**< Read index */
     uint16_t write_index;                                           /**< Write index */
+};
+
+/**
+ * @brief AVL tree structure.
+ */
+struct mr_avl
+{
+    int32_t height;                                                 /**< Balance factor */
+    uint32_t value;                                                 /**< Key-hold */
+    struct mr_avl *left_child;                                      /**< Point to left-child node */
+    struct mr_avl *right_child;                                     /**< Point to right-child node */
 };
 
 /**
