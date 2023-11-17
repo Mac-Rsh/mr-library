@@ -127,7 +127,7 @@ struct mr_spi_bus_ops
 #define MR_SPI_CS_ACTIVE_NONE           (2)                         /**< No active */
 
 /**
- * @struct SPI device structure.
+ * @brief SPI device structure.
  */
 struct mr_spi_dev
 {

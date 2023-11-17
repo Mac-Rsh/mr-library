@@ -192,8 +192,8 @@ struct mr_dev;
 /**
  * @brief Descriptor control command.
  */
-#define MR_CTRL_SET_OFFSET              ((0x01|0x80) << 28)         /**< Set offset */
-#define MR_CTRL_GET_OFFSET              ((0x02|0x00) << 28)         /**< Get offset */
+#define MR_CTRL_SET_OFFSET              ((0x01|0x80) << 24)         /**< Set offset */
+#define MR_CTRL_GET_OFFSET              ((0x02|0x00) << 24)         /**< Get offset */
 
 /**
  * @brief Device control general command.

@@ -6,7 +6,7 @@
  * @date 2023-11-09    MacRsh       First version
  */
 
-#include "i2c.h"
+#include "include/device/i2c.h"
 
 #ifdef MR_USING_I2C
 

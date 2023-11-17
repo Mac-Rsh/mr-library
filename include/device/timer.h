@@ -89,6 +89,7 @@ struct mr_timer_ops
     int (*channel_configure)(struct mr_timer *timer, int channel, int mode);
     void (*start)(struct mr_timer *timer, uint32_t prescaler, uint32_t period);
     void (*stop)(struct mr_timer *timer);
+    void (*write_duty)(struct mr_timer *timer);
 };
 
 /**

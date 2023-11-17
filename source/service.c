@@ -151,7 +151,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
  */
 int mr_printf(const char *fmt, ...)
 {
-    char buf[256] = {0};
+    char buf[128] = {0};
     va_list args = MR_NULL;
 
     va_start(args, fmt);

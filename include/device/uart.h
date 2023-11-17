@@ -67,7 +67,7 @@ extern "C" {
 }
 
 /**
- * @struct UART configuration structure.
+ * @brief UART configuration structure.
  */
 struct mr_uart_config
 {
@@ -81,7 +81,7 @@ struct mr_uart_config
 };
 
 /**
- * @struct UART structure.
+ * @brief UART structure.
  */
 struct mr_uart
 {
@@ -95,7 +95,7 @@ struct mr_uart
 };
 
 /**
- * @struct UART operations structure.
+ * @brief UART operations structure.
  */
 struct mr_uart_ops
 {

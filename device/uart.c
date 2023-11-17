@@ -6,7 +6,7 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include "uart.h"
+#include "include/device/uart.h"
 
 #ifdef MR_USING_UART
 

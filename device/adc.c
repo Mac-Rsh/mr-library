@@ -6,7 +6,7 @@
  * @date 2023-11-06    MacRsh       First version
  */
 
-#include "adc.h"
+#include "include/device/adc.h"
 
 #ifdef MR_USING_ADC
 

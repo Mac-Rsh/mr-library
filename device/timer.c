@@ -6,7 +6,7 @@
  * @date 2023-11-15    MacRsh       First version
  */
 
-#include "timer.h"
+#include "include/device/timer.h"
 
 #ifdef MR_USING_TIMER
 
@@ -53,6 +53,9 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
         timer->reload = (uint32_t)(((float)timeout / 1000000.0f) * (float)timer->config.freq + 0.5f);
 
         ops->start(timer, timer->prescaler, timer->reload);
+    } else
+    {
+
     }
 
     return wr_size;

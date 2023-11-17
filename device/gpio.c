@@ -6,7 +6,7 @@
  * @date 2023-11-08    MacRsh       First version
  */
 
-#include "gpio.h"
+#include "include/device/gpio.h"
 
 #ifdef MR_USING_GPIO
 

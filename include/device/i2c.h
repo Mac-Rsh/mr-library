@@ -41,7 +41,7 @@ extern "C" {
 }
 
 /**
- * @struct I2C configuration structure.
+ * @brief I2C configuration structure.
  */
 struct mr_i2c_config
 {
@@ -68,7 +68,7 @@ struct mr_i2c_bus
 };
 
 /**
- * @struct I2C bus operations structure.
+ * @brief I2C bus operations structure.
  */
 struct mr_i2c_bus_ops
 {
@@ -87,7 +87,7 @@ struct mr_i2c_bus_ops
 #define MR_I2C_ADDR_BITS_10             (10)                        /**< 10 bit address */
 
 /**
- * @struct I2C device structure.
+ * @brief I2C device structure.
  */
 struct mr_i2c_dev
 {

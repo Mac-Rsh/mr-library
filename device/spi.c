@@ -6,12 +6,12 @@
  * @date 2023-11-01    MacRsh       First version
  */
 
-#include "spi.h"
+#include "include/device/spi.h"
 
 #ifdef MR_USING_SPI
 
 #ifdef MR_USING_GPIO
-#include "gpio.h"
+#include "include/device/gpio.h"
 #else
 #warning "Please define MR_USING_GPIO. Otherwise SPI-CS will not work."
 #endif /* MR_USING_GPIO */

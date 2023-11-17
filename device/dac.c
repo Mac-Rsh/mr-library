@@ -6,7 +6,7 @@
  * @date 2023-11-08    MacRsh       First version
  */
 
-#include "dac.h"
+#include "include/device/dac.h"
 
 #ifdef MR_USING_DAC
 
