@@ -70,7 +70,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                int mode = *((int *)args);
+                int state = *((int *)args);
 
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
@@ -79,12 +79,12 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 }
 
                 /* Check if the channel is enabled */
-                if (mode != mr_bits_is_set(adc->channel, (1 << off)))
+                if (state != mr_bits_is_set(adc->channel, (1 << off)))
                 {
-                    int ret = ops->channel_configure(adc, off, mode);
+                    int ret = ops->channel_configure(adc, off, state);
                     if (ret == MR_EOK)
                     {
-                        if (mode == MR_ADC_STATE_ENABLE)
+                        if (state == MR_ADC_STATE_ENABLE)
                         {
                             mr_bits_set(adc->channel, (1 << off));
                         } else
@@ -103,7 +103,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                int *mode = (int *)args;
+                int *state = (int *)args;
 
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
@@ -111,7 +111,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                *mode = mr_bits_is_set(adc->channel, (1 << off));
+                *state = mr_bits_is_set(adc->channel, (1 << off));
                 return MR_EOK;
             }
             return MR_EINVAL;

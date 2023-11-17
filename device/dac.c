@@ -70,7 +70,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                int mode = *((int *)args);
+                int state = *((int *)args);
 
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
@@ -78,10 +78,10 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                int ret = ops->channel_configure(dac, off, mode);
+                int ret = ops->channel_configure(dac, off, state);
                 if (ret == MR_EOK)
                 {
-                    if (mode == MR_DAC_STATE_ENABLE)
+                    if (state == MR_DAC_STATE_ENABLE)
                     {
                         mr_bits_set(dac->channel, (1 << off));
                     } else
@@ -98,7 +98,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                int *mode = (int *)args;
+                int *state = (int *)args;
 
                 /* Check offset is valid */
                 if (off < 0 || off >= 32)
@@ -106,7 +106,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                *mode = mr_bits_is_set(dac->channel, (1 << off));
+                *state = mr_bits_is_set(dac->channel, (1 << off));
                 return MR_EOK;
             }
             return MR_EINVAL;
