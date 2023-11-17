@@ -318,14 +318,14 @@ static struct mr_drv i2c_bus_drv[mr_array_num(i2c_bus_drv_data)] =
     {
 #ifdef MR_USING_I2C1
         {
-            Mr_Dev_Type_I2c,
+            Mr_Drv_Type_I2c,
             &i2c_bus_drv_ops,
             &i2c_bus_drv_data[DRV_INDEX_I2C1]
         },
 #endif /* MR_USING_I2C1 */
 #ifdef MR_USING_I2C2
         {
-            Mr_Dev_Type_I2c,
+            Mr_Drv_Type_I2c,
             &i2c_bus_drv_ops,
             &i2c_bus_drv_data[DRV_INDEX_I2C2]
         },

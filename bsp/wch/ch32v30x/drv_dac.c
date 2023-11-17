@@ -133,7 +133,7 @@ static struct mr_dac_ops dac_drv_ops =
 
 static struct mr_drv dac_drv =
     {
-        Mr_Dev_Type_Dac,
+        Mr_Drv_Type_Dac,
         &dac_drv_ops,
         &dac_drv_data,
     };

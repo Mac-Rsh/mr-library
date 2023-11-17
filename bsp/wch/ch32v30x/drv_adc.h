@@ -9,7 +9,7 @@
 #ifndef _DRV_ADC_H_
 #define _DRV_ADC_H_
 
-#include "adc.h"
+#include "include/device/adc.h"
 
 #ifdef __cplusplus
 extern "C" {
