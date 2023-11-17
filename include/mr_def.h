@@ -153,7 +153,6 @@ enum mr_drv_type
     Mr_Drv_Type_Adc,                                                /**< ADC */
     Mr_Drv_Type_Dac,                                                /**< DAC */
     Mr_Drv_Type_Timer,                                              /**< Timer */
-    Mr_Drv_Type_Pwm,                                                /**< PWM */
 };
 
 /**
@@ -178,7 +177,6 @@ enum mr_dev_type
     Mr_Dev_Type_Adc = Mr_Drv_Type_Adc,                              /**< ADC */
     Mr_Dev_Type_Dac = Mr_Drv_Type_Dac,                              /**< DAC */
     Mr_Dev_Type_Timer = Mr_Drv_Type_Timer,                          /**< Timer */
-    Mr_Dev_Type_Pwm = Mr_Drv_Type_Pwm,                              /**< PWM */
 };
 
 struct mr_dev;
@@ -220,6 +218,7 @@ struct mr_dev;
  */
 #define MR_ISR_EVENT_RD_INTER           ((0x01) << 24)              /**< Read interrupt */
 #define MR_ISR_EVENT_WR_INTER           ((0x02) << 24)              /**< Write interrupt */
+#define MR_ISR_EVENT_INTER_MASK         ((0xff) << 24)              /**< Interrupt mask */
 
 /**
  * @brief Device operations structure.
