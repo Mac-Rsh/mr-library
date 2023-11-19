@@ -7,7 +7,7 @@ HX711常与应力传感器或其他模拟传感器组合,采集传感器的模�
 ## 注册HX711
 
 ```c
-int hx711_register(struct hx711 *hx711, const char *name, int sck_pin, int dout_pin);
+int mr_hx711_register(struct mr_hx711 *hx711, const char *name, int sck_pin, int dout_pin);
 ```
 
 |    参数    |    描述    |
@@ -24,7 +24,7 @@ int hx711_register(struct hx711 *hx711, const char *name, int sck_pin, int dout_
 ```c
 #define FILTER_BITS                     4
 
-mr_dev_ioctl(desc, HX711_CTRL_SET_FILTER_BITS, mr_make_local(int, FILTER_BITS));
+mr_dev_ioctl(desc, MR_CTRL_HX711_SET_FILTER_BITS, mr_make_local(int, FILTER_BITS));
 ```
 
 ## 自校准
@@ -32,7 +32,7 @@ mr_dev_ioctl(desc, HX711_CTRL_SET_FILTER_BITS, mr_make_local(int, FILTER_BITS));
 自校准零点，使用前请确保输入值稳定。
 
 ```c
-mr_dev_ioctl(desc, HX711_CTRL_SET_SELF_CALIBRATION, MR_NULL);
+mr_dev_ioctl(desc, MR_CTRL_HX711_SET_SELF_CAL, MR_NULL);
 ```
 
 ## 读取数据
@@ -51,12 +51,12 @@ mr_dev_read(desc, &data, sizeof(data));
 
 #define HX711_FILTER_BITS               4
 
-struct struct hx711 hx711;
+struct struct mr_hx711 hx711;
 
 int main(void)
 {
     /* 注册hx711 */
-    hx711_register(&hx711, "hx711", HX711_SCK_PIN, HX711_DOUT_PIN);
+    mr_hx711_register(&hx711, "hx711", HX711_SCK_PIN, HX711_DOUT_PIN);
     
     /* 打开hx711 */
     int desc = mr_dev_open("hx711", MR_OFLAG_RDONLY);
@@ -67,10 +67,10 @@ int main(void)
     }
     
     /* 设置滤波位数 */
-    mr_dev_ioctl(desc, HX711_CTRL_SET_FILTER_BITS, mr_make_local(int, HX711_FILTER_BITS));
+    mr_dev_ioctl(desc, MR_CTRL_HX711_SET_FILTER_BITS, mr_make_local(int, HX711_FILTER_BITS));
     
     /* 自校准 */
-    mr_dev_ioctl(desc, HX711_CTRL_SET_SELF_CALIBRATION, MR_NULL);
+    mr_dev_ioctl(desc, MR_CTRL_HX711_SET_SELF_CAL, MR_NULL);
     
     /* 读取数据 */
     uint32_t data = 0;

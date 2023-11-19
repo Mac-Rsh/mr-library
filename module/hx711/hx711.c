@@ -16,13 +16,13 @@
 
 #include "include/device/gpio.h"
 
-static void hx711_set_sck(struct hx711 *hx711, uint8_t value)
+static void hx711_set_sck(struct mr_hx711 *hx711, uint8_t value)
 {
     mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->sck_pin);
     mr_dev_write(hx711->desc, &value, sizeof(value));
 }
 
-static uint8_t hx711_get_dout(struct hx711 *hx711)
+static uint8_t hx711_get_dout(struct mr_hx711 *hx711)
 {
     uint8_t value = 0;
 
@@ -31,7 +31,7 @@ static uint8_t hx711_get_dout(struct hx711 *hx711)
     return value;
 }
 
-static uint32_t hx711_get_value(struct hx711 *hx711)
+static uint32_t hx711_get_value(struct mr_hx711 *hx711)
 {
     uint32_t value = 0;
     int i = 0;
@@ -71,9 +71,9 @@ static uint32_t hx711_get_value(struct hx711 *hx711)
     return value;
 }
 
-static int hx711_open(struct mr_dev *dev)
+static int mr_hx711_open(struct mr_dev *dev)
 {
-    struct hx711 *hx711 = (struct hx711 *)dev;
+    struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
 
     hx711->desc = mr_dev_open("gpio", MR_OFLAG_RDWR);
     if (hx711->desc < 0)
@@ -91,9 +91,9 @@ static int hx711_open(struct mr_dev *dev)
     return MR_EOK;
 }
 
-static int hx711_close(struct mr_dev *dev)
+static int mr_hx711_close(struct mr_dev *dev)
 {
-    struct hx711 *hx711 = (struct hx711 *)dev;
+    struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
 
     /* Reset the sck pin mode */
     mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->sck_pin);
@@ -108,9 +108,9 @@ static int hx711_close(struct mr_dev *dev)
     return MR_EOK;
 }
 
-static ssize_t hx711_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_hx711_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
 {
-    struct hx711 *hx711 = (struct hx711 *)dev;
+    struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
     uint32_t *rd_buf = (uint32_t *)buf;
     ssize_t rd_size = 0;
 
@@ -118,19 +118,19 @@ static ssize_t hx711_read(struct mr_dev *dev, int off, void *buf, size_t size, i
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
         uint32_t value = hx711_get_value(hx711);
-        *rd_buf = (value > hx711->self_calibration) ? (value - hx711->self_calibration) : 0;
+        *rd_buf = (value > hx711->self_cal) ? (value - hx711->self_cal) : 0;
         rd_buf++;
     }
     return rd_size;
 }
 
-static int hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
-    struct hx711 *hx711 = (struct hx711 *)dev;
+    struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
 
     switch (cmd)
     {
-        case HX711_CTRL_SET_FILTER_BITS:
+        case MR_CTRL_HX711_SET_FILTER_BITS:
         {
             if (args != MR_NULL)
             {
@@ -140,13 +140,13 @@ static int hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case HX711_CTRL_SET_SELF_CALIBRATION:
+        case MR_CTRL_HX711_SET_SELF_CAL:
         {
-            hx711->self_calibration = hx711_get_value(hx711);
+            hx711->self_cal = hx711_get_value(hx711);
             return MR_EOK;
         }
 
-        case HX711_CTRL_GET_FILTER_BITS:
+        case MR_CTRL_HX711_GET_FILTER_BITS:
         {
             if (args != MR_NULL)
             {
@@ -155,11 +155,11 @@ static int hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case HX711_CTRL_GET_SELF_CALIBRATION:
+        case MR_CTRL_HX711_GET_SELF_CAL:
         {
             if (args != MR_NULL)
             {
-                *(uint32_t *)args = hx711->self_calibration;
+                *(uint32_t *)args = hx711->self_cal;
                 return MR_EOK;
             }
             return MR_EINVAL;
@@ -182,15 +182,15 @@ static int hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
  *
  * @return MR_EOK on success, otherwise an error code.
  */
-int hx711_register(struct hx711 *hx711, const char *name, int sck_pin, int dout_pin)
+int mr_hx711_register(struct mr_hx711 *hx711, const char *name, int sck_pin, int dout_pin)
 {
     static struct mr_dev_ops ops =
         {
-            hx711_open,
-            hx711_close,
-            hx711_read,
+            mr_hx711_open,
+            mr_hx711_close,
+            mr_hx711_read,
             MR_NULL,
-            hx711_ioctl,
+            mr_hx711_ioctl,
             MR_NULL
         };
 
@@ -201,9 +201,10 @@ int hx711_register(struct hx711 *hx711, const char *name, int sck_pin, int dout_
 
     /* Initialize the fields */
     hx711->filter_bits = 0;
-    hx711->self_calibration = 0;
+    hx711->self_cal = 0;
     hx711->sck_pin = sck_pin;
     hx711->dout_pin = dout_pin;
+    hx711->desc = -1;
 
     /* Register the hx711 */
     return mr_dev_register(&hx711->dev, name, Mr_Dev_Type_Adc, MR_SFLAG_RDONLY | MR_SFLAG_NONDRV, &ops, MR_NULL);
