@@ -203,7 +203,7 @@ const char *mr_strerror(int err)
 void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size)
 {
     mr_assert(ringbuf != MR_NULL);
-    mr_assert((pool != MR_NULL || size == 0));
+    mr_assert((pool != MR_NULL) || (size == 0));
 
     ringbuf->read_index = 0;
     ringbuf->write_index = 0;
@@ -351,6 +351,9 @@ size_t mr_ringbuf_get_bufsz(struct mr_ringbuf *ringbuf)
  */
 size_t mr_ringbuf_pop(struct mr_ringbuf *ringbuf, uint8_t *data)
 {
+    mr_assert(ringbuf != MR_NULL);
+    mr_assert(data != MR_NULL);
+
     /* Get the buf size */
     if (mr_ringbuf_get_data_size(ringbuf) == 0)
     {
@@ -386,7 +389,7 @@ size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
     size_t data_size = 0;
 
     mr_assert(ringbuf != MR_NULL);
-    mr_assert(buffer != MR_NULL);
+    mr_assert((buffer != MR_NULL) || (size == 0));
 
     /* Get the buf size */
     data_size = mr_ringbuf_get_data_size(ringbuf);
@@ -431,6 +434,8 @@ size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
  */
 size_t mr_ringbuf_push(struct mr_ringbuf *ringbuf, uint8_t data)
 {
+    mr_assert(ringbuf != MR_NULL);
+
     /* Get the space size */
     if (mr_ringbuf_get_space_size(ringbuf) == 0)
     {
@@ -462,6 +467,8 @@ size_t mr_ringbuf_push(struct mr_ringbuf *ringbuf, uint8_t data)
 size_t mr_ringbuf_push_force(struct mr_ringbuf *ringbuf, uint8_t data)
 {
     int state = 0;
+
+    mr_assert(ringbuf != MR_NULL);
 
     /* Get the buffer size */
     if (mr_ringbuf_get_bufsz(ringbuf) == 0)
@@ -513,7 +520,7 @@ size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t s
     size_t space_size = 0;
 
     mr_assert(ringbuf != MR_NULL);
-    mr_assert(buffer != MR_NULL);
+    mr_assert((buffer != MR_NULL) || (size == 0));
 
     /* Get the space size */
     space_size = mr_ringbuf_get_space_size(ringbuf);
@@ -563,7 +570,7 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
     size_t space_size = 0;
 
     mr_assert(ringbuf != MR_NULL);
-    mr_assert(buffer != MR_NULL);
+    mr_assert((buffer != MR_NULL) || (size == 0));
 
     if ((mr_ringbuf_get_bufsz(ringbuf) == 0) || (size == 0))
     {
@@ -612,4 +619,256 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
     }
 
     return size;
+}
+
+static int mr_avl_get_height(struct mr_avl *node)
+{
+    if (node == MR_NULL)
+    {
+        return -1;
+    }
+    return node->height;
+}
+
+static int mr_avl_get_balance(struct mr_avl *node)
+{
+    if (node == MR_NULL)
+    {
+        return 0;
+    }
+    return (mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
+}
+
+static void mr_avl_left_rotate(struct mr_avl **node)
+{
+    struct mr_avl *right_child = (*node)->right_child;
+
+    (*node)->right_child = right_child->left_child;
+    right_child->left_child = (*node);
+
+    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    right_child->height =
+        mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
+
+    (*node) = right_child;
+}
+
+static void mr_avl_right_rotate(struct mr_avl **node)
+{
+    struct mr_avl *left_child = (*node)->left_child;
+
+    (*node)->left_child = left_child->right_child;
+    left_child->right_child = (*node);
+
+    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    left_child->height =
+        mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
+
+    (*node) = left_child;
+}
+
+/**
+ * @brief This function initialize the avl tree.
+ *
+ * @param node The node to be initialized.
+ * @param value The value to be initialized.
+ */
+void mr_avl_init(struct mr_avl *node, uint32_t value)
+{
+    mr_assert(node != MR_NULL);
+
+    node->height = 0;
+    node->value = value;
+    node->left_child = MR_NULL;
+    node->right_child = MR_NULL;
+}
+
+/**
+ * @brief This function insert the node in the avl tree.
+ *
+ * @param tree The tree to be inserted.
+ * @param node The node to insert.
+ */
+void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
+{
+    int balance = 0;
+
+    mr_assert(tree != MR_NULL);
+    mr_assert(node != MR_NULL);
+
+    if ((*tree) == MR_NULL)
+    {
+        (*tree) = node;
+    }
+
+    if (node->value < (*tree)->value)
+    {
+        mr_avl_insert(&(*tree)->left_child, node);
+    } else if (node->value > (*tree)->value)
+    {
+        mr_avl_insert(&(*tree)->right_child, node);
+    } else
+    {
+        return;
+    }
+
+    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+
+    balance = mr_avl_get_balance((*tree));
+    if (balance > 1 && node->value < (*tree)->left_child->value)
+    {
+        mr_avl_right_rotate(&(*tree));
+        return;
+    }
+
+    if (balance < -1 && node->value > (*tree)->right_child->value)
+    {
+        mr_avl_left_rotate(&(*tree));
+        return;
+    }
+
+    if (balance > 1 && node->value > (*tree)->left_child->value)
+    {
+        mr_avl_left_rotate(&(*tree)->left_child);
+        mr_avl_right_rotate(&(*tree));
+        return;
+    }
+
+    if (balance < -1 && node->value < (*tree)->right_child->value)
+    {
+        mr_avl_right_rotate(&(*tree)->right_child);
+        mr_avl_left_rotate(&(*tree));
+        return;
+    }
+}
+
+/**
+ * @brief This function remove the node from the avl tree.
+ *
+ * @param tree The tree to be removed.
+ * @param node The node to be removed.
+ */
+void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node)
+{
+    mr_assert(tree != MR_NULL);
+    mr_assert(node != MR_NULL);
+
+    if (*tree == MR_NULL)
+    {
+        return;
+    }
+
+    if (node->value < (*tree)->value)
+    {
+        mr_avl_remove(&(*tree)->left_child, node);
+    } else if (node->value > (*tree)->value)
+    {
+        mr_avl_remove(&(*tree)->right_child, node);
+    } else
+    {
+        if ((*tree)->left_child == MR_NULL)
+        {
+            struct mr_avl *temp = (*tree)->right_child;
+            (*tree)->right_child = MR_NULL;
+            (*tree) = temp;
+            return;
+        } else if ((*tree)->right_child == MR_NULL)
+        {
+            struct mr_avl *temp = (*tree)->left_child;
+            (*tree)->left_child = MR_NULL;
+            (*tree) = temp;
+            return;
+        }
+
+        struct mr_avl *temp = (*tree)->right_child->left_child;
+        (*tree)->value = temp->value;
+        mr_avl_remove(&(*tree)->right_child, temp);
+        return;
+    }
+
+    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+
+    int balance = mr_avl_get_balance(*tree);
+
+    if (balance > 1 && mr_avl_get_balance((*tree)->left_child) >= 0)
+    {
+        mr_avl_right_rotate(tree);
+    }
+
+    if (balance > 1 && mr_avl_get_balance((*tree)->left_child) < 0)
+    {
+        mr_avl_left_rotate(&(*tree)->left_child);
+        mr_avl_right_rotate(tree);
+    }
+
+    if (balance < -1 && mr_avl_get_balance((*tree)->right_child) <= 0)
+    {
+        mr_avl_left_rotate(tree);
+    }
+
+    if (balance < -1 && mr_avl_get_balance((*tree)->right_child) > 0)
+    {
+        mr_avl_right_rotate(&(*tree)->right_child);
+        mr_avl_left_rotate(tree);
+    }
+}
+
+/**
+ * @brief This function find the node in the avl tree.
+ *
+ * @param tree The tree to be searched.
+ * @param value The value to be searched.
+ *
+ * @return A pointer to the found node, or MR_NULL if not found.
+ */
+struct mr_avl *mr_avl_find(struct mr_avl *tree, uint32_t value)
+{
+    if (tree == MR_NULL)
+    {
+        return tree;
+    }
+
+    if (tree->value == value)
+    {
+        return tree;
+    }
+
+    if (value < tree->value)
+    {
+        return mr_avl_find(tree->left_child, value);
+    } else if (value > tree->value)
+    {
+        return mr_avl_find(tree->right_child, value);
+    }
+
+    return MR_NULL;
+}
+
+/**
+ * @brief This function get the length of the avl tree.
+ *
+ * @param tree The tree to be searched.
+ *
+ * @return The length of the avl tree.
+ */
+size_t mr_avl_get_length(struct mr_avl *tree)
+{
+    size_t length = 1;
+
+    if (tree == MR_NULL)
+    {
+        return 0;
+    }
+
+    if (tree->left_child != MR_NULL)
+    {
+        length += mr_avl_get_length(tree->left_child);
+    }
+
+    if (tree->right_child != MR_NULL)
+    {
+        length += mr_avl_get_length(tree->right_child);
+    }
+
+    return length;
 }
