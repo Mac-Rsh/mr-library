@@ -164,18 +164,10 @@ MR_INLINE void dev_lock_release(struct mr_dev *dev, int release)
 
 MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
 {
-    /* Enable interrupt */
-    mr_interrupt_enable();
-
     if (dev_find_or_register(name, dev, MR_REGISTER) != MR_NULL)
     {
-        /* Disable interrupt */
-        mr_interrupt_disable();
         return MR_EOK;
     }
-
-    /* Disable interrupt */
-    mr_interrupt_disable();
     return MR_EINVAL;
 }
 
@@ -246,19 +238,17 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
 #ifdef MR_USING_RDWR_CTRL
     do
     {
-        /* Enable interrupt */
-        mr_interrupt_enable();
-
+        /* Disable interrupt */
+        mr_interrupt_disable();
         int ret = dev_lock_take(dev, MR_LFLAG_RD | MR_LFLAG_SLEEP, MR_LFLAG_RD);
         if (ret != MR_EOK)
         {
-            /* Disable interrupt */
-            mr_interrupt_disable();
+            /* Enable interrupt */
+            mr_interrupt_enable();
             return ret;
         }
-
-        /* Disable interrupt */
-        mr_interrupt_disable();
+        /* Enable interrupt */
+        mr_interrupt_enable();
     } while (0);
 #endif /* MR_USING_RDWR_CTRL */
 
@@ -276,21 +266,19 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
 #ifdef MR_USING_RDWR_CTRL
     do
     {
-        /* Enable interrupt */
-        mr_interrupt_enable();
-
+        /* Disable interrupt */
+        mr_interrupt_disable();
         int ret = dev_lock_take(dev,
                                 MR_LFLAG_WR | MR_LFLAG_SLEEP | (sync_or_async == MR_SYNC ? MR_LFLAG_NONBLOCK : 0),
                                 MR_LFLAG_WR);
         if (ret != MR_EOK)
         {
-            /* Disable interrupt */
-            mr_interrupt_disable();
+            /* Enable interrupt */
+            mr_interrupt_enable();
             return ret;
         }
-
-        /* Disable interrupt */
-        mr_interrupt_disable();
+        /* Enable interrupt */
+        mr_interrupt_enable();
     } while (0);
 #endif /* MR_USING_RDWR_CTRL */
 
@@ -301,13 +289,11 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
     dev_lock_release(dev, MR_LFLAG_WR);
     if ((sync_or_async == MR_ASYNC) && (ret != 0))
     {
-        /* Enable interrupt */
-        mr_interrupt_enable();
-
-        dev_lock_take(dev, 0, MR_LFLAG_NONBLOCK);
-
         /* Disable interrupt */
         mr_interrupt_disable();
+        dev_lock_take(dev, 0, MR_LFLAG_NONBLOCK);
+        /* Enable interrupt */
+        mr_interrupt_enable();
     }
 #endif /* MR_USING_RDWR_CTRL */
     return ret;
@@ -359,20 +345,18 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 #ifdef MR_USING_RDWR_CTRL
             do
             {
-                /* Enable interrupt */
-                mr_interrupt_enable();
-
+                /* Disable interrupt */
+                mr_interrupt_disable();
                 int ret =
                     dev_lock_take(dev, MR_LFLAG_RDWR | MR_LFLAG_SLEEP | MR_LFLAG_NONBLOCK, MR_LFLAG_RDWR);
                 if (ret != MR_EOK)
                 {
-                    /* Disable interrupt */
-                    mr_interrupt_disable();
+                    /* Enable interrupt */
+                    mr_interrupt_enable();
                     return ret;
                 }
-
-                /* Disable interrupt */
-                mr_interrupt_disable();
+                /* Enable interrupt */
+                mr_interrupt_enable();
             } while (0);
 #endif /* MR_USING_RDWR_CTRL */
 
@@ -460,7 +444,7 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
             return;
         }
 
-        switch (event)
+        switch (event & MR_ISR_EVENT_INTER_MASK)
         {
             case MR_ISR_EVENT_RD_INTER:
             {
@@ -494,6 +478,48 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
             }
         }
     }
+}
+
+/**
+ * @brief This function get the full name of the device.
+ *
+ * @param dev The device.
+ * @param buf The buffer to store the full name.
+ * @param bufsz The size of the buffer.
+ *
+ * @return MR_EOK on success, otherwise an error code.
+ */
+int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz)
+{
+    size_t len = 0;
+
+    mr_assert(dev != MR_NULL);
+    mr_assert((buf != MR_NULL) || (bufsz == 0));
+
+    *buf = '\0';
+    if (dev->link != MR_NULL)
+    {
+        int ret = mr_dev_get_full_name(dev->link, buf, bufsz);
+        if (ret != MR_EOK)
+        {
+            return ret;
+        }
+
+        len = strlen(buf);
+        if (bufsz < (len + 1))
+        {
+            return MR_ENOMEM;
+        }
+        buf[len++] = '/';
+    }
+    len += strlen(dev->name);
+    if (bufsz < (len + 1))
+    {
+        return MR_ENOMEM;
+    }
+    strcat(buf, dev->name);
+    buf[len] = '\0';
+    return MR_EOK;
 }
 
 /**
