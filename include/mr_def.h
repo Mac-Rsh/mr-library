@@ -194,6 +194,7 @@ enum mr_dev_type
     Mr_Dev_Type_Adc = Mr_Drv_Type_Adc,                              /**< ADC */
     Mr_Dev_Type_Dac = Mr_Drv_Type_Dac,                              /**< DAC */
     Mr_Dev_Type_Timer = Mr_Drv_Type_Timer,                          /**< Timer */
+    Mr_Dev_Type_Sensor,                                             /**< Sensor */
 };
 
 struct mr_dev;
