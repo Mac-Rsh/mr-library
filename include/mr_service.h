@@ -124,6 +124,20 @@ extern "C" {
 #define mr_min(a, b)                    ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 
 /**
+ * @brief This macro function aligns the size up to a multiple of 4.
+ *
+ * @param size The size to align.
+ */
+#define mr_align4_up(size)              (((size) + 3) & (~3))
+
+/**
+ * @brief This macro function aligns a size down to a multiple of 4.
+ *
+ * @param size The size to align.
+ */
+#define mr_align4_down(size)            ((size) & (~3))
+
+/**
  * @brief This macro function checks if a list is empty.
  *
  * @param list The list to check.

@@ -20,6 +20,7 @@ extern "C" {
 * @addtogroup Memory.
 * @{
 */
+int mr_heap_init(void);
 void *mr_malloc(size_t size);
 void mr_free(void *memory);
 /** @} */
