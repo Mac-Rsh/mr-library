@@ -525,7 +525,7 @@ int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz)
 /**
  * @brief Device descriptor structure.
  */
-struct mr_desc
+static struct mr_desc
 {
     struct mr_dev *dev;                                             /* Device */
     uint32_t oflags;                                                /* Open flags */
@@ -533,9 +533,9 @@ struct mr_desc
 #ifndef MR_CFG_DESC_MAX
 #define MR_CFG_DESC_MAX                 (32)
 #endif /* MR_CFG_DESC_MAX */
-} mr_desc_map[MR_CFG_DESC_MAX] = {0};
+} desc_map[MR_CFG_DESC_MAX] = {0};
 
-#define desc_of(desc)                   (mr_desc_map[(desc)])
+#define desc_of(desc)                   (desc_map[(desc)])
 #define desc_is_valid(desc)             (((desc) >= 0 && (desc) < MR_CFG_DESC_MAX) && ((desc_of(desc).dev) != MR_NULL))
 
 static int desc_allocate(const char *name)
