@@ -57,6 +57,12 @@ static struct mr_dev *dev_find_or_register(const char *name, struct mr_dev *dev,
     struct mr_dev *dev_next = MR_NULL;
     size_t i = 0, j = 0;
 
+    /* Ignore the first '/' */
+    if (name[0] == '/')
+    {
+        name++;
+    }
+
     for (i = 0; name[i] != '\0'; i += j)
     {
         char name_cpy[MR_CFG_NAME_MAX + 1] = {0};
@@ -308,33 +314,33 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_RD_CB:
+        case MR_CTRL_SET_RD_CALL:
         {
-            dev->rd_cb.desc = desc;
-            dev->rd_cb.cb = (int (*)(int desc, void *args))args;
+            dev->rd_call.desc = desc;
+            dev->rd_call.call = (int (*)(int desc, void *args))args;
             return MR_EOK;
         }
-        case MR_CTRL_SET_WR_CB:
+        case MR_CTRL_SET_WR_CALL:
         {
-            dev->wr_cb.desc = desc;
-            dev->wr_cb.cb = (int (*)(int desc, void *args))args;
+            dev->wr_call.desc = desc;
+            dev->wr_call.call = (int (*)(int desc, void *args))args;
             return MR_EOK;
         }
 
-        case MR_CTRL_GET_RD_CB:
+        case MR_CTRL_GET_RD_CALL:
         {
             if (args != MR_NULL)
             {
-                *(int (**)(int desc, void *args))args = dev->rd_cb.cb;
+                *(int (**)(int desc, void *args))args = dev->rd_call.call;
                 return MR_EOK;
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_GET_WR_CB:
+        case MR_CTRL_GET_WR_CALL:
         {
             if (args != MR_NULL)
             {
-                *(int (**)(int desc, void *args))args = dev->wr_cb.cb;
+                *(int (**)(int desc, void *args))args = dev->wr_call.call;
                 return MR_EOK;
             }
             return MR_EINVAL;
@@ -413,14 +419,12 @@ int mr_dev_register(struct mr_dev *dev,
 #ifdef MR_USING_RDWR_CTRL
     dev->lflags = 0;
 #endif /* MR_USING_RDWR_CTRL */
-
-    dev->rd_cb.desc = -1;
-    dev->rd_cb.cb = MR_NULL;
-    dev->wr_cb.desc = -1;
-    dev->wr_cb.cb = MR_NULL;
-
-    dev->drv = drv;
+    dev->rd_call.desc = -1;
+    dev->rd_call.call = MR_NULL;
+    dev->wr_call.desc = -1;
+    dev->wr_call.call = MR_NULL;
     dev->ops = (ops != MR_NULL) ? ops : &null_ops;
+    dev->drv = drv;
 
     return dev_register(dev, name);
 }
@@ -450,9 +454,9 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
             {
                 if (ret != 0)
                 {
-                    if (dev->rd_cb.cb != MR_NULL)
+                    if (dev->rd_call.call != MR_NULL)
                     {
-                        dev->rd_cb.cb(dev->rd_cb.desc, &ret);
+                        dev->rd_call.call(dev->rd_call.desc, &ret);
                     }
                 }
                 return;
@@ -464,9 +468,9 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
 #ifdef MR_USING_RDWR_CTRL
                     dev_lock_release(dev, MR_LFLAG_NONBLOCK);
 #endif /* MR_USING_RDWR_CTRL */
-                    if (dev->wr_cb.cb != MR_NULL)
+                    if (dev->wr_call.call != MR_NULL)
                     {
-                        dev->wr_cb.cb(dev->wr_cb.desc, &ret);
+                        dev->wr_call.call(dev->wr_call.desc, &ret);
                     }
                 }
                 return;
