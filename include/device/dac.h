@@ -30,6 +30,12 @@ extern "C" {
 #define MR_CTRL_DAC_GET_CHANNEL_STATE   ((0x01|0x00) << 16)         /**< Get channel state */
 
 /**
+ * @brief DAC channel command.
+ */
+#define MR_CTRL_DAC_SET_CHANNEL         MR_CTRL_SET_OFFSET          /**< Set channel */
+#define MR_CTRL_DAC_GET_CHANNEL         MR_CTRL_GET_OFFSET          /**< Get channel */
+
+/**
  * @brief DAC data type.
  */
 typedef uint32_t mr_dac_data_t;                                     /**< DAC write data type */

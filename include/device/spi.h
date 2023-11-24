@@ -45,11 +45,11 @@ extern "C" {
 #define MR_SPI_BIT_ORDER_LSB            (1)                         /**< LSB first */
 
 /**
- * @brief SPI offset bits.
+ * @brief SPI register bits.
  */
-#define MR_SPI_OFF_BITS_8               (8)                         /**< 8 bits offset */
-#define MR_SPI_OFF_BITS_16              (16)                        /**< 16 bits offset */
-#define MR_SPI_OFF_BITS_32              (32)                        /**< 32 bits offset */
+#define MR_SPI_REG_BITS_8               (8)                         /**< 8 bits register */
+#define MR_SPI_REG_BITS_16              (16)                        /**< 16 bits register */
+#define MR_SPI_REG_BITS_32              (32)                        /**< 32 bits register */
 
 /**
  * @brief SPI default configuration.
@@ -61,7 +61,7 @@ extern "C" {
     MR_SPI_MODE_0,                      \
     MR_SPI_DATA_BITS_8,                 \
     MR_SPI_BIT_ORDER_MSB,               \
-    MR_SPI_OFF_BITS_8,                  \
+    MR_SPI_REG_BITS_8,                  \
 }
 
 /**
@@ -74,7 +74,7 @@ struct mr_spi_config
     uint32_t mode: 2;                                               /**< Mode */
     uint32_t data_bits: 6;                                          /**< Data bits */
     uint32_t bit_order: 1;                                          /**< Bit order */
-    uint32_t off_bits: 6;                                           /**< Offset bits */
+    uint32_t reg_bits: 6;                                           /**< Register bits */
     uint32_t reserved: 16;
 };
 
@@ -92,6 +92,12 @@ struct mr_spi_transfer
     const void *wr_buf;                                             /**< Write buffer */
     size_t size;                                                    /**< Transfer size */
 };
+
+/**
+ * @brief SPI register command.
+ */
+#define MR_CTRL_SPI_SET_REG             MR_CTRL_SET_OFFSET          /**< Set register */
+#define MR_CTRL_SPI_GET_REG             MR_CTRL_GET_OFFSET          /**< Get register */
 
 /**
  * @brief SPI data type.

@@ -24,11 +24,11 @@ extern "C" {
 #define MR_I2C_SLAVE                    (1)                         /**< I2C slave */
 
 /**
- * @brief I2C offset bits.
+ * @brief I2C register bits.
  */
-#define MR_I2C_OFF_BITS_8               (8)                         /**< 8 bits offset */
-#define MR_I2C_OFF_BITS_16              (16)                        /**< 16 bits offset */
-#define MR_I2C_OFF_BITS_32              (32)                        /**< 32 bits offset */
+#define MR_I2C_REG_BITS_8               (8)                         /**< 8 bits register */
+#define MR_I2C_REG_BITS_16              (16)                        /**< 16 bits register */
+#define MR_I2C_REG_BITS_32              (32)                        /**< 32 bits register */
 
 /**
  * @brief I2C default configuration.
@@ -37,7 +37,7 @@ extern "C" {
 {                                       \
     100000,                             \
     MR_I2C_HOST,                        \
-    MR_I2C_OFF_BITS_8,                  \
+    MR_I2C_REG_BITS_8,                  \
 }
 
 /**
@@ -47,9 +47,15 @@ struct mr_i2c_config
 {
     uint32_t baud_rate;                                             /**< Baud rate */
     uint32_t host_slave: 1;                                         /**< Host/slave */
-    uint32_t off_bits: 6;                                           /**< Offset bits */
+    uint32_t reg_bits: 6;                                           /**< Register bits */
     uint32_t reserved: 25;
 };
+
+/**
+ * @brief I2C register command.
+ */
+#define MR_CTRL_I2C_SET_REG             MR_CTRL_SET_OFFSET          /**< Set register */
+#define MR_CTRL_I2C_GET_REG             MR_CTRL_GET_OFFSET          /**< Get register */
 
 /**
  * @brief I2C data type.

@@ -63,7 +63,7 @@ static ssize_t mr_i2c_bus_read(struct mr_dev *dev, int off, void *buf, size_t si
         if (off >= 0)
         {
             i2c_bus_send_addr(i2c_bus, MR_I2C_WR);
-            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.off_bits);
+            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.reg_bits);
         }
 
         i2c_bus_send_addr(i2c_bus, MR_I2C_RD);
@@ -86,7 +86,7 @@ static ssize_t mr_i2c_bus_write(struct mr_dev *dev, int off, const void *buf, si
         i2c_bus_send_addr(i2c_bus, MR_I2C_WR);
         if (off >= 0)
         {
-            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.off_bits);
+            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.reg_bits);
         }
 
         ssize_t ret = ops->write(i2c_bus, buf, size);
@@ -164,13 +164,15 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
             struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
             uint8_t data = 0;
 
+            /* Read data to FIFO. if callback is set, call it */
             ops->read(i2c_bus, &data, sizeof(data));
             mr_ringbuf_push_force(&i2c_dev->rd_fifo, data);
-            if (i2c_dev->dev.rd_cb.cb != MR_NULL)
+            if (i2c_dev->dev.rd_call.call != MR_NULL)
             {
                 size_t size = (ssize_t)mr_ringbuf_get_data_size(&i2c_dev->rd_fifo);
-                i2c_dev->dev.rd_cb.cb(i2c_dev->dev.rd_cb.desc, &size);
+                i2c_dev->dev.rd_call.call(i2c_dev->dev.rd_call.desc, &size);
             }
+
             return (ssize_t)mr_ringbuf_get_data_size(&i2c_dev->rd_fifo);
         }
 
@@ -436,10 +438,10 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
     /* Initialize the fields */
     i2c_dev->config = default_config;
     mr_ringbuf_init(&i2c_dev->rd_fifo, MR_NULL, 0);
-#ifndef MR_CFG_I2C_RD_BUFSZ_INIT
-#define MR_CFG_I2C_RD_BUFSZ_INIT        (0)
-#endif /* MR_CFG_I2C_RD_BUFSZ_INIT */
-    i2c_dev->rd_bufsz = MR_CFG_I2C_RD_BUFSZ_INIT;
+#ifndef MR_CFG_I2C_RD_BUFSZ
+#define MR_CFG_I2C_RD_BUFSZ             (0)
+#endif /* MR_CFG_I2C_RD_BUFSZ */
+    i2c_dev->rd_bufsz = MR_CFG_I2C_RD_BUFSZ;
     i2c_dev->addr = (addr_bits == MR_I2C_ADDR_BITS_7) ? addr : ((0xf0 | ((addr >> 7) & 0x06)) << 8) | (addr & 0xff);
     i2c_dev->addr_bits = addr_bits;
 
