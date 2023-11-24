@@ -73,27 +73,22 @@ typedef int (*mr_init_fn_t)(void);
 /**
  * @brief Exports a board auto initialization function.
  */
-#define MR_INIT_BOARD_EXPORT(fn)        MR_INIT_EXPORT(fn, "1")
-
-/**
- * @brief Exports a console auto initialization function.
- */
-#define MR_INIT_CONSOLE_EXPORT(fn)      MR_INIT_EXPORT(fn, "2")
+#define MR_BOARD_EXPORT(fn)             MR_INIT_EXPORT(fn, "1")
 
 /**
  * @brief Exports a driver auto initialization function.
  */
-#define MR_INIT_DRV_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")
+#define MR_DRV_EXPORT(fn)               MR_INIT_EXPORT(fn, "2")
 
 /**
  * @brief Exports a device auto initialization function.
  */
-#define MR_INIT_DEV_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
+#define MR_DEV_EXPORT(fn)               MR_INIT_EXPORT(fn, "3")
 
 /**
  * @brief Exports a app auto initialization function.
  */
-#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "5")
+#define MR_APP_EXPORT(fn)               MR_INIT_EXPORT(fn, "4")
 
 /**
  * @brief Error code.
@@ -163,10 +158,11 @@ struct mr_avl
  */
 enum mr_drv_type
 {
-    Mr_Drv_Type_Gpio = 0,                                           /**< GPIO */
+    Mr_Drv_Type_Pin = 0,                                            /**< GPIO */
     Mr_Drv_Type_Spi,                                                /**< SPI */
     Mr_Drv_Type_I2c,                                                /**< I2C */
-    Mr_Drv_Type_Uart,                                               /**< UART */
+    Mr_Drv_Type_Serial,                                             /**< SERIAL */
+    Mr_Drv_Type_Can,                                                /**< CAN */
     Mr_Drv_Type_Adc,                                                /**< ADC */
     Mr_Drv_Type_Dac,                                                /**< DAC */
     Mr_Drv_Type_Timer,                                              /**< Timer */
@@ -177,7 +173,7 @@ enum mr_drv_type
  */
 struct mr_drv
 {
-    uint32_t type;                                                  /**< Device type */
+    uint32_t type;                                                  /**< Driver type */
     void *ops;                                                      /**< Driver operations */
     void *data;                                                     /**< Driver data */
 };
@@ -187,10 +183,11 @@ struct mr_drv
  */
 enum mr_dev_type
 {
-    Mr_Dev_Type_Gpio = Mr_Drv_Type_Gpio,                            /**< GPIO */
+    Mr_Dev_Type_Pin = Mr_Drv_Type_Pin,                              /**< GPIO */
     Mr_Dev_Type_Spi = Mr_Drv_Type_Spi,                              /**< SPI */
     Mr_Dev_Type_I2c = Mr_Drv_Type_I2c,                              /**< I2C */
-    Mr_Dev_Type_Uart = Mr_Drv_Type_Uart,                            /**< UART */
+    Mr_Dev_Type_Serial = Mr_Drv_Type_Serial,                        /**< SERIAL */
+    Mr_Dev_Type_Can = Mr_Drv_Type_Can,                              /**< CAN */
     Mr_Dev_Type_Adc = Mr_Drv_Type_Adc,                              /**< ADC */
     Mr_Dev_Type_Dac = Mr_Drv_Type_Dac,                              /**< DAC */
     Mr_Dev_Type_Timer = Mr_Drv_Type_Timer,                          /**< Timer */
@@ -214,12 +211,12 @@ struct mr_dev;
 /**
  * @brief Device control general command.
  */
-#define MR_CTRL_SET_RD_CB               ((0x01|0x80) << 24)         /**< Set read callback */
-#define MR_CTRL_SET_WR_CB               ((0x02|0x80) << 24)         /**< Set write callback */
+#define MR_CTRL_SET_RD_CALL             ((0x01|0x80) << 24)         /**< Set read callback */
+#define MR_CTRL_SET_WR_CALL             ((0x02|0x80) << 24)         /**< Set write callback */
 #define MR_CTRL_SET_SLEEP               ((0x03|0x80) << 24)         /**< Set sleep */
 #define MR_CTRL_SET_WAKEUP              ((0x04|0x80) << 24)         /**< Set wakeup */
-#define MR_CTRL_GET_RD_CB               ((0x01|0x00) << 24)         /**< Get read callback */
-#define MR_CTRL_GET_WR_CB               ((0x02|0x00) << 24)         /**< Get write callback */
+#define MR_CTRL_GET_RD_CALL             ((0x01|0x00) << 24)         /**< Get read callback */
+#define MR_CTRL_GET_WR_CALL             ((0x02|0x00) << 24)         /**< Get write callback */
 
 /**
  * @brief Device control command.
@@ -311,8 +308,8 @@ struct mr_dev
     struct
     {
         int desc;                                                   /**< Device descriptor */
-        int (*cb)(int desc, void *args);                            /**< Callback function */
-    } rd_cb, wr_cb;                                                 /**< Read/write callback */
+        int (*call)(int desc, void *args);                          /**< Callback function */
+    } rd_call, wr_call;                                             /**< Read/write callback */
 
     const struct mr_dev_ops *ops;                                   /**< Device operations */
     const struct mr_drv *drv;                                       /**< Driver */
