@@ -92,7 +92,7 @@ int mr_heap_init(void)
     heap_start.next = first_block;
     return MR_EOK;
 }
-MR_INIT_BOARD_EXPORT(mr_heap_init);
+MR_BOARD_EXPORT(mr_heap_init);
 
 static void heap_insert_block(struct mr_heap_block *block)
 {
@@ -149,9 +149,14 @@ MR_WEAK void *mr_malloc(size_t size)
     void *memory = MR_NULL;
     size_t residual = 0;
 
+    /* Disable interrupt */
+    mr_interrupt_disable();
+
     /* Check size and residual memory */
     if ((size == 0) || (size > (UINT32_MAX >> 1) || (block == MR_NULL)))
     {
+        /* Enable interrupt */
+        mr_interrupt_enable();
         return MR_NULL;
     }
 
@@ -163,6 +168,8 @@ MR_WEAK void *mr_malloc(size_t size)
     {
         if (block->next == MR_NULL)
         {
+            /* Enable interrupt */
+            mr_interrupt_enable();
             return MR_NULL;
         }
         block_prev = block;
@@ -192,6 +199,10 @@ MR_WEAK void *mr_malloc(size_t size)
         /* Insert the new block */
         heap_insert_block(new_block);
     }
+
+    /* Enable interrupt */
+    mr_interrupt_enable();
+
     return memory;
 }
 
@@ -206,6 +217,9 @@ MR_WEAK void mr_free(void *memory)
     {
         struct mr_heap_block *block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
 
+        /* Disable interrupt */
+        mr_interrupt_disable();
+
         /* Check the block */
         if (block->allocated == MR_HEAP_BLOCK_ALLOCATED && block->size != 0)
         {
@@ -214,6 +228,9 @@ MR_WEAK void mr_free(void *memory)
             /* Insert the free block */
             heap_insert_block(block);
         }
+
+        /* Enable interrupt */
+        mr_interrupt_enable();
     }
 }
 
@@ -301,6 +318,7 @@ int mr_printf(const char *fmt, ...)
     int ret = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
     ret = mr_printf_output(buf, ret);
     va_end(args);
+
     return ret;
 }
 
