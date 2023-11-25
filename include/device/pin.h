@@ -45,7 +45,7 @@ extern "C" {
 /**
  * @brief PIN mode command.
  */
-#define MR_CTRL_PIN_SET_PIN_MODE        ((0x01|0x80) << 16)         /**< Set pin mode */
+#define MR_CTRL_PIN_SET_MODE            ((0x01|0x80) << 16)         /**< Set pin mode */
 
 /**
  * @brief PIN number command.
@@ -57,6 +57,11 @@ extern "C" {
  * @brief PIN data type.
  */
 typedef uint8_t mr_pin_data_t;                                     /**< PIN read/write data type */
+
+/**
+ * @brief PIN ISR events.
+ */
+#define MR_ISR_PIN_RD_INT               (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
 
 /**
  * @brief PIN structure.

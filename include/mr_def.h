@@ -206,34 +206,29 @@ struct mr_dev;
  * @brief Descriptor control command.
  */
 #define MR_CTRL_SET_OFFSET              ((0x01|0x80) << 24)         /**< Set offset */
-#define MR_CTRL_GET_OFFSET              ((0x02|0x00) << 24)         /**< Get offset */
+#define MR_CTRL_SET_RD_CALL             ((0x02|0x80) << 24)         /**< Set read callback */
+#define MR_CTRL_SET_WR_CALL             ((0x03|0x80) << 24)         /**< Set write callback */
+#define MR_CTRL_SET_SLEEP               ((0x04|0x80) << 24)         /**< Set sleep */
+#define MR_CTRL_SET_WAKEUP              ((0x05|0x80) << 24)         /**< Set wakeup */
+#define MR_CTRL_SET_CONFIG              ((0x06|0x80) << 24)         /**< Set configuration */
+#define MR_CTRL_SET_RD_BUFSZ            ((0x07|0x80) << 24)         /**< Set read buffer size */
+#define MR_CTRL_SET_WR_BUFSZ            ((0x08|0x80) << 24)         /**< Set write buffer size */
 
-/**
- * @brief Device control general command.
- */
-#define MR_CTRL_SET_RD_CALL             ((0x01|0x80) << 24)         /**< Set read callback */
-#define MR_CTRL_SET_WR_CALL             ((0x02|0x80) << 24)         /**< Set write callback */
-#define MR_CTRL_SET_SLEEP               ((0x03|0x80) << 24)         /**< Set sleep */
-#define MR_CTRL_SET_WAKEUP              ((0x04|0x80) << 24)         /**< Set wakeup */
-#define MR_CTRL_GET_RD_CALL             ((0x01|0x00) << 24)         /**< Get read callback */
-#define MR_CTRL_GET_WR_CALL             ((0x02|0x00) << 24)         /**< Get write callback */
-
-/**
- * @brief Device control command.
- */
-#define MR_CTRL_SET_CONFIG              ((0x01|0x80) << 20)         /**< Set configuration */
-#define MR_CTRL_SET_RD_BUFSZ            ((0x02|0x80) << 20)         /**< Set read buffer size */
-#define MR_CTRL_SET_WR_BUFSZ            ((0x03|0x80) << 20)         /**< Set write buffer size */
-#define MR_CTRL_GET_CONFIG              ((0x01|0x00) << 20)         /**< Get configuration */
-#define MR_CTRL_GET_RD_BUFSZ            ((0x02|0x00) << 20)         /**< Get read buffer size */
-#define MR_CTRL_GET_WR_BUFSZ            ((0x03|0x00) << 20)         /**< Get write buffer size */
+#define MR_CTRL_GET_OFFSET              ((0x01|0x00) << 24)         /**< Get offset */
+#define MR_CTRL_GET_RD_CALL             ((0x02|0x00) << 24)         /**< Get read callback */
+#define MR_CTRL_GET_WR_CALL             ((0x03|0x00) << 24)         /**< Get write callback */
+#define MR_CTRL_GET_SLEEP               ((0x04|0x00) << 24)         /**< Get sleep (reserved) */
+#define MR_CTRL_GET_WAKEUP              ((0x05|0x00) << 24)         /**< Get wakeup (reserved) */
+#define MR_CTRL_GET_CONFIG              ((0x06|0x00) << 24)         /**< Get configuration */
+#define MR_CTRL_GET_RD_BUFSZ            ((0x07|0x00) << 24)         /**< Get read buffer size */
+#define MR_CTRL_GET_WR_BUFSZ            ((0x08|0x00) << 24)         /**< Get write buffer size */
 
 /**
  * @brief ISR event.
  */
-#define MR_ISR_EVENT_RD_INTER           ((0x01) << 24)              /**< Read interrupt */
-#define MR_ISR_EVENT_WR_INTER           ((0x02) << 24)              /**< Write interrupt */
-#define MR_ISR_EVENT_INTER_MASK         ((0xff) << 24)              /**< Interrupt mask */
+#define MR_ISR_RD                       ((0x01) << 24)              /**< Read interrupt */
+#define MR_ISR_WR                       ((0x02) << 24)              /**< Write interrupt */
+#define MR_ISR_MASK                     ((0xff) << 24)              /**< Interrupt mask */
 
 /**
  * @brief Device operations structure.
@@ -242,8 +237,8 @@ struct mr_dev_ops
 {
     int (*open)(struct mr_dev *dev);
     int (*close)(struct mr_dev *dev);
-    ssize_t (*read)(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async);
-    ssize_t (*write)(struct mr_dev *dev, int off, const void *buf, size_t size, int sync_or_async);
+    ssize_t (*read)(struct mr_dev *dev, int off, void *buf, size_t size, int async);
+    ssize_t (*write)(struct mr_dev *dev, int off, const void *buf, size_t size, int async);
     int (*ioctl)(struct mr_dev *dev, int off, int cmd, void *args);
     ssize_t (*isr)(struct mr_dev *dev, int event, void *args);
 };

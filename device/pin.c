@@ -10,7 +10,7 @@
 
 #ifdef MR_USING_PIN
 
-static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
     struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
@@ -31,7 +31,7 @@ static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     return rd_size;
 }
 
-static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t size, int sync_or_async)
+static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
     struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
@@ -59,7 +59,7 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_PIN_SET_PIN_MODE:
+        case MR_CTRL_PIN_SET_MODE:
         {
             if (args != MR_NULL)
             {
@@ -87,7 +87,7 @@ static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
 {
     switch (event)
     {
-        case MR_ISR_EVENT_RD_INTER:
+        case MR_ISR_PIN_RD_INT:
         {
             return (ssize_t)*(int *)args;
         }

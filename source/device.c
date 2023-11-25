@@ -239,14 +239,14 @@ MR_INLINE int dev_close(struct mr_dev *dev)
     return MR_EOK;
 }
 
-MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
 #ifdef MR_USING_RDWR_CTRL
     do
     {
         /* Disable interrupt */
         mr_interrupt_disable();
-        int ret = dev_lock_take(dev, MR_LFLAG_RD | MR_LFLAG_SLEEP, MR_LFLAG_RD);
+        int ret = dev_lock_take(dev, (MR_LFLAG_RD | MR_LFLAG_SLEEP), MR_LFLAG_RD);
         if (ret != MR_EOK)
         {
             /* Enable interrupt */
@@ -259,7 +259,7 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
 #endif /* MR_USING_RDWR_CTRL */
 
     /* Read buffer from the device */
-    ssize_t ret = dev->ops->read(dev, off, buf, size, sync_or_async);
+    ssize_t ret = dev->ops->read(dev, off, buf, size, async);
 
 #ifdef MR_USING_RDWR_CTRL
     dev_lock_release(dev, MR_LFLAG_RD);
@@ -267,7 +267,7 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     return ret;
 }
 
-MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t size, int sync_or_async)
+MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t size, int async)
 {
 #ifdef MR_USING_RDWR_CTRL
     do
@@ -275,7 +275,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
         /* Disable interrupt */
         mr_interrupt_disable();
         int ret = dev_lock_take(dev,
-                                MR_LFLAG_WR | MR_LFLAG_SLEEP | (sync_or_async == MR_SYNC ? MR_LFLAG_NONBLOCK : 0),
+                                (MR_LFLAG_WR | MR_LFLAG_SLEEP | (async == MR_SYNC ? MR_LFLAG_NONBLOCK : 0)),
                                 MR_LFLAG_WR);
         if (ret != MR_EOK)
         {
@@ -289,11 +289,11 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
 #endif /* MR_USING_RDWR_CTRL */
 
     /* Write buffer to the device */
-    ssize_t ret = dev->ops->write(dev, offset, buf, size, sync_or_async);
+    ssize_t ret = dev->ops->write(dev, offset, buf, size, async);
 
 #ifdef MR_USING_RDWR_CTRL
     dev_lock_release(dev, MR_LFLAG_WR);
-    if ((sync_or_async == MR_ASYNC) && (ret != 0))
+    if ((async == MR_ASYNC) && (ret != 0))
     {
         /* Disable interrupt */
         mr_interrupt_disable();
@@ -353,8 +353,7 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
             {
                 /* Disable interrupt */
                 mr_interrupt_disable();
-                int ret =
-                    dev_lock_take(dev, MR_LFLAG_RDWR | MR_LFLAG_SLEEP | MR_LFLAG_NONBLOCK, MR_LFLAG_RDWR);
+                int ret = dev_lock_take(dev, (MR_LFLAG_RDWR | MR_LFLAG_SLEEP | MR_LFLAG_NONBLOCK), MR_LFLAG_RDWR);
                 if (ret != MR_EOK)
                 {
                     /* Enable interrupt */
@@ -448,20 +447,17 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
             return;
         }
 
-        switch (event & MR_ISR_EVENT_INTER_MASK)
+        switch (event & MR_ISR_MASK)
         {
-            case MR_ISR_EVENT_RD_INTER:
+            case MR_ISR_RD:
             {
-                if (ret != 0)
+                if (dev->rd_call.call != MR_NULL)
                 {
-                    if (dev->rd_call.call != MR_NULL)
-                    {
-                        dev->rd_call.call(dev->rd_call.desc, &ret);
-                    }
+                    dev->rd_call.call(dev->rd_call.desc, &ret);
                 }
                 return;
             }
-            case MR_ISR_EVENT_WR_INTER:
+            case MR_ISR_WR:
             {
                 if (ret == 0)
                 {
@@ -609,6 +605,7 @@ int mr_dev_open(const char *name, uint32_t oflags)
         desc_free(desc);
         return ret;
     }
+
     desc_of(desc).oflags = oflags;
     return desc;
 }

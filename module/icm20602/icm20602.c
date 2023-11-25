@@ -191,7 +191,7 @@ static int mr_icm20602_close(struct mr_dev *dev)
     return MR_EOK;
 }
 
-static ssize_t mr_icm20602_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_icm20602_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_icm20602 *icm20602 = (struct mr_icm20602 *)dev;
     struct mr_icm20602_data *rd_buf = (struct mr_icm20602_data *)buf;

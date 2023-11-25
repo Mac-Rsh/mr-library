@@ -10,11 +10,11 @@
 
 #ifdef MR_USING_HX711
 
-#if !defined(MR_USING_GPIO)
-#error "Please define MR_USING_GPIO. Otherwise HX711 will not work."
+#if !defined(MR_USING_PIN)
+#error "Please define MR_USING_PIN. Otherwise HX711 will not work."
 #else
 
-#include "include/device/gpio.h"
+#include "include/device/pin.h"
 
 static void hx711_set_sck(struct mr_hx711 *hx711, uint8_t value)
 {
@@ -82,12 +82,12 @@ static int mr_hx711_open(struct mr_dev *dev)
     }
 
     /* Set the sck pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->sck_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_GPIO_SET_PIN_MODE, mr_make_local(int, MR_GPIO_MODE_OUTPUT));
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->sck_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
 
     /* Set the dout pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->dout_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_GPIO_SET_PIN_MODE, mr_make_local(int, MR_GPIO_MODE_INPUT_UP));
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->dout_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_INPUT_UP));
     return MR_EOK;
 }
 
@@ -96,19 +96,19 @@ static int mr_hx711_close(struct mr_dev *dev)
     struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
 
     /* Reset the sck pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->sck_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_GPIO_SET_PIN_MODE, mr_make_local(int, MR_GPIO_MODE_NONE));
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->sck_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
 
     /* Reset the dout pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->dout_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_GPIO_SET_PIN_MODE, mr_make_local(int, MR_GPIO_MODE_NONE));
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->dout_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
 
     mr_dev_close(hx711->desc);
     hx711->desc = -1;
     return MR_EOK;
 }
 
-static ssize_t mr_hx711_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_hx711_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
     uint32_t *rd_buf = (uint32_t *)buf;
@@ -210,6 +210,6 @@ int mr_hx711_register(struct mr_hx711 *hx711, const char *name, int sck_pin, int
     return mr_dev_register(&hx711->dev, name, Mr_Dev_Type_Adc, MR_SFLAG_RDONLY | MR_SFLAG_NONDRV, &ops, MR_NULL);
 }
 
-#endif /* MR_USING_GPIO */
+#endif /* MR_USING_PIN */
 
 #endif /* MR_USING_HX711 */

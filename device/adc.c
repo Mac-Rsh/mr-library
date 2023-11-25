@@ -37,7 +37,7 @@ static int mr_adc_close(struct mr_dev *dev)
     return ops->configure(adc, MR_DISABLE);
 }
 
-static ssize_t mr_adc_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_adc_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_adc *adc = (struct mr_adc *)dev;
     struct mr_adc_ops *ops = (struct mr_adc_ops *)dev->drv->ops;

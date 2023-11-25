@@ -80,6 +80,17 @@ struct mr_serial_config
 };
 
 /**
+ * @brief SERIAL data type.
+ */
+typedef uint8_t mr_serial_data_t;                                   /**< SERIAL read/write data type */
+
+/**
+ * @brief SERIAL ISR events.
+ */
+#define MR_ISR_SERIAL_RD_INT            (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
+#define MR_ISR_SERIAL_WR_INT            (MR_ISR_WR | (0x02 << 16))  /**< Write interrupt */
+
+/**
  * @brief SERIAL structure.
  */
 struct mr_serial
