@@ -27,6 +27,9 @@ extern "C" {
 #define MR_TIMER_TRIGGER_MODE_PERIODIC  (0)
 #define MR_TIMER_TRIGGER_MODE_ONESHOT   (1)
 
+#define MR_TIMER_STATE_DISABLE          MR_DISABLE
+#define MR_TIMER_STATE_ENABLE           MR_ENABLE
+
 /**
 * @brief Timer default configuration.
 */
@@ -89,7 +92,8 @@ struct mr_timer_ops
     int (*channel_configure)(struct mr_timer *timer, int channel, int mode);
     void (*start)(struct mr_timer *timer, uint32_t prescaler, uint32_t period);
     void (*stop)(struct mr_timer *timer);
-    void (*write_duty)(struct mr_timer *timer);
+    void (*set_ccr)(struct mr_timer *timer, int channel, uint32_t duty);
+    uint32_t (*get_duty)(struct mr_timer *timer, int channel);
 };
 
 /**

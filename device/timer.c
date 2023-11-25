@@ -26,12 +26,26 @@ static int mr_timer_close(struct mr_dev *dev)
     return ops->configure(timer, MR_DISABLE);
 }
 
-static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size_t size, int sync_or_async)
+static ssize_t mr_timer_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
+{
+    struct mr_timer *timer = (struct mr_timer *)dev;
+    struct mr_timer_ops *ops = (struct mr_timer_ops *)dev->drv->ops;
+    uint32_t *rd_buf = (uint32_t *)buf;
+    ssize_t rd_size = 0;
+
+    if (timer->config.mode == MR_TIMER_MODE_TIMING)
+    {
+        uint32_t time = 0;
+
+
+    }
+}
+
+static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
 {
     struct mr_timer *timer = (struct mr_timer *)dev;
     struct mr_timer_ops *ops = (struct mr_timer_ops *)dev->drv->ops;
     uint32_t *wr_buf = (uint32_t *)buf;
-    uint32_t data = 0;
     ssize_t wr_size = 0;
 
     if (timer->config.mode == MR_TIMER_MODE_TIMING)
@@ -51,11 +65,20 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
 
         /* Calculate reload value */
         timer->reload = (uint32_t)(((float)timeout / 1000000.0f) * (float)timer->config.freq + 0.5f);
+        if (timer->reload == 0)
+        {
+            return MR_EINVAL;
+        }
 
-        ops->start(timer, timer->prescaler, timer->reload);
+        /* Start timer */
+        ops->start(timer, timer->prescaler, timer->period);
     } else
     {
-
+        mr_bits_clr(size, sizeof(*wr_buf) - 1);
+        for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
+        {
+            wr_buf++;
+        }
     }
 
     return wr_size;
@@ -117,7 +140,10 @@ static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 timer->config = *config;
 
                 /* Start timer if mode is PWM */
-                if (timer->config.mode == MR_TIMER_MODE_PWM)
+                if (timer->config.mode == MR_TIMER_MODE_TIMING)
+                {
+                    timer->reload = 0;
+                } else
                 {
                     ops->start(timer, timer->prescaler, timer->period);
                 }
@@ -125,14 +151,53 @@ static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-
         case MR_CTRL_TIMER_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
                 int mode = *((int *)args);
 
+                /* Check offset is valid */
+                if (off < 0 || off >= 32)
+                {
+                    return MR_EINVAL;
+                }
 
+                /* Check if the channel is enabled */
+                if (mode != mr_bits_is_set(timer->channel, (1 << off)))
+                {
+                    int ret = ops->channel_configure(timer, off, mode);
+                    if (ret == MR_EOK)
+                    {
+                        if (mode == MR_TIMER_STATE_ENABLE)
+                        {
+                            mr_bits_set(timer->channel, (1 << off));
+                        } else
+                        {
+                            mr_bits_clr(timer->channel, (1 << off));
+                        }
+                    }
+                    return ret;
+                }
+                return MR_EOK;
+            }
+            return MR_EINVAL;
+        }
+
+        case MR_CTRL_TIMER_GET_CHANNEL_STATE:
+        {
+            if (args != MR_NULL)
+            {
+                int *mode = (int *)args;
+
+                /* Check offset is valid */
+                if (off < 0 || off >= 32)
+                {
+                    return MR_EINVAL;
+                }
+
+                *mode = mr_bits_is_set(timer->channel, (1 << off));
+                return MR_EOK;
             }
             return MR_EINVAL;
         }
