@@ -65,7 +65,7 @@ extern "C" {
 }
 
 /**
- * @brief SPI device configuration structure.
+ * @brief SPI configuration structure.
  */
 struct mr_spi_config
 {
@@ -105,6 +105,11 @@ struct mr_spi_transfer
 typedef uint8_t mr_spi_data_t;                                      /**< SPI read/write data type */
 
 /**
+ * @brief SPI ISR events.
+ */
+#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
+
+/**
  * @brief SPI bus structure.
  */
 struct mr_spi_bus
@@ -112,7 +117,8 @@ struct mr_spi_bus
     struct mr_dev dev;                                              /**< Device */
 
     struct mr_spi_config config;                                    /**< Configuration */
-    void *owner;                                                    /**< Owner */
+    volatile void *owner;                                           /**< Owner */
+    volatile int hold;                                              /**< Owner hold */
 };
 
 /**

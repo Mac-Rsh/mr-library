@@ -10,36 +10,13 @@
 
 #ifdef MR_USING_I2C
 
-#define MR_I2C_RD                       (0)
-#define MR_I2C_WR                       (1)
-
-MR_INLINE void i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int rdwr)
-{
-    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
-    struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
-    int addr = 0, addr_bits = MR_I2C_ADDR_BITS_7;
-
-    /* Get the address, otherwise use the 0x00 */
-    if (i2c_dev != MR_NULL)
-    {
-        addr = i2c_dev->addr;
-        addr_bits = i2c_dev->addr_bits;
-    }
-
-    /* Set the read command */
-    if (rdwr == MR_I2C_RD)
-    {
-        addr |= 0x01;
-    }
-
-    ops->start(i2c_bus);
-    ops->send_addr(i2c_bus, addr, addr_bits);
-}
-
 static int mr_i2c_bus_open(struct mr_dev *dev)
 {
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)dev->drv->ops;
+
+    /* Reset the hold */
+    i2c_bus->hold = MR_FALSE;
 
     return ops->configure(i2c_bus, &i2c_bus->config, 0x00, MR_I2C_ADDR_BITS_7);
 }
@@ -53,103 +30,14 @@ static int mr_i2c_bus_close(struct mr_dev *dev)
     return ops->configure(i2c_bus, &close_config, 0x00, MR_I2C_ADDR_BITS_7);
 }
 
-static ssize_t mr_i2c_bus_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_i2c_bus_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev;
-    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
-
-    if (i2c_bus->config.host_slave == MR_I2C_HOST)
-    {
-        if (off >= 0)
-        {
-            i2c_bus_send_addr(i2c_bus, MR_I2C_WR);
-            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.reg_bits);
-        }
-
-        i2c_bus_send_addr(i2c_bus, MR_I2C_RD);
-        ssize_t ret = ops->read(i2c_bus, buf, size);
-        ops->stop(i2c_bus);
-        return ret;
-    } else
-    {
-        return ops->read(i2c_bus, buf, size);
-    }
+    return MR_EIO;
 }
 
-static ssize_t mr_i2c_bus_write(struct mr_dev *dev, int off, const void *buf, size_t size, int sync_or_async)
+static ssize_t mr_i2c_bus_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev;
-    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
-
-    if (i2c_bus->config.host_slave == MR_I2C_HOST)
-    {
-        i2c_bus_send_addr(i2c_bus, MR_I2C_WR);
-        if (off >= 0)
-        {
-            ops->write(i2c_bus, (uint8_t *)&off, i2c_bus->config.reg_bits);
-        }
-
-        ssize_t ret = ops->write(i2c_bus, buf, size);
-        ops->stop(i2c_bus);
-        return ret;
-    } else
-    {
-        return ops->write(i2c_bus, buf, size);
-    }
-}
-
-static int mr_i2c_bus_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
-{
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev;
-    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
-
-    switch (cmd)
-    {
-        case MR_CTRL_SET_CONFIG:
-        {
-            if (args != MR_NULL)
-            {
-                struct mr_i2c_config config = *(struct mr_i2c_config *)args;
-
-                /* The bus is held by another device */
-                if (i2c_bus->owner != MR_NULL)
-                {
-                    return MR_EBUSY;
-                }
-
-                /* The bus requires a device to be mounted to be configured in slave mode */
-                if (config.host_slave == MR_I2C_SLAVE)
-                {
-                    return MR_EINVAL;
-                }
-
-                int ret = ops->configure(i2c_bus, &config, 0x00, MR_I2C_ADDR_BITS_7);
-                if (ret == MR_EOK)
-                {
-                    i2c_bus->config = config;
-                }
-                return MR_EOK;
-            }
-            return MR_EINVAL;
-        }
-
-        case MR_CTRL_GET_CONFIG:
-        {
-            if (args != MR_NULL)
-            {
-                struct mr_i2c_config *config = (struct mr_i2c_config *)args;
-
-                *config = i2c_bus->config;
-                return MR_EOK;
-            }
-            return MR_EINVAL;
-        }
-
-        default:
-        {
-            return MR_ENOTSUP;
-        }
-    }
+    return MR_EIO;
 }
 
 static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
@@ -159,7 +47,7 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
 
     switch (event)
     {
-        case MR_ISR_EVENT_RD_INTER:
+        case MR_ISR_I2C_RD_INT:
         {
             struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
             uint8_t data = 0;
@@ -169,11 +57,10 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
             mr_ringbuf_push_force(&i2c_dev->rd_fifo, data);
             if (i2c_dev->dev.rd_call.call != MR_NULL)
             {
-                size_t size = (ssize_t)mr_ringbuf_get_data_size(&i2c_dev->rd_fifo);
+                ssize_t size = (ssize_t)mr_ringbuf_get_data_size(&i2c_dev->rd_fifo);
                 i2c_dev->dev.rd_call.call(i2c_dev->dev.rd_call.desc, &size);
             }
-
-            return (ssize_t)mr_ringbuf_get_data_size(&i2c_dev->rd_fifo);
+            return MR_ENOTSUP;
         }
 
         default:
@@ -200,7 +87,7 @@ int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *name, struct mr_
             mr_i2c_bus_close,
             mr_i2c_bus_read,
             mr_i2c_bus_write,
-            mr_i2c_bus_ioctl,
+            MR_NULL,
             mr_i2c_bus_isr
         };
     struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
@@ -213,6 +100,7 @@ int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *name, struct mr_
     /* Initialize the fields */
     i2c_bus->config = default_config;
     i2c_bus->owner = MR_NULL;
+    i2c_bus->hold = MR_FALSE;
 
     /* Register the i2c-bus */
     return mr_dev_register(&i2c_bus->dev, name, Mr_Dev_Type_I2c, MR_SFLAG_RDWR, &ops, drv);
@@ -223,7 +111,8 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
 
-    if ((i2c_dev != i2c_bus->owner) && (i2c_bus->owner != MR_NULL))
+    /* Check if the bus is busy */
+    if ((i2c_bus->hold == MR_TRUE) && (i2c_dev != i2c_bus->owner))
     {
         return MR_EBUSY;
     }
@@ -244,6 +133,7 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
         i2c_bus->config = i2c_dev->config;
         i2c_bus->owner = i2c_dev;
     }
+    i2c_bus->hold = MR_TRUE;
     return MR_EOK;
 }
 
@@ -259,9 +149,59 @@ MR_INLINE int i2c_dev_release_bus(struct mr_i2c_dev *i2c_dev)
     /* If it is a host, release the bus. The slave needs to hold the bus at all times */
     if (i2c_dev->config.host_slave == MR_I2C_HOST)
     {
-        i2c_bus->owner = MR_NULL;
+        i2c_bus->hold = MR_FALSE;
     }
     return MR_EOK;
+}
+
+#define MR_I2C_RD                       (0)
+#define MR_I2C_WR                       (1)
+
+MR_INLINE void i2c_dev_send_addr(struct mr_i2c_dev *i2c_dev, int rdwr)
+{
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+    int addr = 0, addr_bits = MR_I2C_ADDR_BITS_7;
+
+    /* Get the address, otherwise use the 0x00 */
+    if (i2c_dev != MR_NULL)
+    {
+        addr = i2c_dev->addr;
+        addr_bits = i2c_dev->addr_bits;
+    }
+
+    /* Set the read command */
+    if (rdwr == MR_I2C_RD)
+    {
+        addr |= 0x01;
+    }
+
+    ops->start(i2c_bus);
+    ops->send_addr(i2c_bus, addr, addr_bits);
+}
+
+MR_INLINE void i2c_dev_send_stop(struct mr_i2c_dev *i2c_dev)
+{
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+
+    ops->stop(i2c_bus);
+}
+
+MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t size)
+{
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+
+    return ops->read(i2c_bus, buf, size);
+}
+
+MR_INLINE ssize_t i2c_dev_write(struct mr_i2c_dev *i2c_dev, const uint8_t *buf, size_t size)
+{
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+
+    return ops->write(i2c_bus, buf, size);
 }
 
 static int mr_i2c_dev_open(struct mr_dev *dev)
@@ -281,7 +221,7 @@ static int mr_i2c_dev_close(struct mr_dev *dev)
     return MR_EOK;
 }
 
-static ssize_t mr_i2c_dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int sync_or_async)
+static ssize_t mr_i2c_dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
@@ -293,12 +233,21 @@ static ssize_t mr_i2c_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
 
     if (i2c_dev->config.host_slave == MR_I2C_HOST)
     {
-        ret = mr_i2c_bus_read(dev->link, off, buf, size, sync_or_async);
+        if (off >= 0)
+        {
+            /* Send the address of the register that needs to be read */
+            i2c_dev_send_addr(i2c_dev, MR_I2C_WR);
+            i2c_dev_write(i2c_dev, (uint8_t *)&off, (i2c_dev->config.reg_bits >> 3));
+        }
+
+        i2c_dev_send_addr(i2c_dev, MR_I2C_RD);
+        ret = i2c_dev_read(i2c_dev, (uint8_t *)buf, size);
+        i2c_dev_send_stop(i2c_dev);
     } else
     {
         if (mr_ringbuf_get_bufsz(&i2c_dev->rd_fifo) == 0)
         {
-            ret = mr_i2c_bus_read(dev->link, -1, buf, size, sync_or_async);
+            ret = i2c_dev_read(i2c_dev, (uint8_t *)buf, size);
         } else
         {
             ret = (ssize_t)mr_ringbuf_read(&i2c_dev->rd_fifo, buf, size);
@@ -309,7 +258,7 @@ static ssize_t mr_i2c_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
     return ret;
 }
 
-static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, size_t size, int sync_or_async)
+static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
 {
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
@@ -321,10 +270,18 @@ static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, si
 
     if (i2c_dev->config.host_slave == MR_I2C_HOST)
     {
-        ret = mr_i2c_bus_write(dev->link, off, buf, size, sync_or_async);
+        i2c_dev_send_addr(i2c_dev, MR_I2C_WR);
+        if (off >= 0)
+        {
+            /* Send the address of the register that needs to be written */
+            i2c_dev_write(i2c_dev, (uint8_t *)&off, (i2c_dev->config.reg_bits >> 3));
+        }
+
+        ret = i2c_dev_write(i2c_dev, (uint8_t *)buf, size);
+        i2c_dev_send_stop(i2c_dev);
     } else
     {
-        ret = mr_i2c_bus_write(dev->link, -1, buf, size, sync_or_async);
+        ret = i2c_dev_write(i2c_dev, (uint8_t *)buf, size);
     }
 
     i2c_dev_release_bus(i2c_dev);
@@ -344,16 +301,17 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev->link;
                 struct mr_i2c_config config = *(struct mr_i2c_config *)args;
 
-                /* Release the bus */
+                /* If holding the bus, release it */
                 if (i2c_dev == i2c_bus->owner)
                 {
+                    i2c_bus->hold = MR_FALSE;
                     i2c_bus->owner = MR_NULL;
                 }
 
+                /* Update the configuration and try again to get the bus */
                 i2c_dev->config = config;
                 if (config.host_slave == MR_I2C_SLAVE)
                 {
-                    /* Retry to take the bus */
                     int ret = i2c_dev_take_bus(i2c_dev);
                     if (ret != MR_EOK)
                     {
@@ -427,7 +385,8 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
             mr_i2c_dev_close,
             mr_i2c_dev_read,
             mr_i2c_dev_write,
-            mr_i2c_dev_ioctl
+            mr_i2c_dev_ioctl,
+            MR_NULL
         };
     struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
 

@@ -63,6 +63,11 @@ struct mr_i2c_config
 typedef uint8_t mr_i2c_data_t;                                      /**< I2C read/write data type */
 
 /**
+ * @brief I2C ISR events.
+ */
+#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
+
+/**
  * @brief I2C bus structure.
  */
 struct mr_i2c_bus
@@ -70,7 +75,8 @@ struct mr_i2c_bus
     struct mr_dev dev;                                              /**< Device */
 
     struct mr_i2c_config config;                                    /**< Configuration */
-    void *owner;                                                    /**< Owner */
+    volatile void *owner;                                           /**< Owner */
+    volatile int hold;                                              /**< Owner hold */
 };
 
 /**
