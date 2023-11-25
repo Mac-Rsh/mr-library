@@ -18,13 +18,13 @@ extern "C" {
 
 #define MR_USING_RDWR_CTRL
 #define MR_USING_ADC
-#define MR_USING_DAC
-#define MR_USING_PIN
-#define MR_USING_I2C
-#define MR_USING_SPI
-#define MR_USING_SERIAL
-#define MR_USING_TIMER
 #define MR_USING_CAN
+#define MR_USING_DAC
+#define MR_USING_I2C
+#define MR_USING_PIN
+#define MR_USING_SERIAL
+#define MR_USING_SPI
+#define MR_USING_TIMER
 
 #define MR_CFG_HEAP_SIZE                (4 * 1024)
 #define MR_CFG_CONSOLE_NAME             "uart1"
@@ -32,6 +32,7 @@ extern "C" {
 #define MR_CFG_SERIAL_WR_BUFSZ          (0)
 #define MR_CFG_SPI_RD_BUFSZ             (32)
 #define MR_CFG_I2C_RD_BUFSZ             (32)
+#define MR_CFG_CAN_RD_BUFSZ             (32)
 
 #ifdef __cplusplus
 }

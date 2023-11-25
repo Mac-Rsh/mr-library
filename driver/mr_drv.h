@@ -19,28 +19,28 @@ extern "C" {
 #include "drv_adc.h"
 #endif
 
-#ifdef MR_USING_DAC
-#include "drv_dac.h"
+#ifdef MR_USING_CAN
+#include "drv_can.h"
 #endif
 
-#ifdef MR_USING_GPIO
-#include "drv_gpio.h"
+#ifdef MR_USING_DAC
+#include "drv_dac.h"
 #endif
 
 #ifdef MR_USING_I2C
 #include "drv_i2c.h"
 #endif
 
-#ifdef MR_USING_SPI
-#include "drv_spi.h"
+#ifdef MR_USING_PIN
+#include "drv_gpio.h"
 #endif
 
-#ifdef MR_USING_UART
+#ifdef MR_USING_SERIAL
 #include "drv_uart.h"
 #endif
 
-#ifdef MR_USING_PWM
-#include "drv_pwm.h"
+#ifdef MR_USING_SPI
+#include "drv_spi.h"
 #endif
 
 #ifdef __cplusplus
