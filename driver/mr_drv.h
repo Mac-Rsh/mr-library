@@ -32,11 +32,11 @@ extern "C" {
 #endif
 
 #ifdef MR_USING_PIN
-#include "drv_gpio.h"
+#include "drv_pin.h"
 #endif
 
 #ifdef MR_USING_SERIAL
-#include "drv_uart.h"
+#include "drv_serial.h"
 #endif
 
 #ifdef MR_USING_SPI

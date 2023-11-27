@@ -6,7 +6,7 @@
  * @date 2023-11-08    MacRsh       First version
  */
 
-#include "include/device/pin.h"
+#include "pin.h"
 
 #ifdef MR_USING_PIN
 
@@ -59,7 +59,7 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_PIN_SET_MODE:
+        case MR_CTL_PIN_SET_MODE:
         {
             if (args != MR_NULL)
             {

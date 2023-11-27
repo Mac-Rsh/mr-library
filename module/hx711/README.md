@@ -24,7 +24,7 @@ int mr_hx711_register(struct mr_hx711 *hx711, const char *name, int sck_pin, int
 ```c
 #define FILTER_BITS                     4
 
-mr_dev_ioctl(desc, MR_CTRL_HX711_SET_FILTER_BITS, mr_make_local(int, FILTER_BITS));
+mr_dev_ioctl(desc, MR_CTL_HX711_SET_FILTER_BITS, mr_make_local(int, FILTER_BITS));
 ```
 
 ## 自校准
@@ -32,7 +32,7 @@ mr_dev_ioctl(desc, MR_CTRL_HX711_SET_FILTER_BITS, mr_make_local(int, FILTER_BITS
 自校准零点，使用前请确保输入值稳定。
 
 ```c
-mr_dev_ioctl(desc, MR_CTRL_HX711_SET_SELF_CAL, MR_NULL);
+mr_dev_ioctl(desc, MR_CTL_HX711_SET_SELF_CAL, MR_NULL);
 ```
 
 ## 读取数据
@@ -67,10 +67,10 @@ int main(void)
     }
     
     /* 设置滤波位数 */
-    mr_dev_ioctl(desc, MR_CTRL_HX711_SET_FILTER_BITS, mr_make_local(int, HX711_FILTER_BITS));
+    mr_dev_ioctl(desc, MR_CTL_HX711_SET_FILTER_BITS, mr_make_local(int, HX711_FILTER_BITS));
     
     /* 自校准 */
-    mr_dev_ioctl(desc, MR_CTRL_HX711_SET_SELF_CAL, MR_NULL);
+    mr_dev_ioctl(desc, MR_CTL_HX711_SET_SELF_CAL, MR_NULL);
     
     /* 读取数据 */
     uint32_t data = 0;

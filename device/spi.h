@@ -81,7 +81,7 @@ struct mr_spi_config
 /**
  * @brief SPI transfer command.
  */
-#define MR_CTRL_SPI_TRANSFER            ((0x01|0x80) << 16)         /**< Transfer */
+#define MR_CTL_SPI_TRANSFER             ((0x01|0x80) << 16)         /**< Transfer */
 
 /**
  * @brief SPI transfer structure.
@@ -96,8 +96,8 @@ struct mr_spi_transfer
 /**
  * @brief SPI register command.
  */
-#define MR_CTRL_SPI_SET_REG             MR_CTRL_SET_OFFSET          /**< Set register */
-#define MR_CTRL_SPI_GET_REG             MR_CTRL_GET_OFFSET          /**< Get register */
+#define MR_CTL_SPI_SET_REG              MR_CTL_SET_OFFSET          /**< Set register */
+#define MR_CTL_SPI_GET_REG              MR_CTL_GET_OFFSET          /**< Get register */
 
 /**
  * @brief SPI data type.

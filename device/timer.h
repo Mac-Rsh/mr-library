@@ -51,10 +51,10 @@ struct mr_timer_config
 /**
  * @brief Timer channel mode command.
  */
-#define MR_CTRL_TIMER_SET_CHANNEL_STATE ((0x01|0x80) << 16)         /**< Set channel mode */
-#define MR_CTRL_TIMER_GET_CHANNEL_STATE ((0x01|0x00) << 16)         /**< Get channel mode */
+#define MR_CTL_TIMER_SET_CHANNEL_STATE  ((0x01|0x80) << 16)         /**< Set channel mode */
+#define MR_CTL_TIMER_GET_CHANNEL_STATE  ((0x01|0x00) << 16)         /**< Get channel mode */
 
-#define MR_CTRL_TIMER_SET_TIMING        ((0x02|0x80) << 16)         /**< Set timing */
+#define MR_CTL_TIMER_SET_TIMING         ((0x02|0x80) << 16)         /**< Set timing */
 
 struct mr_timer_info
 {

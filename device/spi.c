@@ -6,12 +6,12 @@
  * @date 2023-11-01    MacRsh       First version
  */
 
-#include "include/device/spi.h"
+#include "spi.h"
 
 #ifdef MR_USING_SPI
 
 #ifdef MR_USING_PIN
-#include "include/device/pin.h"
+#include "pin.h"
 #else
 #warning "Please define MR_USING_PIN. Otherwise SPI-CS will not work."
 #endif /* MR_USING_PIN */
@@ -121,7 +121,7 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
     spi_bus->hold = MR_FALSE;
 
     /* Register the spi-bus */
-    return mr_dev_register(&spi_bus->dev, name, Mr_Dev_Type_Spi, MR_SFLAG_RDWR, &ops, drv);
+    return mr_dev_register(&spi_bus->dev, name, Mr_Dev_Type_SPI, MR_SFLAG_RDWR, &ops, drv);
 }
 
 #ifdef MR_USING_PIN
@@ -135,7 +135,7 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 
     if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
-        mr_dev_ioctl(desc, MR_CTRL_PIN_SET_NUMBER, mr_make_local(int, spi_dev->cs_pin));
+        mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, spi_dev->cs_pin));
 
         if (state == MR_ENABLE)
         {
@@ -154,11 +154,11 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
                     mode = MR_PIN_MODE_INPUT_DOWN;
                 }
             }
-            mr_dev_ioctl(desc, MR_CTRL_PIN_SET_MODE, &mode);
+            mr_dev_ioctl(desc, MR_CTL_PIN_SET_MODE, &mode);
             mr_dev_write(desc, mr_make_local(uint8_t, !spi_dev->cs_active), sizeof(uint8_t));
         } else
         {
-            mr_dev_ioctl(desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
+            mr_dev_ioctl(desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
         }
     }
 }
@@ -488,7 +488,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_CTL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -523,7 +523,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_SET_RD_BUFSZ:
+        case MR_CTL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -540,7 +540,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_CTL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -551,7 +551,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_GET_RD_BUFSZ:
+        case MR_CTL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -561,7 +561,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_SPI_TRANSFER:
+        case MR_CTL_SPI_TRANSFER:
         {
             if (args != MR_NULL)
             {
@@ -643,7 +643,7 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
     spi_dev->cs_desc = -1;
 
     /* Register the spi-device */
-    return mr_dev_register(&spi_dev->dev, name, Mr_Dev_Type_Spi, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
+    return mr_dev_register(&spi_dev->dev, name, Mr_Dev_Type_SPI, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
 }
 
 #endif /* MR_USING_SPI */

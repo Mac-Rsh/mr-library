@@ -20,6 +20,7 @@ extern "C" {
  *
  * @param ex The condition to assert.
  */
+#ifdef MR_USING_ASSERT
 #define mr_assert(ex)                   \
     do{                                 \
         if (!(ex))                      \
@@ -34,6 +35,9 @@ extern "C" {
             while(1);                   \
         }                               \
     } while(0)
+#else
+#define mr_assert(ex)
+#endif /* MR_USING_ASSERT */
 
 /**
  * @brief This macro function logs a message.

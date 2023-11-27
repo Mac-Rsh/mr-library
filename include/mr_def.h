@@ -14,9 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
 #include "mr_config.h"
-#include "mr_board.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -158,13 +156,13 @@ struct mr_avl
  */
 enum mr_drv_type
 {
-    Mr_Drv_Type_Pin = 0,                                            /**< GPIO */
-    Mr_Drv_Type_Spi,                                                /**< SPI */
-    Mr_Drv_Type_I2c,                                                /**< I2C */
+    Mr_Drv_Type_ADC,                                                /**< ADC */
+    Mr_Drv_Type_CAN,                                                /**< CAN */
+    Mr_Drv_Type_DAC,                                                /**< DAC */
+    Mr_Drv_Type_I2C,                                                /**< I2C */
+    Mr_Drv_Type_Pin,                                                /**< PIN */
     Mr_Drv_Type_Serial,                                             /**< SERIAL */
-    Mr_Drv_Type_Can,                                                /**< CAN */
-    Mr_Drv_Type_Adc,                                                /**< ADC */
-    Mr_Drv_Type_Dac,                                                /**< DAC */
+    Mr_Drv_Type_SPI,                                                /**< SPI */
     Mr_Drv_Type_Timer,                                              /**< Timer */
 };
 
@@ -183,13 +181,13 @@ struct mr_drv
  */
 enum mr_dev_type
 {
-    Mr_Dev_Type_Pin = Mr_Drv_Type_Pin,                              /**< GPIO */
-    Mr_Dev_Type_Spi = Mr_Drv_Type_Spi,                              /**< SPI */
-    Mr_Dev_Type_I2c = Mr_Drv_Type_I2c,                              /**< I2C */
+    Mr_Dev_Type_ADC = Mr_Drv_Type_ADC,                              /**< ADC */
+    Mr_Dev_Type_CAN = Mr_Drv_Type_CAN,                              /**< CAN */
+    Mr_Dev_Type_DAC = Mr_Drv_Type_DAC,                              /**< DAC */
+    Mr_Dev_Type_I2C = Mr_Drv_Type_I2C,                              /**< I2C */
+    Mr_Dev_Type_Pin = Mr_Drv_Type_Pin,                              /**< PIN */
     Mr_Dev_Type_Serial = Mr_Drv_Type_Serial,                        /**< SERIAL */
-    Mr_Dev_Type_Can = Mr_Drv_Type_Can,                              /**< CAN */
-    Mr_Dev_Type_Adc = Mr_Drv_Type_Adc,                              /**< ADC */
-    Mr_Dev_Type_Dac = Mr_Drv_Type_Dac,                              /**< DAC */
+    Mr_Dev_Type_SPI = Mr_Drv_Type_SPI,                              /**< SPI */
     Mr_Dev_Type_Timer = Mr_Drv_Type_Timer,                          /**< Timer */
     Mr_Dev_Type_Sensor,                                             /**< Sensor */
 };
@@ -205,23 +203,23 @@ struct mr_dev;
 /**
  * @brief Descriptor control command.
  */
-#define MR_CTRL_SET_OFFSET              ((0x01|0x80) << 24)         /**< Set offset */
-#define MR_CTRL_SET_RD_CALL             ((0x02|0x80) << 24)         /**< Set read callback */
-#define MR_CTRL_SET_WR_CALL             ((0x03|0x80) << 24)         /**< Set write callback */
-#define MR_CTRL_SET_SLEEP               ((0x04|0x80) << 24)         /**< Set sleep */
-#define MR_CTRL_SET_WAKEUP              ((0x05|0x80) << 24)         /**< Set wakeup */
-#define MR_CTRL_SET_CONFIG              ((0x06|0x80) << 24)         /**< Set configuration */
-#define MR_CTRL_SET_RD_BUFSZ            ((0x07|0x80) << 24)         /**< Set read buffer size */
-#define MR_CTRL_SET_WR_BUFSZ            ((0x08|0x80) << 24)         /**< Set write buffer size */
+#define MR_CTL_SET_OFFSET               ((0x01|0x80) << 24)         /**< Set offset */
+#define MR_CTL_SET_RD_CALL              ((0x02|0x80) << 24)         /**< Set read callback */
+#define MR_CTL_SET_WR_CALL              ((0x03|0x80) << 24)         /**< Set write callback */
+#define MR_CTL_SET_SLEEP                ((0x04|0x80) << 24)         /**< Set sleep */
+#define MR_CTL_SET_WAKEUP               ((0x05|0x80) << 24)         /**< Set wakeup */
+#define MR_CTL_SET_CONFIG               ((0x06|0x80) << 24)         /**< Set configuration */
+#define MR_CTL_SET_RD_BUFSZ             ((0x07|0x80) << 24)         /**< Set read buffer size */
+#define MR_CTL_SET_WR_BUFSZ             ((0x08|0x80) << 24)         /**< Set write buffer size */
 
-#define MR_CTRL_GET_OFFSET              ((0x01|0x00) << 24)         /**< Get offset */
-#define MR_CTRL_GET_RD_CALL             ((0x02|0x00) << 24)         /**< Get read callback */
-#define MR_CTRL_GET_WR_CALL             ((0x03|0x00) << 24)         /**< Get write callback */
-#define MR_CTRL_GET_SLEEP               ((0x04|0x00) << 24)         /**< Get sleep (reserved) */
-#define MR_CTRL_GET_WAKEUP              ((0x05|0x00) << 24)         /**< Get wakeup (reserved) */
-#define MR_CTRL_GET_CONFIG              ((0x06|0x00) << 24)         /**< Get configuration */
-#define MR_CTRL_GET_RD_BUFSZ            ((0x07|0x00) << 24)         /**< Get read buffer size */
-#define MR_CTRL_GET_WR_BUFSZ            ((0x08|0x00) << 24)         /**< Get write buffer size */
+#define MR_CTL_GET_OFFSET               ((0x01|0x00) << 24)         /**< Get offset */
+#define MR_CTL_GET_RD_CALL              ((0x02|0x00) << 24)         /**< Get read callback */
+#define MR_CTL_GET_WR_CALL              ((0x03|0x00) << 24)         /**< Get write callback */
+#define MR_CTL_GET_SLEEP                ((0x04|0x00) << 24)         /**< Get sleep (reserved) */
+#define MR_CTL_GET_WAKEUP               ((0x05|0x00) << 24)         /**< Get wakeup (reserved) */
+#define MR_CTL_GET_CONFIG               ((0x06|0x00) << 24)         /**< Get configuration */
+#define MR_CTL_GET_RD_BUFSZ             ((0x07|0x00) << 24)         /**< Get read buffer size */
+#define MR_CTL_GET_WR_BUFSZ             ((0x08|0x00) << 24)         /**< Get write buffer size */
 
 /**
  * @brief ISR event.
@@ -295,10 +293,10 @@ struct mr_dev
 
     uint32_t type;                                                  /**< Device type */
     size_t ref_count;                                               /**< Reference count */
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     uint32_t sflags;                                                /**< Support flags */
     volatile uint32_t lflags;                                       /**< Lock flags */
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     struct
     {

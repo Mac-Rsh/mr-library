@@ -45,13 +45,13 @@ extern "C" {
 /**
  * @brief PIN mode command.
  */
-#define MR_CTRL_PIN_SET_MODE            ((0x01|0x80) << 16)         /**< Set pin mode */
+#define MR_CTL_PIN_SET_MODE             ((0x01|0x80) << 16)         /**< Set pin mode */
 
 /**
  * @brief PIN number command.
  */
-#define MR_CTRL_PIN_SET_NUMBER          MR_CTRL_SET_OFFSET          /**< Set pin number */
-#define MR_CTRL_PIN_GET_NUMBER          MR_CTRL_GET_OFFSET          /**< Get pin number */
+#define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET          /**< Set pin number */
+#define MR_CTL_PIN_GET_NUMBER           MR_CTL_GET_OFFSET          /**< Get pin number */
 
 /**
  * @brief PIN data type.
