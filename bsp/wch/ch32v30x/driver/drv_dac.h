@@ -9,7 +9,8 @@
 #ifndef _DRV_DAC_H_
 #define _DRV_DAC_H_
 
-#include "include/device/dac.h"
+#include "device/dac.h"
+#include "mr_board.h"
 
 #ifdef MR_USING_DAC
 

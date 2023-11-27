@@ -6,15 +6,15 @@
  * @date 2023-11-11    MacRsh       First version
  */
 
-#include "drv_gpio.h"
+#include "drv_pin.h"
 
-#ifdef MR_USING_GPIO
+#ifdef MR_USING_PIN
 
-#if !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD) && !defined(MR_USING_GPIOE)
+#if !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD)
 #error "Please define at least one GPIO macro like MR_USING_GPIOA. Otherwise undefine MR_USING_GPIO."
 #else
 
-static IRQn_Type gpio_irq_map[] =
+static IRQn_Type pin_irq_map[] =
     {
         EXTI0_IRQn,
         EXTI1_IRQn,
@@ -34,7 +34,7 @@ static IRQn_Type gpio_irq_map[] =
         EXTI15_10_IRQn,
     };
 
-static int gpio_irq_mask[] =
+static int pin_irq_mask[] =
     {
         -1,
         -1,
@@ -54,7 +54,7 @@ static int gpio_irq_mask[] =
         -1,
     };
 
-static struct drv_gpio_data gpio_drv_data[] =
+static struct drv_pin_port_data pin_port_drv_data[] =
     {
 #ifdef MR_USING_GPIOA
         {GPIOA},
@@ -76,14 +76,9 @@ static struct drv_gpio_data gpio_drv_data[] =
 #else
         {MR_NULL},
 #endif /* MR_USING_GPIOD */
-#ifdef MR_USING_GPIOE
-        {GPIOE},
-#else
-        {MR_NULL},
-#endif /* MR_USING_GPIOE */
     };
 
-static struct drv_gpio_pin_data gpio_drv_pin_data[] =
+static struct drv_pin_data pin_drv_data[] =
     {
         {GPIO_Pin_0},
         {GPIO_Pin_1},
@@ -103,128 +98,122 @@ static struct drv_gpio_pin_data gpio_drv_pin_data[] =
         {GPIO_Pin_15},
     };
 
-static struct mr_gpio gpio_dev;
+static struct mr_pin pin_dev;
 
-static struct drv_gpio_data *drv_gpio_get_data(int pin)
+static struct drv_pin_port_data *drv_pin_get_port_data(int pin)
 {
     pin /= 16;
-    if ((pin >= mr_array_num(gpio_drv_data)) || (gpio_drv_data[pin].port == MR_NULL))
+    if ((pin >= mr_array_num(pin_port_drv_data)) || (pin_port_drv_data[pin].port == MR_NULL))
     {
         return MR_NULL;
     }
-    return &gpio_drv_data[pin];
+    return &pin_port_drv_data[pin];
 }
 
-static struct drv_gpio_pin_data *drv_gpio_get_pin_data(int pin)
+static struct drv_pin_data *drv_pin_get_data(int pin)
 {
     pin %= 16;
-    if (pin >= mr_array_num(gpio_drv_pin_data))
+    if (pin >= mr_array_num(pin_drv_data))
     {
         return MR_NULL;
     }
-    return &gpio_drv_pin_data[pin];
+    return &pin_drv_data[pin];
 }
 
-static int drv_gpio_configure(struct mr_gpio *gpio, int pin, int mode)
+static int drv_pin_configure(struct mr_pin *pin, int number, int mode)
 {
-    struct drv_gpio_data *gpio_data = drv_gpio_get_data(pin);
-    struct drv_gpio_pin_data *gpio_pin_data = drv_gpio_get_pin_data(pin);
-    uint32_t exti_line = pin % 16;
+    struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
+    struct drv_pin_data *pin_data = drv_pin_get_data(number);
+    uint32_t exti_line = number % 16;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     EXTI_InitTypeDef EXTI_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
 
     /* Check pin is valid */
-    if (gpio_data == MR_NULL || gpio_pin_data == MR_NULL)
+    if (pin_port_data == MR_NULL || pin_data == MR_NULL)
     {
         return MR_EINVAL;
     }
 
     /* Configure clock */
 #ifdef MR_USING_GPIOA
-    if (gpio_data->port == GPIOA)
+    if (pin_port_data->port == GPIOA)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
     }
 #endif /* MR_USING_GPIOA */
 #ifdef MR_USING_GPIOB
-    if (gpio_data->port == GPIOB)
+    if (pin_port_data->port == GPIOB)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
     }
 #endif /* MR_USING_GPIOB */
 #ifdef MR_USING_GPIOC
-    if (gpio_data->port == GPIOC)
+    if (pin_port_data->port == GPIOC)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
     }
 #endif /* MR_USING_GPIOC */
 #ifdef MR_USING_GPIOD
-    if (gpio_data->port == GPIOD)
+    if (pin_port_data->port == GPIOD)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
     }
 #endif /* MR_USING_GPIOD */
-#ifdef MR_USING_GPIOE
-    if (gpio_data->port == GPIOE)
-    {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE, ENABLE);
-    }
-#endif /* MR_USING_GPIOE */
 
     switch (mode)
     {
-        case MR_GPIO_MODE_NONE:
+        case MR_PIN_MODE_NONE:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
             break;
         }
 
-        case MR_GPIO_MODE_OUTPUT:
+        case MR_PIN_MODE_OUTPUT:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
             break;
         }
 
-        case MR_GPIO_MODE_OUTPUT_OD:
+        case MR_PIN_MODE_OUTPUT_OD:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
             break;
         }
 
-        case MR_GPIO_MODE_INPUT:
+        case MR_PIN_MODE_INPUT:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
             break;
         }
 
-        case MR_GPIO_MODE_INPUT_DOWN:
+        case MR_PIN_MODE_INPUT_DOWN:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
             break;
         }
 
-        case MR_GPIO_MODE_INPUT_UP:
+        case MR_PIN_MODE_INPUT_UP:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
             break;
         }
 
-        case MR_GPIO_MODE_IRQ_RISING:
+        case MR_PIN_MODE_IRQ_RISING:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
             EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
             break;
         }
 
-        case MR_GPIO_MODE_IRQ_FALLING:
+        case MR_PIN_MODE_IRQ_FALLING:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
             EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
             break;
         }
 
-        case MR_GPIO_MODE_IRQ_EDGE:
+        case MR_PIN_MODE_IRQ_EDGE:
         {
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
             EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
@@ -238,35 +227,35 @@ static int drv_gpio_configure(struct mr_gpio *gpio, int pin, int mode)
     }
 
     /* Configure EXTI */
-    if (mode >= MR_GPIO_MODE_IRQ_RISING)
+    if (mode >= MR_PIN_MODE_IRQ_RISING)
     {
-        if ((gpio_irq_mask[exti_line] != -1) && (gpio_irq_mask[exti_line] != pin))
+        if ((pin_irq_mask[exti_line] != -1) && (pin_irq_mask[exti_line] != number))
         {
             return MR_EBUSY;
         }
 
-        gpio_irq_mask[exti_line] = pin;
+        pin_irq_mask[exti_line] = number;
 
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
-        EXTI_InitStructure.EXTI_Line = gpio_drv_pin_data->pin;
+        EXTI_InitStructure.EXTI_Line = pin_drv_data->pin;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-        GPIO_EXTILineConfig(pin / 16, exti_line);
+        GPIO_EXTILineConfig(number / 16, exti_line);
         EXTI_Init(&EXTI_InitStructure);
 
         /* Configure NVIC */
-        NVIC_InitStructure.NVIC_IRQChannel = gpio_irq_map[exti_line];
+        NVIC_InitStructure.NVIC_IRQChannel = pin_irq_map[exti_line];
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
-    } else if (pin == gpio_irq_mask[exti_line])
+    } else if (number == pin_irq_mask[exti_line])
     {
         if ((exti_line >= 5) && (exti_line <= 9))
         {
-            if ((gpio_irq_mask[5] == -1) && (gpio_irq_mask[6] == -1) && (gpio_irq_mask[7] == -1) &&
-                (gpio_irq_mask[8] == -1) && (gpio_irq_mask[9] == -1))
+            if ((pin_irq_mask[5] == -1) && (pin_irq_mask[6] == -1) && (pin_irq_mask[7] == -1) &&
+                (pin_irq_mask[8] == -1) && (pin_irq_mask[9] == -1))
             {
                 EXTI_InitStructure.EXTI_LineCmd = DISABLE;
             } else
@@ -275,8 +264,8 @@ static int drv_gpio_configure(struct mr_gpio *gpio, int pin, int mode)
             }
         } else
         {
-            if ((gpio_irq_mask[10] == -1) && (gpio_irq_mask[11] == -1) && (gpio_irq_mask[12] == -1) &&
-                (gpio_irq_mask[13] == -1) && (gpio_irq_mask[14] == -1) && (gpio_irq_mask[15] == -1))
+            if ((pin_irq_mask[10] == -1) && (pin_irq_mask[11] == -1) && (pin_irq_mask[12] == -1) &&
+                (pin_irq_mask[13] == -1) && (pin_irq_mask[14] == -1) && (pin_irq_mask[15] == -1))
             {
                 EXTI_InitStructure.EXTI_LineCmd = DISABLE;
             } else
@@ -284,45 +273,45 @@ static int drv_gpio_configure(struct mr_gpio *gpio, int pin, int mode)
                 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
             }
         }
-        gpio_irq_mask[exti_line] = -1;
+        pin_irq_mask[exti_line] = -1;
 
-        EXTI_InitStructure.EXTI_Line = gpio_drv_pin_data->pin;
+        EXTI_InitStructure.EXTI_Line = pin_drv_data->pin;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-        GPIO_EXTILineConfig(pin / 16, exti_line);
+        GPIO_EXTILineConfig(number / 16, exti_line);
         EXTI_Init(&EXTI_InitStructure);
     }
 
     /* Configure GPIO */
-    GPIO_InitStructure.GPIO_Pin = gpio_drv_pin_data->pin;
+    GPIO_InitStructure.GPIO_Pin = pin_drv_data->pin;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(gpio_data->port, &GPIO_InitStructure);
+    GPIO_Init(pin_port_data->port, &GPIO_InitStructure);
     return MR_EOK;
 }
 
-static int drv_gpio_read(struct mr_gpio *gpio, int pin)
+static int drv_pin_read(struct mr_pin *pin, int number)
 {
-    struct drv_gpio_data *gpio_data = drv_gpio_get_data(pin);
-    struct drv_gpio_pin_data *gpio_pin_data = drv_gpio_get_pin_data(pin);
+    struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
+    struct drv_pin_data *pin_data = drv_pin_get_data(number);
 
     /* Check pin is valid */
-    if (gpio_data == NULL || gpio_pin_data == NULL)
+    if (pin_port_data == NULL || pin_data == NULL)
     {
         return 0;
     }
-    return (int)GPIO_ReadInputDataBit(gpio_data->port, gpio_drv_pin_data->pin);
+    return (int)GPIO_ReadInputDataBit(pin_port_data->port, pin_drv_data->pin);
 }
 
-static void drv_gpio_write(struct mr_gpio *gpio, int pin, int value)
+static void drv_pin_write(struct mr_pin *pin, int number, int value)
 {
-    struct drv_gpio_data *gpio_data = drv_gpio_get_data(pin);
-    struct drv_gpio_pin_data *gpio_pin_data = drv_gpio_get_pin_data(pin);
+    struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
+    struct drv_pin_data *pin_data = drv_pin_get_data(number);
 
     /* Check pin is valid */
-    if (gpio_data == NULL || gpio_pin_data == NULL)
+    if (pin_port_data == NULL || pin_data == NULL)
     {
         return;
     }
-    GPIO_WriteBit(gpio_data->port, gpio_drv_pin_data->pin, value);
+    GPIO_WriteBit(pin_port_data->port, pin_drv_data->pin, value);
 }
 
 void EXTI0_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
@@ -330,7 +319,7 @@ void EXTI0_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line0) != RESET)
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[0]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[0]);
         EXTI_ClearITPendingBit(EXTI_Line0);
     }
 }
@@ -340,7 +329,7 @@ void EXTI1_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line1) != RESET)
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[1]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[1]);
         EXTI_ClearITPendingBit(EXTI_Line1);
     }
 }
@@ -350,7 +339,7 @@ void EXTI2_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line2) != RESET)
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[2]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[2]);
         EXTI_ClearITPendingBit(EXTI_Line2);
     }
 }
@@ -360,7 +349,7 @@ void EXTI3_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line3) != RESET)
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[3]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[3]);
         EXTI_ClearITPendingBit(EXTI_Line3);
     }
 }
@@ -370,7 +359,7 @@ void EXTI4_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line4) != RESET)
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[4]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[4]);
         EXTI_ClearITPendingBit(EXTI_Line4);
     }
 }
@@ -384,11 +373,11 @@ void EXTI9_5_IRQHandler(void)
         || (EXTI_GetITStatus(EXTI_Line8) != RESET)
         || (EXTI_GetITStatus(EXTI_Line9) != RESET))
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[5]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[6]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[7]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[8]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[9]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[5]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[6]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[7]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[8]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[9]);
         EXTI_ClearITPendingBit(EXTI_Line5 | EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9);
     }
 }
@@ -403,36 +392,36 @@ void EXTI15_10_IRQHandler(void)
         || (EXTI_GetITStatus(EXTI_Line14) != RESET)
         || (EXTI_GetITStatus(EXTI_Line15) != RESET))
     {
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[10]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[11]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[12]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[13]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[14]);
-        mr_dev_isr(&gpio_dev.dev, MR_ISR_EVENT_RD_INTER, &gpio_irq_mask[15]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[10]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[11]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[12]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[13]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[14]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[15]);
         EXTI_ClearITPendingBit(EXTI_Line10 | EXTI_Line11 | EXTI_Line12 | EXTI_Line13 | EXTI_Line14 | EXTI_Line15);
     }
 }
 
-static struct mr_gpio_ops gpio_drv_ops =
+static struct mr_pin_ops pin_drv_ops =
     {
-        drv_gpio_configure,
-        drv_gpio_read,
-        drv_gpio_write
+        drv_pin_configure,
+        drv_pin_read,
+        drv_pin_write
     };
 
-static struct mr_drv gpio_drv =
+static struct mr_drv pin_drv =
     {
-        Mr_Drv_Type_Gpio,
-        &gpio_drv_ops,
-        &gpio_drv_ops
+        Mr_Drv_Type_Pin,
+        &pin_drv_ops,
+        MR_NULL
     };
 
-int drv_gpio_init(void)
+int drv_pin_init(void)
 {
-    return mr_gpio_register(&gpio_dev, "gpio", &gpio_drv);
+    return mr_pin_register(&pin_dev, "pin", &pin_drv);
 }
-MR_INIT_DRV_EXPORT(drv_gpio_init);
+MR_DRV_EXPORT(drv_pin_init);
 
-#endif /* !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD) && !defined(MR_USING_GPIOE) */
+#endif /* !defined(MR_USING_GPIOA) && !defined(MR_USING_GPIOB) && !defined(MR_USING_GPIOC) && !defined(MR_USING_GPIOD) */
 
-#endif /* MR_USING_GPIO */
+#endif /* MR_USING_PIN */

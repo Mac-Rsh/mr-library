@@ -9,7 +9,7 @@
 #ifndef _DRV_SPI_H_
 #define _DRV_SPI_H_
 
-#include "include/device/spi.h"
+#include "device/spi.h"
 
 #ifdef __cplusplus
 extern "C" {

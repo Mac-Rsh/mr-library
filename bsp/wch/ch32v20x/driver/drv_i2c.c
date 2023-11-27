@@ -241,7 +241,9 @@ static ssize_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *buf, size_t
         int i = 0;
 
         /* Read data */
-        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET);
+        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET)
+        {
+        }
         {
             i++;
             if (i > UINT16_MAX)
@@ -283,7 +285,7 @@ static void drv_i2c_bus_isr(struct mr_i2c_bus *i2c_bus)
 
     if (I2C_GetITStatus(i2c_bus_data->instance, I2C_IT_RXNE) != RESET)
     {
-        mr_dev_isr(&i2c_bus->dev, MR_ISR_EVENT_RD_INTER, NULL);
+        mr_dev_isr(&i2c_bus->dev, MR_ISR_I2C_RD_INT, NULL);
         I2C_ClearITPendingBit(i2c_bus_data->instance, I2C_IT_RXNE);
     }
 }
@@ -318,14 +320,14 @@ static struct mr_drv i2c_bus_drv[mr_array_num(i2c_bus_drv_data)] =
     {
 #ifdef MR_USING_I2C1
         {
-            Mr_Drv_Type_I2c,
+            Mr_Drv_Type_I2C,
             &i2c_bus_drv_ops,
             &i2c_bus_drv_data[DRV_INDEX_I2C1]
         },
 #endif /* MR_USING_I2C1 */
 #ifdef MR_USING_I2C2
         {
-            Mr_Drv_Type_I2c,
+            Mr_Drv_Type_I2C,
             &i2c_bus_drv_ops,
             &i2c_bus_drv_data[DRV_INDEX_I2C2]
         },
@@ -342,7 +344,7 @@ int drv_i2c_bus_init(void)
     }
     return MR_EOK;
 }
-MR_INIT_DRV_EXPORT(drv_i2c_bus_init);
+MR_DRV_EXPORT(drv_i2c_bus_init);
 
 #endif /* !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2) */
 

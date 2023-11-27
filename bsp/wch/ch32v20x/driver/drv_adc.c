@@ -166,14 +166,14 @@ static struct mr_drv adc_drv[mr_array_num(adc_drv_data)] =
     {
 #ifdef MR_USING_ADC1
         {
-            Mr_Drv_Type_Adc,
+            Mr_Drv_Type_ADC,
             &adc_drv_ops,
             &adc_drv_data[DRV_INDEX_ADC1],
         },
 #endif /* MR_USING_ADC1 */
 #ifdef MR_USING_ADC2
         {
-            Mr_Drv_Type_Adc,
+            Mr_Drv_Type_ADC,
             &adc_drv_ops,
             &adc_drv_data[DRV_INDEX_ADC2],
         },
@@ -190,7 +190,7 @@ int drv_adc_init(void)
     }
     return MR_EOK;
 }
-MR_INIT_DRV_EXPORT(drv_adc_init);
+MR_DRV_EXPORT(drv_adc_init);
 
 #endif /* !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2) */
 

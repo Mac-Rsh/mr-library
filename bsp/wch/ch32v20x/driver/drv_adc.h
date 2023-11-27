@@ -9,7 +9,8 @@
 #ifndef _DRV_ADC_H_
 #define _DRV_ADC_H_
 
-#include "include/device/adc.h"
+#include "device/adc.h"
+#include "mr_board.h"
 
 #ifdef __cplusplus
 extern "C" {

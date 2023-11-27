@@ -133,7 +133,7 @@ static struct mr_dac_ops dac_drv_ops =
 
 static struct mr_drv dac_drv =
     {
-        Mr_Drv_Type_Dac,
+        Mr_Drv_Type_DAC,
         &dac_drv_ops,
         &dac_drv_data,
     };
@@ -142,7 +142,7 @@ int drv_dac_init(void)
 {
     return mr_dac_register(&dac_dev, "dac1", &dac_drv);
 }
-MR_INIT_DRV_EXPORT(drv_dac_init);
+MR_DRV_EXPORT(drv_dac_init);
 
 #endif /* !defined(MR_USING_DAC1) */
 

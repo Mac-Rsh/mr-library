@@ -6,18 +6,19 @@
  * @date 2023-11-10    MacRsh       First version
  */
 
-#ifndef _DRV_UART_H_
-#define _DRV_UART_H_
+#ifndef _DRV_SERIAL_H_
+#define _DRV_SERIAL_H_
 
-#include "include/device/uart.h"
+#include "device/serial.h"
+#include "mr_board.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifdef MR_USING_UART
+#ifdef MR_USING_SERIAL
 
-struct drv_uart_data
+struct drv_serial_data
 {
     USART_TypeDef *instance;
     uint32_t clock;
@@ -30,10 +31,10 @@ struct drv_uart_data
     uint32_t remap;
 };
 
-#endif /* MR_USING_UART */
+#endif /* MR_USING_SERIAL */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* _DRV_UART_H_ */
+#endif /* _DRV_SERIAL_H_ */

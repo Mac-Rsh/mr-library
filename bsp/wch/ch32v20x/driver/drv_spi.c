@@ -10,7 +10,7 @@
 
 #ifdef MR_USING_SPI
 
-#if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3)
+#if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2)
 #error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
 #else
 
@@ -22,9 +22,6 @@ enum drv_spi_bus_index
 #ifdef MR_USING_SPI2
     DRV_INDEX_SPI2,
 #endif /* MR_USING_SPI2 */
-#ifdef MR_USING_SPI3
-    DRV_INDEX_SPI3,
-#endif /* MR_USING_SPI3 */
 };
 
 static const char *spi_bus_name[] =
@@ -94,39 +91,6 @@ static struct drv_spi_bus_data spi_bus_drv_data[] =
 #error "MR_CFG_SPI2_GROUP is not defined or defined incorrectly (support values: 1)."
 #endif /* MR_CFG_SPI2_GROUP */
 #endif /* MR_USING_SPI2 */
-#ifdef MR_USING_SPI3
-#if (MR_CFG_SPI3_GROUP == 1)
-        {
-            SPI3,
-            RCC_APB1Periph_SPI3,
-            RCC_APB2Periph_GPIOC,
-            GPIOB,
-            GPIO_Pin_3,
-            GPIOB,
-            GPIO_Pin_4,
-            GPIOB,
-            GPIO_Pin_5,
-            SPI3_IRQn,
-            0
-        },
-#elif (MR_CFG_SPI3_GROUP == 2)
-        {
-            SPI3,
-            RCC_APB1Periph_SPI3,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_10,
-            GPIOC,
-            GPIO_Pin_11,
-            GPIOC,
-            GPIO_Pin_12,
-            SPI3_IRQn,
-            GPIO_Remap_SPI3
-        },
-#else
-#error "MR_CFG_SPI3_GROUP is not defined or defined incorrectly (support values: 1, 2)."
-#endif /* MR_CFG_SPI3_GROUP */
-#endif /* MR_USING_SPI3 */
     };
 
 static struct mr_spi_bus spi_bus_dev[mr_array_num(spi_bus_drv_data)];
@@ -388,7 +352,7 @@ static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
 
     if (SPI_I2S_GetITStatus(spi_bus_data->instance, SPI_I2S_IT_RXNE) != RESET)
     {
-        mr_dev_isr(&spi_bus->dev, MR_ISR_EVENT_RD_INTER, NULL);
+        mr_dev_isr(&spi_bus->dev, MR_ISR_SPI_RD_INT, NULL);
         SPI_I2S_ClearITPendingBit(spi_bus_data->instance, SPI_I2S_IT_RXNE);
     }
 }
@@ -409,14 +373,6 @@ void SPI2_IRQHandler(void)
 }
 #endif /* MR_USING_SPI2 */
 
-#ifdef MR_USING_SPI3
-void SPI3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-void SPI3_IRQHandler(void)
-{
-    drv_spi_bus_isr(&spi_bus_dev[DRV_INDEX_SPI3]);
-}
-#endif /* MR_USING_SPI3 */
-
 static struct mr_spi_bus_ops spi_bus_drv_ops =
     {
         drv_spi_bus_configure,
@@ -428,25 +384,18 @@ static struct mr_drv spi_bus_drv[mr_array_num(spi_bus_drv_data)] =
     {
 #ifdef MR_USING_SPI1
         {
-            Mr_Drv_Type_Spi,
+            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI1],
         },
 #endif /* MR_USING_SPI1 */
 #ifdef MR_USING_SPI2
         {
-            Mr_Drv_Type_Spi,
+            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI2],
         },
 #endif /* MR_USING_SPI2 */
-#ifdef MR_USING_SPI3
-        {
-            Mr_Drv_Type_Spi,
-            &spi_bus_drv_ops,
-            &spi_bus_drv_data[DRV_INDEX_SPI3],
-        },
-#endif /* MR_USING_SPI3 */
     };
 
 int drv_spi_bus_init(void)
@@ -459,8 +408,8 @@ int drv_spi_bus_init(void)
     }
     return MR_EOK;
 }
-MR_INIT_DRV_EXPORT(drv_spi_bus_init);
+MR_DRV_EXPORT(drv_spi_bus_init);
 
-#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) */
+#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) */
 
 #endif /* MR_USING_SPI */

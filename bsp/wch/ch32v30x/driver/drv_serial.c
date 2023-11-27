@@ -6,15 +6,15 @@
  * @date 2023-11-10    MacRsh       First version
  */
 
-#include "drv_uart.h"
+#include "drv_serial.h"
 
-#ifdef MR_USING_UART
+#ifdef MR_USING_SERIAL
 
 #if !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8)
-#error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_UART."
+#error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_SERIAL."
 #else
 
-enum drv_uart_index
+enum drv_serial_index
 {
 #ifdef MR_USING_UART1
     DRV_INDEX_UART1,
@@ -42,35 +42,35 @@ enum drv_uart_index
 #endif /* MR_USING_UART8 */
 };
 
-static const char *uart_name[] =
+static const char *serial_name[] =
     {
 #ifdef MR_USING_UART1
-        "uart1",
+        "serial1",
 #endif /* MR_USING_UART1 */
 #ifdef MR_USING_UART2
-        "uart2",
+        "serial2",
 #endif /* MR_USING_UART2 */
 #ifdef MR_USING_UART3
-        "uart3",
+        "serial3",
 #endif /* MR_USING_UART3 */
 #ifdef MR_USING_UART4
-        "uart4",
+        "serial4",
 #endif /* MR_USING_UART4 */
 #ifdef MR_USING_UART5
-        "uart5",
+        "serial5",
 #endif /* MR_USING_UART5 */
 #ifdef MR_USING_UART6
-        "uart6",
+        "serial6",
 #endif /* MR_USING_UART6 */
 #ifdef MR_USING_UART7
-        "uart7",
+        "serial7",
 #endif /* MR_USING_UART7 */
 #ifdef MR_USING_UART8
-        "uart8",
+        "serial8",
 #endif /* MR_USING_UART8 */
     };
 
-static struct drv_uart_data uart_drv_data[] =
+static struct drv_serial_data serial_drv_data[] =
     {
 #ifdef MR_USING_UART1
 #if (MR_CFG_UART1_GROUP == 1)
@@ -414,34 +414,34 @@ static struct drv_uart_data uart_drv_data[] =
 #endif /* MR_USING_UART8 */
     };
 
-static struct mr_uart uart_dev[mr_array_num(uart_drv_data)];
+static struct mr_serial serial_dev[mr_array_num(serial_drv_data)];
 
-static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *config)
+static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_config *config)
 {
-    struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
+    struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     int state = (config->baud_rate == 0) ? DISABLE : ENABLE;
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     USART_InitTypeDef USART_InitStructure = {0};
 
     /* Configure clock */
-    RCC_APB2PeriphClockCmd(uart_data->gpio_clock, ENABLE);
-    if ((uint32_t)uart_data->instance < APB2PERIPH_BASE)
+    RCC_APB2PeriphClockCmd(serial_data->gpio_clock, ENABLE);
+    if ((uint32_t)serial_data->instance < APB2PERIPH_BASE)
     {
-        RCC_APB1PeriphClockCmd(uart_data->clock, state);
+        RCC_APB1PeriphClockCmd(serial_data->clock, state);
     } else
     {
-        RCC_APB2PeriphClockCmd(uart_data->clock, state);
+        RCC_APB2PeriphClockCmd(serial_data->clock, state);
     }
 
     /* Configure remap */
-    if (uart_data->remap != 0)
+    if (serial_data->remap != 0)
     {
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-        GPIO_PinRemapConfig(uart_data->remap, state);
+        GPIO_PinRemapConfig(serial_data->remap, state);
     }
 #if (MR_USING_UART1_GROUP >= 3)
-    if(uart_data->instance == USART1)
+    if(serial_data->instance == USART1)
     {
         GPIO_PinRemapConfig(GPIO_Remap_USART1_HighBit, state);
     }
@@ -451,15 +451,9 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
     {
         switch (config->data_bits)
         {
-            case MR_UART_DATA_BITS_8:
+            case MR_SERIAL_DATA_BITS_8:
             {
                 USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-                break;
-            }
-
-            case MR_UART_DATA_BITS_9:
-            {
-                USART_InitStructure.USART_WordLength = USART_WordLength_9b;
                 break;
             }
 
@@ -471,13 +465,13 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
 
         switch (config->stop_bits)
         {
-            case MR_UART_STOP_BITS_1:
+            case MR_SERIAL_STOP_BITS_1:
             {
                 USART_InitStructure.USART_StopBits = USART_StopBits_1;
                 break;
             }
 
-            case MR_UART_STOP_BITS_2:
+            case MR_SERIAL_STOP_BITS_2:
             {
                 USART_InitStructure.USART_StopBits = USART_StopBits_2;
                 break;
@@ -491,19 +485,19 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
 
         switch (config->parity)
         {
-            case MR_UART_PARITY_NONE:
+            case MR_SERIAL_PARITY_NONE:
             {
                 USART_InitStructure.USART_Parity = USART_Parity_No;
                 break;
             }
 
-            case MR_UART_PARITY_ODD:
+            case MR_SERIAL_PARITY_ODD:
             {
                 USART_InitStructure.USART_Parity = USART_Parity_Odd;
                 break;
             }
 
-            case MR_UART_PARITY_EVEN:
+            case MR_SERIAL_PARITY_EVEN:
             {
                 USART_InitStructure.USART_Parity = USART_Parity_Even;
                 break;
@@ -517,7 +511,7 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
 
         switch (config->bit_order)
         {
-            case MR_UART_BIT_ORDER_LSB:
+            case MR_SERIAL_BIT_ORDER_LSB:
             {
                 break;
             }
@@ -530,7 +524,7 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
 
         switch (config->invert)
         {
-            case MR_UART_NRZ_NORMAL:
+            case MR_SERIAL_NRZ_NORMAL:
             {
                 break;
             }
@@ -542,48 +536,48 @@ static int drv_uart_configure(struct mr_uart *uart, struct mr_uart_config *confi
         }
 
         /* Configure TX/RX GPIO */
-        GPIO_InitStructure.GPIO_Pin = uart_data->tx_pin;
+        GPIO_InitStructure.GPIO_Pin = serial_data->tx_pin;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-        GPIO_Init(uart_data->tx_port, &GPIO_InitStructure);
-        GPIO_InitStructure.GPIO_Pin = uart_data->rx_pin;
+        GPIO_Init(serial_data->tx_port, &GPIO_InitStructure);
+        GPIO_InitStructure.GPIO_Pin = serial_data->rx_pin;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        GPIO_Init(uart_data->rx_port, &GPIO_InitStructure);
+        GPIO_Init(serial_data->rx_port, &GPIO_InitStructure);
     } else
     {
         /* Reset TX/RX GPIO */
-        GPIO_InitStructure.GPIO_Pin = uart_data->tx_pin;
+        GPIO_InitStructure.GPIO_Pin = serial_data->tx_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        GPIO_Init(uart_data->tx_port, &GPIO_InitStructure);
-        GPIO_InitStructure.GPIO_Pin = uart_data->rx_pin;
-        GPIO_Init(uart_data->rx_port, &GPIO_InitStructure);
+        GPIO_Init(serial_data->tx_port, &GPIO_InitStructure);
+        GPIO_InitStructure.GPIO_Pin = serial_data->rx_pin;
+        GPIO_Init(serial_data->rx_port, &GPIO_InitStructure);
     }
 
     /* Configure NVIC */
-    NVIC_InitStructure.NVIC_IRQChannel = uart_data->irq;
+    NVIC_InitStructure.NVIC_IRQChannel = serial_data->irq;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = state;
     NVIC_Init(&NVIC_InitStructure);
-    USART_ITConfig(uart_data->instance, USART_IT_RXNE, state);
+    USART_ITConfig(serial_data->instance, USART_IT_RXNE, state);
     if (state == DISABLE)
     {
-        USART_ITConfig(uart_data->instance, USART_IT_TXE, DISABLE);
+        USART_ITConfig(serial_data->instance, USART_IT_TXE, DISABLE);
     }
 
     /* Configure UART */
     USART_InitStructure.USART_BaudRate = config->baud_rate;
     USART_InitStructure.USART_HardwareFlowControl = 0;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(uart_data->instance, &USART_InitStructure);
-    USART_Cmd(uart_data->instance, state);
+    USART_Init(serial_data->instance, &USART_InitStructure);
+    USART_Cmd(serial_data->instance, state);
     return MR_EOK;
 }
 
-static ssize_t drv_uart_read(struct mr_uart *uart, uint8_t *buf, size_t size)
+static ssize_t drv_serial_read(struct mr_serial *serial, uint8_t *buf, size_t size)
 {
-    struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
+    struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     ssize_t rd_size = 0;
 
     for (rd_size = 0; rd_size < size; rd_size++)
@@ -591,7 +585,7 @@ static ssize_t drv_uart_read(struct mr_uart *uart, uint8_t *buf, size_t size)
         int i = 0;
 
         /* Read data */
-        while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_RXNE) == RESET)
+        while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_RXNE) == RESET)
         {
             i++;
             if (i > UINT16_MAX)
@@ -599,14 +593,14 @@ static ssize_t drv_uart_read(struct mr_uart *uart, uint8_t *buf, size_t size)
                 return rd_size;
             }
         }
-        buf[rd_size] = USART_ReceiveData(uart_data->instance);
+        buf[rd_size] = USART_ReceiveData(serial_data->instance);
     }
     return rd_size;
 }
 
-static ssize_t drv_uart_write(struct mr_uart *uart, const uint8_t *buf, size_t size)
+static ssize_t drv_serial_write(struct mr_serial *serial, const uint8_t *buf, size_t size)
 {
-    struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
+    struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     ssize_t wr_size = 0;
 
     for (wr_size = 0; wr_size < size; wr_size++)
@@ -614,8 +608,8 @@ static ssize_t drv_uart_write(struct mr_uart *uart, const uint8_t *buf, size_t s
         int i = 0;
 
         /* Write data */
-        USART_SendData(uart_data->instance, buf[wr_size]);
-        while (USART_GetFlagStatus(uart_data->instance, USART_FLAG_TC) == RESET)
+        USART_SendData(serial_data->instance, buf[wr_size]);
+        while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_TC) == RESET)
         {
             i++;
             if (i > UINT16_MAX)
@@ -627,36 +621,36 @@ static ssize_t drv_uart_write(struct mr_uart *uart, const uint8_t *buf, size_t s
     return wr_size;
 }
 
-static void drv_uart_start_tx(struct mr_uart *uart)
+static void drv_serial_start_tx(struct mr_serial *serial)
 {
-    struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
+    struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
 
     /* Enable TX interrupt */
-    USART_ITConfig(uart_data->instance, USART_IT_TXE, ENABLE);
+    USART_ITConfig(serial_data->instance, USART_IT_TXE, ENABLE);
 }
 
-static void drv_uart_stop_tx(struct mr_uart *uart)
+static void drv_serial_stop_tx(struct mr_serial *serial)
 {
-    struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
+    struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
 
     /* Disable TX interrupt */
-    USART_ITConfig(uart_data->instance, USART_IT_TXE, DISABLE);
+    USART_ITConfig(serial_data->instance, USART_IT_TXE, DISABLE);
 }
 
-static void drv_uart_isr(struct mr_uart *uart)
+static void drv_serial_isr(struct mr_serial *serial)
 {
-    struct drv_uart_data *uart_data = (struct drv_uart_data *)uart->dev.drv->data;
+    struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
 
-    if (USART_GetITStatus(uart_data->instance, USART_IT_RXNE) != RESET)
+    if (USART_GetITStatus(serial_data->instance, USART_IT_RXNE) != RESET)
     {
-        mr_dev_isr(&uart->dev, MR_ISR_EVENT_RD_INTER, NULL);
-        USART_ClearITPendingBit(uart_data->instance, USART_IT_RXNE);
+        mr_dev_isr(&serial->dev, MR_ISR_SERIAL_RD_INT, NULL);
+        USART_ClearITPendingBit(serial_data->instance, USART_IT_RXNE);
     }
 
-    if (USART_GetITStatus(uart_data->instance, USART_IT_TXE) != RESET)
+    if (USART_GetITStatus(serial_data->instance, USART_IT_TXE) != RESET)
     {
-        mr_dev_isr(&uart->dev, MR_ISR_EVENT_WR_INTER, NULL);
-        USART_ClearITPendingBit(uart_data->instance, USART_IT_TXE);
+        mr_dev_isr(&serial->dev, MR_ISR_SERIAL_WR_INT, NULL);
+        USART_ClearITPendingBit(serial_data->instance, USART_IT_TXE);
     }
 }
 
@@ -664,7 +658,7 @@ static void drv_uart_isr(struct mr_uart *uart)
 void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART1_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART1]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART1]);
 }
 #endif /* MR_USING_UART1 */
 
@@ -672,7 +666,7 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART2_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART2]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART2]);
 }
 #endif /* MR_USING_UART2 */
 
@@ -680,7 +674,7 @@ void USART2_IRQHandler(void)
 void USART3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART3_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART3]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART3]);
 }
 #endif /* MR_USING_UART3 */
 
@@ -688,7 +682,7 @@ void USART3_IRQHandler(void)
 void UART4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART4_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART4]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART4]);
 }
 #endif /* MR_USING_UART4 */
 
@@ -696,7 +690,7 @@ void UART4_IRQHandler(void)
 void UART5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART5_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART5]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART5]);
 }
 #endif /* MR_USING_UART5 */
 
@@ -704,7 +698,7 @@ void UART5_IRQHandler(void)
 void UART6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART6_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART6]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART6]);
 }
 #endif /* MR_USING_UART6 */
 
@@ -712,7 +706,7 @@ void UART6_IRQHandler(void)
 void UART7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART7_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART7]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART7]);
 }
 #endif /* MR_USING_UART7 */
 
@@ -720,91 +714,91 @@ void UART7_IRQHandler(void)
 void UART8_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART8_IRQHandler(void)
 {
-    drv_uart_isr(&uart_dev[DRV_INDEX_UART8]);
+    drv_serial_isr(&serial_dev[DRV_INDEX_UART8]);
 }
 #endif /* MR_USING_UART8 */
 
-static struct mr_uart_ops uart_drv_ops =
+static struct mr_serial_ops serial_drv_ops =
     {
-        drv_uart_configure,
-        drv_uart_read,
-        drv_uart_write,
-        drv_uart_start_tx,
-        drv_uart_stop_tx
+        drv_serial_configure,
+        drv_serial_read,
+        drv_serial_write,
+        drv_serial_start_tx,
+        drv_serial_stop_tx
     };
 
-static struct mr_drv uart_drv[mr_array_num(uart_drv_data)] =
+static struct mr_drv serial_drv[mr_array_num(serial_drv_data)] =
     {
 #ifdef MR_USING_UART1
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART1]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART1]
         },
 #endif /* MR_USING_UART1 */
 #ifdef MR_USING_UART2
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART2]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART2]
         },
 #endif /* MR_USING_UART2 */
 #ifdef MR_USING_UART3
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART3]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART3]
         },
 #endif /* MR_USING_UART3 */
 #ifdef MR_USING_UART4
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART4]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART4]
         },
 #endif /* MR_USING_UART4 */
 #ifdef MR_USING_UART5
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART5]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART5]
         },
 #endif /* MR_USING_UART5 */
 #ifdef MR_USING_UART6
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART6]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART6]
         },
 #endif /* MR_USING_UART6 */
 #ifdef MR_USING_UART7
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART7]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART7]
         },
 #endif /* MR_USING_UART7 */
 #ifdef MR_USING_UART8
         {
-            Mr_Drv_Type_Uart,
-            &uart_drv_ops,
-            &uart_drv_data[DRV_INDEX_UART8]
+            Mr_Drv_Type_Serial,
+            &serial_drv_ops,
+            &serial_drv_data[DRV_INDEX_UART8]
         },
 #endif /* MR_USING_UART8 */
     };
 
-int drv_uart_init(void)
+int drv_serial_init(void)
 {
     int index = 0;
 
-    for (index = 0; index < mr_array_num(uart_dev); index++)
+    for (index = 0; index < mr_array_num(serial_dev); index++)
     {
-        mr_uart_register(&uart_dev[index], uart_name[index], &uart_drv[index]);
+        mr_serial_register(&serial_dev[index], serial_name[index], &serial_drv[index]);
     }
     return MR_EOK;
 }
-MR_INIT_CONSOLE_EXPORT(drv_uart_init);
+MR_DRV_EXPORT(drv_serial_init);
 
 #endif /* !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8) */
 
-#endif /* MR_USING_UART */
+#endif /* MR_USING_SERIAL */
