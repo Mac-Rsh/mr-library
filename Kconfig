@@ -1,0 +1,119 @@
+mainmenu "mr-library"
+
+menu "Device configure"
+
+	config MR_CFG_HEAP_SIZE
+		int "The heap size (Bytes)"
+		default 1024
+		range 8 2147483647
+		help
+			Size of dynamic memory for system.
+
+    config MR_USING_ASSERT
+    		bool "Enable assert"
+    		default y
+
+	config MR_CFG_NAME_MAX
+		int "The maximum length of device name"
+		default 8
+		range 4 1024
+		help
+		  Maximum length of name
+
+	config MR_CFG_DESC_MAX
+		int "The maximum number of descriptors"
+		default 32
+		range 16 1024
+		help
+		  Maximum number of descriptors
+
+	config MR_USING_RDWR_CTL
+		bool "Enable read/write control"
+		default y
+
+	config MR_USING_ADC
+		bool "Enable ADC device"
+		default n
+
+	config MR_USING_CAN
+		bool "Enable CAN device"
+		default n
+
+	menu "CAN configure"
+		depends on MR_USING_CAN
+
+		config MR_CFG_CAN_RD_BUFSZ
+			int "The RX buffer size"
+			default 32
+			range 0 MR_CFG_HEAP_SIZE
+			help
+				Size of SPI Rx buffer
+	endmenu
+
+	config MR_USING_DAC
+		bool "Enable DAC device"
+		default n
+
+	config MR_USING_I2C
+		bool "Enable I2C device"
+		default n
+
+	menu "I2C configure"
+		depends on MR_USING_I2C
+
+		config MR_CFG_I2C_RD_BUFSZ
+			int "The RX buffer size"
+			default 32
+			range 0 MR_CFG_HEAP_SIZE
+			help
+				Size of SPI RX buffer
+	endmenu
+
+	config MR_USING_PIN
+		bool "Enable Pin device"
+		default n
+
+	config MR_USING_SERIAL
+		bool "Enable Serial device"
+		default n
+
+	menu "Serial configure"
+		depends on MR_USING_SERIAL
+
+		config MR_CFG_SERIAL_RD_BUFSZ
+			int "The RX buffer size"
+			default 32
+			range 0 MR_CFG_HEAP_SIZE
+			help
+				Size of Serial RX buffer
+
+		config MR_CFG_SERIAL_WR_BUFSZ
+			int "The TX buffer size for Serial"
+			default 0
+			range 0 MR_CFG_HEAP_SIZE
+			help
+				Size of Serial TX buffer
+
+		config MR_CFG_CONSOLE_NAME
+			string "The console device name"
+			default "serial1"
+	endmenu
+
+	config MR_USING_SPI
+		bool "Enable SPI Device"
+		default n
+
+	menu "SPI configure"
+		depends on MR_USING_SPI
+
+		config MR_CFG_SPI_RD_BUFSZ
+			int "RX buffer size"
+			default 32
+			range 0 MR_CFG_HEAP_SIZE
+			help
+				Size of SPI RX buffer
+	endmenu
+
+endmenu
+
+source "driver/Kconfig"
