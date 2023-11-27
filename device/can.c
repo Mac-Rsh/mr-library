@@ -6,7 +6,7 @@
  * @date 2023-11-22    MacRsh       First version
  */
 
-#include "include/device/can.h"
+#include "can.h"
 
 #ifdef MR_USING_CAN
 
@@ -114,7 +114,7 @@ int mr_can_bus_register(struct mr_can_bus *can_bus, const char *name, struct mr_
     can_bus->owner = MR_NULL;
 
     /* Register the can-bus */
-    return mr_dev_register(&can_bus->dev, name, Mr_Dev_Type_Can, MR_SFLAG_RDWR, &ops, drv);
+    return mr_dev_register(&can_bus->dev, name, Mr_Dev_Type_CAN, MR_SFLAG_RDWR, &ops, drv);
 }
 
 static int can_dev_filter_configure(struct mr_can_dev *can_dev, int id, int ide, int state)
@@ -276,7 +276,7 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_CTL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -295,7 +295,7 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_SET_RD_BUFSZ:
+        case MR_CTL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -312,7 +312,7 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_CTL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -323,7 +323,7 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_GET_RD_BUFSZ:
+        case MR_CTL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -377,7 +377,7 @@ int mr_can_dev_register(struct mr_can_dev *can_dev, const char *name, int id, in
     can_dev->ide = ide;
 
     /* Register the can-dev */
-    return mr_dev_register(&can_dev->dev, name, Mr_Dev_Type_Can, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
+    return mr_dev_register(&can_dev->dev, name, Mr_Dev_Type_CAN, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
 }
 
 #endif /* MR_USING_CAN */

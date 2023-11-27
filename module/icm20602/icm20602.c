@@ -23,7 +23,7 @@
 
 static void icm20602_write_reg(struct mr_icm20602 *icm20602, uint8_t reg, uint8_t data)
 {
-    mr_dev_ioctl(icm20602->desc, MR_CTRL_SET_OFFSET, mr_make_local(int, reg));
+    mr_dev_ioctl(icm20602->desc, MR_CTL_SET_OFFSET, mr_make_local(int, reg));
     mr_dev_write(icm20602->desc, &data, sizeof(data));
 }
 
@@ -31,14 +31,14 @@ static uint8_t icm20602_read_reg(struct mr_icm20602 *icm20602, uint8_t reg)
 {
     uint8_t data = 0;
 
-    mr_dev_ioctl(icm20602->desc, MR_CTRL_SET_OFFSET, mr_make_local(int, reg | 0x80));
+    mr_dev_ioctl(icm20602->desc, MR_CTL_SET_OFFSET, mr_make_local(int, reg | 0x80));
     mr_dev_read(icm20602->desc, &data, sizeof(data));
     return data;
 }
 
 static ssize_t icm20602_read_regs(struct mr_icm20602 *icm20602, uint8_t reg, uint8_t *buf, size_t size)
 {
-    mr_dev_ioctl(icm20602->desc, MR_CTRL_SET_OFFSET, mr_make_local(int, reg | 0x80));
+    mr_dev_ioctl(icm20602->desc, MR_CTL_SET_OFFSET, mr_make_local(int, reg | 0x80));
     return mr_dev_read(icm20602->desc, buf, size);
 }
 
@@ -138,7 +138,7 @@ static int mr_icm20602_open(struct mr_dev *dev)
         return icm20602->desc;
     }
     config.baud_rate = 10 * 1000 * 1000;
-    mr_dev_ioctl(icm20602->desc, MR_CTRL_SET_CONFIG, &config);
+    mr_dev_ioctl(icm20602->desc, MR_CTL_SET_CONFIG, &config);
 
     /* Self check */
     if (icm20602_self_check(icm20602) == MR_FALSE)
@@ -221,7 +221,7 @@ static int mr_icm20602_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_CTL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -232,7 +232,7 @@ static int mr_icm20602_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_CTL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {

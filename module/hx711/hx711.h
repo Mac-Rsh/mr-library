@@ -20,10 +20,10 @@ extern "C" {
 /**
  * @brief HX711 command.
  */
-#define MR_CTRL_HX711_SET_FILTER_BITS   ((0x01|0x80) << 16)         /**< Set filter bits */
-#define MR_CTRL_HX711_SET_SELF_CAL      ((0x02|0x80) << 16)         /**< Set self calibration */
-#define MR_CTRL_HX711_GET_FILTER_BITS   ((0x01|0x00) << 16)         /**< Get filter bits */
-#define MR_CTRL_HX711_GET_SELF_CAL      ((0x02|0x00) << 16)         /**< Get self calibration */
+#define MR_CTL_HX711_SET_FILTER_BITS   ((0x01|0x80) << 16)         /**< Set filter bits */
+#define MR_CTL_HX711_SET_SELF_CAL      ((0x02|0x80) << 16)         /**< Set self calibration */
+#define MR_CTL_HX711_GET_FILTER_BITS   ((0x01|0x00) << 16)         /**< Get filter bits */
+#define MR_CTL_HX711_GET_SELF_CAL      ((0x02|0x00) << 16)         /**< Get self calibration */
 
 /**
  * @brief HX711 data type.

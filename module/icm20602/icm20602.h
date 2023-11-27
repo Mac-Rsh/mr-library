@@ -22,7 +22,7 @@ extern "C" {
 #error "Please define MR_USING_SPI. Otherwise ICM20602 will not work."
 #else
 
-#include "include/device/spi.h"
+#include "device/spi.h"
 
 /**
  * @brief ICM20602 acc Range.

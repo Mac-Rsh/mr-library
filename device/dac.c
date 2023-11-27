@@ -6,7 +6,7 @@
  * @date 2023-11-08    MacRsh       First version
  */
 
-#include "include/device/dac.h"
+#include "dac.h"
 
 #ifdef MR_USING_DAC
 
@@ -66,7 +66,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_DAC_SET_CHANNEL_STATE:
+        case MR_CTL_DAC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -94,7 +94,7 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_DAC_GET_CHANNEL_STATE:
+        case MR_CTL_DAC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -149,7 +149,7 @@ int mr_dac_register(struct mr_dac *dac, const char *name, struct mr_drv *drv)
     dac->channel = 0;
 
     /* Register the dac */
-    return mr_dev_register(&dac->dev, name, Mr_Dev_Type_Dac, MR_SFLAG_WRONLY, &ops, drv);
+    return mr_dev_register(&dac->dev, name, Mr_Dev_Type_DAC, MR_SFLAG_WRONLY, &ops, drv);
 }
 
 #endif /* MR_USING_DAC */

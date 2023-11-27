@@ -54,8 +54,8 @@ struct mr_i2c_config
 /**
  * @brief I2C register command.
  */
-#define MR_CTRL_I2C_SET_REG             MR_CTRL_SET_OFFSET          /**< Set register */
-#define MR_CTRL_I2C_GET_REG             MR_CTRL_GET_OFFSET          /**< Get register */
+#define MR_CTL_I2C_SET_REG              MR_CTL_SET_OFFSET          /**< Set register */
+#define MR_CTL_I2C_GET_REG              MR_CTL_GET_OFFSET          /**< Get register */
 
 /**
  * @brief I2C data type.

@@ -6,7 +6,7 @@
  * @date 2023-11-09    MacRsh       First version
  */
 
-#include "include/device/i2c.h"
+#include "i2c.h"
 
 #ifdef MR_USING_I2C
 
@@ -103,7 +103,7 @@ int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *name, struct mr_
     i2c_bus->hold = MR_FALSE;
 
     /* Register the i2c-bus */
-    return mr_dev_register(&i2c_bus->dev, name, Mr_Dev_Type_I2c, MR_SFLAG_RDWR, &ops, drv);
+    return mr_dev_register(&i2c_bus->dev, name, Mr_Dev_Type_I2C, MR_SFLAG_RDWR, &ops, drv);
 }
 
 MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
@@ -294,7 +294,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_CONFIG:
+        case MR_CTL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -322,7 +322,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_SET_RD_BUFSZ:
+        case MR_CTL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -339,7 +339,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_CONFIG:
+        case MR_CTL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -350,7 +350,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_GET_RD_BUFSZ:
+        case MR_CTL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -405,7 +405,7 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
     i2c_dev->addr_bits = addr_bits;
 
     /* Register the i2c-device */
-    return mr_dev_register(&i2c_dev->dev, name, Mr_Dev_Type_I2c, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
+    return mr_dev_register(&i2c_dev->dev, name, Mr_Dev_Type_I2C, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
 }
 
 #endif /* MR_USING_I2C */

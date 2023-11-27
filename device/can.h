@@ -53,8 +53,8 @@ struct mr_can_config
 /**
  * @brief CAN id command.
  */
-#define MR_CTRL_CAN_SET_ID              MR_CTRL_SET_OFFSET          /**< Set id */
-#define MR_CTRL_CAN_GET_ID              MR_CTRL_GET_OFFSET          /**< Get id */
+#define MR_CTL_CAN_SET_ID               MR_CTL_SET_OFFSET          /**< Set id */
+#define MR_CTL_CAN_GET_ID               MR_CTL_GET_OFFSET          /**< Get id */
 
 /**
  * @brief CAN data type.
@@ -64,7 +64,7 @@ typedef uint8_t mr_can_data_t;                                      /**< CAN rea
 /**
 * @brief CAN ISR events.
 */
-#define MR_ISR_CAN_RD_INT            (MR_ISR_RD | (0x01 << 16))     /**< Read interrupt */
+#define MR_ISR_CAN_RD_INT               (MR_ISR_RD | (0x01 << 16))     /**< Read interrupt */
 
 /**
  * @brief CAN bus structure.

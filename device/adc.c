@@ -6,7 +6,7 @@
  * @date 2023-11-06    MacRsh       First version
  */
 
-#include "include/device/adc.h"
+#include "adc.h"
 
 #ifdef MR_USING_ADC
 
@@ -66,7 +66,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_ADC_SET_CHANNEL_STATE:
+        case MR_CTL_ADC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -99,7 +99,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_ADC_GET_CHANNEL_STATE:
+        case MR_CTL_ADC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -154,7 +154,7 @@ int mr_adc_register(struct mr_adc *adc, const char *name, struct mr_drv *drv)
     adc->channel = 0;
 
     /* Register the adc */
-    return mr_dev_register(&adc->dev, name, Mr_Dev_Type_Adc, MR_SFLAG_RDONLY, &ops, drv);
+    return mr_dev_register(&adc->dev, name, Mr_Dev_Type_ADC, MR_SFLAG_RDONLY, &ops, drv);
 }
 
 #endif /* MR_USING_ADC */

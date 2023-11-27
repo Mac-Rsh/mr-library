@@ -14,11 +14,11 @@
 #error "Please define MR_USING_PIN. Otherwise HX711 will not work."
 #else
 
-#include "include/device/pin.h"
+#include "device/pin.h"
 
 static void hx711_set_sck(struct mr_hx711 *hx711, uint8_t value)
 {
-    mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->sck_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTL_SET_OFFSET, &hx711->sck_pin);
     mr_dev_write(hx711->desc, &value, sizeof(value));
 }
 
@@ -26,7 +26,7 @@ static uint8_t hx711_get_dout(struct mr_hx711 *hx711)
 {
     uint8_t value = 0;
 
-    mr_dev_ioctl(hx711->desc, MR_CTRL_SET_OFFSET, &hx711->dout_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTL_SET_OFFSET, &hx711->dout_pin);
     mr_dev_read(hx711->desc, &value, sizeof(value));
     return value;
 }
@@ -75,19 +75,19 @@ static int mr_hx711_open(struct mr_dev *dev)
 {
     struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
 
-    hx711->desc = mr_dev_open("gpio", MR_OFLAG_RDWR);
+    hx711->desc = mr_dev_open("pin", MR_OFLAG_RDWR);
     if (hx711->desc < 0)
     {
         return hx711->desc;
     }
 
     /* Set the sck pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->sck_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_NUMBER, &hx711->sck_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
 
     /* Set the dout pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->dout_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_INPUT_UP));
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_NUMBER, &hx711->dout_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_INPUT_UP));
     return MR_EOK;
 }
 
@@ -96,12 +96,12 @@ static int mr_hx711_close(struct mr_dev *dev)
     struct mr_hx711 *hx711 = (struct mr_hx711 *)dev;
 
     /* Reset the sck pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->sck_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_NUMBER, &hx711->sck_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
 
     /* Reset the dout pin mode */
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_NUMBER, &hx711->dout_pin);
-    mr_dev_ioctl(hx711->desc, MR_CTRL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_NUMBER, &hx711->dout_pin);
+    mr_dev_ioctl(hx711->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
 
     mr_dev_close(hx711->desc);
     hx711->desc = -1;
@@ -130,7 +130,7 @@ static int mr_hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_HX711_SET_FILTER_BITS:
+        case MR_CTL_HX711_SET_FILTER_BITS:
         {
             if (args != MR_NULL)
             {
@@ -140,13 +140,13 @@ static int mr_hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_HX711_SET_SELF_CAL:
+        case MR_CTL_HX711_SET_SELF_CAL:
         {
             hx711->self_cal = hx711_get_value(hx711);
             return MR_EOK;
         }
 
-        case MR_CTRL_HX711_GET_FILTER_BITS:
+        case MR_CTL_HX711_GET_FILTER_BITS:
         {
             if (args != MR_NULL)
             {
@@ -155,7 +155,7 @@ static int mr_hx711_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_HX711_GET_SELF_CAL:
+        case MR_CTL_HX711_GET_SELF_CAL:
         {
             if (args != MR_NULL)
             {
@@ -207,7 +207,7 @@ int mr_hx711_register(struct mr_hx711 *hx711, const char *name, int sck_pin, int
     hx711->desc = -1;
 
     /* Register the hx711 */
-    return mr_dev_register(&hx711->dev, name, Mr_Dev_Type_Adc, MR_SFLAG_RDONLY | MR_SFLAG_NONDRV, &ops, MR_NULL);
+    return mr_dev_register(&hx711->dev, name, Mr_Dev_Type_ADC, MR_SFLAG_RDONLY | MR_SFLAG_NONDRV, &ops, MR_NULL);
 }
 
 #endif /* MR_USING_PIN */

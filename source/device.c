@@ -138,7 +138,7 @@ static struct mr_dev *dev_find_or_register(const char *name, struct mr_dev *dev,
     return MR_NULL;
 }
 
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
 MR_INLINE int dev_lock_take(struct mr_dev *dev, int take, int set)
 {
     if (dev->link != MR_NULL)
@@ -166,7 +166,7 @@ MR_INLINE void dev_lock_release(struct mr_dev *dev, int release)
     }
     mr_bits_clr(dev->lflags, release);
 }
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
 MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
 {
@@ -179,12 +179,12 @@ MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
 
 MR_INLINE int dev_open(struct mr_dev *dev, uint32_t oflags)
 {
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(dev->sflags, oflags) != MR_ENABLE)
     {
         return MR_ENOTSUP;
     }
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     if (dev->ref_count == 0)
     {
@@ -206,12 +206,12 @@ MR_INLINE int dev_open(struct mr_dev *dev, uint32_t oflags)
             }
         }
     }
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     else if (mr_bits_is_set(dev->sflags, MR_SFLAG_ONLY) == MR_ENABLE)
     {
         return MR_EBUSY;
     }
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     dev->ref_count++;
     return MR_EOK;
@@ -241,7 +241,7 @@ MR_INLINE int dev_close(struct mr_dev *dev)
 
 MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     do
     {
         /* Disable interrupt */
@@ -256,20 +256,20 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
         /* Enable interrupt */
         mr_interrupt_enable();
     } while (0);
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     /* Read buffer from the device */
     ssize_t ret = dev->ops->read(dev, off, buf, size, async);
 
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     dev_lock_release(dev, MR_LFLAG_RD);
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
     return ret;
 }
 
 MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t size, int async)
 {
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     do
     {
         /* Disable interrupt */
@@ -286,12 +286,12 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
         /* Enable interrupt */
         mr_interrupt_enable();
     } while (0);
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     /* Write buffer to the device */
     ssize_t ret = dev->ops->write(dev, offset, buf, size, async);
 
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     dev_lock_release(dev, MR_LFLAG_WR);
     if ((async == MR_ASYNC) && (ret != 0))
     {
@@ -301,7 +301,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
         /* Enable interrupt */
         mr_interrupt_enable();
     }
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
     return ret;
 }
 
@@ -314,20 +314,20 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_RD_CALL:
+        case MR_CTL_SET_RD_CALL:
         {
             dev->rd_call.desc = desc;
             dev->rd_call.call = (int (*)(int desc, void *args))args;
             return MR_EOK;
         }
-        case MR_CTRL_SET_WR_CALL:
+        case MR_CTL_SET_WR_CALL:
         {
             dev->wr_call.desc = desc;
             dev->wr_call.call = (int (*)(int desc, void *args))args;
             return MR_EOK;
         }
 
-        case MR_CTRL_GET_RD_CALL:
+        case MR_CTL_GET_RD_CALL:
         {
             if (args != MR_NULL)
             {
@@ -336,7 +336,7 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTRL_GET_WR_CALL:
+        case MR_CTL_GET_WR_CALL:
         {
             if (args != MR_NULL)
             {
@@ -348,7 +348,7 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 
         default:
         {
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
             do
             {
                 /* Disable interrupt */
@@ -363,14 +363,14 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
                 /* Enable interrupt */
                 mr_interrupt_enable();
             } while (0);
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
             /* I/O control to the device */
             int ret = dev->ops->ioctl(dev, off, cmd, args);
 
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
             dev_lock_release(dev, MR_LFLAG_RDWR);
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
             return ret;
         }
     }
@@ -411,13 +411,13 @@ int mr_dev_register(struct mr_dev *dev,
     mr_list_init(&dev->slist);
     dev->link = MR_NULL;
     dev->type = type;
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     dev->sflags = sflags;
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
     dev->ref_count = 0;
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     dev->lflags = 0;
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
     dev->rd_call.desc = -1;
     dev->rd_call.call = MR_NULL;
     dev->wr_call.desc = -1;
@@ -461,9 +461,9 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
             {
                 if (ret == 0)
                 {
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
                     dev_lock_release(dev, MR_LFLAG_NONBLOCK);
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
                     if (dev->wr_call.call != MR_NULL)
                     {
                         dev->wr_call.call(dev->wr_call.desc, &ret);
@@ -644,12 +644,12 @@ ssize_t mr_dev_read(int desc, void *buf, size_t size)
     mr_assert(desc_is_valid(desc));
     mr_assert(buf != MR_NULL || size == 0);
 
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_RDONLY) == MR_DISABLE)
     {
         return MR_ENOTSUP;
     }
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     /* Read buffer from the device */
     return dev_read(desc_of(desc).dev,
@@ -673,12 +673,12 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size)
     mr_assert(desc_is_valid(desc));
     mr_assert(buf != MR_NULL || size == 0);
 
-#ifdef MR_USING_RDWR_CTRL
+#ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_WRONLY) == MR_DISABLE)
     {
         return MR_ENOTSUP;
     }
-#endif /* MR_USING_RDWR_CTRL */
+#endif /* MR_USING_RDWR_CTL */
 
     /* Write buffer to the device */
     return dev_write(desc_of(desc).dev,
@@ -703,7 +703,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET_OFFSET:
+        case MR_CTL_SET_OFFSET:
         {
             if (args != MR_NULL)
             {
@@ -713,7 +713,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTRL_GET_OFFSET:
+        case MR_CTL_GET_OFFSET:
         {
             if (args != MR_NULL)
             {
