@@ -100,7 +100,7 @@ menu "Device configure"
 	endmenu
 
 	config MR_USING_SPI
-		bool "Enable SPI Device"
+		bool "Enable SPI device"
 		default n
 
 	menu "SPI configure"
