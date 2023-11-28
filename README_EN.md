@@ -31,7 +31,7 @@ drivers. This greatly improves the reusability of software and its extensibility
 
  ----------
 
-![](E:\Workspace\Clion\mr-library\mr-library\document\picture\README.png)
+![framework](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README.png)
 
  ----------
 
@@ -79,9 +79,9 @@ code.
 `Kconfig` will automatically generate the configuration options interface based on the configuration file. Developers
 can select the functional components that need to be enabled and set relevant parameters through simple operations.
 
-![](E:\Workspace\Clion\mr-library\mr-library\document\picture\README_Kconfig.png)
+![Tool](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig.png)
 
-![](E:\Workspace\Clion\mr-library\mr-library\document\picture\README_Kconfig1.png)
+![Tool1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig1.png)
 
 By modifying parameters, you can quickly tailor the required functions. After the configuration is complete,
 the `Python` script automatically generates the configuration file.

@@ -26,7 +26,7 @@
 
  ----------
 
-![](E:\Workspace\Clion\mr-library\mr-library\document\picture\README.png)
+![项目结构图](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README.png)
 
  ----------
 
@@ -71,9 +71,9 @@
 
 `Kconfig` 会根据配置文件自动生成配置选项界面。开发者可以通过简单的操作来选择需要启用的功能组件和设置相关参数。
 
-![](E:\Workspace\Clion\mr-library\mr-library\document\picture\README_Kconfig.png)
+![配置工具](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig.png)
 
-![](E:\Workspace\Clion\mr-library\mr-library\document\picture\README_Kconfig1.png)
+![配置工具1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig1.png)
 
 通过修改参数，快速裁剪所需功能。配置完成后通过 `Python` 脚本自动生成配置文件。
 
