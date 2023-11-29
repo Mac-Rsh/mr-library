@@ -43,6 +43,10 @@ extern "C" {
 #include "drv_spi.h"
 #endif
 
+#ifdef MR_USING_TIMER
+#include "drv_timer.h"
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

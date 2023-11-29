@@ -114,6 +114,10 @@ menu "Device configure"
 				Size of SPI RX buffer
 	endmenu
 
+    config MR_USING_TIMER
+        bool "Enable Timer device"
+        default n
+
 endmenu
 
 source "driver/Kconfig"
