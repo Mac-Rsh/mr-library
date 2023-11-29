@@ -80,6 +80,14 @@ struct mr_serial_config
 };
 
 /**
+ * @brief SERIAL control command.
+ */
+#define MR_CTL_SERIAL_SET_RD_CALL       MR_CTL_SET_RD_CALL          /**< Set read callback */
+#define MR_CTL_SERIAL_SET_WR_CALL       MR_CTL_SET_WR_CALL          /**< Set write complete callback */
+#define MR_CTL_SERIAL_GET_RD_CALL       MR_CTL_GET_RD_CALL          /**< Get read callback */
+#define MR_CTL_SERIAL_GET_WR_CALL       MR_CTL_GET_WR_CALL          /**< Get write complete callback */
+
+/**
  * @brief SERIAL data type.
  */
 typedef uint8_t mr_serial_data_t;                                   /**< SERIAL read/write data type */

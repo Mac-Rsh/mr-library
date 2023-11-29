@@ -43,15 +43,13 @@ extern "C" {
 #define MR_PIN_MODE_IRQ_HIGH            (10)                        /* Interrupt high level */
 
 /**
- * @brief PIN mode command.
+ * @brief PIN control command.
  */
 #define MR_CTL_PIN_SET_MODE             ((0x01|0x80) << 16)         /**< Set pin mode */
-
-/**
- * @brief PIN number command.
- */
-#define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET          /**< Set pin number */
-#define MR_CTL_PIN_GET_NUMBER           MR_CTL_GET_OFFSET          /**< Get pin number */
+#define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET           /**< Set pin number */
+#define MR_CTL_PIN_SET_EXTI_CALL        MR_CTL_SET_RD_CALL          /**< Set pin exti callback */
+#define MR_CTL_PIN_GET_NUMBER           MR_CTL_GET_OFFSET           /**< Get pin number */
+#define MR_CTL_PIN_GET_EXTI_CALL        MR_CTL_GET_RD_CALL          /**< Get pin exti callback */
 
 /**
  * @brief PIN data type.

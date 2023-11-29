@@ -61,7 +61,6 @@
 | mr_dev_read          | 从设备读取数据 |
 | mr_dev_write         | 向设备写入数据 |
 | mr_dev_isr           | 设备中断控制  |
-| mr_dev_get_full_name | 获取设备全称  |
 
  ----------
 

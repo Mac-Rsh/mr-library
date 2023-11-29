@@ -51,10 +51,12 @@ struct mr_can_config
 #define MR_CAN_ID(id, ide, rtr)         ((id) | (ide) | (rtr))      /**< Set id-ide-rtr */
 
 /**
- * @brief CAN id command.
+ * @brief CAN control command.
  */
-#define MR_CTL_CAN_SET_ID               MR_CTL_SET_OFFSET          /**< Set id */
-#define MR_CTL_CAN_GET_ID               MR_CTL_GET_OFFSET          /**< Get id */
+#define MR_CTL_CAN_SET_ID               MR_CTL_SET_OFFSET           /**< Set id */
+#define MR_CTL_CAN_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read call */
+#define MR_CTL_CAN_GET_ID               MR_CTL_GET_OFFSET           /**< Get id */
+#define MR_CTL_CAN_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read call */
 
 /**
  * @brief CAN data type.

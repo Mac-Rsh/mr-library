@@ -128,6 +128,14 @@ extern "C" {
 #define mr_min(a, b)                    ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 
 /**
+ * @brief This macro function swaps two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ */
+#define mr_swap(a, b)                   (a ^= b, b ^= a, a ^= b)
+
+/**
  * @brief This macro function aligns the size up to a multiple of 4.
  *
  * @param size The size to align.

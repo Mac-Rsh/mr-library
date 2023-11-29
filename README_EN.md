@@ -67,7 +67,6 @@ All operations of the device can be implemented through the following interfaces
 | mr_dev_read          | Read data from the device   |
 | mr_dev_write         | Writes data to the device   |
 | mr_dev_isr           | Device interrupt control    |
-| mr_dev_get_full_name | Obtain the full device name |
 
  ----------
 

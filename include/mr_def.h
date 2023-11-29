@@ -201,6 +201,42 @@ struct mr_dev;
 #define MR_ASYNC                        (1)                         /**< Asynchronous */
 
 /**
+ * @brief Magic number.
+ */
+#define MR_MAGIC_NUMBER                 (0xdeadbeef)
+
+/**
+ * @brief Lock flags.
+ */
+#define MR_LFLAG_RD                     ((0x01) << 24)              /**< Read lock */
+#define MR_LFLAG_WR                     ((0x02) << 24)              /**< Write lock */
+#define MR_LFLAG_RDWR                   ((0x03) << 24)              /**< Read/write lock */
+#define MR_LFLAG_NONBLOCK               ((0x04) << 24)              /**< Non-blocking lock */
+#define MR_LFLAG_SLEEP                  ((0x08) << 24)              /**< Sleep lock */
+
+/**
+ * @brief Open flags.
+ */
+#define MR_OFLAG_CLOSED                 (0)                         /**< Closed */
+#define MR_OFLAG_RDONLY                 ((0x01) << 24)              /**< Read only */
+#define MR_OFLAG_WRONLY                 ((0x02) << 24)              /**< Write only */
+#define MR_OFLAG_RDWR                   ((0x03) << 24)              /**< Read/write */
+#define MR_OFLAG_NONBLOCK               ((0x04) << 24)              /**< Non-blocking */
+#define MR_OFLAG_DMA                    ((0x08) << 24)              /**< DMA */
+
+/**
+ * @brief Support flags.
+ */
+#define MR_SFLAG_NONRDWR                MR_OFLAG_CLOSED             /**< Non-read/write */
+#define MR_SFLAG_RDONLY                 MR_OFLAG_RDONLY             /**< Read only */
+#define MR_SFLAG_WRONLY                 MR_OFLAG_WRONLY             /**< Write only */
+#define MR_SFLAG_RDWR                   MR_OFLAG_RDWR               /**< Read/write */
+#define MR_SFLAG_NONBLOCK               MR_OFLAG_NONBLOCK           /**< Non-blocking */
+#define MR_SFLAG_DMA                    MR_OFLAG_DMA                /**< DMA */
+#define MR_SFLAG_NONDRV                 ((0x10) << 24)              /**< Non-driver */
+#define MR_SFLAG_ONLY                   ((0x20) << 24)              /**< Only */
+
+/**
  * @brief Descriptor control command.
  */
 #define MR_CTL_SET_OFFSET               ((0x01|0x80) << 24)         /**< Set offset */
@@ -240,42 +276,6 @@ struct mr_dev_ops
     int (*ioctl)(struct mr_dev *dev, int off, int cmd, void *args);
     ssize_t (*isr)(struct mr_dev *dev, int event, void *args);
 };
-
-/**
- * @brief Magic number.
- */
-#define MR_MAGIC_NUMBER                 (0xdeadbeef)
-
-/**
- * @brief Lock flags.
- */
-#define MR_LFLAG_RD                     ((0x01) << 24)              /**< Read lock */
-#define MR_LFLAG_WR                     ((0x02) << 24)              /**< Write lock */
-#define MR_LFLAG_RDWR                   ((0x03) << 24)              /**< Read/write lock */
-#define MR_LFLAG_NONBLOCK               ((0x04) << 24)              /**< Non-blocking lock */
-#define MR_LFLAG_SLEEP                  ((0x08) << 24)              /**< Sleep lock */
-
-/**
- * @brief Open flags.
- */
-#define MR_OFLAG_CLOSED                 (0)                         /**< Closed */
-#define MR_OFLAG_RDONLY                 ((0x01) << 24)              /**< Read only */
-#define MR_OFLAG_WRONLY                 ((0x02) << 24)              /**< Write only */
-#define MR_OFLAG_RDWR                   ((0x03) << 24)              /**< Read/write */
-#define MR_OFLAG_NONBLOCK               ((0x04) << 24)              /**< Non-blocking */
-#define MR_OFLAG_DMA                    ((0x08) << 24)              /**< DMA */
-
-/**
- * @brief Support flags.
- */
-#define MR_SFLAG_NONRDWR                MR_OFLAG_CLOSED             /**< Non-read/write */
-#define MR_SFLAG_RDONLY                 MR_OFLAG_RDONLY             /**< Read only */
-#define MR_SFLAG_WRONLY                 MR_OFLAG_WRONLY             /**< Write only */
-#define MR_SFLAG_RDWR                   MR_OFLAG_RDWR               /**< Read/write */
-#define MR_SFLAG_NONBLOCK               MR_OFLAG_NONBLOCK           /**< Non-blocking */
-#define MR_SFLAG_DMA                    MR_OFLAG_DMA                /**< DMA */
-#define MR_SFLAG_NONDRV                 ((0x10) << 24)              /**< Non-driver */
-#define MR_SFLAG_ONLY                   ((0x20) << 24)              /**< Only */
 
 /**
  * @brief Device structure.
