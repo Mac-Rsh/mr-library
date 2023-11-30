@@ -225,4 +225,46 @@ menu "Board configure"
 
     endmenu
 
+    menu "Timer"
+        config MR_USING_TIMER1
+                    bool "Enable Timer1 driver"
+                    default n
+
+        config MR_USING_TIMER2
+                        bool "Enable Timer2 driver"
+                        default n
+
+        config MR_USING_TIMER3
+                    bool "Enable Timer3 driver"
+                    default n
+
+        config MR_USING_TIMER4
+                    bool "Enable Timer4 driver"
+                    default n
+
+        config MR_USING_TIMER5
+                    bool "Enable Timer5 driver"
+                    default n
+
+        config MR_USING_TIMER6
+                    bool "Enable Timer6 driver"
+                    default n
+
+        config MR_USING_TIMER7
+                    bool "Enable Timer7 driver"
+                    default n
+
+        config MR_USING_TIMER8
+                    bool "Enable Timer8 driver"
+                    default n
+
+        config MR_USING_TIMER9
+                    bool "Enable Timer9 driver"
+                    default n
+
+        config MR_USING_TIMER10
+                    bool "Enable Timer10 driver"
+                    default n
+    endmenu
+
 endmenu

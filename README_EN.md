@@ -10,6 +10,15 @@
 * [Standardized device interface](#standardized-device-interface)
 * [Configuration tool](#configuration-tool)
 * [Directory structure](#directory-structure)
+* [Get Started](#get-started)
+  * [Configure the Kconfig Environment](#configure-the-kconfig-environment)
+  * [Import the Framework into the Project](#import-the-framework-into-the-project)
+  * [Configure Menu Options](#configure-menu-options)
+  * [Generate Configuration File](#generate-configuration-file)
+  * [Add Include Paths](#add-include-paths)
+* [Let's Light an LED](#lets-light-an-led)
+* [Hello World](#hello-world)
+* [Now you have completed the basics, start exploring the MR library further.](#now-you-have-completed-the-basics-start-exploring-the-mr-library-further)
 <!-- TOC -->
 
  ----------
@@ -58,15 +67,15 @@ drivers. This greatly improves the reusability of software and its extensibility
 
 All operations of the device can be implemented through the following interfaces:
 
-| interface            | describe                    |
-|:---------------------|:----------------------------|
-| mr_dev_register      | Registered device           |
-| mr_dev_open          | Open device                 |
-| mr_dev_close         | Close device                |
-| mr_dev_ioctl         | Control device              |
-| mr_dev_read          | Read data from the device   |
-| mr_dev_write         | Writes data to the device   |
-| mr_dev_isr           | Device interrupt control    |
+| interface       | describe                  |
+|:----------------|:--------------------------|
+| mr_dev_register | Registered device         |
+| mr_dev_open     | Open device               |
+| mr_dev_close    | Close device              |
+| mr_dev_ioctl    | Control device            |
+| mr_dev_read     | Read data from the device |
+| mr_dev_write    | Writes data to the device |
+| mr_dev_isr      | Device interrupt control  |
 
  ----------
 
@@ -103,3 +112,144 @@ the `Python` script automatically generates the configuration file.
 | LICENSE    | Open-source license            |
 
  ----------
+
+# Get Started
+
+## Configure the Kconfig Environment
+
+Note: Kconfig is not mandatory, but recommended (installation and configuration are very quick, and the following
+tutorials are based on applying Kconfig).
+
+1. Verify that the system has a Python environment installed. Run `python --version` in the command line to check the
+   Python version (Kconfig depends on python, please install python if it is not available).
+
+2. Use the following commands to install Kconfig in the command line:
+
+    ```cmd
+    python -m pip install windows-curses
+    python -m pip install kconfiglib
+    ```
+
+3. Run `menuconfig -h` in the command line to verify successful installation.
+
+## Import the Framework into the Project
+
+1. Download the latest version source code from the Gitee or Github repository to the local.
+2. Import the source code into the directory where your project is located. Taking an STM32 project as an example:
+
+   ![project directory](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build.png)
+
+3. If the used chip has BSP adaptation, please refer to the chip's corresponding BSP configuration tutorial to complete
+   the BSP configuration.
+4. Remove unnecessary files such as `bsp`、`document`、`module` directories (you can also remove the `.git` file to delete
+   GIT if not needed). The directory structure is shown below after completion:
+
+   ![project directory1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build1.png)
+
+## Configure Menu Options
+
+1. Open the command line tool in the `mr-library` directory and run `menuconfig` to configure the menu.
+
+   ![project directory2](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build2.png)
+
+   Note: When the corresponding chip driver is added, `Device configure` and `Driver configure` will be displayed.
+   Please refer to the tutorial under `BSP` for `Driver configure`.
+
+2. Enter the menu by pressing the Enter key on `Device configure`, and configure the desired functions according to
+   needs.
+
+   ![project directory3](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build3.png)
+
+3. After configuration is complete, press `Q` to exit the menu configuration interface, press `Y` to save the
+   configuration.
+
+## Generate Configuration File
+
+1. Run `python kconfig.py` in the command line tool under `mr-library` directory to automatically generate the
+   configuration file `mr_config.h`.
+
+## Add Include Paths
+
+1. Add the include paths of `mr-library` in the compiler, taking `keil` as an example:
+
+   ![project directory4](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build4.png)
+
+2. Configure automatic initialization (GCC environment), find the link script file with suffix `.ld` in your project
+   directory (usually `link.ld`), and add the following code to the script file:
+
+   ```c
+   /* mr-library auto init */
+   . = ALIGN(4);
+   _mr_auto_init_start = .;
+   KEEP(*(SORT(.auto_init*)))
+   _mr_auto_init_end = .;
+   ```
+
+   Example:
+
+   ![project directory5](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build5.png)
+
+3. Include `#include "include/mr_lib.h"` in your project.
+4. Add the automatic initialization function `mr_auto_init();` in the main function.
+
+ ----------
+
+# Let's Light an LED
+
+```c
+#include "include/mr_lib.h"
+
+/* Define the LED pin-number (PC13) */
+#define LED_PIN_NUMBER                  45
+
+int main(void)
+{
+    /* Automatic initialization */
+    mr_auto_init();
+
+    /* Open the PIN device */
+    int ds = mr_dev_open("pin", MR_OFLAG_RDWR);
+    /* Set to the LED pin */
+    mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, LED_PIN_NUMBER));
+    /* Set the LED pin to push-pull output mode */
+    mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
+
+    while(1)
+    {
+        /* Light up the LED */
+        mr_dev_write(ds, mr_make_local(uint8_t, MR_PIN_HIGH_LEVEL), sizeof(uint8_t));
+        mr_delay_ms(500);
+        mr_dev_write(ds, mr_make_local(uint8_t, MR_PIN_LOW_LEVEL), sizeof(uint8_t));
+        mr_delay_ms(500);
+    }
+}
+```
+
+# Hello World
+
+```c
+#include "include/mr_lib.h"
+
+int main(void)
+{
+    /* Automatic initialization */
+    mr_auto_init();
+
+    /* Open the Serial-1 device */
+    int ds = mr_dev_open("serial1", MR_OFLAG_RDWR);
+    /* Output Hello World */
+    mr_dev_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
+    
+    while(1);
+}
+```
+
+ ----------
+
+# Now you have completed the basics, start exploring the MR library further.
+
+1. Welcome to refer to more tutorials, document directory is in document.
+2. You can try developing drivers based on certain chips to practice device driver programming.
+3. Try writing more device templates and developing more features.
+4. Welcome to provide your opinions and suggestions. If you are interested in development, you are welcome to
+   participate in the development of the `MR` project. The project discussion group is: 199915649(QQ).

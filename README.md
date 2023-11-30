@@ -3,14 +3,22 @@
  ----------
 
 <!-- TOC -->
-
+* [MR 框架](#mr-框架)
 * [简介](#简介)
 * [关键特性](#关键特性)
 * [主要组成](#主要组成)
 * [标准化设备接口](#标准化设备接口)
 * [配置工具](#配置工具)
 * [目录结构](#目录结构)
-
+* [开始使用](#开始使用)
+  * [配置 `Kconfig` 环境](#配置-kconfig-环境)
+  * [将框架导入工程](#将框架导入工程)
+  * [配置菜单选项](#配置菜单选项)
+  * [生成配置文件](#生成配置文件)
+  * [添加包含路径](#添加包含路径)
+* [先来点个灯吧](#先来点个灯吧)
+* [Hello World](#hello-world)
+* [现在您已经完成了入门基础，开始进一步探索MR库吧](#现在您已经完成了入门基础开始进一步探索mr库吧)
 <!-- TOC -->
 
  ----------
@@ -52,15 +60,15 @@
 
 设备的所有操作都可通过以下接口实现：
 
-| 接口                   | 描述      |
-|:---------------------|:--------|
-| mr_dev_register      | 注册设备    |
-| mr_dev_open          | 打开设备    |
-| mr_dev_close         | 关闭设备    |
-| mr_dev_ioctl         | 控制设备    |
-| mr_dev_read          | 从设备读取数据 |
-| mr_dev_write         | 向设备写入数据 |
-| mr_dev_isr           | 设备中断控制  |
+| 接口              | 描述      |
+|:----------------|:--------|
+| mr_dev_register | 注册设备    |
+| mr_dev_open     | 打开设备    |
+| mr_dev_close    | 关闭设备    |
+| mr_dev_ioctl    | 控制设备    |
+| mr_dev_read     | 从设备读取数据 |
+| mr_dev_write    | 向设备写入数据 |
+| mr_dev_isr      | 设备中断控制  |
 
  ----------
 
@@ -94,3 +102,136 @@
 | LICENSE    | 许可证    |
 
  ----------
+
+# 开始使用
+
+## 配置 `Kconfig` 环境
+
+注：`Kconfig` 并非必须的，但是推荐使用（安装和配置非常快捷，后续教程也是以应用 `Kconfig` 为例）。
+
+1. 验证系统是否安装Python环境。在命令行中运行 `python --version` 检查Python版本（`Kconfig` 依赖于 ` python`，若无 ` python`
+   环境请自行安装）。
+
+2. 在命令行中使用所示命令安装 `Kconfig`：
+
+    ```cmd
+    python -m pip install windows-curses
+    python -m pip install kconfiglib
+    ```
+
+3. 在命令行中运行 `menuconfig -h` 验证安装是否成功。
+
+## 将框架导入工程
+
+1. 从 `Gitee` 或 `Github` 仓库下载最新版本源码到本地。
+2. 将源码导入到您工程所在的目录。以STM32工程为例：
+
+   ![工程目录](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build.png)
+
+3. 如使用的芯片已经做了 `BSP` 适配请参考芯片对应 `BSP` 中的配置教程，完成 `BSP` 配置。
+4. 移除不需要的文件 `bsp`、`document`、`module` 目录（如不需要`GIT`也可以移除`.git`文件删除）。完成后，目录结构如下所示：
+
+   ![工程目录1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build1.png)
+
+## 配置菜单选项
+
+1. 在 `mr-library` 目录下打开命令行工具，运行 `menuconfig` 进行菜单配置。
+
+   ![工程目录2](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build2.png)
+
+   注：当添加对应芯片驱动的后，将显示 `Device configure` 和 `Driver configure`。对应 `Driver configure` 请参考 `BSP` 下教程。
+
+2. 选中 `Device configure` 回车进入菜单，按照需要配置功能。
+
+   ![工程目录3](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build3.png)
+
+3. 配置完成后，按 `Q` 退出菜单配置界面，按`Y` 保存配置。
+
+## 生成配置文件
+
+1. 在 `mr-library` 目录下打开命令行工具，运行 `python kconfig.py`，自动生成配置文件 `mr_config.h`。
+
+## 添加包含路径
+
+1. 在编译器中添加 `mr-library` 的包含路径，以 `keil` 为例:
+
+   ![工程目录4](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build4.png)
+
+2. 配置自动初始化（GCC环境），查找您工程下以 `.ld` 为后缀的连接脚本文件（通常为 `link.ld`），在脚本文件中添加代码：
+   注：如果您的是在 `keil` 等，能够自动生成链接脚本的环境下，请跳过此步骤。
+
+   ```c
+   /* mr-library auto init */
+   . = ALIGN(4);
+   _mr_auto_init_start = .;
+   KEEP(*(SORT(.auto_init*)))
+   _mr_auto_init_end = .;
+   ```
+
+   示例：
+
+   ![工程目录5](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build5.png)
+
+3. 在您的工程中引入 `#include "include/mr_lib.h"`。
+4. 在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数。
+
+ ----------
+
+# 先来点个灯吧
+
+```c
+#include "include/mr_lib.h"
+
+/* 定义LED引脚（PC13）*/
+#define LED_PIN_NUMBER                  45
+
+int main(void)
+{
+    /* 自动初始化 */
+    mr_auto_init();
+
+    /* 打开PIN设备 */
+    int ds = mr_dev_open("pin", MR_OFLAG_RDWR);
+    /* 设置到LED引脚 */
+    mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, LED_PIN_NUMBER));
+    /* 设置LED引脚为推挽输出模式 */
+    mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
+
+    while(1)
+    {
+        /* 点亮LED */
+        mr_dev_write(ds, mr_make_local(uint8_t, MR_PIN_HIGH_LEVEL), sizeof(uint8_t));
+        mr_delay_ms(500);
+        mr_dev_write(ds, mr_make_local(uint8_t, MR_PIN_LOW_LEVEL), sizeof(uint8_t));
+        mr_delay_ms(500);
+    }
+}
+```
+
+# Hello World
+
+```c
+#include "include/mr_lib.h"
+
+int main(void)
+{
+    /* 自动初始化 */
+    mr_auto_init();
+
+    /* 打开Serial-1设备 */
+    int ds = mr_dev_open("serial1", MR_OFLAG_RDWR);
+    /* 输出Hello World */
+    mr_dev_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
+    
+    while(1);
+}
+```
+
+ ----------
+
+# 现在您已经完成了入门基础，开始进一步探索MR库吧
+
+1. 欢迎参考更多教程，文档目录在document中。
+2. 可以尝试基于某款芯片开发驱动，练习设备驱动编程。
+3. 尝试编写更多设备模板和开发更多功能。
+4. 欢迎您提出意见和建议。如果您对开发有兴趣，诚邀您参与到 `MR` 项目的开发中来，项目交流群：199915649（QQ）。

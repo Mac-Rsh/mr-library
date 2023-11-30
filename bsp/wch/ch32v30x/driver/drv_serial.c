@@ -608,7 +608,6 @@ static ssize_t drv_serial_write(struct mr_serial *serial, const uint8_t *buf, si
         int i = 0;
 
         /* Write data */
-        USART_SendData(serial_data->instance, buf[wr_size]);
         while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_TC) == RESET)
         {
             i++;
@@ -617,6 +616,7 @@ static ssize_t drv_serial_write(struct mr_serial *serial, const uint8_t *buf, si
                 return wr_size;
             }
         }
+        USART_SendData(serial_data->instance, buf[wr_size]);
     }
     return wr_size;
 }
@@ -727,7 +727,7 @@ static struct mr_serial_ops serial_drv_ops =
         drv_serial_stop_tx
     };
 
-static struct mr_drv serial_drv[mr_array_num(serial_drv_data)] =
+static struct mr_drv serial_drv[] =
     {
 #ifdef MR_USING_UART1
         {

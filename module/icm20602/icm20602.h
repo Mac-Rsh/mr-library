@@ -9,7 +9,7 @@
 #ifndef _ICM20602_H_
 #define _ICM20602_H_
 
-#include "mr_api.h"
+#include "include/mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +22,7 @@ extern "C" {
 #error "Please define MR_USING_SPI. Otherwise ICM20602 will not work."
 #else
 
-#include "device/spi.h"
+#include "include/device/spi.h"
 
 /**
  * @brief ICM20602 acc Range.

@@ -14,7 +14,7 @@
 #error "Please define MR_USING_PIN. Otherwise HX711 will not work."
 #else
 
-#include "device/pin.h"
+#include "include/device/pin.h"
 
 static void hx711_set_sck(struct mr_hx711 *hx711, uint8_t value)
 {

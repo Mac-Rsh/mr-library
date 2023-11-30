@@ -243,8 +243,6 @@ static ssize_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *buf, size_t
         /* Read data */
         while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET)
         {
-        }
-        {
             i++;
             if (i > UINT16_MAX)
             {
@@ -316,7 +314,7 @@ static struct mr_i2c_bus_ops i2c_bus_drv_ops =
         drv_i2c_bus_write,
     };
 
-static struct mr_drv i2c_bus_drv[mr_array_num(i2c_bus_drv_data)] =
+static struct mr_drv i2c_bus_drv[] =
     {
 #ifdef MR_USING_I2C1
         {

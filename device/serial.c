@@ -6,7 +6,7 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include "serial.h"
+#include "include/device/serial.h"
 
 #ifdef MR_USING_SERIAL
 

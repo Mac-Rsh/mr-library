@@ -9,7 +9,7 @@
 #ifndef _HX711_H_
 #define _HX711_H_
 
-#include "mr_api.h"
+#include "include/mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {

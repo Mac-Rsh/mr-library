@@ -6,7 +6,7 @@
  * @date 2023-11-22    MacRsh       First version
  */
 
-#include "can.h"
+#include "include/device/can.h"
 
 #ifdef MR_USING_CAN
 

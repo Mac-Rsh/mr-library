@@ -6,7 +6,7 @@
  * @date 2023-11-15    MacRsh       First version
  */
 
-#include "timer.h"
+#include "include/device/timer.h"
 
 #ifdef MR_USING_TIMER
 
@@ -135,7 +135,8 @@ static ssize_t mr_timer_read(struct mr_dev *dev, int off, void *buf, size_t size
         uint32_t count = ops->get_count(timer);
 
         /* Calculate the passed time */
-        *rd_buf = (timer->reload - timer->count) * timer->timeout + count * timer->timeout / timer->period;
+        *rd_buf = (timer->reload - timer->count) * timer->timeout +
+                  (uint32_t)(((float)count / (float)timer->period) * (float)timer->timeout);
         rd_buf++;
     }
     return rd_size;

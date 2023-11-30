@@ -424,7 +424,7 @@ static struct mr_spi_bus_ops spi_bus_drv_ops =
         drv_spi_bus_write,
     };
 
-static struct mr_drv spi_bus_drv[mr_array_num(spi_bus_drv_data)] =
+static struct mr_drv spi_bus_drv[] =
     {
 #ifdef MR_USING_SPI1
         {

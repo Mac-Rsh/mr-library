@@ -6,12 +6,12 @@
  * @date 2023-11-01    MacRsh       First version
  */
 
-#include "spi.h"
+#include "include/device/spi.h"
 
 #ifdef MR_USING_SPI
 
 #ifdef MR_USING_PIN
-#include "pin.h"
+#include "include/device/pin.h"
 #else
 #warning "Please define MR_USING_PIN. Otherwise SPI-CS will not work."
 #endif /* MR_USING_PIN */

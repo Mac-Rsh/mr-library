@@ -9,7 +9,7 @@
 #ifndef _MR_DAC_H_
 #define _MR_DAC_H_
 
-#include "mr_api.h"
+#include "include/mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {

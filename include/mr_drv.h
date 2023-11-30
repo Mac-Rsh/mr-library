@@ -9,34 +9,42 @@
 #ifndef _MR_DRV_H_
 #define _MR_DRV_H_
 
-#include "mr_config.h"
+#include "include/mr_config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 #ifdef MR_USING_ADC
-#include "drv_adc.h"
+#include "driver/drv_adc.h"
 #endif
 
 #ifdef MR_USING_CAN
-#include "drv_can.h"
+#include "driver/drv_can.h"
+#endif
+
+#ifdef MR_USING_DAC
+#include "driver/drv_dac.h"
 #endif
 
 #ifdef MR_USING_I2C
-#include "drv_i2c.h"
+#include "driver/drv_i2c.h"
 #endif
 
 #ifdef MR_USING_PIN
-#include "drv_pin.h"
+#include "driver/drv_pin.h"
 #endif
 
 #ifdef MR_USING_SERIAL
-#include "drv_serial.h"
+#include "driver/drv_serial.h"
 #endif
 
 #ifdef MR_USING_SPI
-#include "drv_spi.h"
+#include "driver/drv_spi.h"
+#endif
+
+#ifdef MR_USING_TIMER
+#include "driver/drv_timer.h"
 #endif
 
 #ifdef __cplusplus

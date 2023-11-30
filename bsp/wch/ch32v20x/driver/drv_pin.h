@@ -9,7 +9,7 @@
 #ifndef _DRV_PIN_H_
 #define _DRV_PIN_H_
 
-#include "device/pin.h"
+#include "include/device/pin.h"
 #include "mr_board.h"
 
 #ifdef __cplusplus

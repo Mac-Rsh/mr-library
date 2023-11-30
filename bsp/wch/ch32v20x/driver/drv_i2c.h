@@ -9,7 +9,7 @@
 #ifndef _DRV_I2C_H_
 #define _DRV_I2C_H_
 
-#include "device/i2c.h"
+#include "include/device/i2c.h"
 
 #ifdef __cplusplus
 extern "C" {

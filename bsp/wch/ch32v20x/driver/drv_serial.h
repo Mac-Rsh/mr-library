@@ -9,7 +9,7 @@
 #ifndef _DRV_SERIAL_H_
 #define _DRV_SERIAL_H_
 
-#include "device/serial.h"
+#include "include/device/serial.h"
 #include "mr_board.h"
 
 #ifdef __cplusplus

@@ -9,7 +9,7 @@
 #ifndef _ETASK_H_
 #define _ETASK_H_
 
-#include "mr_lib.h"
+#include "include/mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -9,7 +9,7 @@
 #ifndef _DRV_SPI_H_
 #define _DRV_SPI_H_
 
-#include "device/spi.h"
+#include "include/device/spi.h"
 #include "mr_board.h"
 
 #ifdef __cplusplus

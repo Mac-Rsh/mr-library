@@ -9,12 +9,12 @@
 #ifndef _PWM_H_
 #define _PWM_H_
 
-#include "mr_api.h"
+#include "include/mr_api.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-#define MR_USING_TIMER
+
 #ifdef MR_USING_TIMER
 
 /**

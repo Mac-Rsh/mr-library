@@ -162,7 +162,7 @@ static struct mr_adc_ops adc_drv_ops =
         drv_adc_read
     };
 
-static struct mr_drv adc_drv[mr_array_num(adc_drv_data)] =
+static struct mr_drv adc_drv[] =
     {
 #ifdef MR_USING_ADC1
         {
