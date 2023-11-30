@@ -11,7 +11,6 @@
 
 #include <stdint.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include "mr_config.h"
@@ -33,6 +32,7 @@ extern "C" {
 #define MR_USED                    	    __attribute__((used))
 #define MR_WEAK                    	    __attribute__((weak))
 #define MR_INLINE                  	    static __inline
+typedef int ssize_t;
 #elif defined (__IAR_SYSTEMS_ICC__)
 #define MR_SECTION(x)               	@ x
 #define MR_USED                     	__root
@@ -116,6 +116,12 @@ typedef int (*mr_init_fn_t)(void);
  */
 #define MR_FALSE                        (0)                         /**< False */
 #define MR_TRUE                         (1)                         /**< True */
+
+/**
+ * @brief Max/min value.
+ */
+#define INT_MAX                         (0x7fffffff)                /**< Max int value */
+#define INT_MIN                         (-0x7fffffff)               /**< Min int value */
 
 /**
  * @brief Double linked list structure.
