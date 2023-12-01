@@ -45,21 +45,21 @@ extern "C" {
 /**
  * @brief PIN control command.
  */
-#define MR_CTL_PIN_SET_MODE             ((0x01|0x80) << 16)         /**< Set pin mode */
 #define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET           /**< Set pin number */
-#define MR_CTL_PIN_SET_EXTI_CALL        MR_CTL_SET_RD_CALL          /**< Set pin exti callback */
 #define MR_CTL_PIN_GET_NUMBER           MR_CTL_GET_OFFSET           /**< Get pin number */
+#define MR_CTL_PIN_SET_EXTI_CALL        MR_CTL_SET_RD_CALL          /**< Set pin exti callback */
 #define MR_CTL_PIN_GET_EXTI_CALL        MR_CTL_GET_RD_CALL          /**< Get pin exti callback */
+#define MR_CTL_PIN_SET_MODE             (0x01 << 8)                 /**< Set pin mode */
 
 /**
  * @brief PIN data type.
  */
-typedef uint8_t mr_pin_data_t;                                     /**< PIN read/write data type */
+typedef uint8_t mr_pin_data_t;                                      /**< PIN read/write data type */
 
 /**
  * @brief PIN ISR events.
  */
-#define MR_ISR_PIN_RD_INT               (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
+#define MR_ISR_PIN_RD_INT               (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
 
 /**
  * @brief PIN structure.

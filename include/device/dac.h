@@ -24,16 +24,12 @@ extern "C" {
 #define MR_DAC_STATE_ENABLE             MR_ENABLE                   /**< DAC enabled */
 
 /**
- * @brief DAC channel state command.
- */
-#define MR_CTL_DAC_SET_CHANNEL_STATE    ((0x01|0x80) << 16)         /**< Set channel state */
-#define MR_CTL_DAC_GET_CHANNEL_STATE    ((0x01|0x00) << 16)         /**< Get channel state */
-
-/**
  * @brief DAC control command.
  */
 #define MR_CTL_DAC_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
 #define MR_CTL_DAC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
+#define MR_CTL_DAC_SET_CHANNEL_STATE    (0x01 << 8)                 /**< Set channel state */
+#define MR_CTL_DAC_GET_CHANNEL_STATE    (-(0x01 << 8))              /**< Get channel state */
 
 /**
  * @brief DAC data type.

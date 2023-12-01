@@ -118,12 +118,6 @@ typedef int (*mr_init_fn_t)(void);
 #define MR_TRUE                         (1)                         /**< True */
 
 /**
- * @brief Max/min value.
- */
-#define INT_MAX                         (0x7fffffff)                /**< Max int value */
-#define INT_MIN                         (-0x7fffffff)               /**< Min int value */
-
-/**
  * @brief Double linked list structure.
  */
 struct mr_list
@@ -214,21 +208,21 @@ struct mr_dev;
 /**
  * @brief Lock flags.
  */
-#define MR_LFLAG_RD                     ((0x01) << 24)              /**< Read lock */
-#define MR_LFLAG_WR                     ((0x02) << 24)              /**< Write lock */
-#define MR_LFLAG_RDWR                   ((0x03) << 24)              /**< Read/write lock */
-#define MR_LFLAG_NONBLOCK               ((0x04) << 24)              /**< Non-blocking lock */
-#define MR_LFLAG_SLEEP                  ((0x08) << 24)              /**< Sleep lock */
+#define MR_LFLAG_RD                     (0x01)                      /**< Read lock */
+#define MR_LFLAG_WR                     (0x02)                      /**< Write lock */
+#define MR_LFLAG_RDWR                   (0x03)                      /**< Read/write lock */
+#define MR_LFLAG_NONBLOCK               (0x04)                      /**< Non-blocking lock */
+#define MR_LFLAG_SLEEP                  (0x08)                      /**< Sleep lock */
 
 /**
  * @brief Open flags.
  */
 #define MR_OFLAG_CLOSED                 (0)                         /**< Closed */
-#define MR_OFLAG_RDONLY                 ((0x01) << 24)              /**< Read only */
-#define MR_OFLAG_WRONLY                 ((0x02) << 24)              /**< Write only */
-#define MR_OFLAG_RDWR                   ((0x03) << 24)              /**< Read/write */
-#define MR_OFLAG_NONBLOCK               ((0x04) << 24)              /**< Non-blocking */
-#define MR_OFLAG_DMA                    ((0x08) << 24)              /**< DMA */
+#define MR_OFLAG_RDONLY                 (0x01)                      /**< Read only */
+#define MR_OFLAG_WRONLY                 (0x02)                      /**< Write only */
+#define MR_OFLAG_RDWR                   (0x03)                      /**< Read/write */
+#define MR_OFLAG_NONBLOCK               (0x04)                      /**< Non-blocking */
+#define MR_OFLAG_DMA                    (0x08)                      /**< DMA */
 
 /**
  * @brief Support flags.
@@ -239,36 +233,36 @@ struct mr_dev;
 #define MR_SFLAG_RDWR                   MR_OFLAG_RDWR               /**< Read/write */
 #define MR_SFLAG_NONBLOCK               MR_OFLAG_NONBLOCK           /**< Non-blocking */
 #define MR_SFLAG_DMA                    MR_OFLAG_DMA                /**< DMA */
-#define MR_SFLAG_NONDRV                 ((0x10) << 24)              /**< Non-driver */
-#define MR_SFLAG_ONLY                   ((0x20) << 24)              /**< Only */
+#define MR_SFLAG_NONDRV                 (0x10)                      /**< Non-driver */
+#define MR_SFLAG_ONLY                   (0x20)                      /**< Only */
 
 /**
  * @brief Descriptor control command.
  */
-#define MR_CTL_SET_OFFSET               ((0x01|0x80) << 24)         /**< Set offset */
-#define MR_CTL_SET_RD_CALL              ((0x02|0x80) << 24)         /**< Set read callback */
-#define MR_CTL_SET_WR_CALL              ((0x03|0x80) << 24)         /**< Set write callback */
-#define MR_CTL_SET_SLEEP                ((0x04|0x80) << 24)         /**< Set sleep */
-#define MR_CTL_SET_WAKEUP               ((0x05|0x80) << 24)         /**< Set wakeup */
-#define MR_CTL_SET_CONFIG               ((0x06|0x80) << 24)         /**< Set configuration */
-#define MR_CTL_SET_RD_BUFSZ             ((0x07|0x80) << 24)         /**< Set read buffer size */
-#define MR_CTL_SET_WR_BUFSZ             ((0x08|0x80) << 24)         /**< Set write buffer size */
+#define MR_CTL_SET_OFFSET               (0x01)                      /**< Set offset */
+#define MR_CTL_SET_RD_CALL              (0x02)                      /**< Set read callback */
+#define MR_CTL_SET_WR_CALL              (0x03)                      /**< Set write callback */
+#define MR_CTL_SET_SLEEP                (0x04)                      /**< Set sleep */
+#define MR_CTL_SET_WAKEUP               (0x05)                      /**< Set wakeup */
+#define MR_CTL_SET_CONFIG               (0x06)                      /**< Set configuration */
+#define MR_CTL_SET_RD_BUFSZ             (0x07)                      /**< Set read buffer size */
+#define MR_CTL_SET_WR_BUFSZ             (0x08)                      /**< Set write buffer size */
 
-#define MR_CTL_GET_OFFSET               ((0x01|0x00) << 24)         /**< Get offset */
-#define MR_CTL_GET_RD_CALL              ((0x02|0x00) << 24)         /**< Get read callback */
-#define MR_CTL_GET_WR_CALL              ((0x03|0x00) << 24)         /**< Get write callback */
-#define MR_CTL_GET_SLEEP                ((0x04|0x00) << 24)         /**< Get sleep (reserved) */
-#define MR_CTL_GET_WAKEUP               ((0x05|0x00) << 24)         /**< Get wakeup (reserved) */
-#define MR_CTL_GET_CONFIG               ((0x06|0x00) << 24)         /**< Get configuration */
-#define MR_CTL_GET_RD_BUFSZ             ((0x07|0x00) << 24)         /**< Get read buffer size */
-#define MR_CTL_GET_WR_BUFSZ             ((0x08|0x00) << 24)         /**< Get write buffer size */
+#define MR_CTL_GET_OFFSET               (-(0x01))                   /**< Get offset */
+#define MR_CTL_GET_RD_CALL              (-(0x02))                   /**< Get read callback */
+#define MR_CTL_GET_WR_CALL              (-(0x03))                   /**< Get write callback */
+#define MR_CTL_GET_SLEEP                (-(0x04))                   /**< Get sleep (reserved) */
+#define MR_CTL_GET_WAKEUP               (-(0x05))                   /**< Get wakeup (reserved) */
+#define MR_CTL_GET_CONFIG               (-(0x06))                   /**< Get configuration */
+#define MR_CTL_GET_RD_BUFSZ             (-(0x07))                   /**< Get read buffer size */
+#define MR_CTL_GET_WR_BUFSZ             (-(0x08))                   /**< Get write buffer size */
 
 /**
  * @brief ISR event.
  */
-#define MR_ISR_RD                       ((0x01) << 24)              /**< Read interrupt */
-#define MR_ISR_WR                       ((0x02) << 24)              /**< Write interrupt */
-#define MR_ISR_MASK                     ((0xff) << 24)              /**< Interrupt mask */
+#define MR_ISR_RD                       (0x01)                      /**< Read interrupt */
+#define MR_ISR_WR                       (0x02)                      /**< Write interrupt */
+#define MR_ISR_MASK                     (0xff)                      /**< Interrupt mask */
 
 /**
  * @brief Device operations structure.
@@ -288,7 +282,7 @@ struct mr_dev_ops
  */
 struct mr_dev
 {
-    uint32_t magic;                                                 /**< Magic number */
+    int magic;                                                      /**< Magic number */
 #ifndef MR_CFG_NAME_MAX
 #define MR_CFG_NAME_MAX                 (8)
 #endif /* MR_CFG_NAME_MAX */
@@ -297,11 +291,11 @@ struct mr_dev
     struct mr_list slist;                                           /**< Slave list */
     void *link;                                                     /**< Link */
 
-    uint32_t type;                                                  /**< Device type */
+    int type;                                                       /**< Device type */
     size_t ref_count;                                               /**< Reference count */
 #ifdef MR_USING_RDWR_CTL
-    uint32_t sflags;                                                /**< Support flags */
-    volatile uint32_t lflags;                                       /**< Lock flags */
+    int sflags;                                                     /**< Support flags */
+    volatile int lflags;                                            /**< Lock flags */
 #endif /* MR_USING_RDWR_CTL */
 
     struct

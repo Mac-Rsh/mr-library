@@ -83,8 +83,8 @@ struct mr_serial_config
  * @brief SERIAL control command.
  */
 #define MR_CTL_SERIAL_SET_RD_CALL       MR_CTL_SET_RD_CALL          /**< Set read callback */
-#define MR_CTL_SERIAL_SET_WR_CALL       MR_CTL_SET_WR_CALL          /**< Set write complete callback */
 #define MR_CTL_SERIAL_GET_RD_CALL       MR_CTL_GET_RD_CALL          /**< Get read callback */
+#define MR_CTL_SERIAL_SET_WR_CALL       MR_CTL_SET_WR_CALL          /**< Set write complete callback */
 #define MR_CTL_SERIAL_GET_WR_CALL       MR_CTL_GET_WR_CALL          /**< Get write complete callback */
 
 /**
@@ -95,8 +95,8 @@ typedef uint8_t mr_serial_data_t;                                   /**< SERIAL 
 /**
  * @brief SERIAL ISR events.
  */
-#define MR_ISR_SERIAL_RD_INT            (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
-#define MR_ISR_SERIAL_WR_INT            (MR_ISR_WR | (0x02 << 16))  /**< Write interrupt */
+#define MR_ISR_SERIAL_RD_INT            (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
+#define MR_ISR_SERIAL_WR_INT            (MR_ISR_WR | (0x02 << 8))   /**< Write interrupt */
 
 /**
  * @brief SERIAL structure.

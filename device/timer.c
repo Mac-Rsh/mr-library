@@ -15,7 +15,7 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
     uint32_t clk = timer->info->clk, psc_max = timer->info->prescaler_max, per_max = timer->info->period_max;
     uint32_t psc_best = 0, per_best = 0, reload_best = 0;
     uint32_t psc = 0, per = 0, reload = 0;
-    int error = 0, error_min = INT_MAX;
+    int error = 0, error_min = INT32_MAX;
 
     /* Check the clock */
     if (clk == 0)

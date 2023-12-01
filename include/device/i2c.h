@@ -55,8 +55,8 @@ struct mr_i2c_config
  * @brief I2C control command.
  */
 #define MR_CTL_I2C_SET_REG              MR_CTL_SET_OFFSET           /**< Set register */
-#define MR_CTL_I2C_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
 #define MR_CTL_I2C_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
+#define MR_CTL_I2C_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
 #define MR_CTL_I2C_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read callback */
 
 /**
@@ -67,7 +67,7 @@ typedef uint8_t mr_i2c_data_t;                                      /**< I2C rea
 /**
  * @brief I2C ISR events.
  */
-#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
+#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
 
 /**
  * @brief I2C bus structure.

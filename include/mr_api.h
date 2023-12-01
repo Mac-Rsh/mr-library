@@ -60,8 +60,8 @@ const char *mr_strerror(int err);
 */
 int mr_dev_register(struct mr_dev *dev,
                     const char *name,
-                    uint32_t type,
-                    uint32_t sflags,
+                    int type,
+                    int sflags,
                     struct mr_dev_ops *ops,
                     struct mr_drv *drv);
 void mr_dev_isr(struct mr_dev *dev, int event, void *args);
@@ -72,7 +72,7 @@ int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz);
  * @addtogroup Device description.
  * @{
  */
-int mr_dev_open(const char *name, uint32_t oflags);
+int mr_dev_open(const char *name, int oflags);
 int mr_dev_close(int desc);
 ssize_t mr_dev_read(int desc, void *buf, size_t size);
 ssize_t mr_dev_write(int desc, const void *buf, size_t size);

@@ -177,7 +177,7 @@ MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
     return MR_EINVAL;
 }
 
-MR_INLINE int dev_open(struct mr_dev *dev, uint32_t oflags)
+MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
 {
 #ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(dev->sflags, oflags) != MR_ENABLE)
@@ -390,8 +390,8 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
  */
 int mr_dev_register(struct mr_dev *dev,
                     const char *name,
-                    uint32_t type,
-                    uint32_t sflags,
+                    int type,
+                    int sflags,
                     struct mr_dev_ops *ops,
                     struct mr_drv *drv)
 {
@@ -528,7 +528,7 @@ int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz)
 static struct mr_desc
 {
     struct mr_dev *dev;                                             /* Device */
-    uint32_t oflags;                                                /* Open flags */
+    int oflags;                                                     /* Open flags */
     int offset;                                                     /* Offset */
 #ifndef MR_CFG_DESC_MAX
 #define MR_CFG_DESC_MAX                 (32)
@@ -588,7 +588,7 @@ static void desc_free(int desc)
  *
  * @return The descriptor of the device, otherwise an error code.
  */
-int mr_dev_open(const char *name, uint32_t oflags)
+int mr_dev_open(const char *name, int oflags)
 {
     mr_assert(name != MR_NULL);
     mr_assert(oflags != MR_OFLAG_CLOSED);

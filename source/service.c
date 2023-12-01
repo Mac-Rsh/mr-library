@@ -178,7 +178,7 @@ MR_WEAK void *mr_malloc(size_t size)
     block_prev->next = block->next;
 
     /* Allocate memory */
-    memory = (void *)((uint8_t *)block) + sizeof(struct mr_heap_block);
+    memory = (void *)((uint8_t *)block + sizeof(struct mr_heap_block));
     residual = block->size - size;
 
     /* Set the block information */
@@ -312,7 +312,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 int mr_printf(const char *fmt, ...)
 {
     char buf[128] = {0};
-    va_list args = MR_NULL;
+    va_list args;
 
     va_start(args, fmt);
     int ret = vsnprintf(buf, sizeof(buf) - 1, fmt, args);

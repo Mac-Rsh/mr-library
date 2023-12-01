@@ -233,7 +233,7 @@ static int drv_pin_configure(struct mr_pin *pin, int number, int mode)
 
         default:
         {
-            break;
+            return MR_EINVAL;
         }
     }
 

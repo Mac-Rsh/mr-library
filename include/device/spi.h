@@ -92,10 +92,10 @@ struct mr_spi_transfer
  * @brief SPI control command.
  */
 #define MR_CTL_SPI_SET_REG              MR_CTL_SET_OFFSET           /**< Set register */
-#define MR_CTL_SPI_TRANSFER             ((0x01|0x80) << 16)         /**< Transfer */
-#define MR_CTL_SPI_RD_CALL              MR_CTL_SET_RD_CALL          /**< Set read callback */
 #define MR_CTL_SPI_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
+#define MR_CTL_SPI_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
 #define MR_CTL_SPI_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read callback */
+#define MR_CTL_SPI_TRANSFER             (0x01 << 8)                 /**< Transfer */
 
 /**
  * @brief SPI data type.
@@ -105,7 +105,7 @@ typedef uint8_t mr_spi_data_t;                                      /**< SPI rea
 /**
  * @brief SPI ISR events.
  */
-#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01 << 16))  /**< Read interrupt */
+#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
 
 /**
  * @brief SPI bus structure.
