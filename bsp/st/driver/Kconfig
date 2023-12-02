@@ -1,0 +1,91 @@
+menu "Board configure"
+
+    menu "GPIO"
+
+        config MR_USING_GPIOA
+            bool "Enable GPIOA driver"
+            default n
+
+        config MR_USING_GPIOB
+            bool "Enable GPIOB driver"
+            default n
+
+        config MR_USING_GPIOC
+            bool "Enable GPIOC driver"
+            default n
+
+        config MR_USING_GPIOD
+            bool "Enable GPIOD driver"
+            default n
+
+        config MR_USING_GPIOE
+            bool "Enable GPIOE driver"
+            default n
+
+    endmenu
+
+    menu "UART"
+
+        config MR_USING_UART1
+            bool "Enable UART1 driver"
+            default n
+
+        config MR_USING_UART2
+            bool "Enable UART2 driver"
+            default n
+
+        config MR_USING_UART3
+            bool "Enable UART3 driver"
+            default n
+
+        config MR_USING_UART4
+            bool "Enable UART4 driver"
+            default n
+
+        config MR_USING_UART5
+            bool "Enable UART5 driver"
+            default n
+
+        config MR_USING_UART6
+            bool "Enable UART6 driver"
+            default n
+
+        config MR_USING_UART7
+            bool "Enable UART7 driver"
+            default n
+
+        config MR_USING_UART8
+            bool "Enable UART8 driver"
+            default n
+
+    endmenu
+
+    menu "SPI"
+
+        config MR_USING_SPI1
+            bool "Enable SPI1 driver"
+            default n
+
+        config MR_USING_SPI2
+            bool "Enable SPI2 driver"
+            default n
+
+        config MR_USING_SPI3
+            bool "Enable SPI3 driver"
+            default n
+
+        config MR_USING_SPI4
+            bool "Enable SPI3 driver"
+            default n
+
+        config MR_USING_SPI5
+            bool "Enable SPI5 driver"
+            default n
+
+        config MR_USING_SPI6
+            bool "Enable SPI6 driver"
+            default n
+
+    endmenu
+
+endmenu
