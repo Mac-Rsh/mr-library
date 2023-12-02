@@ -146,7 +146,7 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
     while (ADC_GetFlagStatus(adc_data->instance, ADC_FLAG_EOC) == RESET)
     {
         i++;
-        if (i > UINT16_MAX)
+        if (i > INT16_MAX)
         {
             return 0;
         }

@@ -211,8 +211,8 @@ menu "Board configure"
         endmenu
 
         config MR_USING_SPI3
-        bool "Enable SPI3 driver"
-        default n
+            bool "Enable SPI3 driver"
+            default n
 
         menu "SPI3 driver configure"
             depends on MR_USING_SPI3

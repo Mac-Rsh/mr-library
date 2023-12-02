@@ -572,53 +572,43 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
     USART_Init(serial_data->instance, &USART_InitStructure);
     USART_Cmd(serial_data->instance, state);
+    USART_ClearFlag(serial_data->instance, USART_FLAG_RXNE);
+    USART_ClearFlag(serial_data->instance, USART_FLAG_TC);
     return MR_EOK;
 }
 
-static ssize_t drv_serial_read(struct mr_serial *serial, uint8_t *buf, size_t size)
+static uint8_t drv_serial_read(struct mr_serial *serial)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
-    ssize_t rd_size = 0;
+    int i = 0;
 
-    for (rd_size = 0; rd_size < size; rd_size++)
+    /* Read data */
+    while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_RXNE) == RESET)
     {
-        int i = 0;
-
-        /* Read data */
-        while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_RXNE) == RESET)
+        i++;
+        if (i > INT16_MAX)
         {
-            i++;
-            if (i > UINT16_MAX)
-            {
-                return rd_size;
-            }
+            return 0;
         }
-        buf[rd_size] = USART_ReceiveData(serial_data->instance);
     }
-    return rd_size;
+    return (uint8_t)USART_ReceiveData(serial_data->instance);
 }
 
-static ssize_t drv_serial_write(struct mr_serial *serial, const uint8_t *buf, size_t size)
+static void drv_serial_write(struct mr_serial *serial, uint8_t data)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
-    ssize_t wr_size = 0;
+    int i = 0;
 
-    for (wr_size = 0; wr_size < size; wr_size++)
+    /* Write data */
+    USART_SendData(serial_data->instance, data);
+    while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_TC) == RESET)
     {
-        int i = 0;
-
-        /* Write data */
-        while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_TC) == RESET)
+        i++;
+        if (i > INT16_MAX)
         {
-            i++;
-            if (i > UINT16_MAX)
-            {
-                return wr_size;
-            }
+            return;
         }
-        USART_SendData(serial_data->instance, buf[wr_size]);
     }
-    return wr_size;
 }
 
 static void drv_serial_start_tx(struct mr_serial *serial)

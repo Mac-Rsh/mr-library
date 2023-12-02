@@ -9,7 +9,7 @@
 #include "drv_timer.h"
 
 #ifdef MR_USING_TIMER
-#define MR_USING_TIMER1
+
 #if !defined(MR_USING_TIMER1) && !defined(MR_USING_TIMER2) && !defined(MR_USING_TIMER3) && !defined(MR_USING_TIMER4) && !defined(MR_USING_TIMER5) && !defined(MR_USING_TIMER6) && !defined(MR_USING_TIMER7) && !defined(MR_USING_TIMER8) && !defined(MR_USING_TIMER9) && !defined(MR_USING_TIMER10)
 #error "Please define at least one Timer macro like MR_USING_TIMER1. Otherwise undefine MR_USING_TIMER."
 #else

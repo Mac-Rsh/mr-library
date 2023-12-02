@@ -249,7 +249,7 @@ static int drv_pin_configure(struct mr_pin *pin, int number, int mode)
 
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
-        EXTI_InitStructure.EXTI_Line = pin_drv_data->pin;
+        EXTI_InitStructure.EXTI_Line = pin_data->pin;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
         GPIO_EXTILineConfig(number / 16, exti_line);
@@ -286,20 +286,20 @@ static int drv_pin_configure(struct mr_pin *pin, int number, int mode)
         }
         pin_irq_mask[exti_line] = -1;
 
-        EXTI_InitStructure.EXTI_Line = pin_drv_data->pin;
+        EXTI_InitStructure.EXTI_Line = pin_data->pin;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         GPIO_EXTILineConfig(number / 16, exti_line);
         EXTI_Init(&EXTI_InitStructure);
     }
 
     /* Configure GPIO */
-    GPIO_InitStructure.GPIO_Pin = pin_drv_data->pin;
+    GPIO_InitStructure.GPIO_Pin = pin_data->pin;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(pin_port_data->port, &GPIO_InitStructure);
     return MR_EOK;
 }
 
-static int drv_pin_read(struct mr_pin *pin, int number)
+static uint8_t drv_pin_read(struct mr_pin *pin, int number)
 {
     struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
     struct drv_pin_data *pin_data = drv_pin_get_data(number);
@@ -309,10 +309,10 @@ static int drv_pin_read(struct mr_pin *pin, int number)
     {
         return 0;
     }
-    return (int)GPIO_ReadInputDataBit(pin_port_data->port, pin_drv_data->pin);
+    return (int)GPIO_ReadInputDataBit(pin_port_data->port, pin_data->pin);
 }
 
-static void drv_pin_write(struct mr_pin *pin, int number, int value)
+static void drv_pin_write(struct mr_pin *pin, int number, uint8_t value)
 {
     struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
     struct drv_pin_data *pin_data = drv_pin_get_data(number);
@@ -322,7 +322,7 @@ static void drv_pin_write(struct mr_pin *pin, int number, int value)
     {
         return;
     }
-    GPIO_WriteBit(pin_port_data->port, pin_drv_data->pin, value);
+    GPIO_WriteBit(pin_port_data->port, pin_data->pin, value);
 }
 
 void EXTI0_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));

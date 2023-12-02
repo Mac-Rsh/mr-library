@@ -358,7 +358,7 @@ static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
     while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_RXNE) == RESET)
     {
         i++;
-        if (i > UINT16_MAX)
+        if (i > INT16_MAX)
         {
             return 0;
         }
@@ -375,7 +375,7 @@ static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
     while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_TXE) == RESET)
     {
         i++;
-        if (i > UINT16_MAX)
+        if (i > INT16_MAX)
         {
             return;
         }

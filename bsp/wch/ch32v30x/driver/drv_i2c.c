@@ -9,7 +9,7 @@
 #include "drv_i2c.h"
 
 #ifdef MR_USING_I2C
-
+#define MR_USING_I2C1
 #if !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2)
 #error "Please define at least one I2C macro like MR_USING_I2C1. Otherwise undefine MR_USING_I2C."
 #else
@@ -187,7 +187,7 @@ static void drv_i2c_bus_start(struct mr_i2c_bus *i2c_bus)
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_MODE_SELECT) == RESET)
     {
         i++;
-        if (i > UINT16_MAX)
+        if (i > INT16_MAX)
         {
             return;
         }
@@ -203,7 +203,7 @@ static void drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == RESET)
     {
         i++;
-        if (i > UINT16_MAX)
+        if (i > INT16_MAX)
         {
             return;
         }
@@ -216,7 +216,7 @@ static void drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr
         while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
         {
             i++;
-            if (i > UINT16_MAX)
+            if (i > INT16_MAX)
             {
                 return;
             }
@@ -231,50 +231,38 @@ static void drv_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
     I2C_GenerateSTOP(i2c_bus_data->instance, ENABLE);
 }
 
-static ssize_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *buf, size_t size)
+static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
-    ssize_t rd_size = 0;
+    int i = 0;
 
-    for (rd_size = 0; rd_size < size; rd_size++)
+    /* Read data */
+    while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET)
     {
-        int i = 0;
-
-        /* Read data */
-        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET)
+        i++;
+        if (i > INT16_MAX)
         {
-            i++;
-            if (i > UINT16_MAX)
-            {
-                return rd_size;
-            }
+            return 0;
         }
-        buf[rd_size] = I2C_ReceiveData(i2c_bus_data->instance);
     }
-    return rd_size;
+    return (uint8_t)I2C_ReceiveData(i2c_bus_data->instance);
 }
 
-static ssize_t drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, const uint8_t *buf, size_t size)
+static void drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
-    ssize_t wr_size = 0;
+    int i = 0;
 
-    for (wr_size = 0; wr_size < size; wr_size++)
+    /* Write data */
+    I2C_SendData(i2c_bus_data->instance, data);
+    while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
     {
-        int i = 0;
-
-        /* Write data */
-        I2C_SendData(i2c_bus_data->instance, buf[wr_size]);
-        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
+        i++;
+        if (i > INT16_MAX)
         {
-            i++;
-            if (i > UINT16_MAX)
-            {
-                return wr_size;
-            }
+            return;
         }
     }
-    return wr_size;
 }
 
 static void drv_i2c_bus_isr(struct mr_i2c_bus *i2c_bus)
