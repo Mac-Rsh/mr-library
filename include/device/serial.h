@@ -118,8 +118,8 @@ struct mr_serial
 struct mr_serial_ops
 {
     int (*configure)(struct mr_serial *serial, struct mr_serial_config *config);
-    ssize_t (*read)(struct mr_serial *serial, uint8_t *buf, size_t size);
-    ssize_t (*write)(struct mr_serial *serial, const uint8_t *buf, size_t size);
+    uint8_t (*read)(struct mr_serial *serial);
+    void (*write)(struct mr_serial *serial, uint8_t data);
     void (*start_tx)(struct mr_serial *serial);
     void (*stop_tx)(struct mr_serial *serial);
 };

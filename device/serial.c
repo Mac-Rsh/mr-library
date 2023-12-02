@@ -47,38 +47,47 @@ static ssize_t mr_serial_read(struct mr_dev *dev, int off, void *buf, size_t siz
 {
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
+    uint8_t *rd_buf = (uint8_t *)buf;
+    ssize_t rd_size = 0;
 
     if (mr_ringbuf_get_bufsz(&serial->rd_fifo) == 0)
     {
-        return ops->read(serial, buf, size);
+        for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
+        {
+            *rd_buf = ops->read(serial);
+            rd_buf++;
+        }
     } else
     {
-        return (ssize_t)mr_ringbuf_read(&serial->rd_fifo, buf, size);
+        rd_size = (ssize_t)mr_ringbuf_read(&serial->rd_fifo, buf, size);
     }
+    return rd_size;
 }
 
 static ssize_t mr_serial_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
 {
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
+    uint8_t *wr_buf = (uint8_t *)buf;
+    ssize_t wr_size = 0;
 
     if ((async == MR_SYNC) || (mr_ringbuf_get_bufsz(&serial->wr_fifo) == 0))
     {
-        return ops->write(serial, buf, size);
+        for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
+        {
+            ops->write(serial, *wr_buf);
+            wr_buf++;
+        }
     } else
     {
-        if (mr_ringbuf_get_bufsz(&serial->wr_fifo) == 0)
+        wr_size = (ssize_t)mr_ringbuf_write(&serial->wr_fifo, buf, size);
+        if (wr_size > 0)
         {
-            return ops->write(serial, buf, size);
-        } else
-        {
-            ssize_t ret = (ssize_t)mr_ringbuf_write(&serial->wr_fifo, buf, size);
-
             /* Start interrupt sending */
             ops->start_tx(serial);
-            return ret;
         }
     }
+    return wr_size;
 }
 
 static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
@@ -183,8 +192,7 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
         case MR_ISR_SERIAL_RD_INT:
         {
             /* Read data to FIFO */
-            uint8_t data = 0;
-            ops->read(serial, &data, sizeof(data));
+            uint8_t data = ops->read(serial);
             mr_ringbuf_push_force(&serial->rd_fifo, data);
 
             return (ssize_t)mr_ringbuf_get_data_size(&serial->rd_fifo);
@@ -195,7 +203,7 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
             uint8_t data = 0;
             if (mr_ringbuf_pop(&serial->wr_fifo, &data) == sizeof(data))
             {
-                ops->write(serial, &data, sizeof(data));
+                ops->write(serial, data);
             } else
             {
                 ops->stop_tx(serial);

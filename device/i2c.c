@@ -50,10 +50,9 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
         case MR_ISR_I2C_RD_INT:
         {
             struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
-            uint8_t data = 0;
+            uint8_t data = ops->read(i2c_bus);
 
             /* Read data to FIFO. if callback is set, call it */
-            ops->read(i2c_bus, &data, sizeof(data));
             mr_ringbuf_push_force(&i2c_dev->rd_fifo, data);
             if (i2c_dev->dev.rd_call.call != MR_NULL)
             {
@@ -192,16 +191,30 @@ MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t 
 {
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+    uint8_t *rd_buf = (uint8_t *)buf;
+    ssize_t rd_size = 0;
 
-    return ops->read(i2c_bus, buf, size);
+    for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
+    {
+        *rd_buf = ops->read(i2c_bus);
+        rd_buf++;
+    }
+    return rd_size;
 }
 
 MR_INLINE ssize_t i2c_dev_write(struct mr_i2c_dev *i2c_dev, const uint8_t *buf, size_t size)
 {
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+    uint8_t *wr_buf = (uint8_t *)buf;
+    ssize_t wr_size = 0;
 
-    return ops->write(i2c_bus, buf, size);
+    for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
+    {
+        ops->write(i2c_bus, *wr_buf);
+        wr_buf++;
+    }
+    return wr_size;
 }
 
 static int mr_i2c_dev_open(struct mr_dev *dev)

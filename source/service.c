@@ -531,7 +531,6 @@ size_t mr_ringbuf_pop(struct mr_ringbuf *ringbuf, uint8_t *data)
     {
         ringbuf->read_index++;
     }
-
     return 1;
 }
 
@@ -581,7 +580,6 @@ size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
 
     ringbuf->read_mirror = ~ringbuf->read_mirror;
     ringbuf->read_index = size - (ringbuf->size - ringbuf->read_index);
-
     return size;
 }
 
@@ -613,7 +611,6 @@ size_t mr_ringbuf_push(struct mr_ringbuf *ringbuf, uint8_t data)
     {
         ringbuf->write_index++;
     }
-
     return 1;
 }
 
@@ -662,7 +659,6 @@ size_t mr_ringbuf_push_force(struct mr_ringbuf *ringbuf, uint8_t data)
             ringbuf->read_index = ringbuf->write_index;
         }
     }
-
     return 1;
 }
 
@@ -712,7 +708,6 @@ size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t s
 
     ringbuf->write_mirror = ~ringbuf->write_mirror;
     ringbuf->write_index = size - (ringbuf->size - ringbuf->write_index);
-
     return size;
 }
 
@@ -778,7 +773,6 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
 
         ringbuf->read_index = ringbuf->write_index;
     }
-
     return size;
 }
 
@@ -1001,7 +995,6 @@ struct mr_avl *mr_avl_find(struct mr_avl *tree, uint32_t value)
     {
         return mr_avl_find(tree->right_child, value);
     }
-
     return MR_NULL;
 }
 
@@ -1030,6 +1023,5 @@ size_t mr_avl_get_length(struct mr_avl *tree)
     {
         length += mr_avl_get_length(tree->right_child);
     }
-
     return length;
 }

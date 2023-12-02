@@ -90,8 +90,8 @@ struct mr_i2c_bus_ops
     void (*start)(struct mr_i2c_bus *i2c_bus);
     void (*send_addr)(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits);
     void (*stop)(struct mr_i2c_bus *i2c_bus);
-    ssize_t (*read)(struct mr_i2c_bus *i2c_bus, uint8_t *buf, size_t size);
-    ssize_t (*write)(struct mr_i2c_bus *i2c_bus, const uint8_t *buf, size_t size);
+    uint8_t (*read)(struct mr_i2c_bus *i2c_bus);
+    void (*write)(struct mr_i2c_bus *i2c_bus, uint8_t data);
 };
 
 /**
