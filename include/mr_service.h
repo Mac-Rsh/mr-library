@@ -133,7 +133,7 @@ extern "C" {
  * @param a The first value.
  * @param b The second value.
  */
-#define mr_swap(a, b)                   (a ^= b, b ^= a, a ^= b)
+#define mr_swap(a, b)                   do { typeof(a) temp = a; a = b; b = temp; } while (0)
 
 /**
  * @brief This macro function aligns the size up to a multiple of 4.
