@@ -153,6 +153,15 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
         I2C_AcknowledgeConfig(i2c_bus_data->instance, DISABLE);
     }
 
+    /* Configure I2C */
+    I2C_InitStructure.I2C_ClockSpeed = config->baud_rate;
+    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_16_9;
+    I2C_InitStructure.I2C_OwnAddress1 = addr;
+    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+    I2C_Init(i2c_bus_data->instance, &I2C_InitStructure);
+    I2C_Cmd(i2c_bus_data->instance, state);
+
     /* Configure NVIC */
     NVIC_InitStructure.NVIC_IRQChannel = i2c_bus_data->irq;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
@@ -166,15 +175,7 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
     {
         I2C_ITConfig(i2c_bus_data->instance, I2C_IT_EVT, state);
     }
-
-    /* Configure I2C */
-    I2C_InitStructure.I2C_ClockSpeed = config->baud_rate;
-    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_16_9;
-    I2C_InitStructure.I2C_OwnAddress1 = addr;
-    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-    I2C_Init(i2c_bus_data->instance, &I2C_InitStructure);
-    I2C_Cmd(i2c_bus_data->instance, state);
+    I2C_ClearITPendingBit(i2c_bus_data->instance, I2C_IT_RXNE);
     return MR_EOK;
 }
 

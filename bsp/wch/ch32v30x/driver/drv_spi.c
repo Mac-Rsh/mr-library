@@ -327,6 +327,15 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         GPIO_Init(spi_bus_data->mosi_port, &GPIO_InitStructure);
     }
 
+    /* Configure SPI */
+    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+    SPI_InitStructure.SPI_CRCPolynomial = 7;
+    SPI_Init(spi_bus_data->instance, &SPI_InitStructure);
+    SPI_Cmd(spi_bus_data->instance, state);
+    SPI_I2S_ClearFlag(spi_bus_data->instance, SPI_I2S_FLAG_RXNE);
+    SPI_I2S_ClearFlag(spi_bus_data->instance, SPI_I2S_FLAG_TXE);
+
     /* Configure NVIC */
     NVIC_InitStructure.NVIC_IRQChannel = spi_bus_data->irq;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
@@ -340,13 +349,7 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     {
         SPI_I2S_ITConfig(spi_bus_data->instance, SPI_I2S_IT_RXNE, state);
     }
-
-    /* Configure SPI */
-    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-    SPI_InitStructure.SPI_CRCPolynomial = 7;
-    SPI_Init(spi_bus_data->instance, &SPI_InitStructure);
-    SPI_Cmd(spi_bus_data->instance, state);
+    SPI_I2S_ClearITPendingBit(spi_bus_data->instance, SPI_I2S_IT_RXNE);
     return MR_EOK;
 }
 

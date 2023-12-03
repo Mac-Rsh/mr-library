@@ -554,6 +554,15 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
         GPIO_Init(serial_data->rx_port, &GPIO_InitStructure);
     }
 
+    /* Configure UART */
+    USART_InitStructure.USART_BaudRate = config->baud_rate;
+    USART_InitStructure.USART_HardwareFlowControl = 0;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    USART_Init(serial_data->instance, &USART_InitStructure);
+    USART_Cmd(serial_data->instance, state);
+    USART_ClearFlag(serial_data->instance, USART_FLAG_RXNE);
+    USART_ClearFlag(serial_data->instance, USART_FLAG_TC);
+
     /* Configure NVIC */
     NVIC_InitStructure.NVIC_IRQChannel = serial_data->irq;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
@@ -565,15 +574,8 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
     {
         USART_ITConfig(serial_data->instance, USART_IT_TXE, DISABLE);
     }
-
-    /* Configure UART */
-    USART_InitStructure.USART_BaudRate = config->baud_rate;
-    USART_InitStructure.USART_HardwareFlowControl = 0;
-    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(serial_data->instance, &USART_InitStructure);
-    USART_Cmd(serial_data->instance, state);
-    USART_ClearFlag(serial_data->instance, USART_FLAG_RXNE);
-    USART_ClearFlag(serial_data->instance, USART_FLAG_TC);
+    USART_ClearITPendingBit(serial_data->instance, USART_IT_RXNE);
+    USART_ClearITPendingBit(serial_data->instance, USART_IT_TXE);
     return MR_EOK;
 }
 
