@@ -31,6 +31,11 @@ menu "Device configure"
 		bool "Enable read/write control"
 		default y
 
+    config MR_USING_PRINTF_BUFSZ
+            bool "The size of printf buffer"
+            default 128
+            range 16 2147483647
+
 	config MR_USING_ADC
 		bool "Enable ADC device"
 		default n
