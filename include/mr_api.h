@@ -64,7 +64,7 @@ int mr_dev_register(struct mr_dev *dev,
                     int sflags,
                     struct mr_dev_ops *ops,
                     struct mr_drv *drv);
-void mr_dev_isr(struct mr_dev *dev, int event, void *args);
+int mr_dev_isr(struct mr_dev *dev, int event, void *args);
 int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz);
 /** @} */
 

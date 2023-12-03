@@ -435,7 +435,7 @@ int mr_dev_register(struct mr_dev *dev,
  * @param event The event to be handle.
  * @param args The arguments of the event.
  */
-void mr_dev_isr(struct mr_dev *dev, int event, void *args)
+int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 {
     mr_assert(dev != MR_NULL);
 
@@ -444,7 +444,7 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
         ssize_t ret = dev->ops->isr(dev, event, args);
         if (ret < 0)
         {
-            return;
+            return (int)ret;
         }
 
         switch (event & MR_ISR_MASK)
@@ -455,11 +455,12 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
                 {
                     dev->rd_call.call(dev->rd_call.desc, &ret);
                 }
-                return;
+                return MR_EOK;
             }
+
             case MR_ISR_WR:
             {
-                if (ret == 0)
+                if (ret == MR_EOK)
                 {
 #ifdef MR_USING_RDWR_CTL
                     dev_lock_release(dev, MR_LFLAG_NONBLOCK);
@@ -468,16 +469,18 @@ void mr_dev_isr(struct mr_dev *dev, int event, void *args)
                     {
                         dev->wr_call.call(dev->wr_call.desc, &ret);
                     }
+                    return MR_EOK;
                 }
-                return;
+                return MR_EBUSY;
             }
 
             default:
             {
-                return;
+                return MR_ENOTSUP;
             }
         }
     }
+    return MR_ENOTSUP;
 }
 
 /**

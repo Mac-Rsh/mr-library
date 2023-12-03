@@ -197,6 +197,7 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
 
             return (ssize_t)mr_ringbuf_get_data_size(&serial->rd_fifo);
         }
+
         case MR_ISR_SERIAL_WR_INT:
         {
             /* Write data from FIFO */

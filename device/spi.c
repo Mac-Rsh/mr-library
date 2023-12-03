@@ -78,7 +78,7 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
                 ssize_t size = (ssize_t)mr_ringbuf_get_data_size(&spi_dev->rd_fifo);
                 spi_dev->dev.rd_call.call(spi_dev->dev.rd_call.desc, &size);
             }
-            return MR_ENOTSUP;
+            return MR_EOK;
         }
 
         default:
@@ -499,9 +499,11 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 /* Reconfigure CS */
                 if (config.host_slave != spi_dev->config.host_slave)
                 {
+                    spi_dev->config = config;
                     spi_dev_cs_configure(spi_dev, MR_ENABLE);
                 }
 #endif /* MR_USING_PIN */
+
                 /* If holding the bus, release it */
                 if (spi_dev == spi_bus->owner)
                 {

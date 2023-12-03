@@ -59,7 +59,7 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
                 ssize_t size = (ssize_t)mr_ringbuf_get_data_size(&i2c_dev->rd_fifo);
                 i2c_dev->dev.rd_call.call(i2c_dev->dev.rd_call.desc, &size);
             }
-            return MR_ENOTSUP;
+            return MR_EOK;
         }
 
         default:

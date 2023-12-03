@@ -72,7 +72,7 @@ static ssize_t mr_can_bus_isr(struct mr_dev *dev, int event, void *args)
                     break;
                 }
             }
-            return MR_ENOTSUP;
+            return MR_EOK;
         }
 
         default:
