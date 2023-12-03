@@ -9,7 +9,7 @@
 #include "drv_spi.h"
 
 #ifdef MR_USING_SPI
-
+#define MR_USING_SPI1
 #if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) && !defined(MR_USING_SPI4) && !defined(MR_USING_SPI5) && !defined(MR_USING_SPI6)
 #error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
 #else
@@ -64,19 +64,19 @@ static struct drv_spi_bus_data spi_bus_drv_data[] =
         {{0}, SPI1, SPI1_IRQn},
 #endif /* MR_USING_SPI1 */
 #ifdef MR_USING_SPI2
-        {{0},SPI2,SPI2_IRQn},
+        {{0}, SPI2, SPI2_IRQn},
 #endif /* MR_USING_SPI2 */
 #ifdef MR_USING_SPI3
-        {{0},SPI3,SPI3_IRQn},
+        {{0}, SPI3, SPI3_IRQn},
 #endif /* MR_USING_SPI3 */
 #ifdef MR_USING_SPI4
-        {{0},SPI4,SPI4_IRQn},
+        {{0}, SPI4, SPI4_IRQn},
 #endif /* MR_USING_SPI4 */
 #ifdef MR_USING_SPI5
-        {{0},SPI5,SPI5_IRQn},
+        {{0}, SPI5, SPI5_IRQn},
 #endif /* MR_USING_SPI5 */
 #ifdef MR_USING_SPI6
-        {{0},SPI6,SPI6_IRQn},
+        {{0}, SPI6, SPI6_IRQn},
 #endif /* MR_USING_SPI6 */
     };
 
@@ -92,10 +92,10 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     /* Configure clock */
     if ((uint32_t)spi_bus_data->instance > APB2PERIPH_BASE)
     {
-        pclk_freq = HAL_RCC_GetPCLK2Freq();
+        pclk = HAL_RCC_GetPCLK2Freq();
     } else
     {
-        pclk_freq = HAL_RCC_GetPCLK1Freq();
+        pclk = HAL_RCC_GetPCLK1Freq();
     }
 
     psc = pclk / config->baud_rate;
@@ -223,18 +223,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
             }
         }
 
-        /* Configure NVIC */
-        if (config->host_slave == MR_SPI_SLAVE)
-        {
-            HAL_NVIC_SetPriority(spi_bus_data->irq, 1, 0);
-            HAL_NVIC_EnableIRQ(spi_bus_data->irq);
-            __HAL_UART_ENABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
-        } else
-        {
-            HAL_NVIC_DisableIRQ(spi_bus_data->irq);
-            __HAL_UART_DISABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
-        }
-
         /* Configure SPI */
         spi_bus_data->handle.Init.NSS = SPI_NSS_SOFT;
         spi_bus_data->handle.Init.Direction = SPI_DIRECTION_2LINES;
@@ -242,14 +230,29 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         spi_bus_data->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
         spi_bus_data->handle.Init.CRCPolynomial = 7;
         HAL_SPI_Init(&spi_bus_data->handle);
+        __HAL_SPI_ENABLE(&spi_bus_data->handle);
+
+        /* Configure NVIC */
+        if (config->host_slave == MR_SPI_SLAVE)
+        {
+            HAL_NVIC_SetPriority(spi_bus_data->irq, 1, 0);
+            HAL_NVIC_EnableIRQ(spi_bus_data->irq);
+            __HAL_SPI_ENABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
+        } else
+        {
+            HAL_NVIC_DisableIRQ(spi_bus_data->irq);
+            __HAL_SPI_DISABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
+        }
+
     } else
     {
-        /* Configure NVIC */
-        HAL_NVIC_DisableIRQ(spi_bus_data->irq);
-        __HAL_UART_DISABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
-
         /* Configure SPI */
         HAL_SPI_DeInit(&spi_bus_data->handle);
+        __HAL_SPI_DISABLE(&spi_bus_data->handle);
+
+        /* Configure NVIC */
+        HAL_NVIC_DisableIRQ(spi_bus_data->irq);
+        __HAL_SPI_DISABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
     }
     return MR_EOK;
 }
@@ -267,7 +270,7 @@ static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
             return 0;
         }
     }
-    return (uint32_t)spi_bus_data->instance->DR;
+    return (uint32_t)spi_bus_data->handle.Instance->DR;
 }
 
 static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
@@ -275,6 +278,7 @@ static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
     int i = 0;
 
+    spi_bus_data->handle.Instance->DR = data;
     while (__HAL_SPI_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_TXE) == RESET)
     {
         i++;
@@ -283,15 +287,13 @@ static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
             return;
         }
     }
-    spi_bus_data->instance->DR = data;
 }
 
 static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
 
-    if ((__HAL_UART_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_RXNE) != RESET) &&
-        (__HAL_UART_GET_IT_SOURCE(&spi_bus_data->handle, SPI_IT_RXNE) != RESET))
+    if ((__HAL_SPI_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_RXNE) != RESET))
     {
         mr_dev_isr(&spi_bus->dev, MR_ISR_SPI_RD_INT, NULL);
     }

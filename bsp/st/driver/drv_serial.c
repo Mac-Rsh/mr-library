@@ -194,11 +194,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
             }
         }
 
-        /* Configure NVIC */
-        HAL_NVIC_SetPriority(serial_data->irq, 1, 0);
-        HAL_NVIC_EnableIRQ(serial_data->irq);
-        __HAL_UART_ENABLE_IT(&serial_data->handle, UART_IT_RXNE);
-
         /* Configure UART */
         serial_data->handle.Init.BaudRate = config->baud_rate;
         serial_data->handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
@@ -207,15 +202,20 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
         HAL_UART_Init(&serial_data->handle);
         __HAL_UART_CLEAR_FLAG(&serial_data->handle, UART_FLAG_RXNE);
         __HAL_UART_CLEAR_FLAG(&serial_data->handle, UART_FLAG_TC);
+
+        /* Configure NVIC */
+        HAL_NVIC_SetPriority(serial_data->irq, 1, 0);
+        HAL_NVIC_EnableIRQ(serial_data->irq);
+        __HAL_UART_ENABLE_IT(&serial_data->handle, UART_IT_RXNE);
     } else
     {
+        /* Configure UART */
+        HAL_UART_DeInit(&serial_data->handle);
+
         /* Configure NVIC */
         HAL_NVIC_DisableIRQ(serial_data->irq);
         __HAL_UART_DISABLE_IT(&serial_data->handle, UART_IT_RXNE);
         __HAL_UART_DISABLE_IT(&serial_data->handle, UART_IT_TXE);
-
-        /* Configure UART */
-        HAL_UART_DeInit(&serial_data->handle);
     }
     return MR_EOK;
 }
