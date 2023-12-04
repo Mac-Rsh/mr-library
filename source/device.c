@@ -439,6 +439,11 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 {
     mr_assert(dev != MR_NULL);
 
+    if (dev->ref_count == 0)
+    {
+        return MR_EINVAL;
+    }
+
     if (dev->ops->isr != MR_NULL)
     {
         ssize_t ret = dev->ops->isr(dev, event, args);

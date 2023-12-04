@@ -17,15 +17,6 @@ extern "C" {
 #endif
 
 /**
-* @addtogroup Memory.
-* @{
-*/
-int mr_heap_init(void);
-void *mr_malloc(size_t size);
-void mr_free(void *memory);
-/** @} */
-
-/**
  * @addtogroup Interrupt.
  */
 void mr_interrupt_disable(void);
@@ -40,43 +31,29 @@ void mr_delay_ms(uint32_t ms);
 /** @} */
 
 /**
- * @addtogroup Initialization.
+ * @addtogroup Memory.
+ * @{
  */
-void mr_auto_init(void);
+int mr_heap_init(void);
+void *mr_malloc(size_t size);
+void mr_free(void *memory);
+size_t mr_malloc_usable_size(void *memory);
+void *mr_calloc(size_t num, size_t size);
+void *mr_realloc(void *memory, size_t size);
 /** @} */
 
 /**
  * @addtogroup Printf.
  * @{
  */
-int mr_printf_output(const char *buf, size_t size);
 int mr_printf(const char *fmt, ...);
 const char *mr_strerror(int err);
 /** @} */
 
 /**
-* @addtogroup Device.
-* @{
-*/
-int mr_dev_register(struct mr_dev *dev,
-                    const char *name,
-                    int type,
-                    int sflags,
-                    struct mr_dev_ops *ops,
-                    struct mr_drv *drv);
-int mr_dev_isr(struct mr_dev *dev, int event, void *args);
-int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz);
-/** @} */
-
-/**
- * @addtogroup Device description.
- * @{
+ * @addtogroup Initialization.
  */
-int mr_dev_open(const char *name, int oflags);
-int mr_dev_close(int desc);
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
-int mr_dev_ioctl(int desc, int cmd, void *args);
+void mr_auto_init(void);
 /** @} */
 
 /**
@@ -107,6 +84,31 @@ void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node);
 void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node);
 struct mr_avl *mr_avl_find(struct mr_avl *tree, uint32_t value);
 size_t mr_avl_get_length(struct mr_avl *tree);
+/** @} */
+
+/**
+* @addtogroup Device.
+* @{
+*/
+int mr_dev_register(struct mr_dev *dev,
+                    const char *name,
+                    int type,
+                    int sflags,
+                    struct mr_dev_ops *ops,
+                    struct mr_drv *drv);
+int mr_dev_isr(struct mr_dev *dev, int event, void *args);
+int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz);
+/** @} */
+
+/**
+ * @addtogroup Device description.
+ * @{
+ */
+int mr_dev_open(const char *name, int oflags);
+int mr_dev_close(int desc);
+ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+int mr_dev_ioctl(int desc, int cmd, void *args);
 /** @} */
 
 #ifdef __cplusplus

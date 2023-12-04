@@ -235,6 +235,66 @@ MR_WEAK void mr_free(void *memory)
 }
 
 /**
+ * @brief This function get the usable size of the memory.
+ *
+ * @param memory The memory.
+ *
+ * @return The usable size of the memory.
+ */
+MR_WEAK size_t mr_malloc_usable_size(void *memory)
+{
+    if (memory != MR_NULL)
+    {
+        struct mr_heap_block *block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
+        return block->size;
+    }
+    return 0;
+}
+
+/**
+ * @brief This function initialize the memory.
+ *
+ * @param num The number of the memory.
+ * @param size The size of the memory.
+ *
+ * @return The initialized memory.
+ */
+MR_WEAK void *mr_calloc(size_t num, size_t size)
+{
+    size_t total = num * size;
+    void *memory = MR_NULL;
+
+    memory = mr_malloc(total);
+    if (memory != MR_NULL)
+    {
+        memset(memory, 0, total);
+    }
+    return memory;
+}
+
+/**
+ * @brief This function realloc memory.
+ *
+ * @param memory The memory.
+ * @param size The size of the memory.
+ *
+ * @return The reallocated memory.
+ */
+MR_WEAK void *mr_realloc(void *memory, size_t size)
+{
+    size_t old_size = mr_malloc_usable_size(memory);
+    void *new_memory = MR_NULL;
+
+    new_memory = mr_malloc(size);
+    if (new_memory != MR_NULL)
+    {
+        memcpy(new_memory, memory, old_size);
+        mr_free(memory);
+    }
+    return new_memory;
+}
+
+/**
  * @brief This function delay us.
  *
  * @param us The delay time.
@@ -321,7 +381,6 @@ int mr_printf(const char *fmt, ...)
     int ret = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
     ret = mr_printf_output(buf, ret);
     va_end(args);
-
     return ret;
 }
 

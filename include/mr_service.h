@@ -115,7 +115,7 @@ extern "C" {
  *
  * @return The maximum of the two values.
  */
-#define mr_max(a, b)                    ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#define mr_max(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a > _b ? _a : _b; })
 
 /**
  * @brief This macro function gets the minimum of two values.
@@ -125,7 +125,31 @@ extern "C" {
  *
  * @return The minimum of the two values.
  */
-#define mr_min(a, b)                    ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#define mr_min(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a < _b ? _a : _b; })
+
+/**
+ * @brief This macro function ensures that a value is within a specified range.
+ *
+ * @param value The value.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ *
+ * @return The value within the specified range.
+ */
+#define mr_bound(value, min, max) \
+    ({__typeof__(value) _value = (value); __typeof__(min) _min = (min); __typeof__(max) _max = (max); \
+    (_value) < (_min) ? (_min) : ((_value) > (_max) ? (_max) : (_value));})
+
+/**
+ * @brief This macro function ensures that a value is within a specified range.
+ *
+ * @param value The value.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ *
+ * @return The value within the specified range.
+ */
+#define mr_limit(value, min, max)       mr_bound(value, min, max)
 
 /**
  * @brief This macro function swaps two values.
@@ -133,7 +157,7 @@ extern "C" {
  * @param a The first value.
  * @param b The second value.
  */
-#define mr_swap(a, b)                   do { typeof(a) temp = a; a = b; b = temp; } while (0)
+#define mr_swap(a, b)                   do { typeof (a) temp = a; a = b; b = temp; } while (0)
 
 /**
  * @brief This macro function aligns the size up to a multiple of 4.
@@ -148,6 +172,25 @@ extern "C" {
  * @param size The size to align.
  */
 #define mr_align4_down(size)            ((size) & (~3))
+
+/**
+ * @brief This macro function concatenates two strings.
+ *
+ * @param a The first string.
+ * @param b The second string.
+ *
+ * @return The concatenated string.
+ */
+#define MR_CONCAT(a, b)                 a##b
+
+/**
+ * @brief This macro function converts an integer to a string.
+ *
+ * @param a The integer to convert.
+ *
+ * @return The string representation of the integer.
+ */
+#define MR_STR(a)                       #a
 
 /**
  * @brief This macro function checks if a list is empty.
