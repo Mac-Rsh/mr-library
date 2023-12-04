@@ -18,7 +18,7 @@
   * [Add Include Paths](#add-include-paths)
 * [Let's Light an LED](#lets-light-an-led)
 * [Hello World](#hello-world)
-* [Now you have completed the basics, start exploring the MR library further.](#now-you-have-completed-the-basics-start-exploring-the-mr-library-further)
+* [Now that you have completed the introductory tutorial, start using the MR Library.](#now-that-you-have-completed-the-introductory-tutorial-start-using-the-mr-library)
 <!-- TOC -->
 
  ----------
@@ -246,10 +246,10 @@ int main(void)
 
  ----------
 
-# Now you have completed the basics, start exploring the MR library further.
+# Now that you have completed the introductory tutorial, start using the MR Library.
 
-1. Welcome to refer to more tutorials, document directory is in document.
-2. You can try developing drivers based on certain chips to practice device driver programming.
+1. See more tutorials: directory `document`.
+2. Try developing drivers based on certain chips to practice device driver programming.
 3. Try writing more device templates and developing more features.
 4. Welcome to provide your opinions and suggestions. If you are interested in development, you are welcome to
    participate in the development of the `MR` project. The project discussion group is: 199915649(QQ).

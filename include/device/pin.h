@@ -67,6 +67,8 @@ typedef uint8_t mr_pin_data_t;                                      /**< PIN rea
 struct mr_pin
 {
     struct mr_dev dev;                                              /**< Device */
+
+    struct mr_list irq_list;                                        /**< IRQ list */
 };
 
 /**

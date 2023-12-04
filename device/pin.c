@@ -10,6 +10,14 @@
 
 #ifdef MR_USING_PIN
 
+struct pin_irq
+{
+    struct mr_list list;
+    int number;
+    int desc;
+    int (*call)(int desc, void *args);
+};
+
 static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
@@ -71,7 +79,49 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     return MR_EINVAL;
                 }
 
-                return ops->configure(pin, off, mode);
+                /* Configure pin mode */
+                int ret = ops->configure(pin, off, mode);
+                if (ret != MR_EOK)
+                {
+                    return ret;
+                }
+
+                /* If the irq exists, update it */
+                struct mr_list *list = MR_NULL;
+                for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
+                {
+                    struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
+                    if (irq->number == off)
+                    {
+                        if (mode < MR_PIN_MODE_IRQ_RISING)
+                        {
+                            /* Remove irq */
+                            mr_list_remove(list);
+                            mr_free(irq);
+                        } else
+                        {
+                            /* Update irq */
+                            irq->desc = pin->dev.rd_call.desc;
+                            irq->call = pin->dev.rd_call.call;
+                        }
+                        return MR_EOK;
+                    }
+                }
+
+                /* If not exist, allocate new irq */
+                if (mode >= MR_PIN_MODE_IRQ_RISING)
+                {
+                    struct pin_irq *irq = (struct pin_irq *)mr_malloc(sizeof(struct pin_irq));
+                    if (irq != MR_NULL)
+                    {
+                        mr_list_init(&irq->list);
+                        irq->number = off;
+                        irq->desc = dev->rd_call.desc;
+                        irq->call = dev->rd_call.call;
+                        mr_list_insert_before(&pin->irq_list, &irq->list);
+                    }
+                }
+                return MR_EOK;
             }
             return MR_EINVAL;
         }
@@ -85,11 +135,26 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
 static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
 {
+    struct mr_pin *pin = (struct mr_pin *)dev;
+
     switch (event)
     {
         case MR_ISR_PIN_RD_INT:
         {
-            return (ssize_t)*(int *)args;
+            ssize_t number = *(int *)args;
+
+            /* If the irq exists, call it */
+            struct mr_list *list = MR_NULL;
+            for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
+            {
+                struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
+                if (irq->number == number)
+                {
+                    irq->call(irq->desc, &number);
+                    return MR_EEXIST;
+                }
+            }
+            return number;
         }
 
         default:
@@ -124,6 +189,9 @@ int mr_pin_register(struct mr_pin *pin, const char *name, struct mr_drv *drv)
     mr_assert(name != MR_NULL);
     mr_assert(drv != MR_NULL);
     mr_assert(drv->ops != MR_NULL);
+
+    /* Initialize the fields */
+    mr_list_init(&pin->irq_list);
 
     /* Register the pin */
     return mr_dev_register(&pin->dev, name, Mr_Dev_Type_Pin, MR_SFLAG_RDWR, &ops, drv);
