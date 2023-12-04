@@ -175,6 +175,13 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
     /* Update timer clock(MHz) */
     timer->info->clk = pclk / 1000000;
 
+    /* Configure timer */
+    TIM_TimeBaseInitStructure.TIM_Period = 0;
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(timer_data->instance, &TIM_TimeBaseInitStructure);
+
     /* Configure NVIC */
     NVIC_InitStructure.NVIC_IRQChannel = timer_data->irq;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
@@ -182,13 +189,6 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
     NVIC_InitStructure.NVIC_IRQChannelCmd = state;
     NVIC_Init(&NVIC_InitStructure);
     TIM_ITConfig(timer_data->instance, TIM_IT_Update, state);
-
-    /* Configure timer */
-    TIM_TimeBaseInitStructure.TIM_Period = 0;
-    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInit(timer_data->instance, &TIM_TimeBaseInitStructure);
     return MR_EOK;
 }
 

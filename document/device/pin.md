@@ -84,8 +84,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 
 ```c
 /* 定义引脚编号 */
-#define
-PIN_NUMBER                      45
+#define PIN_NUMBER                      45
 
 /* 设置引脚编号 */
 mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, PIN_NUMBER));
@@ -118,8 +117,7 @@ mr_dev_ioctl(ds, MR_CTL_PIN_GET_NUMBER, &number);
 
 ```c
 /* 定义引脚模式 */
-#define
-PIN_MODE                        MR_PIN_MODE_OUTPUT
+#define PIN_MODE                        MR_PIN_MODE_OUTPUT
 
 /* 设置引脚模式 */
 mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, PIN_MODE));
@@ -177,7 +175,7 @@ int ret = mr_dev_read(ds, &pin_level, sizeof(pin_level));
 /* 是否读取成功 */
 if (ret != sizeof(pin_level))
 {
-return ret;
+    return ret;
 }
 ```
 
@@ -205,7 +203,7 @@ int ret = mr_dev_write(ds, &pin_level, sizeof(pin_level));
 /* 是否写入成功 */
 if (ret != sizeof(pin_level))
 {
-return ret;
+    return ret;
 }
 ```
 
