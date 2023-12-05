@@ -1,5 +1,18 @@
 # SERIAL设备
 
+<!-- TOC -->
+* [SERIAL设备](#serial设备)
+  * [打开SERIAL设备](#打开serial设备)
+  * [关闭SERIAL设备](#关闭serial设备)
+  * [控制SERIAL设备](#控制serial设备)
+    * [设置/获取SERIAL设备配置](#设置获取serial设备配置)
+    * [设置/获取读/写缓冲区大小](#设置获取读写缓冲区大小)
+    * [设置/获取读/写回调函数](#设置获取读写回调函数)
+  * [读取SERIAL设备数据](#读取serial设备数据)
+  * [写入SERIAL设备数据](#写入serial设备数据)
+  * [使用示例：](#使用示例)
+<!-- TOC -->
+
 ## 打开SERIAL设备
 
 ```c
@@ -32,7 +45,7 @@ int mr_dev_close(int desc);
 | `=0`    | 关闭成功  |
 | `<0`    | 错误码   |
 
-## 配置PIN设备
+## 控制SERIAL设备
 
 ```c
 int mr_dev_ioctl(int desc, int cmd, void *args);
@@ -48,27 +61,27 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_SERIAL_SET_CONFIG`： 设置SERIAL设备配置
-    - `MR_CTL_SERIAL_GET_CONFIG`： 获取SERIAL设备配置
-    - `MR_CTL_SERIAL_SET_RD_BUFSZ`： 设置读缓冲区大小
-    - `MR_CTL_SERIAL_GET_RD_BUFSZ`： 获取读缓冲区大小
-    - `MR_CTL_SERIAL_SET_WR_BUFSZ`： 设置写缓冲区大小
-    - `MR_CTL_SERIAL_GET_WR_BUFSZ`： 获取写缓冲区大小
-    - `MR_CTL_SERIAL_SET_RD_CALL`：设置读回调函数
-    - `MR_CTL_SERIAL_GET_RD_CALL`：获取读回调函数
-    - `MR_CTL_SERIAL_SET_WR_CALL`：设置写回调函数
-    - `MR_CTL_SERIAL_GET_WR_CALL`：获取写回调函数
+    - `MR_CTL_SERIAL_SET_CONFIG`： 设置SERIAL设备配置。
+    - `MR_CTL_SERIAL_GET_CONFIG`： 获取SERIAL设备配置。
+    - `MR_CTL_SERIAL_SET_RD_BUFSZ`： 设置读缓冲区大小。
+    - `MR_CTL_SERIAL_GET_RD_BUFSZ`： 获取读缓冲区大小。
+    - `MR_CTL_SERIAL_SET_WR_BUFSZ`： 设置写缓冲区大小。
+    - `MR_CTL_SERIAL_GET_WR_BUFSZ`： 获取写缓冲区大小。
+    - `MR_CTL_SERIAL_SET_RD_CALL`：设置读回调函数。
+    - `MR_CTL_SERIAL_GET_RD_CALL`：获取读回调函数。
+    - `MR_CTL_SERIAL_SET_WR_CALL`：设置写回调函数。
+    - `MR_CTL_SERIAL_GET_WR_CALL`：获取写回调函数。
 
 ### 设置/获取SERIAL设备配置
 
 SERIAL设备配置：
 
-- `baud_rate`：波特率
-- `data_bits`：数据位数
-- `stop_bits`：停止位数
-- `parity`：校验位
-- `bit_order`：数据传输顺序
-- `invert`：极性反转
+- `baud_rate`：波特率。
+- `data_bits`：数据位数。
+- `stop_bits`：停止位数。
+- `parity`：校验位。
+- `bit_order`：数据传输顺序。
+- `invert`：极性反转。
 
 ```c
 /* 设置默认配置 */
@@ -159,7 +172,7 @@ if (size < 0)
 }
 ```
 
-注：当未设置读缓冲区时将使用轮询方式同步读取数据（无法保证完整接收数据）。当设置读缓冲区后会从读缓冲区读取指定数量的数据（返回实际读取的数据大小）。
+注：当未设置读缓冲区时将使用轮询方式同步读取数据（无法保证完整接收数据）。当设置读缓冲区后将从读缓冲区读取指定数量的数据（返回实际读取的数据大小）。
 
 ## 写入SERIAL设备数据
 
@@ -196,6 +209,7 @@ if (size < 0)
 ```c
 #include "include/mr_lib.h"
 
+/* 定义串口设备描述符 */
 int serial_ds = -1;
 
 int serial_init(void)
@@ -209,7 +223,13 @@ int serial_init(void)
     }
     /* 设置串口配置 */
     struct mr_serial_config config = MR_SERIAL_CONFIG_DEFAULT;
-    mr_dev_ioctl(serial_ds, MR_CTL_SERIAL_SET_CONFIG, &config);
+    int ret = mr_dev_ioctl(serial_ds, MR_CTL_SERIAL_SET_CONFIG, &config);
+    if (ret < 0)
+    {
+        mr_printf("serial set config failed: %s\r\n", mr_strerror(ret));
+        return ret;
+    }
+    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_APP_EXPORT(serial_init);
@@ -229,4 +249,4 @@ int main(void)
 }
 ```
 
-回环测试，将接收到的数据重新发送回去。
+电脑连接串口1，在串口软件中进行回环测试，发送数据后会在串口软件中显示接收到的数据。
