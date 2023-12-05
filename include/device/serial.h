@@ -82,6 +82,12 @@ struct mr_serial_config
 /**
  * @brief SERIAL control command.
  */
+#define MR_CTL_SERIAL_SET_CONFIG        MR_CTL_SET_CONFIG           /**< Set configuration */
+#define MR_CTL_SERIAL_GET_CONFIG        MR_CTL_GET_CONFIG           /**< Get configuration */
+#define MR_CTL_SERIAL_SET_RD_BUFSZ      MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
+#define MR_CTL_SERIAL_GET_RD_BUFSZ      MR_CTL_GET_RD_BUFSZ         /**< Get read buffer size */
+#define MR_CTL_SERIAL_SET_WR_BUFSZ      MR_CTL_SET_WR_BUFSZ         /**< Set write buffer size */
+#define MR_CTL_SERIAL_GET_WR_BUFSZ      MR_CTL_GET_WR_BUFSZ         /**< Get write buffer size */
 #define MR_CTL_SERIAL_SET_RD_CALL       MR_CTL_SET_RD_CALL          /**< Set read callback */
 #define MR_CTL_SERIAL_GET_RD_CALL       MR_CTL_GET_RD_CALL          /**< Get read callback */
 #define MR_CTL_SERIAL_SET_WR_CALL       MR_CTL_SET_WR_CALL          /**< Set write complete callback */

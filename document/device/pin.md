@@ -65,11 +65,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_PIN_SET_NUMBER`：设置引脚编号。
-    - `MR_CTL_PIN_GET_NUMBER`：获取引脚编号。
-    - `MR_CTL_PIN_SET_MODE`：设置引脚模式。
-    - `MR_CTL_PIN_SET_EXTI_CALL`：设置外部中断回调函数。
-    - `MR_CTL_PIN_GET_EXTI_CALL`：获取外部中断回调函数。
+  - `MR_CTL_PIN_SET_NUMBER`：设置引脚编号。
+  - `MR_CTL_PIN_GET_NUMBER`：获取引脚编号。
+  - `MR_CTL_PIN_SET_MODE`：设置引脚模式。
+  - `MR_CTL_PIN_SET_EXTI_CALL`：设置外部中断回调函数。
+  - `MR_CTL_PIN_GET_EXTI_CALL`：获取外部中断回调函数。
 
 ### 设置/获取引脚编号
 
