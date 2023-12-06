@@ -133,6 +133,12 @@
 
    ![工程目录1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build1.png)
 
+5. 将文件加入到IDE中（大部分IDE都能自动识别工程路径下的文件，无需进行此步骤）。以 `keil` 为例:
+
+    ![工程目录Keil](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Keil.png)
+
+    添加 `source`、`device`、`driver` 目录下的所有文件。
+
 ## 配置菜单选项
 
 1. 在 `mr-library` 目录下打开命令行工具，运行 `menuconfig` 进行菜单配置。
@@ -172,8 +178,12 @@
 
    ![工程目录5](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build5.png)
 
-3. 在您的工程中引入 `#include "include/mr_lib.h"`。
-4. 在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数。
+3. 配置GNU语法。如果您使用的是非 `GCC` 编译器，请使能GNU语法。以 `keil` 为例:
+
+   ![工程目录6](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build6.png)
+
+4. 在您的工程中引入 `#include "include/mr_lib.h"`。
+5. 在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数。
 
  ----------
 
