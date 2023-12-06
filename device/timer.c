@@ -183,7 +183,7 @@ static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTL_SET_CONFIG:
+        case MR_CTL_TIMER_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -195,7 +195,7 @@ static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             return MR_EINVAL;
         }
 
-        case MR_CTL_GET_CONFIG:
+        case MR_CTL_TIMER_GET_CONFIG:
         {
             if (args != MR_NULL)
             {

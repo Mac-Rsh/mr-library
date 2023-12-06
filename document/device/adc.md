@@ -62,8 +62,8 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 
 - `cmd`：命令码，支持以下命令：
     - `MR_CTL_ADC_SET_CHANNEL`：设置通道编号。
-    - `MR_CTL_ADC_GET_CHANNEL`：获取通道编号。
     - `MR_CTL_ADC_SET_CHANNEL_STATE`：设置通道状态。
+    - `MR_CTL_ADC_GET_CHANNEL`：获取通道编号。
     - `MR_CTL_ADC_GET_CHANNEL_STATE`：获取通道状态。
 
 ### 设置/获取通道编号
@@ -85,6 +85,7 @@ mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL, &number);
 ### 设置/获取通道状态
 
 通道状态：
+
 - `MR_ADC_STATE_DISABLE`：禁用通道。
 - `MR_ADC_STATE_ENABLE`：启用通道。
 

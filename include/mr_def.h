@@ -242,11 +242,13 @@ struct mr_dev;
 #define MR_CTL_SET_OFFSET               (0x01)                      /**< Set offset */
 #define MR_CTL_SET_RD_CALL              (0x02)                      /**< Set read callback */
 #define MR_CTL_SET_WR_CALL              (0x03)                      /**< Set write callback */
-#define MR_CTL_SET_SLEEP                (0x04)                      /**< Set sleep */
-#define MR_CTL_SET_WAKEUP               (0x05)                      /**< Set wakeup */
+#define MR_CTL_SET_SLEEP                (0x04)                      /**< Set sleep (reserved) */
+#define MR_CTL_SET_WAKEUP               (0x05)                      /**< Set wakeup (reserved) */
 #define MR_CTL_SET_CONFIG               (0x06)                      /**< Set configuration */
 #define MR_CTL_SET_RD_BUFSZ             (0x07)                      /**< Set read buffer size */
 #define MR_CTL_SET_WR_BUFSZ             (0x08)                      /**< Set write buffer size */
+#define MR_CTL_CLR_RD_BUF               (0x09)                      /**< Clear read buffer */
+#define MR_CTL_CLR_WR_BUF               (0x0a)                      /**< Clear write buffer */
 
 #define MR_CTL_GET_OFFSET               (-(0x01))                   /**< Get offset */
 #define MR_CTL_GET_RD_CALL              (-(0x02))                   /**< Get read callback */
@@ -256,6 +258,8 @@ struct mr_dev;
 #define MR_CTL_GET_CONFIG               (-(0x06))                   /**< Get configuration */
 #define MR_CTL_GET_RD_BUFSZ             (-(0x07))                   /**< Get read buffer size */
 #define MR_CTL_GET_WR_BUFSZ             (-(0x08))                   /**< Get write buffer size */
+#define MR_CTL_GET_RD_DATASZ            (-(0x09))                   /**< Get read data size */
+#define MR_CTL_GET_WR_DATASZ            (-(0x0a))                   /**< Get write data size */
 
 /**
  * @brief ISR event.

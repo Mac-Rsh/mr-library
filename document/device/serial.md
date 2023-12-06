@@ -7,10 +7,12 @@
   * [控制SERIAL设备](#控制serial设备)
     * [设置/获取SERIAL设备配置](#设置获取serial设备配置)
     * [设置/获取读/写缓冲区大小](#设置获取读写缓冲区大小)
+    * [清空读/写缓冲区](#清空读写缓冲区)
+    * [获取读/写缓冲区数据大小](#获取读写缓冲区数据大小)
     * [设置/获取读/写回调函数](#设置获取读写回调函数)
   * [读取SERIAL设备数据](#读取serial设备数据)
   * [写入SERIAL设备数据](#写入serial设备数据)
-  * [使用示例：](#使用示例)
+  * [使用示例](#使用示例)
 <!-- TOC -->
 
 ## 打开SERIAL设备
@@ -61,15 +63,19 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_SERIAL_SET_CONFIG`： 设置SERIAL设备配置。
-    - `MR_CTL_SERIAL_GET_CONFIG`： 获取SERIAL设备配置。
-    - `MR_CTL_SERIAL_SET_RD_BUFSZ`： 设置读缓冲区大小。
-    - `MR_CTL_SERIAL_GET_RD_BUFSZ`： 获取读缓冲区大小。
-    - `MR_CTL_SERIAL_SET_WR_BUFSZ`： 设置写缓冲区大小。
-    - `MR_CTL_SERIAL_GET_WR_BUFSZ`： 获取写缓冲区大小。
+    - `MR_CTL_SERIAL_SET_CONFIG`：设置SERIAL设备配置。
+    - `MR_CTL_SERIAL_SET_RD_BUFSZ`：设置读缓冲区大小。
+    - `MR_CTL_SERIAL_SET_WR_BUFSZ`：设置写缓冲区大小。
+    - `MR_CTL_SERIAL_CLR_RD_BUF`：清空读缓冲区。
+    - `MR_CTL_SERIAL_CLR_WR_BUF`：清空写缓冲区。
     - `MR_CTL_SERIAL_SET_RD_CALL`：设置读回调函数。
-    - `MR_CTL_SERIAL_GET_RD_CALL`：获取读回调函数。
     - `MR_CTL_SERIAL_SET_WR_CALL`：设置写回调函数。
+    - `MR_CTL_SERIAL_GET_CONFIG`：获取SERIAL设备配置。
+    - `MR_CTL_SERIAL_GET_RD_BUFSZ`：获取读缓冲区大小。
+    - `MR_CTL_SERIAL_GET_WR_BUFSZ`：获取写缓冲区大小。
+    - `MR_CTL_SERIAL_GET_RD_DATASZ`：获取读缓冲区数据大小。
+    - `MR_CTL_SERIAL_GET_WR_DATASZ`：获取写缓冲区数据大小。
+    - `MR_CTL_SERIAL_GET_RD_CALL`：获取读回调函数。
     - `MR_CTL_SERIAL_GET_WR_CALL`：获取写回调函数。
 
 ### 设置/获取SERIAL设备配置
@@ -120,18 +126,37 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
 
 注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。
 
+### 清空读/写缓冲区
+
+```c
+mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_WR_BUF, MR_NULL);
+```
+
+### 获取读/写缓冲区数据大小
+
+```c
+size_t size = 0;
+
+/* 获取读缓冲区数据大小 */
+mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_DATASZ, &size);
+
+/* 获取写缓冲区数据大小 */
+mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
+```
+
 ### 设置/获取读/写回调函数
 
 ```c
 /* 定义回调函数 */
 int call(int desc, void *args)
 {
-  /* 获取缓冲区数据大小 */
-  ssize_t data_size = *(ssize_t *)args;
-  
-  /* 处理中断 */
-  
-  return MR_EOK;
+/* 获取缓冲区数据大小 */
+ssize_t data_size = *(ssize_t *)args;
+
+/* 处理中断 */
+
+return MR_EOK;
 }
 int (*callback)(int, void *args);
 
@@ -204,7 +229,7 @@ if (size < 0)
 当设置写缓冲区后会将数据写入写缓冲区（返回实际写入的数据大小），通过中断或DMA异步发送数据，发送完成后会触发写回调函数。
 当有数据在异步发送时，写入锁将自动上锁，此时无法同步写入，直至异步发送完成。
 
-## 使用示例：
+## 使用示例
 
 ```c
 #include "include/mr_lib.h"

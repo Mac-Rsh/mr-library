@@ -307,7 +307,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTL_SET_CONFIG:
+        case MR_CTL_I2C_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -335,7 +335,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SET_RD_BUFSZ:
+        case MR_CTL_I2C_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -351,8 +351,13 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
+        case MR_CTL_I2C_CLR_RD_BUF:
+        {
+            mr_ringbuf_reset(&i2c_dev->rd_fifo);
+            return MR_EOK;
+        }
 
-        case MR_CTL_GET_CONFIG:
+        case MR_CTL_I2C_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -363,7 +368,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_GET_RD_BUFSZ:
+        case MR_CTL_I2C_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -371,6 +376,16 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 return MR_EOK;
             }
             return MR_EINVAL;
+        }
+        case MR_CTL_I2C_GET_RD_DATASZ:
+        {
+            if (args!= MR_NULL)
+            {
+                size_t *size = (size_t *)args;
+
+                *size = mr_ringbuf_get_bufsz(&i2c_dev->rd_fifo);
+                return MR_EOK;
+            }
         }
 
         default:

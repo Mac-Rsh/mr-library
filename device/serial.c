@@ -97,7 +97,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTL_SET_CONFIG:
+        case MR_CTL_SERIAL_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -112,7 +112,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SET_RD_BUFSZ:
+        case MR_CTL_SERIAL_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -128,7 +128,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SET_WR_BUFSZ:
+        case MR_CTL_SERIAL_SET_WR_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -144,8 +144,18 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
+        case MR_CTL_SERIAL_CLR_RD_BUF:
+        {
+            mr_ringbuf_reset(&serial->rd_fifo);
+            return MR_EOK;
+        }
+        case MR_CTL_SERIAL_CLR_WR_BUF:
+        {
+            mr_ringbuf_reset(&serial->wr_fifo);
+            return MR_EOK;
+        }
 
-        case MR_CTL_GET_CONFIG:
+        case MR_CTL_SERIAL_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -156,7 +166,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_GET_RD_BUFSZ:
+        case MR_CTL_SERIAL_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -165,11 +175,33 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_GET_WR_BUFSZ:
+        case MR_CTL_SERIAL_GET_WR_BUFSZ:
         {
             if (args != MR_NULL)
             {
                 *(size_t *)args = serial->wr_bufsz;
+                return MR_EOK;
+            }
+            return MR_EINVAL;
+        }
+        case MR_CTL_SERIAL_GET_RD_DATASZ:
+        {
+            if (args!= MR_NULL)
+            {
+                size_t *datasz = (size_t *)args;
+
+                *datasz = mr_ringbuf_get_data_size(&serial->rd_fifo);
+                return MR_EOK;
+            }
+            return MR_EINVAL;
+        }
+        case MR_CTL_SERIAL_GET_WR_DATASZ:
+        {
+            if (args!= MR_NULL)
+            {
+                size_t *datasz = (size_t *)args;
+
+                *datasz = mr_ringbuf_get_data_size(&serial->wr_fifo);
                 return MR_EOK;
             }
             return MR_EINVAL;

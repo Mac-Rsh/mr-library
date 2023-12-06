@@ -92,14 +92,17 @@ struct mr_spi_transfer
  * @brief SPI control command.
  */
 #define MR_CTL_SPI_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set configuration */
-#define MR_CTL_SPI_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
-#define MR_CTL_SPI_SET_RD_BUFSZ         MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
-#define MR_CTL_SPI_GET_RD_BUFSZ         MR_CTL_GET_RD_BUFSZ         /**< Get read buffer size */
 #define MR_CTL_SPI_SET_REG              MR_CTL_SET_OFFSET           /**< Set register */
-#define MR_CTL_SPI_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
+#define MR_CTL_SPI_SET_RD_BUFSZ         MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
+#define MR_CTL_SPI_CLR_RD_BUF           MR_CTL_CLR_RD_BUF           /**< Clear read buffer */
 #define MR_CTL_SPI_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
-#define MR_CTL_SPI_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read callback */
 #define MR_CTL_SPI_TRANSFER             (0x01 << 8)                 /**< Transfer */
+
+#define MR_CTL_SPI_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
+#define MR_CTL_SPI_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
+#define MR_CTL_SPI_GET_RD_BUFSZ         MR_CTL_GET_RD_BUFSZ         /**< Get read buffer size */
+#define MR_CTL_SPI_GET_RD_DATASZ        MR_CTL_GET_RD_DATASZ        /**< Get read data size */
+#define MR_CTL_SPI_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read callback */
 
 /**
  * @brief SPI data type.

@@ -7,8 +7,10 @@
   * [关闭I2C设备](#关闭i2c设备)
   * [控制I2C设备](#控制i2c设备)
     * [设置/获取I2C设备配置](#设置获取i2c设备配置)
-    * [设置/获取读缓冲区大小](#设置获取读缓冲区大小)
     * [设置/获取寄存器值](#设置获取寄存器值)
+    * [设置/获取读缓冲区大小](#设置获取读缓冲区大小)
+    * [清空读缓冲区](#清空读缓冲区)
+    * [获取读缓冲区数据大小](#获取读缓冲区数据大小)
     * [设置/获取读回调函数](#设置获取读回调函数)
   * [读取I2C设备数据](#读取i2c设备数据)
   * [写入I2C设备数据](#写入i2c设备数据)
@@ -86,12 +88,14 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 
 - `cmd`：命令码，支持以下命令：
     - `MR_CTL_I2C_SET_CONFIG`： 设置I2C设备配置。
-    - `MR_CTL_I2C_GET_CONFIG`： 获取I2C设备配置。
-    - `MR_CTL_I2C_SET_RD_BUFSZ`： 设置读缓冲区大小。
-    - `MR_CTL_I2C_GET_RD_BUFSZ`： 获取读缓冲区大小。
     - `MR_CTL_I2C_SET_REG`： 设置寄存器值。
-    - `MR_CTL_I2C_GET_REG`： 获取寄存器值。
+    - `MR_CTL_I2C_SET_RD_BUFSZ`： 设置读缓冲区大小。
+    - `MR_CTL_I2C_CLR_RD_BUF`： 清空读缓冲区。
     - `MR_CTL_I2C_SET_RD_CALL`：设置读回调函数。
+    - `MR_CTL_I2C_GET_CONFIG`： 获取I2C设备配置。
+    - `MR_CTL_I2C_GET_REG`： 获取寄存器值。
+    - `MR_CTL_I2C_GET_RD_BUFSZ`： 获取读缓冲区大小。
+    - `MR_CTL_I2C_GET_RD_DATASZ`： 获取读缓冲区数据大小。
     - `MR_CTL_I2C_GET_RD_CALL`：获取读回调函数。
 
 ### 设置/获取I2C设备配置
@@ -120,19 +124,6 @@ mr_dev_ioctl(ds, MR_CTL_I2C_GET_CONFIG, &config);
     - 寄存器位数：`MR_I2C_REG_BITS_8`
 - 当I2C总线上有I2C设备被配置成从机模式后，其将持续占用I2C总线，此时其余I2C设备无法进行读写等操作，直至从机模式I2C设备被重新配置为主机模式。
 
-### 设置/获取读缓冲区大小
-
-```c
-size_t size = 256;
-
-/* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_BUFSZ, &size);
-/* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
-```
-
-注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。只有在从机模式下才使用读缓冲区。
-
 ### 设置/获取寄存器值
 
 寄存器值将在读取和写入数据前被优先写入（范围：`0` ~ `INT32_MAX`）。
@@ -151,6 +142,34 @@ mr_dev_ioctl(ds, MR_CTL_I2C_GET_REG, &reg);
 - 寄存器值仅在主机模式下生效。
 - 设为负数时不生效。
 - 寄存器值不计入读写大小。
+
+### 设置/获取读缓冲区大小
+
+```c
+size_t size = 256;
+
+/* 设置读缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_BUFSZ, &size);
+/* 获取读缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
+```
+
+注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。只有在从机模式下才使用读缓冲区。
+
+### 清空读缓冲区
+
+```c
+mr_dev_ioctl(ds, MR_CTL_I2C_CLR_RD_BUF, MR_NULL);
+```
+
+### 获取读缓冲区数据大小
+
+```c
+size_t size = 0;
+
+/* 获取读缓冲区数据大小 */
+mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_DATASZ, &size);
+```
 
 ### 设置/获取读回调函数
 

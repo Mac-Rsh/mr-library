@@ -488,7 +488,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTL_SET_CONFIG:
+        case MR_CTL_SPI_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -525,7 +525,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SET_RD_BUFSZ:
+        case MR_CTL_SPI_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -541,28 +541,11 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-
-        case MR_CTL_GET_CONFIG:
+        case MR_CTL_SPI_CLR_RD_BUF:
         {
-            if (args != MR_NULL)
-            {
-                struct mr_spi_config *config = (struct mr_spi_config *)args;
-
-                *config = spi_dev->config;
-                return MR_EOK;
-            }
-            return MR_EINVAL;
+            mr_ringbuf_reset(&spi_dev->rd_fifo);
+            return MR_EOK;
         }
-        case MR_CTL_GET_RD_BUFSZ:
-        {
-            if (args != MR_NULL)
-            {
-                *(size_t *)args = spi_dev->rd_bufsz;
-                return MR_EOK;
-            }
-            return MR_EINVAL;
-        }
-
         case MR_CTL_SPI_TRANSFER:
         {
             if (args != MR_NULL)
@@ -595,6 +578,38 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 spi_dev_release_bus(spi_dev);
                 return ret;
+            }
+            return MR_EINVAL;
+        }
+
+        case MR_CTL_SPI_GET_CONFIG:
+        {
+            if (args != MR_NULL)
+            {
+                struct mr_spi_config *config = (struct mr_spi_config *)args;
+
+                *config = spi_dev->config;
+                return MR_EOK;
+            }
+            return MR_EINVAL;
+        }
+        case MR_CTL_SPI_GET_RD_BUFSZ:
+        {
+            if (args != MR_NULL)
+            {
+                *(size_t *)args = spi_dev->rd_bufsz;
+                return MR_EOK;
+            }
+            return MR_EINVAL;
+        }
+        case MR_CTL_SPI_GET_RD_DATASZ:
+        {
+            if (args!= MR_NULL)
+            {
+                size_t *datasz = (size_t *)args;
+
+                *datasz = mr_ringbuf_get_data_size(&spi_dev->rd_fifo);
+                return MR_EOK;
             }
             return MR_EINVAL;
         }

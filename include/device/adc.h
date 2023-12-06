@@ -27,8 +27,9 @@ extern "C" {
  * @brief ADC control command.
  */
 #define MR_CTL_ADC_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
-#define MR_CTL_ADC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
 #define MR_CTL_ADC_SET_CHANNEL_STATE    (0x01 << 8)                 /**< Set channel state */
+
+#define MR_CTL_ADC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
 #define MR_CTL_ADC_GET_CHANNEL_STATE    (-(0x01 << 8))              /**< Get channel state */
 
 /**
