@@ -36,7 +36,7 @@ extern "C" {
  */
 struct mr_timer_config
 {
-    uint32_t mode: 1;                                                /* Mode */
+    uint32_t mode: 1;                                               /* Mode */
     uint32_t reserved: 31;
 };
 

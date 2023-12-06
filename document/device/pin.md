@@ -229,7 +229,9 @@ int key_call(int desc, void *args)
         mr_dev_read(desc, &level, sizeof(level));
         level = !level;
         mr_dev_write(desc, &level, sizeof(level));
+        return MR_EOK;
     }
+    return MR_EINVAL;
 }
 
 int led_key_init(void)
