@@ -1,5 +1,7 @@
 # MR 框架
 
+[English](README_EN.md)
+
  ----------
 
 <!-- TOC -->
@@ -34,7 +36,7 @@
 
  ----------
 
-![项目结构图](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README.png)
+![项目结构图](document/picture/README.png)
 
  ----------
 
@@ -78,9 +80,9 @@
 
 `Kconfig` 会根据配置文件自动生成配置选项界面。开发者可以通过简单的操作来选择需要启用的功能组件和设置相关参数。
 
-![配置工具](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig.png)
+![配置工具](document/picture/README_Kconfig.png)
 
-![配置工具1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig1.png)
+![配置工具1](document/picture/README_Kconfig1.png)
 
 通过修改参数，快速裁剪所需功能。配置完成后通过 `Python` 脚本自动生成配置文件。
 
@@ -126,16 +128,16 @@
 1. 从 `Gitee` 或 `Github` 仓库下载最新版本源码到本地。
 2. 将源码导入到您工程所在的目录。以STM32工程为例：
 
-   ![工程目录](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build.png)
+   ![工程目录](document/picture/README_Build.png)
 
 3. 如使用的芯片已经做了 `BSP` 适配请参考芯片对应 `BSP` 中的配置教程，完成 `BSP` 配置。
 4. 移除不需要的文件 `bsp`、`document`、`module` 目录（如不需要`GIT`也可以移除`.git`文件删除）。完成后，目录结构如下所示：
 
-   ![工程目录1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build1.png)
+   ![工程目录1](document/picture/README_Build1.png)
 
 5. 将文件加入到IDE中（大部分IDE都能自动识别工程路径下的文件，无需进行此步骤）。以 `keil` 为例:
 
-    ![工程目录Keil](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Keil.png)
+    ![工程目录Keil](document/picture/README_Keil.png)
 
     添加 `source`、`device`、`driver` 目录下的所有文件。
 
@@ -143,13 +145,13 @@
 
 1. 在 `mr-library` 目录下打开命令行工具，运行 `menuconfig` 进行菜单配置。
 
-   ![工程目录2](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build2.png)
+   ![工程目录2](document/picture/README_Build2.png)
 
    注：当添加对应芯片驱动的后，将显示 `Device configure` 和 `Driver configure`。对应 `Driver configure` 请参考 `BSP` 下教程。
 
 2. 选中 `Device configure` 回车进入菜单，按照需要配置功能。
 
-   ![工程目录3](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build3.png)
+   ![工程目录3](document/picture/README_Build3.png)
 
 3. 配置完成后，按 `Q` 退出菜单配置界面，按`Y` 保存配置。
 
@@ -161,7 +163,7 @@
 
 1. 在编译器中添加 `mr-library` 的包含路径，以 `keil` 为例:
 
-   ![工程目录4](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build4.png)
+   ![工程目录4](document/picture/README_Build4.png)
 
 2. 配置自动初始化（GCC环境），查找您工程下以 `.ld` 为后缀的连接脚本文件（通常为 `link.ld`），在脚本文件中添加代码：
    注：如果您的是在 `keil` 等，能够自动生成链接脚本的环境下，请跳过此步骤。
@@ -176,11 +178,11 @@
 
    示例：
 
-   ![工程目录5](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build5.png)
+   ![工程目录5](document/picture/README_Build5.png)
 
 3. 配置GNU语法。如果您使用的是非 `GCC` 编译器，请使能GNU语法。以 `keil` 为例:
 
-   ![工程目录6](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build6.png)
+   ![工程目录6](document/picture/README_Build6.png)
 
 4. 在您的工程中引入 `#include "include/mr_lib.h"`。
 5. 在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数。

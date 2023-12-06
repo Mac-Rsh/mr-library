@@ -1,5 +1,7 @@
 # MR frame
 
+[中文](README.md)
+
  ----------
 
 <!-- TOC -->
@@ -40,7 +42,7 @@ drivers. This greatly improves the reusability of software and its extensibility
 
  ----------
 
-![framework](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README.png)
+![framework](document/picture/README.png)
 
  ----------
 
@@ -87,9 +89,9 @@ code.
 `Kconfig` will automatically generate the configuration options interface based on the configuration file. Developers
 can select the functional components that need to be enabled and set relevant parameters through simple operations.
 
-![Tool](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig.png)
+![Tool](document/picture/README_Kconfig.png)
 
-![Tool1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Kconfig1.png)
+![Tool1](document/picture/README_Kconfig1.png)
 
 By modifying parameters, you can quickly tailor the required functions. After the configuration is complete,
 the `Python` script automatically generates the configuration file.
@@ -137,20 +139,27 @@ tutorials are based on applying Kconfig).
 1. Download the latest version source code from the Gitee or Github repository to the local.
 2. Import the source code into the directory where your project is located. Taking an STM32 project as an example:
 
-   ![project directory](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build.png)
+   ![project directory](document/picture/README_Build.png)
 
 3. If the used chip has BSP adaptation, please refer to the chip's corresponding BSP configuration tutorial to complete
    the BSP configuration.
 4. Remove unnecessary files such as `bsp`、`document`、`module` directories (you can also remove the `.git` file to delete
    GIT if not needed). The directory structure is shown below after completion:
 
-   ![project directory1](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build1.png)
+   ![project directory1](document/picture/README_Build1.png)
+
+5. Add the files to the IDE (most ides automatically recognize the files in the project path, eliminating the need for
+   this step). Take `keil` for example:
+
+   ![project directory1 Keil](document/picture/README_Keil.png)
+
+   Add all files in the `source`, `device`, `driver` directories.
 
 ## Configure Menu Options
 
 1. Open the command line tool in the `mr-library` directory and run `menuconfig` to configure the menu.
 
-   ![project directory2](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build2.png)
+   ![project directory2](document/picture/README_Build2.png)
 
    Note: When the corresponding chip driver is added, `Device configure` and `Driver configure` will be displayed.
    Please refer to the tutorial under `BSP` for `Driver configure`.
@@ -158,7 +167,7 @@ tutorials are based on applying Kconfig).
 2. Enter the menu by pressing the Enter key on `Device configure`, and configure the desired functions according to
    needs.
 
-   ![project directory3](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build3.png)
+   ![project directory3](document/picture/README_Build3.png)
 
 3. After configuration is complete, press `Q` to exit the menu configuration interface, press `Y` to save the
    configuration.
@@ -172,7 +181,7 @@ tutorials are based on applying Kconfig).
 
 1. Add the include paths of `mr-library` in the compiler, taking `keil` as an example:
 
-   ![project directory4](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build4.png)
+   ![project directory4](document/picture/README_Build4.png)
 
 2. Configure automatic initialization (GCC environment), find the link script file with suffix `.ld` in your project
    directory (usually `link.ld`), and add the following code to the script file:
@@ -187,10 +196,14 @@ tutorials are based on applying Kconfig).
 
    Example:
 
-   ![project directory5](https://gitee.com/MacRsh/mr-library/raw/develop/document/picture/README_Build5.png)
+   ![project directory5](document/picture/README_Build5.png)
 
-3. Include `#include "include/mr_lib.h"` in your project.
-4. Add the automatic initialization function `mr_auto_init();` in the main function.
+3. Configure the GNU syntax. If you are using a non-gcc compiler, enable GNU syntax. Take `keil` for example:
+
+   ![project directory6](document/picture/README_Build6.png)
+
+4. Include `#include "include/mr_lib.h"` in your project.
+5. Add the automatic initialization function `mr_auto_init();` in the main function.
 
  ----------
 
