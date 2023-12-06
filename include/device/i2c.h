@@ -54,6 +54,10 @@ struct mr_i2c_config
 /**
  * @brief I2C control command.
  */
+#define MR_CTL_I2C_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set configuration */
+#define MR_CTL_I2C_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
+#define MR_CTL_I2C_SET_RD_BUFSZ         MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
+#define MR_CTL_I2C_GET_RD_BUFSZ         MR_CTL_GET_RD_BUFSZ         /**< Get read buffer size */
 #define MR_CTL_I2C_SET_REG              MR_CTL_SET_OFFSET           /**< Set register */
 #define MR_CTL_I2C_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
 #define MR_CTL_I2C_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */

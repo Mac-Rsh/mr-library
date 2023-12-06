@@ -171,7 +171,7 @@ enum mr_drv_type
  */
 struct mr_drv
 {
-    uint32_t type;                                                  /**< Driver type */
+    int type;                                                       /**< Driver type */
     void *ops;                                                      /**< Driver operations */
     void *data;                                                     /**< Driver data */
 };
