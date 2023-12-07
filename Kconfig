@@ -3,110 +3,147 @@ mainmenu "mr-library"
 menu "Device configure"
 
 	config MR_CFG_HEAP_SIZE
-		int "The heap size (Bytes)"
-		default 1024
-		range 8 2147483647
+		int "Heap size (Bytes)"
+		default 4096
+		range 32 2147483647
 		help
-			Size of dynamic memory for system.
+			"Size of dynamic memory for system."
 
     config MR_USING_ASSERT
-    		bool "Enable assert"
-    		default y
+    	bool "Enable assert"
+    	default y
+    	help
+    		"Enabling this option allows the use of assert statements in the code."
 
 	config MR_CFG_NAME_MAX
-		int "The maximum length of device name"
+		int "Max length of device name"
 		default 8
 		range 4 1024
 		help
-		  Maximum length of name
+			"Maximum length of name"
 
 	config MR_CFG_DESC_MAX
-		int "The maximum number of descriptors"
+		int "Max number of descriptors"
 		default 32
 		range 16 1024
 		help
-		  Maximum number of descriptors
+			"Maximum number of descriptors"
 
 	config MR_USING_RDWR_CTL
 		bool "Enable read/write control"
 		default y
+		help
+			"Enabling this option allows for read and write control of devices."
+
+    config MR_USING_CONSOLE
+        bool "Enable console"
+        default y
+        help
+            "Enabling this option allows for the use of the console device."
+    menu "Console configure"
+        depends on MR_USING_CONSOLE
+
+        config MR_CFG_CONSOLE_NAME
+            string "Console device name"
+            default "serial1"
+            help
+                "This option sets the name of the console device."
+
+        config MR_USING_CONSOLE_NONBLOCK
+            bool "Console device non-blocking read/write"
+            default n
+            help
+            "Enable or disable non-blocking read/write for the console device."
+    endmenu
 
     config MR_USING_PRINTF_BUFSZ
-            bool "The size of printf buffer"
-            default 128
-            range 16 2147483647
+        int "Size of printf buffer"
+        default 128
+        range 16 2147483647
+        help
+        	"This option sets the size of the buffer used for printf operations."
 
 	config MR_USING_ADC
 		bool "Enable ADC device"
 		default n
+		help
+			"Enabling this option allows for the use of ADC (Analog-to-Digital Converter) devices."
 
 	config MR_USING_CAN
 		bool "Enable CAN device"
 		default n
+		help
+			"Enabling this option allows for the use of CAN (Controller Area Network) devices."
 
 	menu "CAN configure"
 		depends on MR_USING_CAN
 
 		config MR_CFG_CAN_RD_BUFSZ
-			int "The RX buffer size"
+			int "RX buffer size"
 			default 32
 			range 0 MR_CFG_HEAP_SIZE
 			help
-				Size of SPI Rx buffer
+				"This option sets the size of the RX (receive) buffer used by the CAN device."
 	endmenu
 
 	config MR_USING_DAC
 		bool "Enable DAC device"
 		default n
+		help
+			"Enabling this option allows for the use of DAC (Digital-to-Analog Converter) devices."
 
 	config MR_USING_I2C
 		bool "Enable I2C device"
 		default n
+		help
+			"Enabling this option allows for the use of I2C (Inter-Integrated Circuit) devices."
 
 	menu "I2C configure"
 		depends on MR_USING_I2C
 
 		config MR_CFG_I2C_RD_BUFSZ
-			int "The RX buffer size"
+			int "RX buffer size"
 			default 32
 			range 0 MR_CFG_HEAP_SIZE
 			help
-				Size of SPI RX buffer
+				"This option sets the size of the RX (receive) buffer used by the I2C device."
 	endmenu
 
 	config MR_USING_PIN
 		bool "Enable Pin device"
 		default n
+		help
+			"Enabling this option allows for the use of Pin devices."
 
 	config MR_USING_SERIAL
 		bool "Enable Serial device"
 		default n
+		help
+			"Enabling this option allows for the use of Serial devices."
 
 	menu "Serial configure"
 		depends on MR_USING_SERIAL
 
 		config MR_CFG_SERIAL_RD_BUFSZ
-			int "The RX buffer size"
+			int "RX buffer size"
 			default 32
 			range 0 MR_CFG_HEAP_SIZE
 			help
-				Size of Serial RX buffer
+				"This option sets the size of the RX (receive) buffer used by the Serial device."
 
 		config MR_CFG_SERIAL_WR_BUFSZ
-			int "The TX buffer size for Serial"
+			int "TX buffer size for Serial"
 			default 0
 			range 0 MR_CFG_HEAP_SIZE
 			help
-				Size of Serial TX buffer
-
-		config MR_CFG_CONSOLE_NAME
-			string "The console device name"
-			default "serial1"
+				"This option sets the size of the TX (transmit) buffer used by the Serial device."
 	endmenu
 
 	config MR_USING_SPI
 		bool "Enable SPI device"
 		default n
+		help
+			"Enabling this option allows for the use of SPI (Serial Peripheral Interface) devices."
 
 	menu "SPI configure"
 		depends on MR_USING_SPI
@@ -116,12 +153,14 @@ menu "Device configure"
 			default 32
 			range 0 MR_CFG_HEAP_SIZE
 			help
-				Size of SPI RX buffer
+				"This option sets the size of the RX (receive) buffer used by the SPI device."
 	endmenu
 
     config MR_USING_TIMER
         bool "Enable Timer device"
         default n
+        help
+        	"Enabling this option allows for the use of Timer devices."
 
 endmenu
 

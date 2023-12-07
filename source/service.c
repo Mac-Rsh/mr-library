@@ -344,12 +344,16 @@ MR_WEAK void mr_delay_ms(uint32_t ms)
  */
 MR_WEAK int mr_printf_output(const char *buf, size_t size)
 {
-#ifdef MR_CFG_CONSOLE_NAME
+#ifdef MR_USING_CONSOLE
     static int console = -1;
 
     if (console < 0)
     {
+#ifndef MR_USING_CONSOLE_NONBLOCK
         console = mr_dev_open(MR_CFG_CONSOLE_NAME, MR_OFLAG_RDWR);
+#else
+        console = mr_dev_open(MR_CFG_CONSOLE_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+#endif /* MR_USING_CONSOLE_NONBLOCK */
         if (console < 0)
         {
             return console;
@@ -358,7 +362,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
     return (int)mr_dev_write(console, buf, size);
 #else
     return 0;
-#endif /* MR_CFG_CONSOLE_NAME */
+#endif /* MR_USING_CONSOLE */
 }
 
 /**
