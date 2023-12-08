@@ -137,7 +137,7 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
     /* Check channel is valid */
     if (adc_channel_data == NULL)
     {
-        return MR_EINVAL;
+        return 0;
     }
 
     /* Read data */

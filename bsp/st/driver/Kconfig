@@ -1,7 +1,67 @@
 menu "Board configure"
 
-    menu "GPIO"
+    choice
+        prompt "Chip type"
+        default MR_USING_STM32F1
 
+        config MR_USING_STM32F0
+            bool "STM32F0"
+
+        config MR_USING_STM32F1
+            bool "STM32F1"
+
+        config MR_USING_STM32F2
+            bool "STM32F2"
+
+        config MR_USING_STM32F3
+            bool "STM32F3"
+
+        config MR_USING_STM32F4
+            bool "STM32F4"
+
+        config MR_USING_STM32F7
+            bool "STM32F7"
+
+        config MR_USING_STM32G0
+            bool "STM32G0"
+
+        config MR_USING_STM32G4
+            bool "STM32G4"
+
+        config MR_USING_STM32H5
+            bool "STM32H5"
+
+        config MR_USING_STM32H7
+            bool "STM32H7"
+
+        config MR_USING_STM32L0
+            bool "STM32L0"
+
+        config MR_USING_STM32L1
+            bool "STM32L1"
+
+        config MR_USING_STM32L4
+            bool "STM32L4"
+
+        config MR_USING_STM32L5
+            bool "STM32L5"
+    endchoice
+
+    menu "ADC"
+        config MR_USING_ADC1
+            bool "Enable ADC1 driver"
+            default n
+
+        config MR_USING_ADC2
+            bool "Enable ADC2 driver"
+            default n
+
+        config MR_USING_ADC3
+            bool "Enable ADC3 driver"
+            default n
+    endmenu
+
+    menu "GPIO"
         config MR_USING_GPIOA
             bool "Enable GPIOA driver"
             default n
@@ -21,11 +81,9 @@ menu "Board configure"
         config MR_USING_GPIOE
             bool "Enable GPIOE driver"
             default n
-
     endmenu
 
     menu "UART"
-
         config MR_USING_UART1
             bool "Enable UART1 driver"
             default n
@@ -57,11 +115,9 @@ menu "Board configure"
         config MR_USING_UART8
             bool "Enable UART8 driver"
             default n
-
     endmenu
 
     menu "SPI"
-
         config MR_USING_SPI1
             bool "Enable SPI1 driver"
             default n
@@ -85,7 +141,6 @@ menu "Board configure"
         config MR_USING_SPI6
             bool "Enable SPI6 driver"
             default n
-
     endmenu
 
     menu "Timer"
