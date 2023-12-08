@@ -9,7 +9,7 @@
 #include "drv_spi.h"
 
 #ifdef MR_USING_SPI
-#define MR_USING_SPI1
+
 #if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) && !defined(MR_USING_SPI4) && !defined(MR_USING_SPI5) && !defined(MR_USING_SPI6)
 #error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
 #else
@@ -243,7 +243,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
             HAL_NVIC_DisableIRQ(spi_bus_data->irq);
             __HAL_SPI_DISABLE_IT(&spi_bus_data->handle, SPI_IT_RXNE);
         }
-
     } else
     {
         /* Configure SPI */
@@ -293,7 +292,8 @@ static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
 
-    if ((__HAL_SPI_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_RXNE) != RESET))
+    if ((__HAL_SPI_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_RXNE) != RESET) &&
+        (__HAL_SPI_GET_IT_SOURCE(&spi_bus_data->handle, SPI_IT_RXNE) != RESET))
     {
         mr_dev_isr(&spi_bus->dev, MR_ISR_SPI_RD_INT, NULL);
     }

@@ -289,13 +289,15 @@ static void drv_serial_isr(struct mr_serial *serial)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
 
-    if ((__HAL_UART_GET_FLAG(&serial_data->handle, UART_FLAG_TXE) != RESET))
+    if ((__HAL_UART_GET_FLAG(&serial_data->handle, UART_FLAG_TXE) != RESET)
+        && (__HAL_UART_GET_FLAG(&serial_data->handle, UART_FLAG_TC) != RESET))
     {
         mr_dev_isr(&serial->dev, MR_ISR_SERIAL_WR_INT, NULL);
     } else if (__HAL_UART_GET_FLAG(&serial_data->handle, UART_FLAG_ORE) != RESET)
     {
         __HAL_UART_CLEAR_OREFLAG(&serial_data->handle);
-    } else if ((__HAL_UART_GET_FLAG(&serial_data->handle, UART_FLAG_RXNE) != RESET))
+    } else if ((__HAL_UART_GET_FLAG(&serial_data->handle, UART_FLAG_RXNE) != RESET)
+               && (__HAL_UART_GET_IT_SOURCE(&serial_data->handle, UART_IT_RXNE) != RESET))
     {
         mr_dev_isr(&serial->dev, MR_ISR_SERIAL_RD_INT, NULL);
     }
