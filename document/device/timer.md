@@ -167,7 +167,7 @@ int timer_init(void)
     /* 打印TIMER描述符 */
     mr_printf("TIMER desc: %d\r\n", timer_ds);
     /* 设置超时回调函数 */
-    mr_dev_ioctl(led_ds, MR_CTL_TIMER_SET_TIMEOUT_CALL, timeout_call);
+    mr_dev_ioctl(timer_ds, MR_CTL_TIMER_SET_TIMEOUT_CALL, timeout_call);
     /* 设置定时时间 */
     uint32_t timeout = TIMEOUT;
     int ret = mr_dev_write(timer_ds, &timeout, sizeof(timeout));

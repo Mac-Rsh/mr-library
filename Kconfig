@@ -56,10 +56,10 @@ menu "Device configure"
             "Enable or disable non-blocking read/write for the console device."
     endmenu
 
-    config MR_USING_PRINTF_BUFSZ
+    config MR_CFG_PRINTF_BUFSZ
         int "Size of printf buffer"
         default 128
-        range 16 2147483647
+        range 32 2147483647
         help
         	"This option sets the size of the buffer used for printf operations."
 
