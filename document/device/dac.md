@@ -142,7 +142,7 @@ int dac_init(void)
     int ret = MR_EOK;
 
     /* 初始化DAC */
-    int dac_ds = mr_dev_open("dac1", MR_OFLAG_RDONLY);
+    dac_ds = mr_dev_open("dac1", MR_OFLAG_RDONLY);
     if (dac_ds < 0)
     {
         mr_printf("DAC1 open failed: %s\r\n", mr_strerror(dac_ds));

@@ -142,7 +142,7 @@ int adc_init(void)
     int ret = MR_EOK;
 
     /* 初始化ADC */
-    int adc_ds = mr_dev_open("adc1", MR_OFLAG_RDONLY);
+    adc_ds = mr_dev_open("adc1", MR_OFLAG_RDONLY);
     if (adc_ds < 0)
     {
         mr_printf("ADC1 open failed: %s\r\n", mr_strerror(adc_ds));
