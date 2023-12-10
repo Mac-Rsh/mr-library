@@ -10,6 +10,45 @@
 
 #ifdef MR_USING_DAC
 
+static int dac_channel_set_state(struct mr_dac *dac, int channel, int state)
+{
+    struct mr_dac_ops *ops = (struct mr_dac_ops *)dac->dev.drv->ops;
+
+    /* Check channel is valid */
+    if (channel < 0 || channel >= 32)
+    {
+        return MR_EINVAL;
+    }
+
+    /* Configure the channel */
+    int ret = ops->channel_configure(dac, channel, state);
+    if (ret != MR_EOK)
+    {
+        return ret;
+    }
+
+    /* Enable or disable the channel */
+    if (state == MR_DAC_STATE_ENABLE)
+    {
+        mr_bits_set(dac->channel, (1 << channel));
+    } else
+    {
+        mr_bits_clr(dac->channel, (1 << channel));
+    }
+    return MR_EOK;
+}
+
+static int dac_channel_get_state(struct mr_dac *dac, int channel)
+{
+    /* Check channel is valid */
+    if (channel < 0 || channel >= 32)
+    {
+        return MR_EINVAL;
+    }
+
+    return mr_bits_is_set(dac->channel, (1 << channel));
+}
+
 static int mr_dac_open(struct mr_dev *dev)
 {
     struct mr_dac *dac = (struct mr_dac *)dev;
@@ -66,47 +105,54 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
+        case MR_CTL_DAC_SET_CONFIG:
+        {
+            if (args != MR_NULL)
+            {
+                struct mr_dac_config config = *((struct mr_dac_config *)args);
+
+                return dac_channel_set_state(dac, off, config.channel_state);
+            }
+            return MR_EINVAL;
+        }
         case MR_CTL_DAC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
                 int state = *((int *)args);
 
-                /* Check offset is valid */
-                if (off < 0 || off >= 32)
-                {
-                    return MR_EINVAL;
-                }
-
-                int ret = ops->channel_configure(dac, off, state);
-                if (ret == MR_EOK)
-                {
-                    if (state == MR_DAC_STATE_ENABLE)
-                    {
-                        mr_bits_set(dac->channel, (1 << off));
-                    } else
-                    {
-                        mr_bits_clr(dac->channel, (1 << off));
-                    }
-                }
-                return ret;
+                return dac_channel_set_state(dac, off, state);
             }
             return MR_EINVAL;
         }
 
+        case MR_CTL_DAC_GET_CONFIG:
+        {
+            if (args != MR_NULL)
+            {
+                struct mr_dac_config *config = (struct mr_dac_config *)args;
+
+                int ret = dac_channel_get_state(dac, off);
+                if (ret < 0)
+                {
+                    return ret;
+                }
+                config->channel_state = ret;
+                return MR_EOK;
+            }
+        }
         case MR_CTL_DAC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
                 int *state = (int *)args;
 
-                /* Check offset is valid */
-                if (off < 0 || off >= 32)
+                int ret = dac_channel_get_state(dac, off);
+                if (ret < 0)
                 {
-                    return MR_EINVAL;
+                    return ret;
                 }
-
-                *state = mr_bits_is_set(dac->channel, (1 << off));
+                *state = ret;
                 return MR_EOK;
             }
             return MR_EINVAL;

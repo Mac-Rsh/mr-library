@@ -10,6 +10,45 @@
 
 #ifdef MR_USING_ADC
 
+static int adc_channel_set_state(struct mr_adc *adc, int channel, int state)
+{
+    struct mr_adc_ops *ops = (struct mr_adc_ops *)adc->dev.drv->ops;
+
+    /* Check channel is valid */
+    if (channel < 0 || channel >= 32)
+    {
+        return MR_EINVAL;
+    }
+
+    /* Configure the channel */
+    int ret = ops->channel_configure(adc, channel, state);
+    if (ret != MR_EOK)
+    {
+        return ret;
+    }
+
+    /* Enable or disable the channel */
+    if (state == MR_ADC_STATE_ENABLE)
+    {
+        mr_bits_set(adc->channel, (1 << channel));
+    } else
+    {
+        mr_bits_clr(adc->channel, (1 << channel));
+    }
+    return MR_EOK;
+}
+
+static int adc_channel_get_state(struct mr_adc *adc, int channel)
+{
+    /* Check channel is valid */
+    if (channel < 0 || channel >= 32)
+    {
+        return MR_EINVAL;
+    }
+
+    return mr_bits_is_set(adc->channel, (1 << channel));
+}
+
 static int mr_adc_open(struct mr_dev *dev)
 {
     struct mr_adc *adc = (struct mr_adc *)dev;
@@ -66,52 +105,54 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
+        case MR_CTL_ADC_SET_CONFIG:
+        {
+            if (args != MR_NULL)
+            {
+                struct mr_adc_config config = *((struct mr_adc_config *)args);
+
+                return adc_channel_set_state(adc, off, config.channel_state);
+            }
+            return MR_EINVAL;
+        }
         case MR_CTL_ADC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
                 int state = *((int *)args);
 
-                /* Check offset is valid */
-                if (off < 0 || off >= 32)
-                {
-                    return MR_EINVAL;
-                }
-
-                /* Check if the channel is enabled */
-                if (state != mr_bits_is_set(adc->channel, (1 << off)))
-                {
-                    int ret = ops->channel_configure(adc, off, state);
-                    if (ret == MR_EOK)
-                    {
-                        if (state == MR_ADC_STATE_ENABLE)
-                        {
-                            mr_bits_set(adc->channel, (1 << off));
-                        } else
-                        {
-                            mr_bits_clr(adc->channel, (1 << off));
-                        }
-                    }
-                    return ret;
-                }
-                return MR_EOK;
+                return adc_channel_set_state(adc, off, state);
             }
             return MR_EINVAL;
         }
 
+        case MR_CTL_ADC_GET_CONFIG:
+        {
+            if (args != MR_NULL)
+            {
+                struct mr_adc_config *config = (struct mr_adc_config *)args;
+
+                int ret = adc_channel_get_state(adc, off);
+                if (ret < 0)
+                {
+                    return ret;
+                }
+                config->channel_state = ret;
+                return MR_EOK;
+            }
+        }
         case MR_CTL_ADC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
                 int *state = (int *)args;
 
-                /* Check offset is valid */
-                if (off < 0 || off >= 32)
+                int ret = adc_channel_get_state(adc, off);
+                if (ret < 0)
                 {
-                    return MR_EINVAL;
+                    return ret;
                 }
-
-                *state = mr_bits_is_set(adc->channel, (1 << off));
+                *state = ret;
                 return MR_EOK;
             }
             return MR_EINVAL;

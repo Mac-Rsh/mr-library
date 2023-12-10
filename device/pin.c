@@ -18,6 +18,61 @@ struct pin_irq
     int (*call)(int desc, void *args);
 };
 
+static int pin_set_mode(struct mr_pin *pin, int number, int mode)
+{
+    struct mr_pin_ops *ops = (struct mr_pin_ops *)pin->dev.drv->ops;
+
+    /* Check number is valid */
+    if (number < 0)
+    {
+        return MR_EINVAL;
+    }
+
+    /* Configure pin mode */
+    int ret = ops->configure(pin, number, mode);
+    if (ret != MR_EOK)
+    {
+        return ret;
+    }
+
+    /* If the irq exists, update it */
+    struct mr_list *list = MR_NULL;
+    for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
+    {
+        struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
+        if (irq->number == number)
+        {
+            if (mode < MR_PIN_MODE_IRQ_RISING)
+            {
+                /* Remove irq */
+                mr_list_remove(list);
+                mr_free(irq);
+            } else
+            {
+                /* Update irq */
+                irq->desc = pin->dev.rd_call.desc;
+                irq->call = pin->dev.rd_call.call;
+            }
+            return MR_EOK;
+        }
+    }
+
+    /* If not exist, allocate new irq */
+    if (mode >= MR_PIN_MODE_IRQ_RISING)
+    {
+        struct pin_irq *irq = (struct pin_irq *)mr_malloc(sizeof(struct pin_irq));
+        if (irq != MR_NULL)
+        {
+            mr_list_init(&irq->list);
+            irq->number = number;
+            irq->desc = pin->dev.rd_call.desc;
+            irq->call = pin->dev.rd_call.call;
+            mr_list_insert_before(&pin->irq_list, &irq->list);
+        }
+    }
+    return MR_EOK;
+}
+
 static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
@@ -67,61 +122,23 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
+        case MR_CTL_PIN_SET_CONFIG:
+        {
+            if (args != MR_NULL)
+            {
+                struct mr_pin_config config = *((struct mr_pin_config *)args);
+
+                return pin_set_mode(pin, off, config.mode);
+            }
+            return MR_EINVAL;
+        }
         case MR_CTL_PIN_SET_MODE:
         {
             if (args != MR_NULL)
             {
                 int mode = *((int *)args);
 
-                /* Check offset is valid */
-                if (off < 0)
-                {
-                    return MR_EINVAL;
-                }
-
-                /* Configure pin mode */
-                int ret = ops->configure(pin, off, mode);
-                if (ret != MR_EOK)
-                {
-                    return ret;
-                }
-
-                /* If the irq exists, update it */
-                struct mr_list *list = MR_NULL;
-                for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
-                {
-                    struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
-                    if (irq->number == off)
-                    {
-                        if (mode < MR_PIN_MODE_IRQ_RISING)
-                        {
-                            /* Remove irq */
-                            mr_list_remove(list);
-                            mr_free(irq);
-                        } else
-                        {
-                            /* Update irq */
-                            irq->desc = pin->dev.rd_call.desc;
-                            irq->call = pin->dev.rd_call.call;
-                        }
-                        return MR_EOK;
-                    }
-                }
-
-                /* If not exist, allocate new irq */
-                if (mode >= MR_PIN_MODE_IRQ_RISING)
-                {
-                    struct pin_irq *irq = (struct pin_irq *)mr_malloc(sizeof(struct pin_irq));
-                    if (irq != MR_NULL)
-                    {
-                        mr_list_init(&irq->list);
-                        irq->number = off;
-                        irq->desc = dev->rd_call.desc;
-                        irq->call = dev->rd_call.call;
-                        mr_list_insert_before(&pin->irq_list, &irq->list);
-                    }
-                }
-                return MR_EOK;
+                return pin_set_mode(pin, off, mode);
             }
             return MR_EINVAL;
         }

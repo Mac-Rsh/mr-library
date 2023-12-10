@@ -24,12 +24,23 @@ extern "C" {
 #define MR_ADC_STATE_ENABLE             MR_ENABLE                   /**< ADC enabled */
 
 /**
+ * @brief ADC configuration structure.
+ */
+struct mr_adc_config
+{
+    uint32_t channel_state: 1;                                      /**< Channel state */
+    uint32_t reserved: 31;                                          /**< Reserved */
+};
+
+/**
  * @brief ADC control command.
  */
 #define MR_CTL_ADC_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
+#define MR_CTL_ADC_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set configuration */
 #define MR_CTL_ADC_SET_CHANNEL_STATE    (0x01 << 8)                 /**< Set channel state */
 
 #define MR_CTL_ADC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
+#define MR_CTL_ADC_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
 #define MR_CTL_ADC_GET_CHANNEL_STATE    (-(0x01 << 8))              /**< Get channel state */
 
 /**

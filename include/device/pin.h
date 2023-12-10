@@ -43,9 +43,19 @@ extern "C" {
 #define MR_PIN_MODE_IRQ_HIGH            (10)                        /* Interrupt high level */
 
 /**
+ * @brief PIN configuration structure.
+ */
+struct mr_pin_config
+{
+    uint32_t mode: 1;                                               /**< Mode */
+    uint32_t reserved: 31;                                          /**< Reserved */
+};
+
+/**
  * @brief PIN control command.
  */
 #define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET           /**< Set pin number */
+#define MR_CTL_PIN_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set pin configuration */
 #define MR_CTL_PIN_SET_MODE             (0x01 << 8)                 /**< Set pin mode */
 #define MR_CTL_PIN_SET_EXTI_CALL        MR_CTL_SET_RD_CALL          /**< Set pin exti callback */
 
