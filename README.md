@@ -70,7 +70,32 @@
 | mr_dev_ioctl    | 控制设备    |
 | mr_dev_read     | 从设备读取数据 |
 | mr_dev_write    | 向设备写入数据 |
-| mr_dev_isr      | 设备中断控制  |
+
+示例：
+
+```c
+struct mr_spi_dev spi_dev;
+
+int main(void)
+{
+    /* 注册SPI10设备（CS低电平有效）到SPI1总线上 */
+    mr_spi_dev_register(&spi_dev, "spi1/spi10", 0, MR_SPI_CS_ACTIVE_LOW);
+
+    /* 打开SPI1总线下的SPI10设备 */
+    int ds = mr_dev_open("spi1/spi10", MR_OFLAG_RDWR);
+    
+    /* 发送数据 */
+    uint8_t wr_buf[] = {0x01, 0x02, 0x03, 0x04};
+    mr_dev_write(ds, wr_buf, sizeof(wr_buf));
+    
+    /* 接收数据 */
+    uint8_t rd_buf[4] = {0};
+    mr_dev_read(ds, rd_buf, sizeof(rd_buf));
+    
+    /* 关闭设备 */
+    mr_dev_close(ds);
+}
+```
 
  ----------
 

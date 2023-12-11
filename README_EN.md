@@ -77,7 +77,32 @@ All operations of the device can be implemented through the following interfaces
 | mr_dev_ioctl    | Control device            |
 | mr_dev_read     | Read data from the device |
 | mr_dev_write    | Writes data to the device |
-| mr_dev_isr      | Device interrupt control  |
+
+Example:
+
+```c
+struct mr_spi_dev spi_dev;
+
+int main(void)
+{
+    /* Register SPI10 device (CS low active) to SPI1 bus */
+    mr_spi_dev_register(&spi_dev, "spi1/spi10", 0, MR_SPI_CS_ACTIVE_LOW);
+
+    /* Open SPI10 device under SPI1 bus line */
+    int ds = mr_dev_open("spi1/spi10", MR_OFLAG_RDWR);
+    
+    /* Send data */
+    uint8_t wr_buf[] = {0x01, 0x02, 0x03, 0x04};
+    mr_dev_write(ds, wr_buf, sizeof(wr_buf));
+    
+    /* Receive data */
+    uint8_t rd_buf[4] = {0};
+    mr_dev_read(ds, rd_buf, sizeof(rd_buf));
+    
+    /* Close device */
+    mr_dev_close(ds);
+}
+```
 
  ----------
 
