@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_SPI
 
-#if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3)
-#error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
-#else
-
 enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
@@ -43,89 +39,13 @@ static const char *spi_bus_name[] =
 static struct drv_spi_bus_data spi_bus_drv_data[] =
     {
 #ifdef MR_USING_SPI1
-#if (MR_CFG_SPI1_GROUP == 1)
-        {
-            SPI1,
-            RCC_APB2Periph_SPI1,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_5,
-            GPIOA,
-            GPIO_Pin_6,
-            GPIOA,
-            GPIO_Pin_7,
-            SPI1_IRQn,
-            0
-        },
-#elif (MR_CFG_SPI1_GROUP == 2)
-        {
-            SPI1,
-            RCC_APB2Periph_SPI1,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_3,
-            GPIOB,
-            GPIO_Pin_4,
-            GPIOB,
-            GPIO_Pin_5,
-            SPI1_IRQn,
-            GPIO_Remap_SPI1
-        },
-#else
-#error "MR_CFG_SPI1_GROUP is not defined or defined incorrectly (support values: 1, 2)."
-#endif /* MR_CFG_SPI1_GROUP */
+        DRV_SPI1_CONFIG,
 #endif /* MR_USING_SPI1 */
 #ifdef MR_USING_SPI2
-#if (MR_CFG_SPI2_GROUP == 1)
-        {
-            SPI2,
-            RCC_APB1Periph_SPI2,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_13,
-            GPIOB,
-            GPIO_Pin_14,
-            GPIOB,
-            GPIO_Pin_15,
-            SPI2_IRQn,
-            0
-        },
-#else
-#error "MR_CFG_SPI2_GROUP is not defined or defined incorrectly (support values: 1)."
-#endif /* MR_CFG_SPI2_GROUP */
+        DRV_SPI2_CONFIG,
 #endif /* MR_USING_SPI2 */
 #ifdef MR_USING_SPI3
-#if (MR_CFG_SPI3_GROUP == 1)
-        {
-            SPI3,
-            RCC_APB1Periph_SPI3,
-            RCC_APB2Periph_GPIOC,
-            GPIOB,
-            GPIO_Pin_3,
-            GPIOB,
-            GPIO_Pin_4,
-            GPIOB,
-            GPIO_Pin_5,
-            SPI3_IRQn,
-            0
-        },
-#elif (MR_CFG_SPI3_GROUP == 2)
-        {
-            SPI3,
-            RCC_APB1Periph_SPI3,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_10,
-            GPIOC,
-            GPIO_Pin_11,
-            GPIOC,
-            GPIO_Pin_12,
-            SPI3_IRQn,
-            GPIO_Remap_SPI3
-        },
-#else
-#error "MR_CFG_SPI3_GROUP is not defined or defined incorrectly (support values: 1, 2)."
-#endif /* MR_CFG_SPI3_GROUP */
+        DRV_SPI3_CONFIG,
 #endif /* MR_USING_SPI3 */
     };
 
@@ -211,7 +131,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 GPIO_Init(spi_bus_data->mosi_port, &GPIO_InitStructure);
                 break;
             }
-
             case MR_SPI_SLAVE:
             {
                 SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
@@ -230,7 +149,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 GPIO_Init(spi_bus_data->mosi_port, &GPIO_InitStructure);
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -245,28 +163,24 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
                 break;
             }
-
             case MR_SPI_MODE_1:
             {
                 SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
                 SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
                 break;
             }
-
             case MR_SPI_MODE_2:
             {
                 SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
                 SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
                 break;
             }
-
             case MR_SPI_MODE_3:
             {
                 SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
                 SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -280,13 +194,11 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
                 break;
             }
-
             case MR_SPI_DATA_BITS_16:
             {
                 SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -300,13 +212,11 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_LSB;
                 break;
             }
-
             case MR_SPI_BIT_ORDER_MSB:
             {
                 SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -463,7 +373,5 @@ int drv_spi_bus_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_spi_bus_init);
-
-#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) */
 
 #endif /* MR_USING_SPI */

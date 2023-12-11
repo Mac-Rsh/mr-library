@@ -9,10 +9,6 @@
 #include "drv_i2c.h"
 
 #ifdef MR_USING_I2C
-#define MR_USING_I2C1
-#if !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2)
-#error "Please define at least one I2C macro like MR_USING_I2C1. Otherwise undefine MR_USING_I2C."
-#else
 
 enum drv_i2c_index
 {
@@ -37,50 +33,10 @@ static const char *i2c_bus_name[] =
 static struct drv_i2c_bus_data i2c_bus_drv_data[] =
     {
 #ifdef MR_USING_I2C1
-#if (MR_CFG_I2C1_GROUP == 1)
-        {
-            I2C1,
-            RCC_APB1Periph_I2C1,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_6,
-            GPIOB,
-            GPIO_Pin_7,
-            I2C1_EV_IRQn,
-            0
-        },
-#elif (MR_CFG_I2C1_GROUP == 2)
-        {
-            I2C1,
-            RCC_APB1Periph_I2C1,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_8,
-            GPIOB,
-            GPIO_Pin_9,
-            I2C1_EV_IRQn,
-            GPIO_Remap_I2C1
-        },
-#else
-#error "MR_CFG_I2C1_GROUP is not defined or defined incorrectly (support values: 1, 2)."
-#endif /* MR_CFG_I2C1_GROUP */
+        DRV_I2C1_CONFIG,
 #endif /* MR_USING_I2C1 */
 #ifdef MR_USING_I2C2
-#if (MR_CFG_I2C2_GROUP == 1)
-        {
-            I2C2,
-            RCC_APB1Periph_I2C2,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_10,
-            GPIOB,
-            GPIO_Pin_11,
-            I2C2_EV_IRQn,
-            0
-        }
-#else
-#error "MR_CFG_I2C2_GROUP is not defined or defined incorrectly (support values: 1)."
-#endif /* MR_CFG_I2C2_GROUP */
+        DRV_I2C2_CONFIG,
 #endif /* MR_USING_I2C2 */
     };
 
@@ -94,6 +50,7 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
     NVIC_InitTypeDef NVIC_InitStructure = {0};
     I2C_InitTypeDef I2C_InitStructure = {0};
 
+    /* Configure clock */
     RCC_APB2PeriphClockCmd(i2c_bus_data->gpio_clock, ENABLE);
     RCC_APB1PeriphClockCmd(i2c_bus_data->clock, state);
 
@@ -106,6 +63,24 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
 
     if (state == ENABLE)
     {
+        switch (addr_bits)
+        {
+            case MR_I2C_ADDR_BITS_7:
+            {
+                I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+                break;
+            }
+            case MR_I2C_ADDR_BITS_10:
+            {
+                I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_10bit;
+                break;
+            }
+            default:
+            {
+                return MR_EINVAL;
+            }
+        }
+
         GPIO_InitStructure.GPIO_Pin = i2c_bus_data->scl_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -115,26 +90,6 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_Init(i2c_bus_data->sda_port, &GPIO_InitStructure);
-
-        switch (addr_bits)
-        {
-            case MR_I2C_ADDR_BITS_7:
-            {
-                I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-                break;
-            }
-
-            case MR_I2C_ADDR_BITS_10:
-            {
-                I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_10bit;
-                break;
-            }
-
-            default:
-            {
-                return MR_EINVAL;
-            }
-        }
     } else
     {
         GPIO_InitStructure.GPIO_Pin = i2c_bus_data->scl_pin;
@@ -332,7 +287,5 @@ int drv_i2c_bus_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_i2c_bus_init);
-
-#endif /* !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2) */
 
 #endif /* MR_USING_I2C */

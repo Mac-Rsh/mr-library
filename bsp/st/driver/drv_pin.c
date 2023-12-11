@@ -310,7 +310,7 @@ void EXTI0_IRQHandler(void)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_0) != RESET)
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[0]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[0]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
     }
 }
@@ -319,7 +319,7 @@ void EXTI1_IRQHandler(void)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_1) != RESET)
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[1]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[1]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
     }
 }
@@ -328,7 +328,7 @@ void EXTI2_IRQHandler(void)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_2) != RESET)
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[2]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[2]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
     }
 }
@@ -337,7 +337,7 @@ void EXTI3_IRQHandler(void)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_3) != RESET)
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[3]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[3]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_3);
     }
 }
@@ -346,7 +346,7 @@ void EXTI4_IRQHandler(void)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_4) != RESET)
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[4]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[4]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
     }
 }
@@ -359,11 +359,11 @@ void EXTI9_5_IRQHandler(void)
         || (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_8) != RESET)
         || (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_9) != RESET))
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[5]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[6]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[7]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[8]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[9]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[5]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[6]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[7]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[8]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[9]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
@@ -381,12 +381,12 @@ void EXTI15_10_IRQHandler(void)
         || (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET)
         || (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET))
     {
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[10]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[11]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[12]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[13]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[14]);
-        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_RD_INT, &pin_irq_mask[15]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[10]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[11]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[12]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[13]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[14]);
+        mr_dev_isr(&pin_dev.dev, MR_ISR_PIN_EXTI_INT, &pin_irq_mask[15]);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_10);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_11);
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_12);

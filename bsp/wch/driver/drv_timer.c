@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_TIMER
 
-#if !defined(MR_USING_TIMER1) && !defined(MR_USING_TIMER2) && !defined(MR_USING_TIMER3) && !defined(MR_USING_TIMER4) && !defined(MR_USING_TIMER5) && !defined(MR_USING_TIMER6) && !defined(MR_USING_TIMER7) && !defined(MR_USING_TIMER8) && !defined(MR_USING_TIMER9) && !defined(MR_USING_TIMER10)
-#error "Please define at least one Timer macro like MR_USING_TIMER1. Otherwise undefine MR_USING_TIMER."
-#else
-
 enum drv_timer_index
 {
 #ifdef MR_USING_TIMER1
@@ -85,34 +81,34 @@ static const char *timer_name[] =
 static struct drv_timer_data timer_drv_data[] =
     {
 #ifdef MR_USING_TIMER1
-        {TIM1, RCC_APB2Periph_TIM1, TIM1_UP_IRQn},
+        DRV_TIMER1_CONFIG,
 #endif /* MR_USING_TIMER1 */
 #ifdef MR_USING_TIMER2
-        {TIM2, RCC_APB1Periph_TIM2, TIM2_IRQn},
+        DRV_TIMER2_CONFIG,
 #endif /* MR_USING_TIMER2 */
 #ifdef MR_USING_TIMER3
-        {TIM3, RCC_APB1Periph_TIM3, TIM3_IRQn},
+        DRV_TIMER3_CONFIG,
 #endif /* MR_USING_TIMER3 */
 #ifdef MR_USING_TIMER4
-        {TIM4, RCC_APB1Periph_TIM4, TIM4_IRQn},
+        DRV_TIMER4_CONFIG,
 #endif /* MR_USING_TIMER4 */
 #ifdef MR_USING_TIMER5
-        {TIM5, RCC_APB1Periph_TIM5, TIM5_IRQn},
+        DRV_TIMER5_CONFIG,
 #endif /* MR_USING_TIMER5 */
 #ifdef MR_USING_TIMER6
-        {TIM6, RCC_APB1Periph_TIM6, TIM6_IRQn},
+        DRV_TIMER6_CONFIG,
 #endif /* MR_USING_TIMER6 */
 #ifdef MR_USING_TIMER7
-        {TIM7, RCC_APB1Periph_TIM7, TIM7_IRQn},
+        DRV_TIMER7_CONFIG,
 #endif /* MR_USING_TIMER7 */
 #ifdef MR_USING_TIMER8
-        {TIM8, RCC_APB2Periph_TIM8, TIM8_UP_IRQn},
+        DRV_TIMER8_CONFIG,
 #endif /* MR_USING_TIMER8 */
 #ifdef MR_USING_TIMER9
-        {TIM9, RCC_APB2Periph_TIM9, TIM9_UP_IRQn},
+        DRV_TIMER9_CONFIG,
 #endif /* MR_USING_TIMER9 */
 #ifdef MR_USING_TIMER10
-        {TIM10, RCC_APB2Periph_TIM10, TIM10_UP_IRQn},
+        DRV_TIMER10_CONFIG,
 #endif /* MR_USING_TIMER10 */
     };
 
@@ -121,34 +117,34 @@ static struct mr_timer timer_dev[mr_array_num(timer_drv_data)];
 static struct mr_timer_info timer_info[] =
     {
 #ifdef MR_USING_TIMER1
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER1_INFO_CONFIG,
 #endif /* MR_USING_TIMER1 */
 #ifdef MR_USING_TIMER2
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER2_INFO_CONFIG,
 #endif /* MR_USING_TIMER2 */
 #ifdef MR_USING_TIMER3
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER3_INFO_CONFIG,
 #endif /* MR_USING_TIMER3 */
 #ifdef MR_USING_TIMER4
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER4_INFO_CONFIG,
 #endif /* MR_USING_TIMER4 */
 #ifdef MR_USING_TIMER5
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER5_INFO_CONFIG,
 #endif /* MR_USING_TIMER5 */
 #ifdef MR_USING_TIMER6
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER6_INFO_CONFIG,
 #endif /* MR_USING_TIMER6 */
 #ifdef MR_USING_TIMER7
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER7_INFO_CONFIG,
 #endif /* MR_USING_TIMER7 */
 #ifdef MR_USING_TIMER8
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER8_INFO_CONFIG,
 #endif /* MR_USING_TIMER8 */
 #ifdef MR_USING_TIMER9
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER9_INFO_CONFIG,
 #endif /* MR_USING_TIMER9 */
 #ifdef MR_USING_TIMER10
-        {0, UINT16_MAX, UINT16_MAX},
+        DRV_TIMER10_INFO_CONFIG,
 #endif /* MR_USING_TIMER10 */
     };
 
@@ -403,7 +399,5 @@ int drv_timer_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_timer_init);
-
-#endif /* !defined(MR_USING_TIMER1) && !defined(MR_USING_TIMER2) && !defined(MR_USING_TIMER3) && !defined(MR_USING_TIMER4) && !defined(MR_USING_TIMER5) && !defined(MR_USING_TIMER6) && !defined(MR_USING_TIMER7) && !defined(MR_USING_TIMER8) && !defined(MR_USING_TIMER9) && !defined(MR_USING_TIMER10) */
 
 #endif /* MR_USING_TIMER */

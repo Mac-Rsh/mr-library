@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_SERIAL
 
-#if !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8)
-#error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_SERIAL."
-#else
-
 enum drv_serial_index
 {
 #ifdef MR_USING_UART1
@@ -73,344 +69,28 @@ static const char *serial_name[] =
 static struct drv_serial_data serial_drv_data[] =
     {
 #ifdef MR_USING_UART1
-#if (MR_CFG_UART1_GROUP == 1)
-        {
-            USART1,
-            RCC_APB2Periph_USART1,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_10,
-            GPIOA,
-            GPIO_Pin_9,
-            USART1_IRQn,
-            0
-        },
-#elif (MR_CFG_UART1_GROUP == 2)
-        {
-            USART1,
-            RCC_APB2Periph_USART1,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_7,
-            GPIOA,
-            GPIO_Pin_6,
-            USART1_IRQn,
-            GPIO_Remap_USART1
-        },
-#elif (MR_CFG_UART1_GROUP == 3)
-        {
-            USART1,
-            RCC_APB2Periph_USART1,
-            RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB,
-            GPIOA,
-            GPIO_Pin_8,
-            GPIOB,
-            GPIO_Pin_15,
-            USART1_IRQn,
-            0
-        },
-#elif (MR_CFG_UART1_GROUP == 4)
-        {
-            USART1,
-            RCC_APB2Periph_USART1,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_7,
-            GPIOA,
-            GPIO_Pin_6,
-            USART1_IRQn,
-            GPIO_Remap_USART1
-        },
-#else
-#error "MR_CFG_UART1_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3, 4)."
-#endif /* MR_CFG_UART1_GROUP */
+        DRV_UART1_CONFIG,
 #endif /* MR_USING_UART1 */
 #ifdef MR_USING_UART2
-#if (MR_CFG_UART2_GROUP == 1)
-        {
-            USART2,
-            RCC_APB1Periph_USART2,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_3,
-            GPIOA,
-            GPIO_Pin_2,
-            USART2_IRQn,
-            0
-        },
-#elif (MR_CFG_UART2_GROUP == 2)
-        {
-            USART2,
-            RCC_APB1Periph_USART2,
-            RCC_APB2Periph_GPIOD,
-            GPIOD,
-            GPIO_Pin_6,
-            GPIOD,
-            GPIO_Pin_5,
-            USART2_IRQn,
-            GPIO_Remap_USART2
-        },
-#else
-#error "MR_CFG_UART2_GROUP is not defined or defined incorrectly (supported values: 1, 2)."
-#endif /* MR_CFG_UART2_GROUP */
+        DRV_UART2_CONFIG,
 #endif /* MR_USING_UART2 */
 #ifdef MR_USING_UART3
-#if (MR_CFG_UART3_GROUP == 1)
-        {
-            USART3,
-            RCC_APB1Periph_USART3,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_11,
-            GPIOB,
-            GPIO_Pin_10,
-            USART3_IRQn,
-            0
-        },
-#elif (MR_CFG_UART3_GROUP == 2)
-        {
-            USART3,
-            RCC_APB1Periph_USART3,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_11,
-            GPIOC,
-            GPIO_Pin_10,
-            USART3_IRQn,
-            GPIO_PartialRemap_USART3
-        },
-#elif (MR_CFG_UART3_GROUP == 3)
-        {
-            USART3,
-            RCC_APB1Periph_USART3,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_14,
-            GPIOA,
-            GPIO_Pin_13,
-            USART3_IRQn,
-            GPIO_PartialRemap1_USART3
-        },
-#elif (MR_CFG_UART3_GROUP == 4)
-        {
-            USART3,
-            RCC_APB1Periph_USART3,
-            RCC_APB2Periph_GPIOD,
-            GPIOD,
-            GPIO_Pin_9,
-            GPIOD,
-            GPIO_Pin_8,
-            USART3_IRQn,
-            GPIO_FullRemap_USART3
-        },
-#else
-#error "MR_CFG_UART3_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3, 4)."
-#endif /* MR_CFG_UART3_GROUP */
+        DRV_UART3_CONFIG,
 #endif /* MR_USING_UART3 */
 #ifdef MR_USING_UART4
-#if (MR_CFG_UART4_GROUP == 1)
-        {
-            UART4,
-            RCC_APB1Periph_UART4,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_11,
-            GPIOC,
-            GPIO_Pin_10,
-            UART4_IRQn,
-            0
-        },
-#elif (MR_CFG_UART4_GROUP == 2)
-        {
-            UART4,
-            RCC_APB1Periph_UART4,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_1,
-            GPIOB,
-            GPIO_Pin_0,
-            UART4_IRQn,
-            GPIO_PartialRemap_USART4,
-        },
-#elif (MR_CFG_UART4_GROUP == 3)
-        {
-            UART4,
-            RCC_APB1Periph_UART4,
-            RCC_APB2Periph_GPIOE,
-            GPIOE,
-            GPIO_Pin_1,
-            GPIOE,
-            GPIO_Pin_0,
-            UART4_IRQn,
-            GPIO_FullRemap_USART4
-        },
-#else
-#error "MR_CFG_UART4_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3)."
-#endif /* MR_USING_UART4_GROUP */
+        DRV_UART4_CONFIG,
 #endif /* MR_USING_UART4 */
 #ifdef MR_USING_UART5
-#if (MR_CFG_UART5_GROUP == 1)
-        {
-            UART5,
-            RCC_APB1Periph_UART5,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_13,
-            GPIOC,
-            GPIO_Pin_12,
-            UART5_IRQn,
-            0
-        },
-#elif (MR_CFG_UART5_GROUP == 2)
-        {
-            UART5,
-            RCC_APB1Periph_UART5,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_5,
-            GPIOB,
-            GPIO_Pin_4,
-            UART5_IRQn,
-            GPIO_PartialRemap_USART5
-        },
-#elif (MR_CFG_UART5_GROUP == 3)
-        {
-            UART5,
-            RCC_APB1Periph_UART5,
-            RCC_APB2Periph_GPIOE,
-            GPIOE,
-            GPIO_Pin_9,
-            GPIOE,
-            GPIO_Pin_8,
-            UART5_IRQn,
-            GPIO_FullRemap_USART5
-        },
-#else
-#error "MR_CFG_UART5_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3)."
-#endif /* MR_CFG_UART5_GROUP */
+        DRV_UART5_CONFIG,
 #endif /* MR_USING_UART5 */
 #ifdef MR_USING_UART6
-#if (MR_CFG_UART6_GROUP == 1)
-        {
-            UART6,
-            RCC_APB1Periph_UART6,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_1,
-            GPIOC,
-            GPIO_Pin_0,
-            UART6_IRQn,
-            0
-        },
-#elif (MR_CFG_UART6_GROUP == 2)
-        {
-            UART6,
-            RCC_APB1Periph_UART6,
-            RCC_APB2Periph_GPIOB,
-            GPIOB,
-            GPIO_Pin_9,
-            GPIOB,
-            GPIO_Pin_8,
-            UART6_IRQn,
-            GPIO_PartialRemap_USART6
-        },
-#elif (MR_CFG_UART6_GROUP == 3)
-        {
-            UART6,
-            RCC_APB1Periph_UART6,
-            RCC_APB2Periph_GPIOE,
-            GPIOE,
-            GPIO_Pin_11,
-            GPIOE,
-            GPIO_Pin_10,
-            UART6_IRQn,
-            GPIO_FullRemap_USART6
-        },
-#else
-#error "MR_CFG_UART6_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3)."
-#endif /* MR_CFG_UART6_GROUP */
+        DRV_UART6_CONFIG,
 #endif /* MR_USING_UART6 */
 #ifdef MR_USING_UART7
-#if (MR_CFG_UART7_GROUP == 1)
-        {
-            UART7,
-            RCC_APB1Periph_UART7,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_3,
-            GPIOE,
-            GPIO_Pin_2,
-            UART7_IRQn,
-            0
-        },
-#elif (MR_CFG_UART7_GROUP == 2)
-        {
-            UART7,
-            RCC_APB1Periph_UART7,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_7,
-            GPIOA,
-            GPIO_Pin_6,
-            UART7_IRQn,
-            GPIO_PartialRemap_USART7
-        },
-#elif (MR_CFG_UART7_GROUP == 3)
-        {
-            UART7,
-            RCC_APB1Periph_UART7,
-            RCC_APB2Periph_GPIOE,
-            GPIOE,
-            GPIO_Pin_13,
-            GPIOE,
-            GPIO_Pin_12,
-            UART7_IRQn,
-            GPIO_FullRemap_USART7
-        },
-#else
-#error "MR_CFG_UART7_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3)."
-#endif /* MR_CFG_UART7_GROUP */
+        DRV_UART7_CONFIG,
 #endif /* MR_USING_UART7 */
 #ifdef MR_USING_UART8
-#if (MR_CFG_UART8_GROUP == 1)
-        {
-            UART8,
-            RCC_APB1Periph_UART8,
-            RCC_APB2Periph_GPIOC,
-            GPIOC,
-            GPIO_Pin_5,
-            GPIOC,
-            GPIO_Pin_4,
-            UART8_IRQn,
-            0
-        },
-#elif (MR_CFG_UART8_GROUP == 2)
-        {
-            UART8,
-            RCC_APB1Periph_UART8,
-            RCC_APB2Periph_GPIOA,
-            GPIOA,
-            GPIO_Pin_15,
-            GPIOA,
-            GPIO_Pin_14,
-            UART8_IRQn,
-            GPIO_PartialRemap_USART8
-        },
-#elif (MR_CFG_UART8_GROUP == 3)
-        {
-            UART8,
-            RCC_APB1Periph_UART8,
-            RCC_APB2Periph_GPIOE,
-            GPIOE,
-            GPIO_Pin_15,
-            GPIOE,
-            GPIO_Pin_14,
-            UART8_IRQn,
-            GPIO_FullRemap_USART8
-        },
-#else
-#error "MR_CFG_UART8_GROUP is not defined or defined incorrectly (supported values: 1, 2, 3)."
-#endif /* MR_CFG_UART8_GROUP */
+        DRV_UART8_CONFIG,
 #endif /* MR_USING_UART8 */
     };
 
@@ -440,12 +120,12 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
         GPIO_PinRemapConfig(serial_data->remap, state);
     }
-#if (MR_USING_UART1_GROUP >= 3)
+#if defined(MR_USING_CH32V30X) && (MR_USING_UART1_GROUP >= 3)
     if(serial_data->instance == USART1)
     {
         GPIO_PinRemapConfig(GPIO_Remap_USART1_HighBit, state);
     }
-#endif /* MR_USING_UART1_GROUP >= 3 */
+#endif /* defined(MR_USING_CH32V30X) && (MR_USING_UART1_GROUP >= 3) */
 
     if (state == ENABLE)
     {
@@ -456,7 +136,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
                 USART_InitStructure.USART_WordLength = USART_WordLength_8b;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -470,13 +149,11 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
                 USART_InitStructure.USART_StopBits = USART_StopBits_1;
                 break;
             }
-
             case MR_SERIAL_STOP_BITS_2:
             {
                 USART_InitStructure.USART_StopBits = USART_StopBits_2;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -490,19 +167,16 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
                 USART_InitStructure.USART_Parity = USART_Parity_No;
                 break;
             }
-
             case MR_SERIAL_PARITY_ODD:
             {
                 USART_InitStructure.USART_Parity = USART_Parity_Odd;
                 break;
             }
-
             case MR_SERIAL_PARITY_EVEN:
             {
                 USART_InitStructure.USART_Parity = USART_Parity_Even;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -515,7 +189,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
             {
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -528,7 +201,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
             {
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -790,7 +462,5 @@ int drv_serial_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_serial_init);
-
-#endif /* !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8) */
 
 #endif /* MR_USING_SERIAL */

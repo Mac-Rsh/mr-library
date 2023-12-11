@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_DAC
 
-#if !defined(MR_USING_DAC1)
-#error "Please define at least one DAC macro like MR_USING_DAC1. Otherwise undefine MR_USING_DAC."
-#else
-
 static struct drv_dac_data dac_drv_data[] =
     {
 #ifdef MR_USING_DAC1
@@ -21,17 +17,17 @@ static struct drv_dac_data dac_drv_data[] =
 #endif /* MR_USING_DAC1 */
     };
 
-static struct drv_dac_channel_data dac_channel_drv_data[] =
-    {
-        {DAC_Channel_1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_4},
-        {DAC_Channel_2, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_5},
-    };
+static struct drv_dac_channel_data dac_channel_drv_data[] = DRV_DAC_CHANNEL_CONFIG;
 
 static struct mr_dac dac_dev;
 
 static struct drv_dac_channel_data *drv_dac_get_channel_data(int channel)
 {
     if (channel >= mr_array_num(dac_channel_drv_data))
+    {
+        return NULL;
+    }
+    if (dac_channel_drv_data[channel].channel == 0)
     {
         return NULL;
     }
@@ -64,16 +60,23 @@ static int drv_dac_channel_configure(struct mr_dac *dac, int channel, int state)
 
     switch (dac_channel_data->channel)
     {
+#ifdef DAC_Channel_1
         case DAC_Channel_1:
         {
             DAC_SetChannel1Data(DAC_Align_12b_R, 0);
             break;
         }
-
+#endif /* DAC_Channel_1 */
+#ifdef DAC_Channel_2
         case DAC_Channel_2:
         {
             DAC_SetChannel2Data(DAC_Align_12b_R, 0);
             break;
+        }
+#endif /* DAC_Channel_2 */
+        default:
+        {
+            return MR_EINVAL;
         }
     }
 
@@ -111,15 +114,23 @@ static void drv_dac_write(struct mr_dac *dac, int channel, uint32_t data)
     /* Write data */
     switch (dac_channel_data->channel)
     {
+#ifdef DAC_Channel_1
         case DAC_Channel_1:
         {
             DAC_SetChannel1Data(DAC_Align_12b_R, data);
             break;
         }
+#endif /* DAC_Channel_1 */
+#ifdef DAC_Channel_2
         case DAC_Channel_2:
         {
             DAC_SetChannel2Data(DAC_Align_12b_R, data);
             break;
+        }
+#endif /* DAC_Channel_2 */
+        default:
+        {
+            return;
         }
     }
 }
@@ -143,7 +154,5 @@ int drv_dac_init(void)
     return mr_dac_register(&dac_dev, "dac1", &dac_drv);
 }
 MR_DRV_EXPORT(drv_dac_init);
-
-#endif /* !defined(MR_USING_DAC1) */
 
 #endif /* MR_USING_DAC */

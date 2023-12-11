@@ -1,0 +1,59 @@
+menu "Board configure"
+
+    config MR_USING_CH32V00X
+        bool "Enable CH32V00X driver"
+        default y
+
+    menu "ADC"
+        config MR_USING_ADC1
+            bool "Enable ADC1 driver"
+            default n
+    endmenu
+
+    menu "I2C"
+        config MR_USING_I2C1
+            bool "Enable I2C1 driver"
+            default n
+
+        menu "I2C1 driver configure"
+            depends on MR_USING_I2C1
+
+            config MR_CFG_I2C1_GROUP
+                int "I2C1 Group"
+                default 1
+                range 1 3
+        endmenu
+    endmenu
+
+    menu "UART"
+        config MR_USING_UART1
+            bool "Enable UART1 driver"
+            default n
+
+        menu "UART1 driver configure"
+            depends on MR_USING_UART1
+
+            config MR_CFG_UART1_GROUP
+                int "UART1 Group"
+                default 1
+                range 1 4
+        endmenu
+    endmenu
+
+    menu "SPI"
+        config MR_USING_SPI1
+            bool "Enable SPI1 driver"
+            default n
+    endmenu
+
+    menu "Timer"
+        config MR_USING_TIMER1
+            bool "Enable Timer1 driver"
+            default n
+
+        config MR_USING_TIMER2
+            bool "Enable Timer2 driver"
+            default n
+    endmenu
+
+endmenu
