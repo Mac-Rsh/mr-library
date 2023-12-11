@@ -118,7 +118,6 @@ static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t
 static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
-    struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
 
     switch (cmd)
     {
@@ -156,7 +155,7 @@ static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
 
     switch (event)
     {
-        case MR_ISR_PIN_RD_INT:
+        case MR_ISR_PIN_EXTI_INT:
         {
             ssize_t number = *(int *)args;
 

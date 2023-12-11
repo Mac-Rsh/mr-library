@@ -70,7 +70,7 @@ typedef uint8_t mr_pin_data_t;                                      /**< PIN rea
 /**
  * @brief PIN ISR events.
  */
-#define MR_ISR_PIN_RD_INT               (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
+#define MR_ISR_PIN_EXTI_INT             (MR_ISR_RD | (0x01 << 8))   /**< Exti interrupt */
 
 /**
  * @brief PIN structure.

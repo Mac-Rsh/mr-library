@@ -101,7 +101,6 @@ static ssize_t mr_dac_write(struct mr_dev *dev, int off, const void *buf, size_t
 static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_dac *dac = (struct mr_dac *)dev;
-    struct mr_dac_ops *ops = (struct mr_dac_ops *)dev->drv->ops;
 
     switch (cmd)
     {
