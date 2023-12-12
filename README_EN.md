@@ -225,7 +225,13 @@ tutorials are based on applying Kconfig).
 
 3. Configure the GNU syntax. If you are using a non-gcc compiler, enable GNU syntax. Take `keil` for example:
 
+   AC5:
+
    ![project directory6](document/picture/readme/README_Build6.png)
+
+   AC6:
+
+   ![project directory7](document/picture/readme/README_AC6.png)
 
 4. Include `#include "include/mr_lib.h"` in your project.
 5. Add the automatic initialization function `mr_auto_init();` in the main function.

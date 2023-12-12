@@ -207,7 +207,13 @@ int main(void)
 
 3. 配置GNU语法。如果您使用的是非 `GCC` 编译器，请使能GNU语法。以 `keil` 为例:
 
+    AC5:
+
    ![工程目录6](document/picture/readme/README_Build6.png)
+
+    AC6:
+
+   ![工程目录7](document/picture/readme/README_AC6.png)
 
 4. 在您的工程中引入 `#include "include/mr_lib.h"`。
 5. 在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数。
