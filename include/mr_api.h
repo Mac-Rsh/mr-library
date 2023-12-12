@@ -97,7 +97,7 @@ int mr_dev_register(struct mr_dev *dev,
                     struct mr_dev_ops *ops,
                     struct mr_drv *drv);
 int mr_dev_isr(struct mr_dev *dev, int event, void *args);
-int mr_dev_get_full_name(struct mr_dev *dev, char *buf, size_t bufsz);
+int mr_dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz);
 /** @} */
 
 /**
@@ -109,6 +109,7 @@ int mr_dev_close(int desc);
 ssize_t mr_dev_read(int desc, void *buf, size_t size);
 ssize_t mr_dev_write(int desc, const void *buf, size_t size);
 int mr_dev_ioctl(int desc, int cmd, void *args);
+const char *mr_dev_get_name(int desc);
 /** @} */
 
 #ifdef __cplusplus

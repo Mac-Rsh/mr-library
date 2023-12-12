@@ -1,7 +1,6 @@
 mainmenu "mr-library"
 
 menu "Device configure"
-
 	config MR_CFG_HEAP_SIZE
 		int "Heap size (Bytes)"
 		default 4096
@@ -14,6 +13,32 @@ menu "Device configure"
     	default y
     	help
     		"Enabling this option allows the use of assert statements in the code."
+
+    menu "Logging configure"
+        config MR_USING_LOG_ERROR
+            bool "Enable error log"
+            default y
+            help
+                "Enabling this option allows for the use of error log."
+
+        config MR_USING_LOG_WARN
+            bool "Enable warning log"
+            default y
+            help
+                "Enabling this option allows for the use of warning log."
+
+        config MR_USING_LOG_INFO
+            bool "Enable info log"
+            default y
+            help
+                "Enabling this option allows for the use of info log."
+
+        config MR_USING_LOG_DEBUG
+            bool "Enable debug log"
+            default y
+            help
+                "Enabling this option allows for the use of debug log."
+    endmenu
 
 	config MR_CFG_NAME_MAX
 		int "Max length of device name"
@@ -40,6 +65,7 @@ menu "Device configure"
         default y
         help
             "Enabling this option allows for the use of the console device."
+
     menu "Console configure"
         depends on MR_USING_CONSOLE
 
@@ -161,7 +187,6 @@ menu "Device configure"
         default n
         help
         	"Enabling this option allows for the use of Timer devices."
-
 endmenu
 
 source "driver/Kconfig"

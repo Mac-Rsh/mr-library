@@ -45,12 +45,37 @@ extern "C" {
  * @param fmt The format of the message.
  * @param ... The arguments of the format.
  */
-#define mr_log(fmt, ...)                \
+#define mr_log(level, fmt, ...)         \
     do{                                 \
-        mr_printf("log > "              \
-                  fmt".\r\n",           \
+        mr_printf("log %s > "           \
+                  fmt"\r\n",            \
+                  level,                \
                   ##__VA_ARGS__);       \
     } while(0)
+
+/**
+ * @brief This macro function logs a error-warning-debug-info message.
+ */
+#ifdef MR_USING_LOG_ERROR
+#define mr_log_error(fmt, ...)          mr_log("error", fmt, ##__VA_ARGS__)
+#else
+#define mr_log_error(fmt, ...)
+#endif /* MR_USING_LOG_ERROR */
+#ifdef MR_USING_LOG_WARN
+#define mr_log_warn(fmt, ...)           mr_log("warn", fmt, ##__VA_ARGS__)
+#else
+#define mr_log_warn(fmt, ...)
+#endif /* MR_USING_LOG_WARN */
+#ifdef MR_USING_LOG_INFO
+#define mr_log_info(fmt, ...)           mr_log("info", fmt, ##__VA_ARGS__)
+#else
+#define mr_log_info(fmt, ...)
+#endif /* MR_USING_LOG_INFO */
+#ifdef MR_USING_LOG_DEBUG
+#define mr_log_debug(fmt, ...)          mr_log("debug", fmt, ##__VA_ARGS__)
+#else
+#define mr_log_debug(fmt, ...)
+#endif /* MR_USING_LOG_DEBUG */
 
 /**
  * @brief This macro function gets its structure from its member.
