@@ -20,7 +20,7 @@ extern "C" {
 
 struct drv_adc_data
 {
-    ADC_HandleTypeDef *handle;
+    ADC_HandleTypeDef handle;
     ADC_TypeDef *instance;
 };
 

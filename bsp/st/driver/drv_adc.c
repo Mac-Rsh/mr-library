@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_ADC
 
-#if !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2) && !defined(MR_USING_ADC3)
-#error "Please define at least one ADC macro like MR_USING_ADC1. Otherwise undefine MR_USING_ADC."
-#else
-
 enum drv_adc_index
 {
 #ifdef MR_USING_ADC1
@@ -53,27 +49,7 @@ static struct drv_adc_data adc_drv_data[] =
 #endif /* MR_USING_ADC3 */
     };
 
-static struct drv_adc_channel_data adc_channel_drv_data[] =
-    {
-        {ADC_CHANNEL_0},
-        {ADC_CHANNEL_1},
-        {ADC_CHANNEL_2},
-        {ADC_CHANNEL_3},
-        {ADC_CHANNEL_4},
-        {ADC_CHANNEL_5},
-        {ADC_CHANNEL_6},
-        {ADC_CHANNEL_7},
-        {ADC_CHANNEL_8},
-        {ADC_CHANNEL_9},
-        {ADC_CHANNEL_10},
-        {ADC_CHANNEL_11},
-        {ADC_CHANNEL_12},
-        {ADC_CHANNEL_13},
-        {ADC_CHANNEL_14},
-        {ADC_CHANNEL_15},
-        {ADC_CHANNEL_16},
-        {ADC_CHANNEL_17},
-    };
+static struct drv_adc_channel_data adc_channel_drv_data[] = DRV_ADC_CHANNEL_CONFIG;
 
 static struct mr_adc adc_dev[mr_array_num(adc_drv_data)];
 
@@ -95,7 +71,13 @@ static int drv_adc_configure(struct mr_adc *adc, int state)
     {
         /* Configure ADC */
         adc_data->handle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+#if defined(ADC_RESOLUTION_12B)
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_12B;
+#elif defined(ADC_RESOLUTION_10B)
+        adc_data->handle.Init.Resolution = ADC_RESOLUTION_10B;
+#else
+        adc_data->handle.Init.Resolution = ADC_RESOLUTION_8B;
+#endif /* ADC_RESOLUTION_12B */
         adc_data->handle.Init.ScanConvMode = DISABLE;
         adc_data->handle.Init.ContinuousConvMode = DISABLE;
         adc_data->handle.Init.DiscontinuousConvMode = DISABLE;
@@ -185,7 +167,5 @@ int drv_adc_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_adc_init);
-
-#endif /* !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2) && !defined(MR_USING_ADC3) */
 
 #endif /* MR_USING_ADC */

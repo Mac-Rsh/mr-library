@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_SERIAL
 
-#if !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8)
-#error "Please define at least one UART macro like MR_USING_UART1. Otherwise undefine MR_USING_SERIAL."
-#else
-
 enum drv_serial_index
 {
 #ifdef MR_USING_UART1
@@ -115,7 +111,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
                 serial_data->handle.Init.WordLength = UART_WORDLENGTH_8B;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -129,13 +124,11 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
                 serial_data->handle.Init.StopBits = UART_STOPBITS_1;
                 break;
             }
-
             case MR_SERIAL_STOP_BITS_2:
             {
                 serial_data->handle.Init.StopBits = UART_STOPBITS_2;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -149,19 +142,16 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
                 serial_data->handle.Init.Parity = UART_PARITY_NONE;
                 break;
             }
-
             case MR_SERIAL_PARITY_ODD:
             {
                 serial_data->handle.Init.Parity = UART_PARITY_ODD;
                 break;
             }
-
             case MR_SERIAL_PARITY_EVEN:
             {
                 serial_data->handle.Init.Parity = UART_PARITY_EVEN;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -174,7 +164,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
             {
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -187,7 +176,6 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
             {
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -439,7 +427,5 @@ int drv_serial_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_serial_init);
-
-#endif /* !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8) */
 
 #endif /* MR_USING_SERIAL */

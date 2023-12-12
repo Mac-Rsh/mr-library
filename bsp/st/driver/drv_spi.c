@@ -10,10 +10,6 @@
 
 #ifdef MR_USING_SPI
 
-#if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) && !defined(MR_USING_SPI4) && !defined(MR_USING_SPI5) && !defined(MR_USING_SPI6)
-#error "Please define at least one SPI macro like MR_USING_SPI1. Otherwise undefine MR_USING_SPI."
-#else
-
 enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
@@ -134,13 +130,11 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 spi_bus_data->handle.Init.Mode = SPI_MODE_MASTER;
                 break;
             }
-
             case MR_SPI_SLAVE:
             {
                 spi_bus_data->handle.Init.Mode = SPI_MODE_SLAVE;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -155,28 +149,24 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 spi_bus_data->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
                 break;
             }
-
             case MR_SPI_MODE_1:
             {
                 spi_bus_data->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
                 spi_bus_data->handle.Init.CLKPhase = SPI_PHASE_2EDGE;
                 break;
             }
-
             case MR_SPI_MODE_2:
             {
                 spi_bus_data->handle.Init.CLKPolarity = SPI_POLARITY_HIGH;
                 spi_bus_data->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
                 break;
             }
-
             case MR_SPI_MODE_3:
             {
                 spi_bus_data->handle.Init.CLKPolarity = SPI_POLARITY_HIGH;
                 spi_bus_data->handle.Init.CLKPhase = SPI_PHASE_2EDGE;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -190,13 +180,11 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 spi_bus_data->handle.Init.DataSize = SPI_DATASIZE_8BIT;
                 break;
             }
-
             case MR_SPI_DATA_BITS_16:
             {
                 spi_bus_data->handle.Init.DataSize = SPI_DATASIZE_16BIT;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -210,13 +198,11 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
                 spi_bus_data->handle.Init.FirstBit = SPI_FIRSTBIT_LSB;
                 break;
             }
-
             case MR_SPI_BIT_ORDER_MSB:
             {
                 spi_bus_data->handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -405,7 +391,5 @@ int drv_spi_bus_init(void)
     return MR_EOK;
 }
 MR_DRV_EXPORT(drv_spi_bus_init);
-
-#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) && !defined(MR_USING_SPI4) && !defined(MR_USING_SPI5) && !defined(MR_USING_SPI6) */
 
 #endif /* MR_USING_SPI */

@@ -1,0 +1,83 @@
+menu "Board configure"
+
+    config MR_USING_STM32F4
+           bool "Enable STM32F4 driver"
+           default y
+
+    menu "ADC"
+        config MR_USING_ADC1
+            bool "Enable ADC1 driver"
+            default n
+    endmenu
+
+    menu "UART"
+        config MR_USING_UART1
+            bool "Enable UART1 driver"
+            default n
+
+        config MR_USING_UART2
+            bool "Enable UART2 driver"
+            default n
+
+        config MR_USING_UART6
+            bool "Enable UART6 driver"
+            default n
+    endmenu
+
+    menu "SPI"
+        config MR_USING_SPI1
+            bool "Enable SPI1 driver"
+            default n
+
+        config MR_USING_SPI2
+            bool "Enable SPI2 driver"
+            default n
+
+        config MR_USING_SPI3
+            bool "Enable SPI3 driver"
+            default n
+
+        config MR_USING_SPI4
+            bool "Enable SPI3 driver"
+            default n
+
+        config MR_USING_SPI5
+            bool "Enable SPI5 driver"
+            default n
+    endmenu
+
+    menu "Timer"
+        config MR_USING_TIMER1
+            bool "Enable Timer1 driver"
+            default n
+
+        config MR_USING_TIMER2
+            bool "Enable Timer2 driver"
+            default n
+
+        config MR_USING_TIMER3
+            bool "Enable Timer3 driver"
+            default n
+
+        config MR_USING_TIMER4
+            bool "Enable Timer4 driver"
+            default n
+
+        config MR_USING_TIMER5
+            bool "Enable Timer5 driver"
+            default n
+
+        config MR_USING_TIMER9
+            bool "Enable Timer9 driver"
+            default n
+
+        config MR_USING_TIMER10
+            bool "Enable Timer10 driver"
+            default n
+
+        config MR_USING_TIMER11
+            bool "Enable Timer11 driver"
+            default n
+    endmenu
+
+endmenu
