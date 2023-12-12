@@ -13,15 +13,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if defined(MR_USING_CH32V00X)
-#include "ch32v00x.h"
-#elif defined(MR_USING_CH32V20X)
-#include "ch32v20x.h"
-#elif defined(MR_USING_CH32V30X)
 #include "ch32v30x.h"
-#else
-#error "Please define your board type in mr_board.h"
-#endif
 
 #define DRV_ADC_CHANNEL_CONFIG \
     {                          \
