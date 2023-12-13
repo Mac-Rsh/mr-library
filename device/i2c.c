@@ -50,7 +50,7 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
         case MR_ISR_I2C_RD_INT:
         {
             struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)i2c_bus->owner;
-            uint8_t data = ops->read(i2c_bus);
+            uint8_t data = ops->read(i2c_bus, MR_ENABLE);
 
             /* Read data to FIFO. if callback is set, call it */
             mr_ringbuf_push_force(&i2c_dev->rd_fifo, data);
@@ -196,7 +196,7 @@ MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t 
 
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
-        *rd_buf = ops->read(i2c_bus);
+        *rd_buf = ops->read(i2c_bus, (size - rd_size) == sizeof(*rd_buf));
         rd_buf++;
     }
     return rd_size;
@@ -379,7 +379,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         }
         case MR_CTL_I2C_GET_RD_DATASZ:
         {
-            if (args!= MR_NULL)
+            if (args != MR_NULL)
             {
                 size_t *size = (size_t *)args;
 

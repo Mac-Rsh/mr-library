@@ -49,7 +49,7 @@ menu "Device configure"
 
 	config MR_CFG_DESC_MAX
 		int "Max number of descriptors"
-		default 32
+		default 64
 		range 16 1024
 		help
 			"Maximum number of descriptors"
@@ -133,6 +133,13 @@ menu "Device configure"
 			range 0 MR_CFG_HEAP_SIZE
 			help
 				"This option sets the size of the RX (receive) buffer used by the I2C device."
+
+        config MR_USING_SOFT_I2C
+            depends on MR_USING_PIN
+            bool "Enable soft I2C"
+            default n
+            help
+                "Enabling this option allows for the use of soft I2C."
 	endmenu
 
 	config MR_USING_PIN

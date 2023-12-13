@@ -100,13 +100,6 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
         GPIO_Init(i2c_bus_data->sda_port, &GPIO_InitStructure);
     }
-    if (config->host_slave == MR_I2C_HOST)
-    {
-        I2C_AcknowledgeConfig(i2c_bus_data->instance, state);
-    } else
-    {
-        I2C_AcknowledgeConfig(i2c_bus_data->instance, DISABLE);
-    }
 
     /* Configure I2C */
     I2C_InitStructure.I2C_ClockSpeed = config->baud_rate;
@@ -116,6 +109,7 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
     I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
     I2C_Init(i2c_bus_data->instance, &I2C_InitStructure);
     I2C_Cmd(i2c_bus_data->instance, state);
+    I2C_AcknowledgeConfig(i2c_bus_data->instance, state);
 
     /* Configure NVIC */
     NVIC_InitStructure.NVIC_IRQChannel = i2c_bus_data->irq;
@@ -187,10 +181,13 @@ static void drv_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
     I2C_GenerateSTOP(i2c_bus_data->instance, ENABLE);
 }
 
-static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus)
+static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
     int i = 0;
+
+    /* Control ack */
+    I2C_AcknowledgeConfig(i2c_bus_data->instance, ack_state);
 
     /* Read data */
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET)
