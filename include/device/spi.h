@@ -124,6 +124,7 @@ struct mr_spi_bus
     struct mr_spi_config config;                                    /**< Configuration */
     volatile void *owner;                                           /**< Owner */
     volatile int hold;                                              /**< Owner hold */
+    int cs_desc;                                                    /**< CS descriptor */
 };
 
 /**
@@ -155,7 +156,6 @@ struct mr_spi_dev
     size_t rd_bufsz;                                                /**< Read buffer size */
     uint32_t cs_pin: 30;                                            /**< CS pin */
     uint32_t cs_active: 2;                                          /**< CS active level */
-    int cs_desc;                                                    /**< CS descriptor */
 };
 
 /**

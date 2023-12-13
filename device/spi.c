@@ -23,6 +23,9 @@ static int mr_spi_bus_open(struct mr_dev *dev)
 
     /* Reset the hold */
     spi_bus->hold = MR_FALSE;
+#ifdef MR_USING_PIN
+    spi_bus->cs_desc = mr_dev_open("pin", MR_OFLAG_RDWR);
+#endif /* MR_USING_PIN */
 
     return ops->configure(spi_bus, &spi_bus->config);
 }
@@ -32,6 +35,14 @@ static int mr_spi_bus_close(struct mr_dev *dev)
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)dev;
     struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)dev->drv->ops;
     struct mr_spi_config close_config = {0};
+
+#ifdef MR_USING_PIN
+    if (spi_bus->cs_desc >= 0)
+    {
+        mr_dev_close(spi_bus->cs_desc);
+        spi_bus->cs_desc = -1;
+    }
+#endif /* MR_USING_PIN */
 
     return ops->configure(spi_bus, &close_config);
 }
@@ -60,10 +71,10 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
 
 #ifdef MR_USING_PIN
             /* Check if CS is active */
-            if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
+            if ((spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE) && (spi_bus->cs_desc >= 0))
             {
                 uint8_t level = !spi_dev->cs_active;
-                mr_dev_read(spi_dev->cs_desc, &level, sizeof(level));
+                mr_dev_read(spi_bus->cs_desc, &level, sizeof(level));
                 if (level != spi_dev->cs_active)
                 {
                     return MR_EINVAL;
@@ -119,6 +130,7 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
     spi_bus->config = default_config;
     spi_bus->owner = MR_NULL;
     spi_bus->hold = MR_FALSE;
+    spi_bus->cs_desc = -1;
 
     /* Register the spi-bus */
     return mr_dev_register(&spi_bus->dev, name, Mr_Dev_Type_SPI, MR_SFLAG_RDWR, &ops, drv);
@@ -127,7 +139,10 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
 #ifdef MR_USING_PIN
 static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 {
-    int desc = spi_dev->cs_desc;
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+    int desc = spi_bus->cs_desc;
+
+    /* Check the descriptor is valid */
     if (desc < 0)
     {
         return;
@@ -135,8 +150,13 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 
     if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
     {
-        mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, spi_dev->cs_pin));
+        int old_number = -1;
 
+        /* Temporarily store the old number */
+        mr_dev_ioctl(desc, MR_CTL_PIN_GET_NUMBER, &old_number);
+
+        /* Set the new number */
+        mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, spi_dev->cs_pin));
         if (state == MR_ENABLE)
         {
             int mode = MR_PIN_MODE_NONE;
@@ -160,16 +180,21 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
         {
             mr_dev_ioctl(desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
         }
+
+        /* Restore the old number */
+        mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, &old_number);
     }
 }
 #endif /* MR_USING_PIN */
 
 MR_INLINE void spi_dev_cs_set(struct mr_spi_dev *spi_dev, int state)
 {
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+
 #ifdef MR_USING_PIN
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
+    if ((spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE) && (spi_bus->cs_desc >= 0))
     {
-        mr_dev_write(spi_dev->cs_desc, mr_make_local(uint8_t, !(state ^ spi_dev->cs_active)), sizeof(uint8_t));
+        mr_dev_write(spi_bus->cs_desc, mr_make_local(uint8_t, !(state ^ spi_dev->cs_active)), sizeof(uint8_t));
     }
 #endif /* MR_USING_PIN */
 }
@@ -202,6 +227,12 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
         }
         spi_bus->config = spi_dev->config;
         spi_bus->owner = spi_dev;
+#ifdef MR_USING_PIN
+        if (spi_bus->cs_desc >= 0)
+        {
+            mr_dev_ioctl(spi_bus->cs_desc, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, spi_dev->cs_pin));
+        }
+#endif /* MR_USING_PIN */
     }
     spi_bus->hold = MR_TRUE;
     return MR_EOK;
@@ -387,11 +418,7 @@ static int mr_spi_dev_open(struct mr_dev *dev)
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
 #ifdef MR_USING_PIN
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
-    {
-        spi_dev->cs_desc = mr_dev_open("pin", MR_OFLAG_RDWR);
-        spi_dev_cs_configure(spi_dev, MR_ENABLE);
-    }
+    spi_dev_cs_configure(spi_dev, MR_ENABLE);
 #endif /* MR_USING_PIN */
 
     /* Allocate FIFO buffers */
@@ -403,12 +430,7 @@ static int mr_spi_dev_close(struct mr_dev *dev)
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
 #ifdef MR_USING_PIN
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
-    {
-        spi_dev_cs_configure(spi_dev, MR_DISABLE);
-        mr_dev_close(spi_dev->cs_desc);
-        spi_dev->cs_desc = -1;
-    }
+    spi_dev_cs_configure(spi_dev, MR_DISABLE);
 #endif /* MR_USING_PIN */
 
     /* Free FIFO buffers */
@@ -604,7 +626,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         }
         case MR_CTL_SPI_GET_RD_DATASZ:
         {
-            if (args!= MR_NULL)
+            if (args != MR_NULL)
             {
                 size_t *datasz = (size_t *)args;
 
@@ -657,7 +679,6 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
     spi_dev->rd_bufsz = MR_CFG_SPI_RD_BUFSZ;
     spi_dev->cs_pin = cs_pin;
     spi_dev->cs_active = (cs_pin >= 0) ? cs_active : MR_SPI_CS_ACTIVE_NONE;
-    spi_dev->cs_desc = -1;
 
     /* Register the spi-device */
     return mr_dev_register(&spi_dev->dev, name, Mr_Dev_Type_SPI, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);

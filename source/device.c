@@ -172,10 +172,8 @@ MR_INLINE int dev_register(struct mr_dev *dev, const char *name)
 {
     if (dev_find_or_register(name, dev, MR_REGISTER) != MR_NULL)
     {
-        mr_log_debug("%s registered.", dev->name);
         return MR_EOK;
     }
-    mr_log_warn("%s register failed.", name);
     return MR_EINVAL;
 }
 
@@ -184,7 +182,6 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
 #ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(dev->sflags, oflags) != MR_ENABLE)
     {
-        mr_log_warn("%s failed to open with flags 0x%x.", dev->name, oflags);
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
@@ -196,10 +193,6 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
             int ret = dev_open(dev->link, oflags);
             if (ret != MR_EOK)
             {
-                mr_log_warn("%s failed to open link %s, error: %s.",
-                            dev->name,
-                            ((struct mr_dev *)dev->link)->name,
-                            mr_strerror(ret));
                 return ret;
             }
         }
@@ -209,7 +202,6 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
             int ret = dev->ops->open(dev);
             if (ret != MR_EOK)
             {
-                mr_log_warn("%s failed to open, error: %s.", dev->name, mr_strerror(ret));
                 return ret;
             }
         }
@@ -217,7 +209,6 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
 #ifdef MR_USING_RDWR_CTL
     else if (mr_bits_is_set(dev->sflags, MR_SFLAG_ONLY) == MR_ENABLE)
     {
-        mr_log_warn("%s is exclusive and already opened.", dev->name);
         return MR_EBUSY;
     }
 #endif /* MR_USING_RDWR_CTL */
@@ -229,6 +220,7 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
 MR_INLINE int dev_close(struct mr_dev *dev)
 {
     dev->ref_count--;
+
     if (dev->ref_count == 0)
     {
         if (dev->link != NULL)
@@ -236,22 +228,13 @@ MR_INLINE int dev_close(struct mr_dev *dev)
             int ret = dev_close(dev->link);
             if (ret != MR_EOK)
             {
-                mr_log_warn("%s failed to close link %s, error: %s.",
-                            dev->name,
-                            ((struct mr_dev *)dev->link)->name,
-                            mr_strerror(ret));
                 return ret;
             }
         }
 
         if (dev->ops->close != MR_NULL)
         {
-            int ret = dev->ops->close(dev);
-            if (ret != MR_EOK)
-            {
-                mr_log_warn("%s failed to close, error: %s.", dev->name, mr_strerror(ret));
-                return ret;
-            }
+            return dev->ops->close(dev);
         }
     }
     return MR_EOK;
@@ -269,7 +252,6 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
         {
             /* Enable interrupt */
             mr_interrupt_enable();
-            mr_log_warn("%s is busy reading.", dev->name);
             return ret;
         }
         /* Enable interrupt */
@@ -280,18 +262,6 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     /* Read buffer from the device */
     ssize_t ret = dev->ops->read(dev, off, buf, size, async);
 
-#ifdef MR_USING_LOG_WARN
-    if (ret < 0)
-    {
-        mr_log_warn("%s failed to read, error: %s.", dev->name, mr_strerror(ret));
-    }
-#endif /* MR_USING_LOG_WARN */
-#ifdef MR_USING_LOG_DEBUG
-    if (ret >= 0)
-    {
-        mr_log_debug("%s read %d bytes.", dev->name, ret);
-    }
-#endif /* MR_USING_LOG_DEBUG */
 #ifdef MR_USING_RDWR_CTL
     dev_lock_release(dev, MR_LFLAG_RD);
 #endif /* MR_USING_RDWR_CTL */
@@ -312,7 +282,6 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
         {
             /* Enable interrupt */
             mr_interrupt_enable();
-            mr_log_warn("%s is busy writing.", dev->name);
             return ret;
         }
         /* Enable interrupt */
@@ -323,18 +292,6 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
     /* Write buffer to the device */
     ssize_t ret = dev->ops->write(dev, offset, buf, size, async);
 
-#ifdef MR_USING_LOG_WARN
-    if (ret < 0)
-    {
-        mr_log_warn("%s failed to write, error: %s.", dev->name, mr_strerror(ret));
-    }
-#endif /* MR_USING_LOG_WARN */
-#ifdef MR_USING_LOG_DEBUG
-    if (ret >= 0)
-    {
-        mr_log_debug("%s write %d bytes.", dev->name, ret);
-    }
-#endif /* MR_USING_LOG_DEBUG */
 #ifdef MR_USING_RDWR_CTL
     dev_lock_release(dev, MR_LFLAG_WR);
     if ((async == MR_ASYNC) && (ret != 0))
@@ -353,7 +310,6 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 {
     if (dev->ops->ioctl == MR_NULL)
     {
-        mr_log_warn("%s does not support ioctl.", dev->name);
         return MR_ENOTSUP;
     }
 
@@ -379,7 +335,6 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
                 *(int (**)(int desc, void *args))args = dev->rd_call.call;
                 return MR_EOK;
             }
-            mr_log_warn("%s get read call failed, args is null.", dev->name);
             return MR_EINVAL;
         }
         case MR_CTL_GET_WR_CALL:
@@ -389,7 +344,6 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
                 *(int (**)(int desc, void *args))args = dev->wr_call.call;
                 return MR_EOK;
             }
-            mr_log_warn("%s get write call failed, args is null.", dev->name);
             return MR_EINVAL;
         }
 
@@ -405,7 +359,6 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
                 {
                     /* Enable interrupt */
                     mr_interrupt_enable();
-                    mr_log_warn("%s is busy reading or writing.", dev->name);
                     return ret;
                 }
                 /* Enable interrupt */
@@ -416,18 +369,6 @@ static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
             /* I/O control to the device */
             int ret = dev->ops->ioctl(dev, off, cmd, args);
 
-#ifdef MR_USING_LOG_WARN
-            if (ret < 0)
-            {
-                mr_log_warn("%s failed to ioctl, error: %s.", dev->name, mr_strerror(ret));
-            }
-#endif /* MR_USING_LOG_WARN */
-#ifdef MR_USING_LOG_DEBUG
-            if (ret >= 0)
-            {
-                mr_log_debug("%s ioctl %d bytes.", dev->name, ret);
-            }
-#endif /* MR_USING_LOG_DEBUG */
 #ifdef MR_USING_RDWR_CTL
             dev_lock_release(dev, MR_LFLAG_RDWR);
 #endif /* MR_USING_RDWR_CTL */
@@ -461,6 +402,8 @@ int mr_dev_register(struct mr_dev *dev,
     mr_assert(dev->magic != MR_MAGIC_NUMBER);
     mr_assert(name != MR_NULL);
     mr_assert((ops != MR_NULL) || (sflags == MR_SFLAG_NONRDWR));
+    mr_assert((ops->read != MR_NULL) || (mr_bits_is_set(sflags, MR_SFLAG_RDONLY) == MR_DISABLE));
+    mr_assert((ops->write != MR_NULL) || (mr_bits_is_set(sflags, MR_SFLAG_WRONLY) == MR_DISABLE));
     mr_assert((drv != MR_NULL) || (sflags & MR_SFLAG_NONDRV));
     mr_assert((drv == MR_NULL) || (drv->type == type));
 
@@ -485,7 +428,20 @@ int mr_dev_register(struct mr_dev *dev,
     dev->ops = (ops != MR_NULL) ? ops : &null_ops;
     dev->drv = drv;
 
-    return dev_register(dev, name);
+    int ret = dev_register(dev, name);
+#ifdef MR_USING_LOG_WARN
+    if (ret < 0)
+    {
+        mr_log_warn("%s register failed, error code: %s.", name, mr_strerror(ret));
+    }
+#endif /* MR_USING_LOG_WARN */
+#ifdef MR_USING_LOG_DEBUG
+    if (ret >= 0)
+    {
+        mr_log_debug("%s register success.", name);
+    }
+#endif /* MR_USING_LOG_DEBUG */
+    return ret;
 }
 
 /**
@@ -621,7 +577,6 @@ static int desc_allocate(const char *name)
     }
     if (desc < 0)
     {
-        mr_log_warn("%s has no free descriptor.", name);
         return MR_ENOMEM;
     }
 
@@ -629,7 +584,6 @@ static int desc_allocate(const char *name)
     struct mr_dev *dev = dev_find_or_register(name, MR_NULL, MR_FIND);
     if (dev == MR_NULL)
     {
-        mr_log_warn("%s not found.", name);
         return MR_ENOTFOUND;
     }
 
@@ -666,6 +620,7 @@ int mr_dev_open(const char *name, int oflags)
     int desc = desc_allocate(name);
     if (desc < 0)
     {
+        mr_log_warn("%s open failed, error code: %s.", name, mr_strerror(desc));
         return desc;
     }
 
@@ -673,10 +628,12 @@ int mr_dev_open(const char *name, int oflags)
     if (ret != MR_EOK)
     {
         desc_free(desc);
+        mr_log_warn("%s open failed, error code: %s.", name, mr_strerror(ret));
         return ret;
     }
 
     desc_of(desc).oflags = oflags;
+    mr_log_debug("%s open success.", name);
     return desc;
 }
 
@@ -694,9 +651,11 @@ int mr_dev_close(int desc)
     int ret = dev_close(desc_of(desc).dev);
     if (ret != MR_EOK)
     {
+        mr_log_warn("%s close failed, error code: %s.", desc_of(desc).dev->name, mr_strerror(ret));
         return ret;
     }
     desc_free(desc);
+    mr_log_debug("%s close success.", desc_of(desc).dev->name);
     return MR_EOK;
 }
 
@@ -717,17 +676,30 @@ ssize_t mr_dev_read(int desc, void *buf, size_t size)
 #ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_RDONLY) == MR_DISABLE)
     {
-        mr_log_warn("%s not supported read.", desc_of(desc).dev->name);
+        mr_log_warn("%s read failed, error code: %s.", desc_of(desc).dev->name, mr_strerror(MR_ENOTSUP));
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
 
     /* Read buffer from the device */
-    return dev_read(desc_of(desc).dev,
-                    desc_of(desc).offset,
-                    buf,
-                    size,
-                    (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_NONBLOCK)));
+    ssize_t ret = dev_read(desc_of(desc).dev,
+                           desc_of(desc).offset,
+                           buf,
+                           size,
+                           (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_NONBLOCK)));
+#ifdef MR_USING_LOG_WARN
+    if (ret < 0)
+    {
+        mr_log_warn("%s read failed, error code: %s.", desc_of(desc).dev->name, mr_strerror(ret));
+    }
+#endif /* MR_USING_LOG_WARN */
+#ifdef MR_USING_LOG_DEBUG
+    if (ret >= 0)
+    {
+        mr_log_debug("%s read %d bytes.", desc_of(desc).dev->name, ret);
+    }
+#endif /* MR_USING_LOG_DEBUG */
+    return ret;
 }
 
 /**
@@ -747,17 +719,30 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size)
 #ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_WRONLY) == MR_DISABLE)
     {
-        mr_log_warn("%s not supported write.", desc_of(desc).dev->name);
+        mr_log_warn("%s write failed, error code: %s.", desc_of(desc).dev->name, mr_strerror(MR_ENOTSUP));
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
 
     /* Write buffer to the device */
-    return dev_write(desc_of(desc).dev,
-                     desc_of(desc).offset,
-                     buf,
-                     size,
-                     (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_NONBLOCK)));
+    ssize_t ret = dev_write(desc_of(desc).dev,
+                            desc_of(desc).offset,
+                            buf,
+                            size,
+                            (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_NONBLOCK)));
+#ifdef MR_USING_LOG_WARN
+    if (ret < 0)
+    {
+        mr_log_warn("%s write failed, error code: %s.", desc_of(desc).dev->name, mr_strerror(ret));
+    }
+#endif /* MR_USING_LOG_WARN */
+#ifdef MR_USING_LOG_DEBUG
+    if (ret >= 0)
+    {
+        mr_log_debug("%s write %d bytes.", desc_of(desc).dev->name, ret);
+    }
+#endif /* MR_USING_LOG_DEBUG */
+    return ret;
 }
 
 /**
@@ -780,9 +765,17 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
             if (args != MR_NULL)
             {
                 desc_of(desc).offset = *(int *)args;
+                mr_log_debug("%s ioctl %s 0x%x success.",
+                             desc_of(desc).dev->name,
+                             (cmd > 0 ? "set" : "get"),
+                             (cmd & INT32_MAX));
                 return MR_EOK;
             }
-            mr_log_warn("%s set offset failed, args is null.", desc_of(desc).dev->name);
+            mr_log_warn("%s ioctl %s 0x%x failed, error code: %s.",
+                        desc_of(desc).dev->name,
+                        (cmd > 0 ? "set" : "get"),
+                        (cmd & INT32_MAX),
+                        mr_strerror(MR_EINVAL));
             return MR_EINVAL;
         }
 
@@ -791,15 +784,51 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
             if (args != MR_NULL)
             {
                 *(int *)args = desc_of(desc).offset;
+                mr_log_debug("%s ioctl %s 0x%x success.",
+                             desc_of(desc).dev->name,
+                             (cmd > 0 ? "set" : "get"),
+                             (cmd & INT32_MAX));
                 return MR_EOK;
             }
-            mr_log_warn("%s get offset failed, args is null.", desc_of(desc).dev->name);
+            mr_log_warn("%s ioctl %s 0x%x failed, error code: %s.",
+                        desc_of(desc).dev->name,
+                        (cmd > 0 ? "set" : "get"),
+                        (cmd & INT32_MAX),
+                        mr_strerror(MR_EINVAL));
             return MR_EINVAL;
         }
 
         default:
         {
-            return dev_ioctl(desc_of(desc).dev, desc, desc_of(desc).offset, cmd, args);
+            int ret = dev_ioctl(desc_of(desc).dev, desc, desc_of(desc).offset, cmd, args);
+#ifdef MR_USING_LOG_WARN
+            if (ret < 0)
+            {
+                mr_log_warn("%s ioctl %s 0x%x failed, error code: %s.",
+                            desc_of(desc).dev->name,
+                            (cmd > 0 ? "set" : "get"),
+                            (cmd & INT32_MAX),
+                            mr_strerror(MR_EINVAL));
+            }
+#endif /* MR_USING_LOG_WARN */
+#ifdef MR_USING_LOG_DEBUG
+            if (ret == 0)
+            {
+                mr_log_debug("%s ioctl %s 0x%x success.",
+                             desc_of(desc).dev->name,
+                             (cmd > 0 ? "set" : "get"),
+                             (cmd & INT32_MAX));
+            }
+            if (ret > 0)
+            {
+                mr_log_debug("%s ioctl %s 0x%x success, transfer %d bytes.",
+                             desc_of(desc).dev->name,
+                             (cmd > 0 ? "set" : "get"),
+                             (cmd & INT32_MAX),
+                             ret);
+            }
+#endif /* MR_USING_LOG_DEBUG */
+            return ret;
         }
     }
 }
