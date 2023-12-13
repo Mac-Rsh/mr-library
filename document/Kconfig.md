@@ -81,9 +81,7 @@ import re
 import sys
 import textwrap
 
-from kconfiglib import Kconfig, split_expr, expr_value, expr_str, BOOL,
-    TRISTATE, TRI_TO_STR, AND, OR
-
+from kconfiglib import Kconfig, split_expr, expr_value, expr_str, BOOL, TRISTATE, TRI_TO_STR, AND, OR
 
 def generate_config(kconfig_file, config_in, config_out, header_out):
     print("Parsing " + kconfig_file)

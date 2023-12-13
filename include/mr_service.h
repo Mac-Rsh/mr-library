@@ -62,12 +62,12 @@ extern "C" {
 #define mr_log_error(fmt, ...)
 #endif /* MR_USING_LOG_ERROR */
 #ifdef MR_USING_LOG_WARN
-#define mr_log_warn(fmt, ...)           mr_log("warn", fmt, ##__VA_ARGS__)
+#define mr_log_warn(fmt, ...)           mr_log("warn ", fmt, ##__VA_ARGS__)
 #else
 #define mr_log_warn(fmt, ...)
 #endif /* MR_USING_LOG_WARN */
 #ifdef MR_USING_LOG_INFO
-#define mr_log_info(fmt, ...)           mr_log("info", fmt, ##__VA_ARGS__)
+#define mr_log_info(fmt, ...)           mr_log("info ", fmt, ##__VA_ARGS__)
 #else
 #define mr_log_info(fmt, ...)
 #endif /* MR_USING_LOG_INFO */

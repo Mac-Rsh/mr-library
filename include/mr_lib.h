@@ -29,6 +29,9 @@ extern "C" {
 
 #ifdef MR_USING_I2C
 #include "device/i2c.h"
+#ifdef MR_USING_SOFT_I2C
+#include "device/soft_i2c.h"
+#endif
 #endif
 
 #ifdef MR_USING_PIN
