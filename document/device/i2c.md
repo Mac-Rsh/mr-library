@@ -15,6 +15,8 @@
   * [读取I2C设备数据](#读取i2c设备数据)
   * [写入I2C设备数据](#写入i2c设备数据)
   * [使用示例：](#使用示例)
+  * [软件I2C](#软件i2c)
+    * [注册软件I2C总线](#注册软件i2c总线)
 <!-- TOC -->
 
 ## 注册I2C设备
@@ -348,3 +350,39 @@ int main(void)
 
 将I2C1与I2C2相接，进行收发测试。I2C1作为主机，I2C2作为从机。I2C2将接收到的数据与发送的数据进行比较。
 由于设置了寄存器值，故在写入数据前，先接收到了寄存器值，然后才是写入的数据。
+
+## 软件I2C
+
+注：软件I2C需使能PIN设备。
+
+### 注册软件I2C总线
+
+```c
+int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *name, int scl_pin, int sda_pin);
+```
+
+| 参数           | 描述           |
+|--------------|--------------|
+| soft_i2c_bus | 软件I2C总线结构体指针 |
+| name         | 总线名称         |
+| scl_pin      | SCL引脚编号      |
+| sda_pin      | SDA引脚编号      |
+| **返回值**      |              |
+| `=0`         | 注册成功         |
+| `<0`         | 错误码          |
+
+```c
+/* 定义软件I2C总线SCL、SDA引脚编号 */
+#define SCL_PIN_NUMBER                  0   
+#define SDA_PIN_NUMBER                  1
+
+/* 定义软件I2C总线 */
+struct mr_soft_i2c_bus soft_i2c_bus;
+
+/* 注册软件I2C总线 */
+mr_soft_i2c_bus_register(&soft_i2c_bus, "i2c1", SCL_PIN_NUMBER, SDA_PIN_NUMBER);
+```
+
+注册完成后，软件I2C总线将模拟成硬件I2C。
+
+注：软件I2C总线仅支持主机模式。
