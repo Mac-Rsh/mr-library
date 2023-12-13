@@ -12,6 +12,7 @@
 * [Standardized device interface](#standardized-device-interface)
 * [Configuration tool](#configuration-tool)
 * [Directory structure](#directory-structure)
+* [Device/Component Support Overview](#devicecomponent-support-overview)
 * [Get Started](#get-started)
   * [Configure the Kconfig Environment](#configure-the-kconfig-environment)
   * [Import the Framework into the Project](#import-the-framework-into-the-project)
@@ -137,6 +138,25 @@ the `Python` script automatically generates the configuration file.
 | Kconfig    | Configuration files            |
 | kconfig.py | Automatic configuration script |
 | LICENSE    | Open-source license            |
+
+ ----------
+
+# Device/Component Support Overview
+
+| Device/Component | Plan | Preview | Stable | Document |
+|:-----------------|:-----|:--------|:-------|:---------|
+| `ADC`            |      |         | [√]    | [√]      |
+| `CAN`            |      | [√]     |        |          |
+| `DAC`            |      |         | [√]    | [√]      |
+| `I2C`            |      |         | [√]    | [√]      |
+| `Soft-I2C`       |      |         | [√]    | [√]      |
+| `Pin`            |      |         | [√]    | [√]      |
+| `PWM`            | [√]  |         |        |          |
+| `Serial`         |      |         | [√]    | [√]      |
+| `SPI`            |      |         | [√]    | [√]      |
+| `Timer`          |      |         | [√]    | [√]      |
+| `LCD`            | [√]  |         |        |          |
+| `Senser`         | [√]  |         |        |          |
 
  ----------
 
