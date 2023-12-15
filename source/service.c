@@ -376,7 +376,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 int mr_printf(const char *fmt, ...)
 {
 #ifndef MR_CFG_PRINTF_BUFSZ
-#define MR_USING_PRINTF_BUFSZ           (128)
+#define MR_CFG_PRINTF_BUFSZ             (128)
 #endif /* MR_CFG_PRINTF_BUFSZ */
     char buf[MR_CFG_PRINTF_BUFSZ] = {0};
     va_list args;
