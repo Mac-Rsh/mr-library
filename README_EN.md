@@ -14,12 +14,10 @@
 * [Directory structure](#directory-structure)
 * [Device/Component Support Overview](#devicecomponent-support-overview)
 * [Get Started](#get-started)
-  * [Configure the Kconfig Environment](#configure-the-kconfig-environment)
-  * [Import the Framework into the Project](#import-the-framework-into-the-project)
+  * [Verifying Python environment](#verifying-python-environment)
+  * [Import the project into the workspace](#import-the-project-into-the-workspace)
   * [Configure Menu Options](#configure-menu-options)
-  * [Generate Configuration File](#generate-configuration-file)
-  * [Add Include Paths](#add-include-paths)
-* [Let's Light an LED](#lets-light-an-led)
+* [Let`s Light an LED](#lets-light-an-led)
 * [Hello World](#hello-world)
 * [Now that you have completed the introductory tutorial, start using the MR Library.](#now-that-you-have-completed-the-introductory-tutorial-start-using-the-mr-library)
 <!-- TOC -->
@@ -115,9 +113,9 @@ code.
 `Kconfig` will automatically generate the configuration options interface based on the configuration file. Developers
 can select the functional components that need to be enabled and set relevant parameters through simple operations.
 
-![Tool](document/picture/readme/README_Kconfig.png)
+![Tool1](document/picture/readme/kconfig_main1.png)
 
-![Tool1](document/picture/readme/README_Kconfig1.png)
+![Tool1](document/picture/readme/kconfig_main2.png)
 
 By modifying parameters, you can quickly tailor the required functions. After the configuration is complete,
 the `Python` script automatically generates the configuration file.
@@ -162,74 +160,41 @@ the `Python` script automatically generates the configuration file.
 
 # Get Started
 
-## Configure the Kconfig Environment
+## Verifying Python environment
 
-Note: Kconfig is not mandatory, but recommended (installation and configuration are very quick, and the following
-tutorials are based on applying Kconfig).
+Verify that the Python environment is installed. Run `python --version` on the command line to check the Python
+version (the `MR` scripting tool relies on Python, install it yourself if there is no Python environment).
 
-1. Verify that the system has a Python environment installed. Run `python --version` in the command line to check the
-   Python version (Kconfig depends on python, please install python if it is not available).
+## Import the project into the workspace
 
-2. Use the following commands to install Kconfig in the command line:
+1. Download the latest version source code from the `Gitee` or `GitHub` repository to the local.
+2. Copy the source code to the directory where your project is located. Take the `MDK` project (CubeMX-generated
+   standard project) as an example:
 
-    ```cmd
-    python -m pip install windows-curses
-    python -m pip install kconfiglib
-    ```
+   ![CubeMX project](document/picture/readme/cubemx_project.png)
 
-3. Run `menuconfig -h` in the command line to verify successful installation.
+3. Copy the driver of the corresponding chip in the `bsp` directory to `driver`:
 
-## Import the Framework into the Project
+   ![Driver directory](document/picture/readme/driver.png)
 
-1. Download the latest version source code from the Gitee or Github repository to the local.
-2. Import the source code into the directory where your project is located. Taking an STM32 project as an example:
+4. Remove unnecessary files` bsp `, `document`, `module` directories (you can also remove `.git `files if you don`t
+   need` git `). When complete, the directory structure looks like this:
 
-   ![project directory](document/picture/readme/README_Build.png)
-
-3. If the used chip has BSP adaptation, please refer to the chip's corresponding BSP configuration tutorial to complete
-   the BSP configuration.
-4. Remove unnecessary files such as `bsp`、`document`、`module` directories (you can also remove the `.git` file to delete
-   GIT if not needed). The directory structure is shown below after completion:
-
-   ![project directory1](document/picture/readme/README_Build1.png)
+   ![project directory](document/picture/readme/project.png)
 
 5. Add the files to the IDE (most ides automatically recognize the files in the project path, eliminating the need for
-   this step). Take `keil` for example:
+   this step). Add `mr-library` to the compiler
+   Contains the path. Configure the GNU syntax. If you are using a non-gcc compiler, enable GNU syntax.
 
-   ![project directory1 Keil](document/picture/readme/README_Keil.png)
+   The `MR` configuration script supports the `MDK` project automatic configuration. In the `mr-library` path, open the
+   command line tool and run `python build.py -mdk` to complete the configuration automatically (when done, skip the
+   remaining steps to `Configuration menu options`).
 
-   Add all files in the `source`, `device`, `driver` directories.
+   ![MDK auto build](document/picture/readme/build_mdk.png)
 
-## Configure Menu Options
-
-1. Open the command line tool in the `mr-library` directory and run `menuconfig` to configure the menu.
-
-   ![project directory2](document/picture/readme/README_Build2.png)
-
-   Note: When the corresponding chip driver is added, `Device configure` and `Driver configure` will be displayed.
-   Please refer to the tutorial under `BSP` for `Driver configure`.
-
-2. Enter the menu by pressing the Enter key on `Device configure`, and configure the desired functions according to
-   needs.
-
-   ![project directory3](document/picture/readme/README_Build3.png)
-
-3. After configuration is complete, press `Q` to exit the menu configuration interface, press `Y` to save the
-   configuration.
-
-## Generate Configuration File
-
-1. Run `python kconfig.py` in the command line tool under `mr-library` directory to automatically generate the
-   configuration file `mr_config.h`.
-
-## Add Include Paths
-
-1. Add the include paths of `mr-library` in the compiler, taking `keil` as an example:
-
-   ![project directory4](document/picture/readme/README_Build4.png)
-
-2. Configure automatic initialization (GCC environment), find the link script file with suffix `.ld` in your project
-   directory (usually `link.ld`), and add the following code to the script file:
+6. Configure automatic initialization (GCC environment), find the connection script file with suffix `.ld `under your
+   project (usually` link.ld `), and add code to the script file (such as using the environment that can automatically
+   generate link scripts such as` MDK `, please skip this step) :
 
    ```c
    /* mr-library auto init */
@@ -239,26 +204,33 @@ tutorials are based on applying Kconfig).
    _mr_auto_init_end = .;
    ```
 
-   Example:
+   ![Ld](document/picture/readme/ld.png)
 
-   ![project directory5](document/picture/readme/README_Build5.png)
+## Configure Menu Options
 
-3. Configure the GNU syntax. If you are using a non-gcc compiler, enable GNU syntax. Take `keil` for example:
+1. Open the command line tool in the `mr-library` directory and run `python build.py -m` for menu configuration.
 
-   AC5:
+   ![Tool1](document/picture/readme/kconfig_main1.png)
 
-   ![project directory6](document/picture/readme/README_Build6.png)
+   Note: When the corresponding chip driver is added, `Device configure` and `Driver configure` will be displayed.
+   For `Driver configure` please refer to the documentation under `bsp`.
 
-   AC6:
+2. Enter the menu by pressing the Enter key on `Device configure`, and configure the desired functions according to
+   needs.
 
-   ![project directory7](document/picture/readme/README_AC6.png)
+   ![Tool2](document/picture/readme/kconfig_main2.png)
 
-4. Include `#include "include/mr_lib.h"` in your project.
-5. Add the automatic initialization function `mr_auto_init();` in the main function.
+3. After configuration is complete, press `Q` to exit the menu configuration interface, press `Y` to save the
+   configuration.
+
+   ![Automatic configuration tool](document/picture/readme/build_m.png)
+
+4. In the project, introduce `#include` include/mr_lib.h `and add` mr_auto_init() `to` main `function; `
+   Automatically initialize the function and start using it.
 
  ----------
 
-# Let's Light an LED
+# Let`s Light an LED
 
 ```c
 #include "include/mr_lib.h"

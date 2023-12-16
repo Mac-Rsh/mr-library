@@ -14,11 +14,9 @@
 * [目录结构](#目录结构)
 * [设备/组件支持一览表](#设备组件支持一览表)
 * [开始使用](#开始使用)
-  * [配置 `Kconfig` 环境](#配置-kconfig-环境)
-  * [将框架导入工程](#将框架导入工程)
+  * [验证Python环境](#验证python环境)
+  * [将项目导入工程](#将项目导入工程)
   * [配置菜单选项](#配置菜单选项)
-  * [生成配置文件](#生成配置文件)
-  * [添加包含路径](#添加包含路径)
 * [先来点个灯吧](#先来点个灯吧)
 * [Hello World](#hello-world)
 * [现在您已经完成了入门教程，开始使用MR库吧](#现在您已经完成了入门教程开始使用mr库吧)
@@ -106,9 +104,9 @@ int main(void)
 
 `Kconfig` 会根据配置文件自动生成配置选项界面。开发者可以通过简单的操作来选择需要启用的功能组件和设置相关参数。
 
-![配置工具](document/picture/readme/README_Kconfig.png)
+![配置工具1](document/picture/readme/kconfig_main1.png)
 
-![配置工具1](document/picture/readme/README_Kconfig1.png)
+![配置工具2](document/picture/readme/kconfig_main2.png)
 
 通过修改参数，快速裁剪所需功能。配置完成后通过 `Python` 脚本自动生成配置文件。
 
@@ -152,66 +150,33 @@ int main(void)
 
 # 开始使用
 
-## 配置 `Kconfig` 环境
+## 验证Python环境
 
-注：`Kconfig` 并非必须的，但是推荐使用（安装和配置非常快捷，后续教程也是以应用 `Kconfig` 为例）。
+验证系统是否安装Python环境。在命令行中运行 `python --version` 检查Python版本（`MR` 脚本工具依赖Python ，若无Python环境请自行安装）。
 
-1. 验证系统是否安装Python环境。在命令行中运行 `python --version` 检查Python版本（`Kconfig` 依赖于 ` python`，若无 ` python`
-   环境请自行安装）。
-
-2. 在命令行中使用所示命令安装 `Kconfig`：
-
-    ```cmd
-    python -m pip install windows-curses
-    python -m pip install kconfiglib
-    ```
-
-3. 在命令行中运行 `menuconfig -h` 验证安装是否成功。
-
-## 将框架导入工程
+## 将项目导入工程
 
 1. 从 `Gitee` 或 `Github` 仓库下载最新版本源码到本地。
-2. 将源码导入到您工程所在的目录。以STM32工程为例：
+2. 将源码复制到您工程所在的目录。以 `MDK` 工程（CubeMX生成的标准工程）为例：
 
-   ![工程目录](document/picture/readme/README_Build.png)
+   ![CubeMX工程](document/picture/readme/cubemx_project.png)
 
-3. 如使用的芯片已经做了 `BSP` 适配请参考芯片对应 `BSP` 中的配置教程，完成 `BSP` 配置。
-4. 移除不需要的文件 `bsp`、`document`、`module` 目录（如不需要`GIT`也可以移除`.git`文件删除）。完成后，目录结构如下所示：
+3. 将 `bsp` 目录中对应芯片的驱动复制到 `driver`：
 
-   ![工程目录1](document/picture/readme/README_Build1.png)
+   ![Driver目录](document/picture/readme/driver.png)
 
-5. 将文件加入到IDE中（大部分IDE都能自动识别工程路径下的文件，无需进行此步骤）。以 `keil` 为例:
+4. 移除不需要的文件 `bsp`、`document`、`module` 目录（如不需要`GIT`也可以移除`.git`文件）。完成后，目录结构如下所示：
 
-    ![工程目录Keil](document/picture/readme/README_Keil.png)
+   ![工程目录](document/picture/readme/project.png)
 
-    添加 `source`、`device`、`driver` 目录下的所有文件。
+5. 将文件加入到IDE中（大部分IDE都能自动识别工程路径下的文件，无需进行此步骤）。编译器中添加 `mr-library`
+   的包含路径。配置GNU语法。如果您使用的是非 `GCC` 编译器，请使能GNU语法。
 
-## 配置菜单选项
+   `MR` 配置脚本支持 `MDK` 工程自动配置。在 `mr-library` 路径下，打开命令行工具，运行 `python build.py -mdk` 自动完成配置（完成后跳过剩余步骤至 `配置菜单选项`）。
 
-1. 在 `mr-library` 目录下打开命令行工具，运行 `menuconfig` 进行菜单配置。
+   ![MDK自动构建](document/picture/readme/build_mdk.png)
 
-   ![工程目录2](document/picture/readme/README_Build2.png)
-
-   注：当添加对应芯片驱动的后，将显示 `Device configure` 和 `Driver configure`。对应 `Driver configure` 请参考 `BSP` 下教程。
-
-2. 选中 `Device configure` 回车进入菜单，按照需要配置功能。
-
-   ![工程目录3](document/picture/readme/README_Build3.png)
-
-3. 配置完成后，按 `Q` 退出菜单配置界面，按`Y` 保存配置。
-
-## 生成配置文件
-
-1. 在 `mr-library` 目录下打开命令行工具，运行 `python kconfig.py`，自动生成配置文件 `mr_config.h`。
-
-## 添加包含路径
-
-1. 在编译器中添加 `mr-library` 的包含路径，以 `keil` 为例:
-
-   ![工程目录4](document/picture/readme/README_Build4.png)
-
-2. 配置自动初始化（GCC环境），查找您工程下以 `.ld` 为后缀的连接脚本文件（通常为 `link.ld`），在脚本文件中添加代码：
-   注：如果您的是在 `keil` 等，能够自动生成链接脚本的环境下，请跳过此步骤。
+6. 配置自动初始化（GCC环境），查找您工程下以 `.ld` 为后缀的连接脚本文件（通常为 `link.ld`），在脚本文件中添加代码（如使用 `MDK` 等能自动生成链接脚本的环境，请跳过此步骤）：
 
    ```c
    /* mr-library auto init */
@@ -221,22 +186,25 @@ int main(void)
    _mr_auto_init_end = .;
    ```
 
-   示例：
+   ![Ld](document/picture/readme/ld.png)
 
-   ![工程目录5](document/picture/readme/README_Build5.png)
+## 配置菜单选项
 
-3. 配置GNU语法。如果您使用的是非 `GCC` 编译器，请使能GNU语法。以 `keil` 为例:
+1. 在 `mr-library` 目录下打开命令行工具，运行 `python build.py -m` 进行菜单配置。
 
-    AC5:
+   ![配置工具1](document/picture/readme/kconfig_main1.png)
 
-   ![工程目录6](document/picture/readme/README_Build6.png)
+   注：当添加对应芯片驱动的后，将显示 `Device configure` 和 `Driver configure`。对应 `Driver configure` 请参考 `bsp` 下文档。
 
-    AC6:
+2. 选中 `Device configure` 回车进入菜单，按照需要配置功能。
 
-   ![工程目录7](document/picture/readme/README_AC6.png)
+   ![配置工具2](document/picture/readme/kconfig_main2.png)
 
-4. 在您的工程中引入 `#include "include/mr_lib.h"`。
-5. 在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数。
+3. 配置完成后，按 `Q` 退出菜单配置界面，按`Y` 保存配置，脚本将自动生成配置文件。
+
+   ![自动配置工具](document/picture/readme/build_m.png)
+
+4. 工程中引入 `#include "include/mr_lib.h"` 并在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数，即可开始使用。
 
  ----------
 

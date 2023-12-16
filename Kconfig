@@ -8,98 +8,105 @@ menu "Device configure"
 		help
 			"Size of dynamic memory for system."
 
+    config MR_CFG_PRINTF_BUFSZ
+        int "Printf buffer size"
+        default 128
+        range 32 2147483647
+        help
+            "Size of the buffer used by the printf function."
+
     config MR_USING_ASSERT
-    	bool "Enable assert"
+    	bool "Use assert"
     	default y
     	help
-    		"Enabling this option allows the use of assert statements in the code."
+    		"Use this option allows the use of assert statements in the code."
+
+    config MR_USING_LOG
+        bool "Use log"
+        default y
+        help
+            "Use this option allows for the use of log."
 
     menu "Logging configure"
+        depends on MR_USING_LOG
         config MR_USING_LOG_ERROR
-            bool "Enable error log"
+            bool "Use error log"
             default y
             help
-                "Enabling this option allows for the use of error log."
+                "Use this option allows for the use of error log."
 
         config MR_USING_LOG_WARN
-            bool "Enable warning log"
+            bool "Use warning log"
             default y
             help
-                "Enabling this option allows for the use of warning log."
+                "Use this option allows for the use of warning log."
 
         config MR_USING_LOG_INFO
-            bool "Enable info log"
+            bool "Use info log"
             default y
             help
-                "Enabling this option allows for the use of info log."
+                "Use this option allows for the use of info log."
 
         config MR_USING_LOG_DEBUG
-            bool "Enable debug log"
+            bool "Use debug log"
             default y
             help
-                "Enabling this option allows for the use of debug log."
+                "Use this option allows for the use of debug log."
     endmenu
 
 	config MR_CFG_NAME_MAX
-		int "Max length of device name"
+		int "Name max length"
 		default 8
 		range 4 1024
 		help
-			"Maximum length of name"
+			"Maximum length of device name"
 
 	config MR_CFG_DESC_MAX
-		int "Max number of descriptors"
+		int "Descriptors max number"
 		default 64
 		range 16 1024
 		help
 			"Maximum number of descriptors"
 
 	config MR_USING_RDWR_CTL
-		bool "Enable read/write control"
+		bool "Use read/write control"
 		default y
 		help
-			"Enabling this option allows for read and write control of devices."
+			"Use this option allows for read and write control of devices."
 
     config MR_USING_CONSOLE
-        bool "Enable console"
+        bool "Use console"
         default y
         help
-            "Enabling this option allows for the use of the console device."
+            "Use this option allows for the use of the console device."
 
     menu "Console configure"
         depends on MR_USING_CONSOLE
 
         config MR_CFG_CONSOLE_NAME
-            string "Console device name"
+            string "Console name"
             default "serial1"
             help
-                "This option sets the name of the console device."
+                "Name of the console device."
 
         config MR_USING_CONSOLE_NONBLOCK
-            bool "Console device non-blocking read/write"
+            bool "Use console non-blocking"
             default n
             help
-            "Enable or disable non-blocking read/write for the console device."
+            "Use this option allows for the use of the console device in non-blocking mode."
     endmenu
 
-    config MR_CFG_PRINTF_BUFSZ
-        int "Size of printf buffer"
-        default 128
-        range 32 2147483647
-        help
-        	"This option sets the size of the buffer used for printf operations."
-
 	config MR_USING_ADC
-		bool "Enable ADC device"
+		bool "Use ADC device"
 		default n
 		help
-			"Enabling this option allows for the use of ADC (Analog-to-Digital Converter) devices."
+			"Use this option allows for the use of ADC (Analog-to-Digital Converter) devices."
 
 	config MR_USING_CAN
-		bool "Enable CAN device"
+		bool "Use CAN device"
 		default n
 		help
-			"Enabling this option allows for the use of CAN (Controller Area Network) devices."
+			"Use this option allows for the use of CAN (Controller Area Network) devices."
 
 	menu "CAN configure"
 		depends on MR_USING_CAN
@@ -113,16 +120,16 @@ menu "Device configure"
 	endmenu
 
 	config MR_USING_DAC
-		bool "Enable DAC device"
+		bool "Use DAC device"
 		default n
 		help
-			"Enabling this option allows for the use of DAC (Digital-to-Analog Converter) devices."
+			"Use this option allows for the use of DAC (Digital-to-Analog Converter) devices."
 
 	config MR_USING_I2C
-		bool "Enable I2C device"
+		bool "Use I2C device"
 		default n
 		help
-			"Enabling this option allows for the use of I2C (Inter-Integrated Circuit) devices."
+			"Use this option allows for the use of I2C (Inter-Integrated Circuit) devices."
 
 	menu "I2C configure"
 		depends on MR_USING_I2C
@@ -136,23 +143,23 @@ menu "Device configure"
 
         config MR_USING_SOFT_I2C
             depends on MR_USING_PIN
-            bool "Enable soft I2C"
+            bool "Use Soft I2C"
             default n
             help
-                "Enabling this option allows for the use of soft I2C."
+                "Use this option allows for the use of soft I2C."
 	endmenu
 
 	config MR_USING_PIN
-		bool "Enable Pin device"
+		bool "Use Pin device"
 		default n
 		help
-			"Enabling this option allows for the use of Pin devices."
+			"Use this option allows for the use of Pin devices."
 
 	config MR_USING_SERIAL
-		bool "Enable Serial device"
+		bool "Use Serial device"
 		default n
 		help
-			"Enabling this option allows for the use of Serial devices."
+			"Use this option allows for the use of Serial devices."
 
 	menu "Serial configure"
 		depends on MR_USING_SERIAL
@@ -173,10 +180,10 @@ menu "Device configure"
 	endmenu
 
 	config MR_USING_SPI
-		bool "Enable SPI device"
+		bool "Use SPI device"
 		default n
 		help
-			"Enabling this option allows for the use of SPI (Serial Peripheral Interface) devices."
+			"Use this option allows for the use of SPI (Serial Peripheral Interface) devices."
 
 	menu "SPI configure"
 		depends on MR_USING_SPI
@@ -190,10 +197,10 @@ menu "Device configure"
 	endmenu
 
     config MR_USING_TIMER
-        bool "Enable Timer device"
+        bool "Use Timer device"
         default n
         help
-        	"Enabling this option allows for the use of Timer devices."
+        	"Use this option allows for the use of Timer devices."
 endmenu
 
 source "driver/Kconfig"
