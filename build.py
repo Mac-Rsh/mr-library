@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+"""
+@copyright (c) 2023, MR Development Team
+
+@license SPDX-License-Identifier: Apache-2.0
+
+@date 2023-12-17    MacRsh       First version
+"""
+
 import os
 import pip
 import argparse
@@ -15,11 +23,13 @@ try:
 except ImportError:
     print("Package not installed, installing...")
     install_package('lxml')
+    from lxml import etree
 
 try:
     from kconfiglib import Kconfig
 except ImportError:
     install_package('kconfiglib')
+    from kconfiglib import Kconfig
 
 try:
     import curses
@@ -30,20 +40,28 @@ except ImportError:
 class MDK5:
 
     def __init__(self, mdk_path):
-        # Get MDK path
+        # Get MDK project file
+        mdk_file = []
         for root, dirs, fs in os.walk(mdk_path):
             for f in fs:
                 if f.endswith(".uvprojx"):
-                    mdk_path = os.path.join(root, f)
-        self.path = os.path.dirname(mdk_path)
-        self.file = mdk_path
-        self.name = os.path.basename(mdk_path)
-        self.tree = etree.parse(mdk_path)
-        self.root = self.tree.getroot()
+                    mdk_file = os.path.join(root, f)
+                    break
+            if mdk_file:
+                break
+        # Check mdk file, init self
+        if mdk_file:
+            self.path = os.path.dirname(mdk_file)
+            self.file = mdk_file
+            self.tree = etree.parse(mdk_file)
+            self.root = self.tree.getroot()
+        else:
+            print("Error: .uvprojx file not found")
+            exit(1)
 
     def add_include_path(self, path):
         # Fix path
-        path = os.path.relpath(path, os.path.abspath(self.path)).replace('\\', '/')
+        path = os.path.relpath(path, self.path).replace('\\', '/')
         # Add path
         inc_path = self.tree.xpath("//Cads/VariousControls/IncludePath")[0]
         exist_paths = inc_path.text.split(';')
@@ -56,11 +74,12 @@ class MDK5:
             self.add_include_path(path)
 
     def add_files_new_group(self, name, files):
-        # Fix path
+        # Fix name and files
         name = name.replace('\\', '/')
         fix_files = []
         for file in files:
-            fix_files.append(file.replace('\\', '/'))
+            file = os.path.relpath(file, self.path).replace('\\', '/')
+            fix_files.append(file)
         files = fix_files
         # Add group
         groups_node = self.tree.find('//Groups')
@@ -69,7 +88,7 @@ class MDK5:
             group_node = etree.SubElement(groups_node, "Group")
             group_name_node = etree.SubElement(group_node, "GroupName")
             group_name_node.text = name
-        # Check files exist
+        # Check files
         if files is None:
             return
         # Add files
@@ -77,7 +96,7 @@ class MDK5:
         if files_node is None:
             files_node = etree.SubElement(group_node, "Files")
         for file in files:
-            # Add files
+            # Add file
             file_node = files_node.find(f"./File[FileName='{os.path.basename(file)}']")
             if file_node is None:
                 file_node = etree.SubElement(files_node, "File")
@@ -113,16 +132,22 @@ class MDK5:
         files = []
         for root, dirs, fs in os.walk(path):
             for f in fs:
-                files.append(os.path.relpath(os.path.join(root, f), os.path.abspath(self.path)))
+                files.append(os.path.relpath(os.path.join(root, f), self.path))
         self.add_files_new_group(path, files)
 
     def add_path_c_files(self, path):
+        # Get c files
         files = []
         for root, dirs, fs in os.walk(path):
             for f in fs:
                 if f.endswith(".c") or f.endswith(".cpp") or f.endswith(".cxx"):
-                    files.append(os.path.relpath(os.path.join(root, f), os.path.abspath(self.path)))
-        self.add_files_new_group(path, files)
+                    file = os.path.relpath(os.path.join(root, f), self.path)
+                    files.append(file)
+        # Fix name
+        name = os.path.relpath(path, self.path).replace('\\', '/').replace("../", "")
+        # Add group
+        if files:
+            self.add_files_new_group(name, files)
 
     def use_gnu(self, enable=True):
         # Check uAC6
@@ -142,6 +167,106 @@ class MDK5:
         print("Build successfully")
 
 
+class Eclipse:
+    def __init__(self, eclipse_path):
+        # Get eclipse project file
+        eclipse_file = []
+        for root, dirs, fs in os.walk(eclipse_path):
+            for f in fs:
+                if f.endswith(".cproject"):
+                    eclipse_file = os.path.join(root, f)
+                    break
+            if eclipse_file:
+                break
+        # Check eclipse file, init self
+        if eclipse_file:
+            self.path = os.path.dirname(eclipse_file)
+            self.file = eclipse_file
+            self.tree = etree.parse(eclipse_file)
+            self.root = self.tree.getroot()
+        else:
+            print("Error:.cproject file not found")
+            exit(1)
+
+    def add_include_path(self, path):
+        # Fix path
+        path = os.path.relpath(path, self.file).replace('\\', '/')
+        # Find all include path node
+        inc_path_nodes = self.tree.findall(".//option[@valueType='includePath']")
+        for inc_path_node in inc_path_nodes:
+            inc_path_node_id = inc_path_node.get('id')
+            # Check path node
+            if 'c.compiler' in inc_path_node_id and 'include' in inc_path_node_id:
+                # Add path
+                list_option = inc_path_node.find(f".//listOptionValue[@value='{path}']")
+                if list_option is None:
+                    list_option = etree.SubElement(inc_path_node, "listOptionValue")
+                    list_option.set('builtIn', "false")
+                    list_option.set('value', path)
+                    print("Include %s" % path)
+                break
+
+    def use_auto_init(self):
+        # Find ld file
+        ld_file = []
+        for root, dirs, files in os.walk(self.path):
+            for file in files:
+                if file.endswith(".ld"):
+                    ld_file = os.path.join(root, file)
+                    break
+            if ld_file:
+                break
+        # Check ld file
+        if ld_file:
+            with open(ld_file) as fr:
+                content = fr.read()
+                pos = content.find('.text :')
+                # Check pos
+                if pos == -1:
+                    print("Use auto init failed")
+                # Check auto init is existed
+                if content.find('/* mr-library auto init */') == -1:
+                    # Find pos offset
+                    pos_offset = content[pos:].find('}')
+                    # Check pos offset
+                    if pos_offset == -1:
+                        print("Use auto init failed")
+                    pos = pos + pos_offset
+                    # Use auto init
+                    with open(ld_file, 'w') as fw:
+                        front = content[:pos]
+                        auto_init = """
+        /* mr-library auto init */
+        . = ALIGN(4);
+        _mr_auto_init_start = .;
+        KEEP(*(SORT(.auto_init*)))
+        _mr_auto_init_end = .;
+    """
+                        back = content[pos:]
+                        fw.write(front + auto_init + back)
+                        fw.close()
+                    fr.close()
+                    print("Use auto init")
+
+    def save(self):
+        self.tree.write(self.file, pretty_print=True, encoding="utf-8", xml_declaration=True)
+        print("Build successfully")
+
+
+class MR:
+
+    def __init__(self):
+        self.path = os.path.dirname(__file__)
+        self.files_paths = []
+        for root, dirs, files in os.walk(self.path):
+            if root == self.path:
+                for path in dirs:
+                    file_path = os.path.join(root, path)
+                    self.files_paths.append(file_path)
+            break
+        self.project_path = os.path.dirname(self.path)
+
+
 def show_logo():
     print(" __  __                  _   _   _                                 ")
     print("|  \/  |  _ __          | | (_) | |__    _ __    __ _   _ __   _   _")
@@ -151,20 +276,49 @@ def show_logo():
     print("                                                               |___/")
 
 
-def build_mdk():
-    # Mr-library path
-    mr_path = os.path.dirname(__file__)
-    mr_c_paths = ['mr-library/device', 'mr-library/driver', 'mr-library/source']
-    # MDK path
-    mdk_file = os.path.dirname(mr_path)
+def show_license():
+    license_file = os.path.join(os.path.dirname(__file__), "LICENSE")
+    try:
+        with open(license_file) as fr:
+            print(fr.read())
+    except OSError:
+        print(
+            "This software is provided subject to the terms of the Apache License 2.0, the full text of which is not "
+            "currently available due to missing license documentation. By continuing to use the Software, you agree "
+            "to be bound by the terms of the Apache License 2.0. The full license text is available at "
+            "http://www.apache.org/licenses/LICENSE-2.0. We advise you to review the license terms in full before use"
+            "to ensure you understand and agree to be bound by all provisions contained therein.")
+        print(
+            "本软件根据Apache许可证2.0版本条款提供,由于许可证文件缺失,当前无法获取完整许可内容。继续使用本软件,"
+            "代表您同意接受并遵守Apache许可证2.0版本的所有条款。完整许可证可在http://www.apache.org/licenses/LICENSE-2.0查看。建议您在使用前全面复核许可证内容,"
+            "以确保完全理解并同意接受其中的所有规定。")
 
-    # Build
-    mdk_proj = MDK5(mdk_file)
-    mdk_proj.add_include_path(mr_path)
-    for mr_c_path in mr_c_paths:
-        mdk_proj.add_path_files(mr_c_path)
+
+def build_mdk():
+    mr = MR()
+    # MDK project
+    mdk_proj = MDK5(mr.project_path)
+    # Include path
+    mdk_proj.add_include_path(mr.path)
+    # Add all c files
+    for files_path in mr.files_paths:
+        mdk_proj.add_path_c_files(files_path)
+    # Use gnu
     mdk_proj.use_gnu(True)
+    # Save
     mdk_proj.save()
+
+
+def build_eclipse():
+    mr = MR()
+    # Eclipse project
+    eclipse_proj = Eclipse(mr.project_path)
+    # Include path
+    eclipse_proj.add_include_path(mr.path)
+    # Use auto init
+    eclipse_proj.use_auto_init()
+    # Save
+    eclipse_proj.save()
 
 
 def menuconfig():
@@ -173,15 +327,25 @@ def menuconfig():
 
 
 if __name__ == '__main__':
-    # Show mr-library logo
+    # Show logo
     show_logo()
 
+    # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
     parser.add_argument("-m", "--menuconfig", action="store_true", help="Run menuconfig")
-
+    parser.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
+    parser.add_argument("-ecl", "--eclipse", action="store_true", help="Build with Eclipse")
+    parser.add_argument("-lic", "--license", action="store_true", help="Show license")
     args = parser.parse_args()
+
+    # Build
     if args.mdk:
         build_mdk()
+    elif args.eclipse:
+        build_eclipse()
+    # Menuconfig
     if args.menuconfig:
         menuconfig()
+    # Show license
+    if args.license:
+        show_license()
