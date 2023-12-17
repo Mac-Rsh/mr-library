@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+"""
+@copyright (c) 2023, MR Development Team
+
+@license SPDX-License-Identifier: Apache-2.0
+
+@date 2023-12-17    MacRsh       First version
+"""
+
 import re
 import pip
 
@@ -20,18 +28,13 @@ except ImportError:
 
 
 def generate_config(kconfig_file, config_in, config_out, header_out):
-    print("Parsing " + kconfig_file)
     kconf = Kconfig(kconfig_file, warn_to_stderr=False,
                     suppress_traceback=True)
 
-    # Load config files
-    print(kconf.load_config(config_in))
-
-    # Write merged config        
-    print(kconf.write_config(config_out))
-
-    # Write headers
-    print(kconf.write_autoconf(header_out))
+    # Load config
+    kconf.load_config(config_in)
+    kconf.write_config(config_out)
+    kconf.write_autoconf(header_out)
 
     with open(header_out, 'r+') as header_file:
         content = header_file.read()
@@ -58,6 +61,9 @@ def generate_config(kconfig_file, config_in, config_out, header_out):
         header_file.write("}\n")
         header_file.write("#endif /* __cplusplus */\n\n")
         header_file.write("#endif /* _MR_CONFIG_H_ */\n")
+
+        header_file.close()
+        print("Config file generate successfully")
 
 
 def main():

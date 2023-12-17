@@ -182,29 +182,14 @@ version (the `MR` scripting tool relies on Python, install it yourself if there 
 
    ![project directory](document/picture/readme/project.png)
 
-5. Add the files to the IDE (most ides automatically recognize the files in the project path, eliminating the need for
-   this step). Add `mr-library` to the compiler
-   Contains the path. Configure the GNU syntax. If you are using a non-gcc compiler, enable GNU syntax.
+5. Use the automatic build script to complete the automatic build. In the `mr-library` path, open the command line tool and run:
 
-   The `MR` configuration script supports the `MDK` project automatic configuration. In the `mr-library` path, open the
-   command line tool and run `python build.py -mdk` to complete the configuration automatically (when done, skip the
-   remaining steps to `Configuration menu options`).
+   - `MDK`：`python build.py -mdk`
+   - `Eclipse`：`python build.py -ecl`
+
+   Take `MDK` as an example:
 
    ![MDK auto build](document/picture/readme/build_mdk.png)
-
-6. Configure automatic initialization (GCC environment), find the connection script file with suffix `.ld `under your
-   project (usually` link.ld `), and add code to the script file (such as using the environment that can automatically
-   generate link scripts such as` MDK `, please skip this step) :
-
-   ```c
-   /* mr-library auto init */
-   . = ALIGN(4);
-   _mr_auto_init_start = .;
-   KEEP(*(SORT(.auto_init*)))
-   _mr_auto_init_end = .;
-   ```
-
-   ![Ld](document/picture/readme/ld.png)
 
 ## Configure Menu Options
 
@@ -227,6 +212,8 @@ version (the `MR` scripting tool relies on Python, install it yourself if there 
 
 4. In the project, introduce `#include` include/mr_lib.h `and add` mr_auto_init() `to` main `function; `
    Automatically initialize the function and start using it.
+
+Note: More commands can be entered: `python build.py -h` to view.
 
  ----------
 

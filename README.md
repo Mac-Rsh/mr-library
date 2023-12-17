@@ -169,24 +169,14 @@ int main(void)
 
    ![工程目录](document/picture/readme/project.png)
 
-5. 将文件加入到IDE中（大部分IDE都能自动识别工程路径下的文件，无需进行此步骤）。编译器中添加 `mr-library`
-   的包含路径。配置GNU语法。如果您使用的是非 `GCC` 编译器，请使能GNU语法。
+5. 使用自动构建脚本，完成自动构建。在 `mr-library` 路径下，打开命令行工具，运行：
 
-   `MR` 配置脚本支持 `MDK` 工程自动配置。在 `mr-library` 路径下，打开命令行工具，运行 `python build.py -mdk` 自动完成配置（完成后跳过剩余步骤至 `配置菜单选项`）。
+   - `MDK`：`python build.py -mdk`
+   - `Eclipse`：`python build.py -ecl`
 
-   ![MDK自动构建](document/picture/readme/build_mdk.png)
-
-6. 配置自动初始化（GCC环境），查找您工程下以 `.ld` 为后缀的连接脚本文件（通常为 `link.ld`），在脚本文件中添加代码（如使用 `MDK` 等能自动生成链接脚本的环境，请跳过此步骤）：
-
-   ```c
-   /* mr-library auto init */
-   . = ALIGN(4);
-   _mr_auto_init_start = .;
-   KEEP(*(SORT(.auto_init*)))
-   _mr_auto_init_end = .;
-   ```
-
-   ![Ld](document/picture/readme/ld.png)
+    以`MDK`为例：
+    
+    ![MDK自动构建](document/picture/readme/build_mdk.png)
 
 ## 配置菜单选项
 
@@ -205,6 +195,8 @@ int main(void)
    ![自动配置工具](document/picture/readme/build_m.png)
 
 4. 工程中引入 `#include "include/mr_lib.h"` 并在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数，即可开始使用。
+
+注：更多命令可输入：`python build.py -h` 查看。
 
  ----------
 
