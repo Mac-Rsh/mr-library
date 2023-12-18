@@ -139,7 +139,7 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
 #ifdef MR_USING_PIN
 static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 {
-    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
     int desc = spi_bus->cs_desc;
 
     /* Check the descriptor is valid */
@@ -189,7 +189,7 @@ static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 
 MR_INLINE void spi_dev_cs_set(struct mr_spi_dev *spi_dev, int state)
 {
-    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
 
 #ifdef MR_USING_PIN
     if ((spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE) && (spi_bus->cs_desc >= 0))
@@ -201,7 +201,7 @@ MR_INLINE void spi_dev_cs_set(struct mr_spi_dev *spi_dev, int state)
 
 MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
 {
-    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
     struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)spi_bus->dev.drv->ops;
 
     /* Check if the bus is busy */
@@ -240,7 +240,7 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
 
 MR_INLINE int spi_dev_release_bus(struct mr_spi_dev *spi_dev)
 {
-    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
 
     if (spi_dev != spi_bus->owner)
     {
@@ -261,7 +261,7 @@ MR_INLINE int spi_dev_release_bus(struct mr_spi_dev *spi_dev)
 
 static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const void *wr_buf, size_t size, int rdwr)
 {
-    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.link;
+    struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
     struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)spi_bus->dev.drv->ops;
     size_t tf_size = 0;
 
@@ -514,7 +514,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)dev->link;
+                struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)dev->parent;
                 struct mr_spi_config config = *(struct mr_spi_config *)args;
 
 #ifdef MR_USING_PIN
@@ -583,7 +583,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 if (spi_dev->config.host_slave == MR_SPI_HOST)
                 {
                     spi_dev_cs_set(spi_dev, MR_ENABLE);
-                    ret = (int)spi_dev_transfer(dev->link,
+                    ret = (int)spi_dev_transfer(dev->parent,
                                                 transfer.rd_buf,
                                                 transfer.wr_buf,
                                                 transfer.size,
@@ -591,7 +591,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     spi_dev_cs_set(spi_dev, MR_DISABLE);
                 } else
                 {
-                    ret = (int)spi_dev_transfer(dev->link,
+                    ret = (int)spi_dev_transfer(dev->parent,
                                                 transfer.rd_buf,
                                                 transfer.wr_buf,
                                                 transfer.size,
