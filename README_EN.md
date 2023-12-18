@@ -133,6 +133,7 @@ the `Python` script automatically generates the configuration file.
 | driver     | Driver file                    |
 | include    | Library header file            |
 | source     | Library source file            |
+| build.py   | Automatic build script         |
 | Kconfig    | Configuration files            |
 | kconfig.py | Automatic configuration script |
 | LICENSE    | Open-source license            |

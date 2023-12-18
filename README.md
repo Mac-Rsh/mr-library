@@ -123,6 +123,7 @@ int main(void)
 | driver     | 驱动文件   |
 | include    | 库头文件   |
 | source     | 库源文件   |
+| build.py   | 自动构建脚本 |
 | Kconfig    | 配置文件   |
 | kconfig.py | 自动配置脚本 |
 | LICENSE    | 许可证    |
