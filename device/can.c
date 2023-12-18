@@ -55,7 +55,7 @@ static ssize_t mr_can_bus_isr(struct mr_dev *dev, int event, void *args)
             ssize_t ret = ops->read(can_bus, data, sizeof(data));
 
             /* Search the matching device */
-            for (list = dev->slist.next; list != &dev->slist; list = list->next)
+            for (list = dev->clist.next; list != &dev->clist; list = list->next)
             {
                 struct mr_can_dev *can_dev = (struct mr_can_dev *)mr_container_of(list, struct mr_dev, list);
 
@@ -119,7 +119,7 @@ int mr_can_bus_register(struct mr_can_bus *can_bus, const char *name, struct mr_
 
 static int can_dev_filter_configure(struct mr_can_dev *can_dev, int id, int ide, int state)
 {
-    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.link;
+    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.parent;
     struct mr_can_bus_ops *ops = (struct mr_can_bus_ops *)can_bus->dev.drv->ops;
 
     return ops->filter_configure(can_bus, id, ide, state);
@@ -127,7 +127,7 @@ static int can_dev_filter_configure(struct mr_can_dev *can_dev, int id, int ide,
 
 MR_INLINE int can_dev_take_bus(struct mr_can_dev *can_dev)
 {
-    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.link;
+    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.parent;
     struct mr_can_bus_ops *ops = (struct mr_can_bus_ops *)can_bus->dev.drv->ops;
 
     if ((can_dev != can_bus->owner) && (can_bus->owner != MR_NULL))
@@ -153,7 +153,7 @@ MR_INLINE int can_dev_take_bus(struct mr_can_dev *can_dev)
 
 MR_INLINE int can_dev_release_bus(struct mr_can_dev *can_dev)
 {
-    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.link;
+    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.parent;
 
     if (can_dev != can_bus->owner)
     {
@@ -166,7 +166,7 @@ MR_INLINE int can_dev_release_bus(struct mr_can_dev *can_dev)
 
 MR_INLINE ssize_t can_dev_read(struct mr_can_dev *can_dev, uint8_t *buf, size_t size)
 {
-    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.link;
+    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.parent;
     struct mr_can_bus_ops *ops = (struct mr_can_bus_ops *)can_bus->dev.drv->ops;
     ssize_t rd_size = 0;
 
@@ -191,7 +191,7 @@ MR_INLINE ssize_t can_dev_read(struct mr_can_dev *can_dev, uint8_t *buf, size_t 
 
 MR_INLINE ssize_t can_dev_write(struct mr_can_dev *can_dev, int id, int ide, int rtr, const uint8_t *buf, size_t size)
 {
-    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.link;
+    struct mr_can_bus *can_bus = (struct mr_can_bus *)can_dev->dev.parent;
     struct mr_can_bus_ops *ops = (struct mr_can_bus_ops *)can_bus->dev.drv->ops;
 
     return ops->write(can_bus, id, ide, rtr, buf, size);
@@ -208,7 +208,7 @@ static int mr_can_dev_open(struct mr_dev *dev)
         return ret;
     }
 
-    return can_dev_filter_configure(can_dev->dev.link, can_dev->id, can_dev->ide, MR_ENABLE);
+    return can_dev_filter_configure(can_dev->dev.parent, can_dev->id, can_dev->ide, MR_ENABLE);
 }
 
 static int mr_can_dev_close(struct mr_dev *dev)
@@ -218,7 +218,7 @@ static int mr_can_dev_close(struct mr_dev *dev)
     /* Free FIFO buffers */
     mr_ringbuf_free(&can_dev->rd_fifo);
 
-    return can_dev_filter_configure(can_dev->dev.link, can_dev->id, can_dev->ide, MR_DISABLE);
+    return can_dev_filter_configure(can_dev->dev.parent, can_dev->id, can_dev->ide, MR_DISABLE);
 }
 
 static ssize_t mr_can_dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
@@ -280,7 +280,7 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_can_bus *can_bus = (struct mr_can_bus *)dev->link;
+                struct mr_can_bus *can_bus = (struct mr_can_bus *)dev->parent;
                 struct mr_can_config config = *(struct mr_can_config *)args;
 
                 /* If holding the bus, release it */

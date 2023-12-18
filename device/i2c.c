@@ -107,7 +107,7 @@ int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *name, struct mr_
 
 MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
 
     /* Check if the bus is busy */
@@ -138,7 +138,7 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
 
 MR_INLINE int i2c_dev_release_bus(struct mr_i2c_dev *i2c_dev)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
 
     if (i2c_dev != i2c_bus->owner)
     {
@@ -158,7 +158,7 @@ MR_INLINE int i2c_dev_release_bus(struct mr_i2c_dev *i2c_dev)
 
 MR_INLINE void i2c_dev_send_addr(struct mr_i2c_dev *i2c_dev, int rdwr)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     int addr = 0, addr_bits = MR_I2C_ADDR_BITS_7;
 
@@ -181,7 +181,7 @@ MR_INLINE void i2c_dev_send_addr(struct mr_i2c_dev *i2c_dev, int rdwr)
 
 MR_INLINE void i2c_dev_send_stop(struct mr_i2c_dev *i2c_dev)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
 
     ops->stop(i2c_bus);
@@ -189,7 +189,7 @@ MR_INLINE void i2c_dev_send_stop(struct mr_i2c_dev *i2c_dev)
 
 MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t size)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     uint8_t *rd_buf = (uint8_t *)buf;
     ssize_t rd_size = 0;
@@ -204,7 +204,7 @@ MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t 
 
 MR_INLINE ssize_t i2c_dev_write(struct mr_i2c_dev *i2c_dev, const uint8_t *buf, size_t size)
 {
-    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.link;
+    struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     uint8_t *wr_buf = (uint8_t *)buf;
     ssize_t wr_size = 0;
@@ -311,7 +311,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev->link;
+                struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev->parent;
                 struct mr_i2c_config config = *(struct mr_i2c_config *)args;
 
                 /* If holding the bus, release it */

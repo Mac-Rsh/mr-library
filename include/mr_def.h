@@ -181,6 +181,7 @@ struct mr_drv
  */
 enum mr_dev_type
 {
+    Mr_Dev_Type_Root = -1,                                          /**< Root */
     Mr_Dev_Type_ADC = Mr_Drv_Type_ADC,                              /**< ADC */
     Mr_Dev_Type_CAN = Mr_Drv_Type_CAN,                              /**< CAN */
     Mr_Dev_Type_DAC = Mr_Drv_Type_DAC,                              /**< DAC */
@@ -291,11 +292,11 @@ struct mr_dev
 #define MR_CFG_NAME_MAX                 (8)
 #endif /* MR_CFG_NAME_MAX */
     char name[MR_CFG_NAME_MAX];                                     /**< Name */
-    struct mr_list list;                                            /**< List */
-    struct mr_list slist;                                           /**< Slave list */
-    void *link;                                                     /**< Link */
-
     int type;                                                       /**< Device type */
+    void *parent;                                                   /**< Parent */
+    struct mr_list list;                                            /**< List */
+    struct mr_list clist;                                           /**< Child list */
+
     size_t ref_count;                                               /**< Reference count */
 #ifdef MR_USING_RDWR_CTL
     int sflags;                                                     /**< Support flags */
@@ -306,7 +307,7 @@ struct mr_dev
     {
         int desc;                                                   /**< Device descriptor */
         int (*call)(int desc, void *args);                          /**< Callback function */
-    } rd_call, wr_call;                                             /**< Read/write callback */
+    } rd_call, wr_call;                                             /**< Read/write call */
 
     const struct mr_dev_ops *ops;                                   /**< Device operations */
     const struct mr_drv *drv;                                       /**< Driver */

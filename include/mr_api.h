@@ -91,7 +91,7 @@ size_t mr_avl_get_length(struct mr_avl *tree);
 * @{
 */
 int mr_dev_register(struct mr_dev *dev,
-                    const char *name,
+                    const char *path,
                     int type,
                     int sflags,
                     struct mr_dev_ops *ops,
@@ -104,7 +104,7 @@ int mr_dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz);
  * @addtogroup Device description.
  * @{
  */
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int oflags);
 int mr_dev_close(int desc);
 ssize_t mr_dev_read(int desc, void *buf, size_t size);
 ssize_t mr_dev_write(int desc, const void *buf, size_t size);
