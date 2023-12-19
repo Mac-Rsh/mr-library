@@ -9,6 +9,7 @@
 #include "include/mr_api.h"
 
 #define MR_ROOT_DEV_NAME "dev"
+
 static struct mr_dev root_dev = {MR_MAGIC_NUMBER,
                                  MR_ROOT_DEV_NAME,
                                  Mr_Dev_Type_Root,
@@ -188,11 +189,13 @@ static void dev_lock_release(struct mr_dev *dev, int release)
 
 static int dev_register(struct mr_dev *dev, const char *path)
 {
+    /* Register the device to the root device */
     return dev_register_by_path(&root_dev, dev, path);
 }
 
 static struct mr_dev *dev_find(const char *path)
 {
+    /* Find the device from the root device */
     return dev_find_by_path(&root_dev, path);
 }
 
@@ -205,8 +208,10 @@ static int dev_open(struct mr_dev *dev, int oflags)
     }
 #endif /* MR_USING_RDWR_CTL */
 
+    /* Check whether the device is opened */
     if (dev->ref_count == 0)
     {
+        /* Continue iterating */
         if (dev->parent != NULL)
         {
             int ret = dev_open(dev->parent, oflags);
@@ -216,6 +221,7 @@ static int dev_open(struct mr_dev *dev, int oflags)
             }
         }
 
+        /* Open the device */
         if (dev->ops->open != MR_NULL)
         {
             int ret = dev->ops->open(dev);
@@ -232,16 +238,20 @@ static int dev_open(struct mr_dev *dev, int oflags)
     }
 #endif /* MR_USING_RDWR_CTL */
 
+    /* Increase the reference count */
     dev->ref_count++;
     return MR_EOK;
 }
 
 static int dev_close(struct mr_dev *dev)
 {
+    /* Decrease the reference count */
     dev->ref_count--;
 
+    /* Check whether the device needs to be closed */
     if (dev->ref_count == 0)
     {
+        /* Continue iterating */
         if (dev->parent != NULL)
         {
             int ret = dev_close(dev->parent);
@@ -251,6 +261,7 @@ static int dev_close(struct mr_dev *dev)
             }
         }
 
+        /* Close the device */
         if (dev->ops->close != MR_NULL)
         {
             return dev->ops->close(dev);
@@ -327,6 +338,7 @@ static ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t
 
 static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 {
+    /* Check whether the device has an ioctl function */
     if (dev->ops->ioctl == MR_NULL)
     {
         return MR_ENOTSUP;
@@ -461,6 +473,7 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 {
     mr_assert(dev != MR_NULL);
 
+    /* Check whether the device is opened */
     if (dev->ref_count == 0)
     {
         return MR_EINVAL;
@@ -468,12 +481,14 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 
     if (dev->ops->isr != MR_NULL)
     {
+        /* Call the device ISR */
         ssize_t ret = dev->ops->isr(dev, event, args);
         if (ret < 0)
         {
             return (int)ret;
         }
 
+        /* Handle the event */
         switch (event & MR_ISR_MASK)
         {
             case MR_ISR_RD:
@@ -536,13 +551,13 @@ int mr_dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz)
     }
 
     /* Check memory */
-    if(ret < 0)
+    if (ret < 0)
     {
         return MR_ENOMEM;
     }
 
     /* If the space is sufficient, continue to obtain the path */
-    if((bufsz-ret) > strlen(dev->name))
+    if ((bufsz - ret) > strlen(dev->name))
     {
         ret += snprintf(buf + ret, bufsz - ret, "/%s", dev->name);
     }
@@ -568,9 +583,10 @@ static struct mr_desc
 static int desc_allocate(const char *path)
 {
     int desc = -1;
+    int i = 0;
 
     /* Find a free descriptor */
-    for (int i = 0; i < MR_CFG_DESC_MAX; i++)
+    for (i = 0; i < MR_CFG_DESC_MAX; i++)
     {
         if (desc_of(i).dev == MR_NULL)
         {
@@ -620,12 +636,14 @@ int mr_dev_open(const char *path, int oflags)
     mr_assert(path != MR_NULL);
     mr_assert(oflags != MR_OFLAG_CLOSED);
 
+    /* Allocate a descriptor */
     int desc = desc_allocate(path);
     if (desc < 0)
     {
         return desc;
     }
 
+    /* Open the device */
     int ret = dev_open(desc_of(desc).dev, oflags);
     if (ret != MR_EOK)
     {
@@ -633,6 +651,7 @@ int mr_dev_open(const char *path, int oflags)
         return ret;
     }
 
+    /* Initialize the open flags */
     desc_of(desc).oflags = oflags;
     return desc;
 }
@@ -648,11 +667,14 @@ int mr_dev_close(int desc)
 {
     mr_assert(desc_is_valid(desc));
 
+    /* Close the device */
     int ret = dev_close(desc_of(desc).dev);
     if (ret != MR_EOK)
     {
         return ret;
     }
+
+    /* Free the descriptor */
     desc_free(desc);
     return MR_EOK;
 }
