@@ -9,27 +9,32 @@
 """
 
 import re
-import pip
 
-
-def install_package(package):
-    pip.main(['install', package])
-
+try:
+    from build import install_package
+except ImportError:
+    exit(1)
 
 try:
     from kconfiglib import Kconfig
 except ImportError:
     install_package('kconfiglib')
+    from kconfiglib import Kconfig
 
 try:
     import curses
 except ImportError:
     install_package('windows-curses')
+    import curses
+
+try:
+    from build import log_print
+except ImportError:
+    exit(1)
 
 
 def generate_config(kconfig_file, config_in, config_out, header_out):
-    kconf = Kconfig(kconfig_file, warn_to_stderr=False,
-                    suppress_traceback=True)
+    kconf = Kconfig(kconfig_file, warn=False, warn_to_stderr=False)
 
     # Load config
     kconf.load_config(config_in)
@@ -63,7 +68,7 @@ def generate_config(kconfig_file, config_in, config_out, header_out):
         header_file.write("#endif /* _MR_CONFIG_H_ */\n")
 
         header_file.close()
-        print("Config file generate successfully")
+        log_print('success', "menuconfig %s make success" % header_out)
 
 
 def main():
