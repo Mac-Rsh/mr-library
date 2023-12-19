@@ -479,50 +479,52 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
         return MR_EINVAL;
     }
 
-    if (dev->ops->isr != MR_NULL)
+    /* Check whether the device has ISR */
+    if (dev->ops->isr == MR_NULL)
     {
-        /* Call the device ISR */
-        ssize_t ret = dev->ops->isr(dev, event, args);
-        if (ret < 0)
+        return MR_ENOTSUP;
+    }
+
+    /* Call the device ISR */
+    ssize_t ret = dev->ops->isr(dev, event, args);
+    if (ret < 0)
+    {
+        return (int)ret;
+    }
+
+    /* Handle the event */
+    switch (event & MR_ISR_MASK)
+    {
+        case MR_ISR_RD:
         {
-            return (int)ret;
+            if (dev->rd_call.call != MR_NULL)
+            {
+                return dev->rd_call.call(dev->rd_call.desc, &ret);
+            }
+            return MR_EOK;
         }
 
-        /* Handle the event */
-        switch (event & MR_ISR_MASK)
+        case MR_ISR_WR:
         {
-            case MR_ISR_RD:
+            if (ret != MR_EOK)
             {
-                if (dev->rd_call.call != MR_NULL)
-                {
-                    dev->rd_call.call(dev->rd_call.desc, &ret);
-                }
-                return MR_EOK;
-            }
-
-            case MR_ISR_WR:
-            {
-                if (ret == MR_EOK)
-                {
-#ifdef MR_USING_RDWR_CTL
-                    dev_lock_release(dev, MR_LFLAG_NONBLOCK);
-#endif /* MR_USING_RDWR_CTL */
-                    if (dev->wr_call.call != MR_NULL)
-                    {
-                        dev->wr_call.call(dev->wr_call.desc, &ret);
-                    }
-                    return MR_EOK;
-                }
                 return MR_EBUSY;
             }
-
-            default:
+#ifdef MR_USING_RDWR_CTL
+            dev_lock_release(dev, MR_LFLAG_NONBLOCK);
+#endif /* MR_USING_RDWR_CTL */
+            if (dev->wr_call.call != MR_NULL)
             {
-                return MR_ENOTSUP;
+                return dev->wr_call.call(dev->wr_call.desc, &ret);
             }
+            return MR_EOK;
+        }
+
+        default:
+        {
+            return MR_ENOTSUP;
         }
     }
-    return MR_ENOTSUP;
 }
 
 /**
