@@ -82,6 +82,16 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
 
     if (state == MR_ENABLE)
     {
+        /* Soft I2C only support host mode */
+        if (config->host_slave != MR_I2C_HOST)
+        {
+            return MR_ENOTSUP;
+        }
+
+        /* Calculate the delay time */
+        soft_i2c_bus->delay = 1000000 / config->baud_rate;
+
+        /* Configure SCL and SDA */
         if (soft_i2c_bus->desc < 0)
         {
             soft_i2c_bus->desc = mr_dev_open("pin", MR_OFLAG_RDWR);
@@ -89,25 +99,26 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
             {
                 return soft_i2c_bus->desc;
             }
-        }
 
-        /* Configure SCL pin */
-        mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->scl_pin);
-        int ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT_OD));
-        if (ret < 0)
-        {
-            return ret;
-        }
+            /* Configure SCL pin */
+            mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->scl_pin);
+            int ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT_OD));
+            if (ret < 0)
+            {
+                return ret;
+            }
 
-        /* Configure SDA pin */
-        mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->sda_pin);
-        ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT_OD));
-        if (ret < 0)
-        {
-            return ret;
+            /* Configure SDA pin */
+            mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->sda_pin);
+            ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT_OD));
+            if (ret < 0)
+            {
+                return ret;
+            }
         }
     } else
     {
+        /* Reconfigure SCL and SDA */
         if (soft_i2c_bus->desc >= 0)
         {
             /* Reconfigure SCL pin */
