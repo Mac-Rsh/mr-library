@@ -14,14 +14,33 @@ import argparse
 import subprocess
 
 
+def log_print(level, text):
+    # Log level colors
+    LEVEL_COLORS = {
+        'error': '\033[31m',
+        'success': '\033[32m',
+        'warning': '\033[33m',
+        'info': '\033[34m',
+    }
+    RESET_COLOR = '\033[0m'
+    # Log level name
+    LEVEL_NAME = {
+        'error': 'ERROR',
+        'success': 'SUCCESS',
+        'warning': 'WARNING',
+        'info': 'INFO',
+    }
+    print(LEVEL_COLORS[level] + LEVEL_NAME[level] + ': ' + text + RESET_COLOR)
+
+
 def install_package(package):
+    log_print('info', "%s package installing..." % package)
     pip.main(['install', package])
 
 
 try:
     from lxml import etree
 except ImportError:
-    print("Package not installed, installing...")
     install_package('lxml')
     from lxml import etree
 
@@ -44,7 +63,7 @@ class MDK5:
         mdk_file = []
         for root, dirs, fs in os.walk(mdk_path):
             for f in fs:
-                if f.endswith(".uvprojx"):
+                if f.endswith('.uvprojx'):
                     mdk_file = os.path.join(root, f)
                     break
             if mdk_file:
@@ -56,7 +75,7 @@ class MDK5:
             self.tree = etree.parse(mdk_file)
             self.root = self.tree.getroot()
         else:
-            print("Error: .uvprojx file not found")
+            log_print('error', "MDK build failed, '.uvprojx' file not found")
             exit(1)
 
     def add_include_path(self, path):
@@ -67,7 +86,7 @@ class MDK5:
         exist_paths = inc_path.text.split(';')
         if path not in exist_paths:
             inc_path.text += f";{path}"
-            print("Include %s" % path)
+            log_print('info', "include %s" % path)
 
     def add_include_paths(self, paths):
         for path in paths:
@@ -111,22 +130,18 @@ class MDK5:
                 file_path_node = etree.SubElement(file_node, "FilePath")
             file_name_node.text = os.path.basename(file)
             file_path_node.text = file
-            _, file_extension = os.path.splitext(file_name_node.text)
-            if file_extension == ".c":
-                file_type_node.text = "1"
-            elif file_extension == ".s" or file_extension == ".S":
-                file_type_node.text = "2"
-            elif file_extension == ".o":
-                file_type_node.text = "3"
-            elif file_extension == ".lib":
-                file_type_node.text = "4"
-            elif file_extension == ".h":
-                file_type_node.text = "5"
-            elif file_extension == ".cpp" or file_extension == ".cxx":
-                file_type_node.text = "8"
-            else:
-                file_type_node.text = "9"
-        print("Add %s" % name)
+            file_type_map = {
+                '.c': '1',
+                '.s': '2',
+                '.o': '3',
+                '.lib': '4',
+                '.h': '5',
+                '.cpp': '8'
+            }
+            file_extension = os.path.splitext(file_name_node.text)[1]
+            file_type = file_type_map.get(file_extension, '9')
+            file_type_node.text = file_type
+        log_print('info', "add %s" % name)
 
     def add_path_files(self, path):
         files = []
@@ -152,19 +167,24 @@ class MDK5:
     def use_gnu(self, enable=True):
         # Check uAC6
         ac6_node = self.tree.find('//Target/uAC6')
+        # Use GNU
         if ac6_node.text == '0':
-            # Use uGnu
+            # Get uGnu
             gnu_node = self.tree.find('//Cads/uGnu')
-            gnu_node.text = '1' if enable else '0'
+            gnu_text = '1' if enable else '0'
         else:
-            # Use gnu-c99
+            # Get gnu-c99
             gnu_node = self.tree.find('//Cads/v6Lang')
-            gnu_node.text = '4' if enable else '3'
-        print("Use GNU")
+            gnu_text = '4' if enable else '3'
+        # Set gnu
+        if gnu_node is not None:
+            if gnu_node.text != gnu_text:
+                gnu_node.text = gnu_text
+                log_print('info', "use GNU")
 
     def save(self):
         self.tree.write(self.file, pretty_print=True, encoding="utf-8", xml_declaration=True)
-        print("Build successfully")
+        log_print('success', "MDK %s build success" % self.file)
 
 
 class Eclipse:
@@ -173,7 +193,7 @@ class Eclipse:
         eclipse_file = []
         for root, dirs, fs in os.walk(eclipse_path):
             for f in fs:
-                if f.endswith(".cproject"):
+                if f.endswith('.cproject'):
                     eclipse_file = os.path.join(root, f)
                     break
             if eclipse_file:
@@ -185,7 +205,7 @@ class Eclipse:
             self.tree = etree.parse(eclipse_file)
             self.root = self.tree.getroot()
         else:
-            print("Error:.cproject file not found")
+            log_print('error', "eclipse build failed, '.cproject' not found")
             exit(1)
 
     def add_include_path(self, path):
@@ -203,7 +223,7 @@ class Eclipse:
                     list_option = etree.SubElement(inc_path_node, "listOptionValue")
                     list_option.set('builtIn', "false")
                     list_option.set('value', path)
-                    print("Include %s" % path)
+                    log_print('info', "include %s" % path)
                 break
 
     def use_auto_init(self):
@@ -218,19 +238,22 @@ class Eclipse:
                 break
         # Check ld file
         if ld_file:
+            # Use auto init
             with open(ld_file) as fr:
                 content = fr.read()
                 pos = content.find('.text :')
                 # Check pos
                 if pos == -1:
-                    print("Use auto init failed")
+                    log_print('warning', "use auto init failed, '.text' not found")
+                    return
                 # Check auto init is existed
                 if content.find('/* mr-library auto init */') == -1:
                     # Find pos offset
                     pos_offset = content[pos:].find('}')
                     # Check pos offset
                     if pos_offset == -1:
-                        print("Use auto init failed")
+                        log_print('warning', "use auto init failed, '.text' not found")
+                        return
                     pos = pos + pos_offset
                     # Use auto init
                     with open(ld_file, 'w') as fw:
@@ -246,11 +269,13 @@ class Eclipse:
                         fw.write(front + auto_init + back)
                         fw.close()
                     fr.close()
-                    print("Use auto init")
+                    log_print('info', "use auto init")
+        else:
+            log_print('warning', "use auto init failed, '.ld' not found")
 
     def save(self):
         self.tree.write(self.file, pretty_print=True, encoding="utf-8", xml_declaration=True)
-        print("Build successfully")
+        log_print('success', "eclipse %s build success" % self.file)
 
 
 class MR:
@@ -282,16 +307,17 @@ def show_license():
         with open(license_file) as fr:
             print(fr.read())
     except OSError:
-        print(
-            "This software is provided subject to the terms of the Apache License 2.0, the full text of which is not "
-            "currently available due to missing license documentation. By continuing to use the Software, you agree "
-            "to be bound by the terms of the Apache License 2.0. The full license text is available at "
-            "http://www.apache.org/licenses/LICENSE-2.0. We advise you to review the license terms in full before use"
-            "to ensure you understand and agree to be bound by all provisions contained therein.")
-        print(
-            "本软件根据Apache许可证2.0版本条款提供,由于许可证文件缺失,当前无法获取完整许可内容。继续使用本软件,"
-            "代表您同意接受并遵守Apache许可证2.0版本的所有条款。完整许可证可在http://www.apache.org/licenses/LICENSE-2.0查看。建议您在使用前全面复核许可证内容,"
-            "以确保完全理解并同意接受其中的所有规定。")
+        log_print('warning',
+                  "This software is provided subject to the terms of the Apache License 2.0, the full text of which "
+                  "is not currently available due to missing license documentation. By continuing to use the "
+                  "Software, you agree to be bound by the terms of the Apache License 2.0. The full license text is "
+                  "available at http://www.apache.org/licenses/LICENSE-2.0. We advise you to review the license terms "
+                  "in full before use to ensure you understand and agree to be bound by all provisions contained "
+                  "therein.")
+        log_print('warning',
+                  "本软件根据Apache许可证2.0版本条款提供,由于许可证文件缺失,当前无法获取完整许可内容。继续使用本软件, "
+                  "代表您同意接受并遵守Apache许可证2.0版本的所有条款。完整许可证可在http://www.apache.org/licenses/LICENSE-2.0"
+                  "查看。建议您在使用前全面复核许可证内容, 以确保完全理解并同意接受其中的所有规定。")
 
 
 def build_mdk():
@@ -322,8 +348,21 @@ def build_eclipse():
 
 
 def menuconfig():
-    subprocess.run(["menuconfig"], check=True)
-    subprocess.run(["python", "kconfig.py"], check=True)
+    try:
+        if os.name == 'nt':
+            devnull = open(os.devnull, 'w')
+        else:
+            devnull = open('/dev/null', 'w')
+        subprocess.run(["menuconfig"], stdout=devnull, stderr=devnull, check=True)
+        devnull.close()
+    except subprocess.CalledProcessError:
+        log_print('error', "menuconfig failed")
+        exit(1)
+    try:
+        subprocess.run(["python", "kconfig.py"], check=True)
+    except subprocess.CalledProcessError:
+        log_print('error', "menuconfig failed, 'kconfig.py' not found")
+        exit(1)
 
 
 if __name__ == '__main__':
