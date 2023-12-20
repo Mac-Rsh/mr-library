@@ -36,12 +36,10 @@ struct mr_dac_config
  * @brief DAC control command.
  */
 #define MR_CTL_DAC_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
-#define MR_CTL_DAC_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set configuration */
-#define MR_CTL_DAC_SET_CHANNEL_STATE    (0x01 << 8)                 /**< Set channel state */
+#define MR_CTL_DAC_SET_CHANNEL_STATE    MR_CTL_SET_CONFIG           /**< Set channel state */
 
 #define MR_CTL_DAC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
-#define MR_CTL_DAC_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
-#define MR_CTL_DAC_GET_CHANNEL_STATE    (-(0x01 << 8))              /**< Get channel state */
+#define MR_CTL_DAC_GET_CHANNEL_STATE    MR_CTL_GET_CONFIG           /**< Get channel state */
 
 /**
  * @brief DAC data type.

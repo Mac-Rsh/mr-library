@@ -121,23 +121,13 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTL_PIN_SET_CONFIG:
+        case MR_CTL_PIN_SET_MODE:
         {
             if (args != MR_NULL)
             {
                 struct mr_pin_config config = *((struct mr_pin_config *)args);
 
                 return pin_set_mode(pin, off, config.mode);
-            }
-            return MR_EINVAL;
-        }
-        case MR_CTL_PIN_SET_MODE:
-        {
-            if (args != MR_NULL)
-            {
-                int mode = *((int *)args);
-
-                return pin_set_mode(pin, off, mode);
             }
             return MR_EINVAL;
         }

@@ -47,16 +47,15 @@ extern "C" {
  */
 struct mr_pin_config
 {
-    uint32_t mode: 1;                                               /**< Mode */
-    uint32_t reserved: 31;                                          /**< Reserved */
+    uint32_t mode: 4;                                               /**< Mode */
+    uint32_t reserved: 28;                                          /**< Reserved */
 };
 
 /**
  * @brief PIN control command.
  */
 #define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET           /**< Set pin number */
-#define MR_CTL_PIN_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set pin configuration */
-#define MR_CTL_PIN_SET_MODE             (0x01 << 8)                 /**< Set pin mode */
+#define MR_CTL_PIN_SET_MODE             MR_CTL_SET_CONFIG           /**< Set pin mode */
 #define MR_CTL_PIN_SET_EXTI_CALL        MR_CTL_SET_RD_CALL          /**< Set pin exti callback */
 
 #define MR_CTL_PIN_GET_NUMBER           MR_CTL_GET_OFFSET           /**< Get pin number */
