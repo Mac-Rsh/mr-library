@@ -29,6 +29,13 @@ menu "Device configure"
 
     menu "Logging configure"
         depends on MR_USING_LOG
+
+        config MR_USING_LOG_COLOR
+            bool "Use color log"
+            default y
+            help
+                "Use this option allows for the use of color log."
+
         config MR_USING_LOG_ERROR
             bool "Use error log"
             default y
@@ -52,6 +59,12 @@ menu "Device configure"
             default y
             help
                 "Use this option allows for the use of debug log."
+
+        config MR_USING_LOG_SUCCESS
+            bool "Use success log"
+            default y
+            help
+                "Use this option allows for the use of success log."
     endmenu
 
 	config MR_CFG_NAME_MAX

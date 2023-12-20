@@ -40,42 +40,50 @@ extern "C" {
 #endif /* MR_USING_ASSERT */
 
 /**
- * @brief This macro function logs a message.
- *
- * @param fmt The format of the message.
- * @param ... The arguments of the format.
+ * @brief Log message with color.
  */
-#define mr_log(level, fmt, ...)         \
-    do{                                 \
-        mr_printf("log %s > "           \
-                  fmt"\r\n",            \
-                  level,                \
-                  ##__VA_ARGS__);       \
-    } while(0)
+#if defined(MR_USING_LOG_COLOR) && defined(MR_USING_LOG)
+#define MR_LOG_COLOR_RED(str, fmt)      "\033[31m"str, fmt"\033[0m"
+#define MR_LOG_COLOR_YELLOW(str, fmt)   "\033[33m"str, fmt"\033[0m"
+#define MR_LOG_COLOR_BLUE(str, fmt)     "\033[34m"str, fmt"\033[0m"
+#define MR_LOG_COLOR_PURPLE(str, fmt)   "\033[35m"str, fmt"\033[0m"
+#define MR_LOG_COLOR_GREEN(str, fmt)    "\033[32m"str, fmt"\033[0m"
+#else
+#define MR_LOG_COLOR_RED(str, fmt)      str, fmt
+#define MR_LOG_COLOR_YELLOW(str, fmt)   str, fmt
+#define MR_LOG_COLOR_BLUE(str, fmt)     str, fmt
+#define MR_LOG_COLOR_PURPLE(str, fmt)   str, fmt
+#define MR_LOG_COLOR_GREEN(str, fmt)    str, fmt
+#endif /* MR_USING_LOG_COLOR */
 
 /**
  * @brief This macro function logs a error-warning-debug-info message.
  */
-#ifdef MR_USING_LOG_ERROR
-#define mr_log_error(fmt, ...)          mr_log("error", fmt, ##__VA_ARGS__)
+#if defined(MR_USING_LOG_ERROR) && defined(MR_USING_LOG)
+#define mr_log_error(fmt, ...)          mr_printf("%s: %s\r\n", MR_LOG_COLOR_RED("ERROR", fmt), ##__VA_ARGS__)
 #else
 #define mr_log_error(fmt, ...)
-#endif /* MR_USING_LOG_ERROR */
-#ifdef MR_USING_LOG_WARN
-#define mr_log_warn(fmt, ...)           mr_log("warn ", fmt, ##__VA_ARGS__)
+#endif /* defined(MR_USING_LOG_ERROR) && defined(MR_USING_LOG) */
+#if defined(MR_USING_LOG_WARN) && defined(MR_USING_LOG)
+#define mr_log_warn(fmt, ...)           mr_printf("%s: %s\r\n", MR_LOG_COLOR_YELLOW("WARNING", fmt), ##__VA_ARGS__)
 #else
 #define mr_log_warn(fmt, ...)
-#endif /* MR_USING_LOG_WARN */
-#ifdef MR_USING_LOG_INFO
-#define mr_log_info(fmt, ...)           mr_log("info ", fmt, ##__VA_ARGS__)
+#endif /* defined(MR_USING_LOG_WARN) && defined(MR_USING_LOG) */
+#if defined(MR_USING_LOG_INFO) && defined(MR_USING_LOG)
+#define mr_log_info(fmt, ...)           mr_printf("%s: %s\r\n", MR_LOG_COLOR_BLUE("INFO", fmt), ##__VA_ARGS__)
 #else
 #define mr_log_info(fmt, ...)
-#endif /* MR_USING_LOG_INFO */
-#ifdef MR_USING_LOG_DEBUG
-#define mr_log_debug(fmt, ...)          mr_log("debug", fmt, ##__VA_ARGS__)
+#endif /* defined(MR_USING_LOG_INFO) && defined(MR_USING_LOG) */
+#if defined(MR_USING_LOG_DEBUG) && defined(MR_USING_LOG)
+#define mr_log_debug(fmt, ...)          mr_printf("%s: %s\r\n", MR_LOG_COLOR_PURPLE("DEBUG", fmt), ##__VA_ARGS__)
 #else
 #define mr_log_debug(fmt, ...)
-#endif /* MR_USING_LOG_DEBUG */
+#endif /* defined(MR_USING_LOG_DEBUG) && defined(MR_USING_LOG) */
+#if defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG)
+#define mr_log_success(fmt, ...)        mr_printf("%s: %s\r\n", MR_LOG_COLOR_GREEN("SUCCESS", fmt), ##__VA_ARGS__)
+#else
+#define mr_log_success(fmt, ...)
+#endif /* defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG) */
 
 /**
  * @brief This macro function gets its structure from its member.
