@@ -186,7 +186,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         }
         case MR_CTL_SERIAL_GET_RD_DATASZ:
         {
-            if (args!= MR_NULL)
+            if (args != MR_NULL)
             {
                 size_t *datasz = (size_t *)args;
 
@@ -197,7 +197,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         }
         case MR_CTL_SERIAL_GET_WR_DATASZ:
         {
-            if (args!= MR_NULL)
+            if (args != MR_NULL)
             {
                 size_t *datasz = (size_t *)args;
 

@@ -104,7 +104,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTL_ADC_SET_CONFIG:
+        case MR_CTL_ADC_SET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -114,18 +114,8 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_ADC_SET_CHANNEL_STATE:
-        {
-            if (args != MR_NULL)
-            {
-                int state = *((int *)args);
 
-                return adc_channel_set_state(adc, off, state);
-            }
-            return MR_EINVAL;
-        }
-
-        case MR_CTL_ADC_GET_CONFIG:
+        case MR_CTL_ADC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)
             {
@@ -139,22 +129,6 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 config->channel_state = ret;
                 return MR_EOK;
             }
-        }
-        case MR_CTL_ADC_GET_CHANNEL_STATE:
-        {
-            if (args != MR_NULL)
-            {
-                int *state = (int *)args;
-
-                int ret = adc_channel_get_state(adc, off);
-                if (ret < 0)
-                {
-                    return ret;
-                }
-                *state = ret;
-                return MR_EOK;
-            }
-            return MR_EINVAL;
         }
 
         default:

@@ -43,16 +43,16 @@ struct mr_timer_config
 /**
  * @brief Timer control command.
  */
-#define MR_CTL_TIMER_SET_CONFIG         MR_CTL_SET_CONFIG           /**< Set configuration */
+#define MR_CTL_TIMER_SET_MODE           MR_CTL_SET_CONFIG           /**< Set timer mode */
 #define MR_CTL_TIMER_SET_TIMEOUT_CALL   MR_CTL_SET_RD_CALL          /**< Set timeout callback */
 
-#define MR_CTL_TIMER_GET_CONFIG         MR_CTL_GET_CONFIG           /**< Get configuration */
+#define MR_CTL_TIMER_GET_MODE           MR_CTL_GET_CONFIG           /**< Get timer mode */
 #define MR_CTL_TIMER_GET_TIMEOUT_CALL   MR_CTL_GET_RD_CALL          /**< Get timeout callback */
 
 /**
  * @brief Timer data type.
  */
-typedef uint8_t mr_timer_data_t;                                    /**< Timer read/write data type */
+typedef uint32_t mr_timer_data_t;                                   /**< Timer read/write data type */
 
 /**
  * @brief Timer ISR events.

@@ -48,9 +48,9 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_TIMER_SET_CONFIG`：设置TIMER设备配置。
+    - `MR_CTL_TIMER_SET_MODE`：设置TIMER设备模式。
     - `MR_CTL_TIMER_SET_TIMEOUT_CALL`：设置超时回调函数。
-    - `MR_CTL_TIMER_GET_CONFIG`：获取TIMER设备配置。
+    - `MR_CTL_TIMER_GET_MODE`：获取TIMER设备模式。
     - `MR_CTL_TIMER_GET_TIMEOUT_CALL`：获取超时回调函数。
 
 ### 设置/获取TIMER设备配置
@@ -60,13 +60,15 @@ TIMER设备配置：
 - `mode`：周期或单次模式。
 
 ```c
-/* 设置默认配置 */
-struct mr_timer_config config = MR_TIMER_CONFIG_DEFAULT;
+/* 定义TIMER设备模式 */
+#define TIMER_MODE                      MR_TIMER_MODE_ONESHOT
 
-/* 设置TIMER设备配置 */
-mr_dev_ioctl(ds, MR_CTL_TIMER_SET_CONFIG, &config);
-/* 获取TIMER设备配置 */
-mr_dev_ioctl(ds, MR_CTL_TIMER_GET_CONFIG, &config);
+/* 设置TIMER设备模式 */
+mr_dev_ioctl(ds, MR_CTL_TIMER_SET_MODE, mr_make_local(int, TIMER_MODE));
+
+/* 获取TIMER设备模式 */
+int mode;
+mr_dev_ioctl(ds, MR_CTL_TIMER_GET_MODE, &mode);
 ```
 
 注：如未手动配置，默认配置为：
