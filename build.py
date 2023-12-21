@@ -86,7 +86,7 @@ class MDK5:
         exist_paths = inc_path.text.split(';')
         if path not in exist_paths:
             inc_path.text += f";{path}"
-            log_print('info', "include %s" % path)
+        log_print('info', "include %s" % path)
 
     def add_include_paths(self, paths):
         for path in paths:
@@ -154,10 +154,11 @@ class MDK5:
         # Get c files
         files = []
         for root, dirs, fs in os.walk(path):
-            for f in fs:
-                if f.endswith(".c") or f.endswith(".cpp") or f.endswith(".cxx"):
-                    file = os.path.relpath(os.path.join(root, f), self.path)
-                    files.append(file)
+            if root == path:
+                for f in fs:
+                    if f.endswith(".c") or f.endswith(".cpp") or f.endswith(".cxx"):
+                        file = os.path.relpath(os.path.join(root, f), self.path)
+                        files.append(file)
         # Fix name
         name = os.path.relpath(path, self.path).replace('\\', '/').replace("../", "")
         # Add group
@@ -180,7 +181,7 @@ class MDK5:
         if gnu_node is not None:
             if gnu_node.text != gnu_text:
                 gnu_node.text = gnu_text
-                log_print('info', "use GNU")
+            log_print('info', "use GNU")
 
     def save(self):
         self.tree.write(self.file, pretty_print=True, encoding="utf-8", xml_declaration=True)
@@ -372,8 +373,9 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--menuconfig", action="store_true", help="Run menuconfig")
-    parser.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
-    parser.add_argument("-ecl", "--eclipse", action="store_true", help="Build with Eclipse")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
+    group.add_argument("-ecl", "--eclipse", action="store_true", help="Build with Eclipse")
     parser.add_argument("-lic", "--license", action="store_true", help="Show license")
     args = parser.parse_args()
 
