@@ -59,13 +59,8 @@ static int dev_register_child(struct mr_dev *parent, struct mr_dev *child, const
     /* Insert the device into the child list */
     child->magic = MR_MAGIC_NUMBER;
     strncpy(child->name, name, MR_CFG_NAME_MAX);
+    child->parent = parent;
     mr_list_insert_before(&parent->clist, &child->list);
-
-    /* The virtual root device is not used as the actual parent device */
-    if (dev_is_root(parent) == MR_FALSE)
-    {
-        child->parent = parent;
-    }
 
     /* Enable interrupt */
     mr_interrupt_enable();
@@ -153,8 +148,8 @@ static struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 #ifdef MR_USING_RDWR_CTL
 static int dev_lock_take(struct mr_dev *dev, int take, int set)
 {
-    /* Continue iterating */
-    if (dev->parent != MR_NULL)
+    /* Continue iterating until reach the root device */
+    if (dev_is_root(dev->parent) != MR_TRUE)
     {
         int ret = dev_lock_take(dev->parent, take, set);
         if (ret != MR_EOK)
@@ -176,8 +171,8 @@ static int dev_lock_take(struct mr_dev *dev, int take, int set)
 
 static void dev_lock_release(struct mr_dev *dev, int release)
 {
-    /* Continue iterating */
-    if (dev->parent != MR_NULL)
+    /* Continue iterating until reach the root device */
+    if (dev_is_root(dev->parent) != MR_TRUE)
     {
         dev_lock_release(dev->parent, release);
     }
@@ -211,8 +206,8 @@ static int dev_open(struct mr_dev *dev, int oflags)
     /* Check whether the device is opened */
     if (dev->ref_count == 0)
     {
-        /* Continue iterating */
-        if (dev->parent != NULL)
+        /* Continue iterating until reach the root device */
+        if (dev_is_root(dev->parent) != MR_TRUE)
         {
             int ret = dev_open(dev->parent, oflags);
             if (ret != MR_EOK)
@@ -251,8 +246,8 @@ static int dev_close(struct mr_dev *dev)
     /* Check whether the device needs to be closed */
     if (dev->ref_count == 0)
     {
-        /* Continue iterating */
-        if (dev->parent != NULL)
+        /* Continue iterating until reach the root device */
+        if (dev_is_root(dev->parent) != MR_TRUE)
         {
             int ret = dev_close(dev->parent);
             if (ret != MR_EOK)
@@ -547,22 +542,18 @@ int mr_dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz)
     if (dev->parent != MR_NULL)
     {
         ret = mr_dev_get_path(dev->parent, buf, bufsz);
-    } else
-    {
-        ret = snprintf(buf, bufsz, MR_ROOT_DEV_NAME);
+        if (ret < 0)
+        {
+            return ret;
+        }
     }
 
-    /* Check memory */
-    if (ret < 0)
+    /* Check whether the buffer is enough */
+    if ((bufsz - ret) <= (strlen(dev->name) + 1))
     {
         return MR_ENOMEM;
     }
-
-    /* If the space is sufficient, continue to obtain the path */
-    if ((bufsz - ret) > strlen(dev->name))
-    {
-        ret += snprintf(buf + ret, bufsz - ret, "/%s", dev->name);
-    }
+    ret += snprintf(buf + ret, bufsz - ret, "/%s", dev->name);
     return ret;
 }
 
