@@ -168,6 +168,12 @@ menu "Device configure"
 		help
 			"Use this option allows for the use of Pin devices."
 
+    config MR_USING_PWM
+        bool "Use PWM device"
+        default n
+        help
+            "Use this option allows for the use of PWM devices."
+
 	config MR_USING_SERIAL
 		bool "Use Serial device"
 		default n

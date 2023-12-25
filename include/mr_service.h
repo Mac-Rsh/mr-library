@@ -16,6 +16,157 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
+ * @brief This macro function concatenates two strings.
+ *
+ * @param a The first string.
+ * @param b The second string.
+ *
+ * @return The concatenated string.
+ */
+#define MR_CONCAT(a, b)                 a##b
+
+/**
+ * @brief This macro function converts an integer to a string.
+ *
+ * @param a The integer to convert.
+ *
+ * @return The string representation of the integer.
+ */
+#define MR_STR(a)                       #a
+
+/**
+ * @brief This macro function gets its structure from its member.
+ *
+ * @param pointer The pointer to the structure.
+ * @param type The type of the structure.
+ * @param member The member of the structure.
+ *
+ * @return A pointer to the structure.
+ */
+#define mr_container_of(pointer, type, member) \
+    ((type *)((char *)(pointer) - (unsigned long)(&((type *)0)->member)))
+
+/**
+ * @brief This macro function aligns the size up to a multiple of 4.
+ *
+ * @param size The size to align.
+ */
+#define mr_align4_up(size)              (((size) + 3) & (~3))
+
+/**
+ * @brief This macro function aligns a size down to a multiple of 4.
+ *
+ * @param size The size to align.
+ */
+#define mr_align4_down(size)            ((size) & (~3))
+
+/**
+ * @brief This macro function checks if a value is set.
+ *
+ * @param value The value to check.
+ * @param mask The mask to check.
+ */
+#define mr_bits_is_set(value, mask)     (((value) & (mask)) == (mask))
+
+/**
+ * @brief This macro function sets a value.
+ *
+ * @param value The value to set.
+ * @param mask The mask to set.
+ */
+#define mr_bits_set(value, mask)        ((value) |= (mask))
+
+/**
+ * @brief This macro function clears a value.
+ *
+ * @param value The value to clear.
+ * @param mask The mask to clear.
+ */
+#define mr_bits_clr(value, mask)        ((value) &= ~(mask))
+
+/**
+ * @brief This macro function creates a local variable.
+ *
+ * @param type The type of the variable.
+ * @param value The value of the variable.
+ *
+ * @return A pointer to the variable.
+ *
+ * @note The variable is local, please use it carefully.
+ */
+#define mr_make_local(type, ...)        (&((type){__VA_ARGS__}))
+
+/**
+ * @brief This macro function gets the number of elements in an array.
+ *
+ * @param array The array.
+ *
+ * @return The number of elements in the array.
+ */
+#define mr_array_num(array)             (sizeof(array)/sizeof((array)[0]))
+
+/**
+ * @brief This macro function gets the maximum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The maximum of the two values.
+ */
+#define mr_max(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a > _b ? _a : _b; })
+
+/**
+ * @brief This macro function gets the minimum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The minimum of the two values.
+ */
+#define mr_min(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a < _b ? _a : _b; })
+
+/**
+ * @brief This macro function ensures that a value is within a specified range.
+ *
+ * @param value The value.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ *
+ * @return The value within the specified range.
+ */
+#define mr_bound(value, min, max) \
+    ({__typeof__(value) _value = (value); __typeof__(min) _min = (min); __typeof__(max) _max = (max); \
+    (_value) < (_min) ? (_min) : ((_value) > (_max) ? (_max) : (_value));})
+
+/**
+ * @brief This macro function ensures that a value is within a specified range.
+ *
+ * @param value The value.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ *
+ * @return The value within the specified range.
+ */
+#define mr_limit(value, min, max)       mr_bound(value, min, max)
+
+/**
+ * @brief This macro function swaps two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ */
+#define mr_swap(a, b)                   do { typeof (a) temp = (a); (a) = (b); (b) = temp; } while (0)
+
+/**
+ * @brief This macro function converts a value to a boolean.
+ *
+ * @param value The value to convert.
+ *
+ * @return The boolean value.
+ */
+#define mr_to_bool(value)               (!!(value))
+
+/**
  * @brief This macro function asserts a condition.
  *
  * @param ex The condition to assert.
@@ -86,153 +237,16 @@ extern "C" {
 #endif /* defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG) */
 
 /**
- * @brief This macro function gets its structure from its member.
- *
- * @param pointer The pointer to the structure.
- * @param type The type of the structure.
- * @param member The member of the structure.
- *
- * @return A pointer to the structure.
- */
-#define mr_container_of(pointer, type, member) \
-    ((type *)((char *)(pointer) - (unsigned long)(&((type *)0)->member)))
-
-/**
- * @brief This macro function checks if a value is set.
- *
- * @param value The value to check.
- * @param mask The mask to check.
- */
-#define mr_bits_is_set(value, mask)     (((value) & (mask)) == (mask))
-
-/**
- * @brief This macro function sets a value.
- *
- * @param value The value to set.
- * @param mask The mask to set.
- */
-#define mr_bits_set(value, mask)        ((value) |= (mask))
-
-/**
- * @brief This macro function clears a value.
- *
- * @param value The value to clear.
- * @param mask The mask to clear.
- */
-#define mr_bits_clr(value, mask)        ((value) &= ~(mask))
-
-/**
- * @brief This macro function gets the number of elements in an array.
- *
- * @param array The array.
- *
- * @return The number of elements in the array.
- */
-#define mr_array_num(array)             (sizeof(array)/sizeof((array)[0]))
-
-/**
- * @brief This macro function creates a local variable.
- *
- * @param type The type of the variable.
- * @param value The value of the variable.
- *
- * @return A pointer to the variable.
- */
-#define mr_make_local(type, ...)        (&((type){__VA_ARGS__}))
-
-/**
- * @brief This macro function gets the maximum of two values.
- *
- * @param a The first value.
- * @param b The second value.
- *
- * @return The maximum of the two values.
- */
-#define mr_max(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a > _b ? _a : _b; })
-
-/**
- * @brief This macro function gets the minimum of two values.
- *
- * @param a The first value.
- * @param b The second value.
- *
- * @return The minimum of the two values.
- */
-#define mr_min(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a < _b ? _a : _b; })
-
-/**
- * @brief This macro function ensures that a value is within a specified range.
- *
- * @param value The value.
- * @param min The minimum value.
- * @param max The maximum value.
- *
- * @return The value within the specified range.
- */
-#define mr_bound(value, min, max) \
-    ({__typeof__(value) _value = (value); __typeof__(min) _min = (min); __typeof__(max) _max = (max); \
-    (_value) < (_min) ? (_min) : ((_value) > (_max) ? (_max) : (_value));})
-
-/**
- * @brief This macro function ensures that a value is within a specified range.
- *
- * @param value The value.
- * @param min The minimum value.
- * @param max The maximum value.
- *
- * @return The value within the specified range.
- */
-#define mr_limit(value, min, max)       mr_bound(value, min, max)
-
-/**
- * @brief This macro function swaps two values.
- *
- * @param a The first value.
- * @param b The second value.
- */
-#define mr_swap(a, b)                   do { typeof (a) temp = a; a = b; b = temp; } while (0)
-
-/**
- * @brief This macro function aligns the size up to a multiple of 4.
- *
- * @param size The size to align.
- */
-#define mr_align4_up(size)              (((size) + 3) & (~3))
-
-/**
- * @brief This macro function aligns a size down to a multiple of 4.
- *
- * @param size The size to align.
- */
-#define mr_align4_down(size)            ((size) & (~3))
-
-/**
- * @brief This macro function concatenates two strings.
- *
- * @param a The first string.
- * @param b The second string.
- *
- * @return The concatenated string.
- */
-#define MR_CONCAT(a, b)                 a##b
-
-/**
- * @brief This macro function converts an integer to a string.
- *
- * @param a The integer to convert.
- *
- * @return The string representation of the integer.
- */
-#define MR_STR(a)                       #a
-
-/**
- * @brief This macro function checks if a list is empty.
+ * @brief This function checks if a list is empty.
  *
  * @param list The list to check.
  *
  * @return True if the list is empty, mr_false otherwise.
  */
-#define mr_list_is_empty(list)          (((list)->next) == (list))
+MR_INLINE int mr_list_is_empty(struct mr_list *list)
+{
+    return list->next == list;
+}
 
 /**
 * @brief This function initialize a double list.

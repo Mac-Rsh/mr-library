@@ -35,7 +35,7 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
     }
 
     /* Calculate the Least error reload */
-    for (per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 0; per--)
+    for (per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 1; per--)
     {
         reload = timeout / per;
 
@@ -59,7 +59,7 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
 
     /* Optimize the prescaler and period */
     uint32_t divisor = 0;
-    for (divisor = 2; divisor <= 9; divisor++)
+    for (divisor = 9; divisor > 1; divisor--)
     {
         /* Check if reload value can be divided by current divisor */
         while ((reload_best % divisor) == 0)

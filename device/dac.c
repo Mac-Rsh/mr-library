@@ -110,10 +110,11 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             {
                 struct mr_dac_config config = *((struct mr_dac_config *)args);
 
-                return dac_channel_set_state(dac, off, config.channel_state);
+                return dac_channel_set_state(dac, off, config.state);
             }
             return MR_EINVAL;
         }
+
         case MR_CTL_DAC_GET_CHANNEL_STATE:
         {
             if (args != MR_NULL)

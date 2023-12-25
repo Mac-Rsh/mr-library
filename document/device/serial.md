@@ -106,7 +106,7 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_CONFIG, &config);
 - 停止位数：`MR_SERIAL_STOP_BITS_1`
 - 校验位：`MR_SERIAL_PARITY_NONE`
 - 数据传输顺序：`MR_SERIAL_BIT_ORDER_LSB`
-- 极性反转：`MR_SERIAL_NRZ_NORMAL`
+- 极性反转：`MR_SERIAL_POLARITY_NORMAL`
 
 ### 设置/获取读/写缓冲区大小
 

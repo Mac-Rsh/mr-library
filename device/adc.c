@@ -110,7 +110,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             {
                 struct mr_adc_config config = *((struct mr_adc_config *)args);
 
-                return adc_channel_set_state(adc, off, config.channel_state);
+                return adc_channel_set_state(adc, off, config.state);
             }
             return MR_EINVAL;
         }
@@ -126,7 +126,7 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 {
                     return ret;
                 }
-                config->channel_state = ret;
+                config->state = ret;
                 return MR_EOK;
             }
         }
