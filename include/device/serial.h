@@ -49,8 +49,8 @@ extern "C" {
 /**
  * @brief SERIAL polarity.
  */
-#define MR_SERIAL_NRZ_NORMAL            (0)                         /**< Normal polarity */
-#define MR_SERIAL_NRZ_INVERTED          (1)                         /**< Inverted polarity */
+#define MR_SERIAL_POLARITY_NORMAL       (0)                         /**< Normal polarity */
+#define MR_SERIAL_POLARITY_INVERTED     (1)                         /**< Inverted polarity */
 
 /**
  * @brief SERIAL default configuration.
@@ -62,7 +62,7 @@ extern "C" {
     MR_SERIAL_STOP_BITS_1,              \
     MR_SERIAL_PARITY_NONE,              \
     MR_SERIAL_BIT_ORDER_LSB,            \
-    MR_SERIAL_NRZ_NORMAL,               \
+    MR_SERIAL_POLARITY_NORMAL,          \
 }
 
 /**
@@ -75,7 +75,7 @@ struct mr_serial_config
     uint32_t stop_bits: 3;                                          /**< Stop bits */
     uint32_t parity: 2;                                             /**< Parity */
     uint32_t bit_order: 1;                                          /**< Bit order */
-    uint32_t invert: 1;                                             /**< Invert */
+    uint32_t polarity: 1;                                           /**< Polarity */
     uint32_t reserved: 21;
 };
 

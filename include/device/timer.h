@@ -36,7 +36,7 @@ extern "C" {
  */
 struct mr_timer_config
 {
-    uint32_t mode: 1;                                               /* Mode */
+    uint32_t mode: 1;                                               /**< Mode */
     uint32_t reserved: 31;
 };
 
@@ -64,9 +64,9 @@ typedef uint32_t mr_timer_data_t;                                   /**< Timer r
  */
 struct mr_timer_info
 {
-    uint32_t clk;                                                   /* Clock(MHz) */
-    uint32_t prescaler_max;                                         /* Prescaler max */
-    uint32_t period_max;                                            /* Period max */
+    uint32_t clk;                                                   /**< Clock(MHz) */
+    uint32_t prescaler_max;                                         /**< Prescaler max */
+    uint32_t period_max;                                            /**< Period max */
 };
 
 /**
@@ -74,16 +74,16 @@ struct mr_timer_info
  */
 struct mr_timer
 {
-    struct mr_dev dev;                                              /* Device */
+    struct mr_dev dev;                                              /**< Device */
 
-    struct mr_timer_config config;                                  /* Config */
-    uint32_t reload;                                                /* Reload */
-    uint32_t count;                                                 /* Count */
-    uint32_t timeout;                                               /* Timeout */
-    uint32_t period;                                                /* Period */
-    uint32_t prescaler;                                             /* Prescaler */
+    struct mr_timer_config config;                                  /**< Config */
+    uint32_t reload;                                                /**< Reload */
+    uint32_t count;                                                 /**< Count */
+    uint32_t timeout;                                               /**< Timeout */
+    uint32_t prescaler;                                             /**< Prescaler */
+    uint32_t period;                                                /**< Period */
 
-    struct mr_timer_info *info;                                     /* Information */
+    struct mr_timer_info *info;                                     /**< Information */
 };
 
 /**

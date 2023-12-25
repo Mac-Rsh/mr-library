@@ -41,8 +41,8 @@ extern "C" {
 /**
  * @brief SPI bit order.
  */
-#define MR_SPI_BIT_ORDER_MSB            (0)                         /**< MSB first */
-#define MR_SPI_BIT_ORDER_LSB            (1)                         /**< LSB first */
+#define MR_SPI_BIT_ORDER_LSB            (0)                         /**< LSB first */
+#define MR_SPI_BIT_ORDER_MSB            (1)                         /**< MSB first */
 
 /**
  * @brief SPI register bits.

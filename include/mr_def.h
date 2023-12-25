@@ -164,6 +164,7 @@ enum mr_drv_type
     Mr_Drv_Type_Serial,                                             /**< SERIAL */
     Mr_Drv_Type_SPI,                                                /**< SPI */
     Mr_Drv_Type_Timer,                                              /**< Timer */
+    Mr_Drv_Type_PWM,                                                /**< PWM */
 };
 
 /**
@@ -190,6 +191,7 @@ enum mr_dev_type
     Mr_Dev_Type_Serial = Mr_Drv_Type_Serial,                        /**< SERIAL */
     Mr_Dev_Type_SPI = Mr_Drv_Type_SPI,                              /**< SPI */
     Mr_Dev_Type_Timer = Mr_Drv_Type_Timer,                          /**< Timer */
+    Mr_Dev_Type_PWM = Mr_Drv_Type_PWM,                              /**< PWM */
     Mr_Dev_Type_Sensor,                                             /**< Sensor */
 };
 

@@ -10,12 +10,15 @@
 
 #define MR_ROOT_DEV_NAME "dev"
 
-static struct mr_dev root_dev = {MR_MAGIC_NUMBER,
-                                 MR_ROOT_DEV_NAME,
-                                 Mr_Dev_Type_Root,
-                                 MR_NULL,
-                                 {&root_dev.list, &root_dev.list},
-                                 {&root_dev.clist, &root_dev.clist}};
+static struct mr_dev root_dev =
+    {
+        MR_MAGIC_NUMBER,
+        MR_ROOT_DEV_NAME,
+        Mr_Dev_Type_Root,
+        MR_NULL,
+        {&root_dev.list, &root_dev.list},
+        {&root_dev.clist, &root_dev.clist}
+    };
 
 static int dev_is_root(struct mr_dev *dev)
 {

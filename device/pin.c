@@ -109,7 +109,7 @@ static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t
 
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
-        ops->write(pin, off, (int)*wr_buf);
+        ops->write(pin, off, *wr_buf);
         wr_buf++;
     }
     return wr_size;

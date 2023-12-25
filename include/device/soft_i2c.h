@@ -24,12 +24,12 @@ extern "C" {
 */
 struct mr_soft_i2c_bus
 {
-    struct mr_i2c_bus i2c_bus;                                      /* I2C-bus device */
+    struct mr_i2c_bus i2c_bus;                                      /**< I2C-bus device */
 
-    uint32_t delay;                                                 /* Speed delay */
-    int scl_pin;                                                    /* SCL pin */
-    int sda_pin;                                                    /* SDA pin */
-    int desc;                                                       /* SCL-SDA descriptor */
+    uint32_t delay;                                                 /**< Speed delay */
+    int scl_pin;                                                    /**< SCL pin */
+    int sda_pin;                                                    /**< SDA pin */
+    int desc;                                                       /**< SCL-SDA descriptor */
 };
 
 /**

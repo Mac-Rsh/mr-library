@@ -28,7 +28,7 @@ extern "C" {
  */
 struct mr_adc_config
 {
-    uint32_t channel_state: 1;                                      /**< Channel state */
+    uint32_t state: 1;                                              /**< Channel state */
     uint32_t reserved: 31;                                          /**< Reserved */
 };
 
