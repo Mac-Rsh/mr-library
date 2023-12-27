@@ -72,14 +72,14 @@ menu "Device configure"
 		default 8
 		range 4 1024
 		help
-			"Maximum length of device name"
+			"Maximum length of device name."
 
 	config MR_CFG_DESC_MAX
 		int "Descriptors max number"
 		default 64
 		range 16 1024
 		help
-			"Maximum number of descriptors"
+			"Maximum number of descriptors."
 
 	config MR_USING_RDWR_CTL
 		bool "Use read/write control"
@@ -223,3 +223,5 @@ menu "Device configure"
 endmenu
 
 source "driver/Kconfig"
+
+source "components/Kconfig"
