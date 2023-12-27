@@ -1,5 +1,7 @@
 # ADC设备
 
+[English](adc_EN.md)
+
 <!-- TOC -->
 * [ADC设备](#adc设备)
   * [打开ADC设备](#打开adc设备)

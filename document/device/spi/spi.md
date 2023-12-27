@@ -1,5 +1,7 @@
 # SPI设备
 
+[English](spi_EN.md)
+
 <!-- TOC -->
 * [SPI设备](#spi设备)
   * [注册SPI设备](#注册spi设备)

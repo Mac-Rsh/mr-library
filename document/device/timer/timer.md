@@ -1,5 +1,19 @@
 # TIMER设备
 
+[English](timer_EN.md)
+
+<!-- TOC -->
+* [TIMER设备](#timer设备)
+  * [打开TIMER设备](#打开timer设备)
+  * [关闭TIMER设备](#关闭timer设备)
+  * [控制TIMER设备](#控制timer设备)
+    * [设置/获取TIMER设备配置](#设置获取timer设备配置)
+    * [设置/获取超时回调函数](#设置获取超时回调函数)
+  * [读取TIMER设备运行时间](#读取timer设备运行时间)
+  * [写入TIMER设备定时时间](#写入timer设备定时时间)
+  * [使用示例](#使用示例)
+<!-- TOC -->
+
 ## 打开TIMER设备
 
 ```c
