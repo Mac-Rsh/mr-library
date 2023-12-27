@@ -14,8 +14,8 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
 {
     uint32_t clk = timer->info->clk, psc_max = timer->info->prescaler_max, per_max = timer->info->period_max;
     uint32_t psc_best = 0, per_best = 0, reload_best = 0;
-    uint32_t psc = 0, per = 0, reload = 0;
-    int error = 0, error_min = INT32_MAX;
+    uint32_t psc = 0;
+    int error_min = INT32_MAX;
 
     /* Check the clock */
     if (clk == 0)
@@ -35,12 +35,12 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
     }
 
     /* Calculate the Least error reload */
-    for (per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 1; per--)
+    for (uint32_t per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 1; per--)
     {
-        reload = timeout / per;
+        uint32_t reload = timeout / per;
 
         /* Calculate the error */
-        error = (int)timeout - (int)(reload * per);
+        int error = (int)timeout - (int)(reload * per);
         if (error == 0)
         {
             reload_best = reload;
@@ -283,6 +283,7 @@ int mr_timer_register(struct mr_timer *timer, const char *name, struct mr_drv *d
     timer->prescaler = 0;
     timer->info = info;
 
+    /* Register the timer */
     return mr_dev_register(&timer->dev, name, Mr_Dev_Type_Timer, MR_SFLAG_RDWR, &ops, drv);
 }
 

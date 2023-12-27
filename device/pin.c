@@ -35,9 +35,11 @@ static int pin_set_mode(struct mr_pin *pin, int number, int mode)
         return ret;
     }
 
+    /* Disable interrupt */
+    mr_interrupt_disable();
+
     /* If the irq exists, update it */
-    struct mr_list *list = MR_NULL;
-    for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
+    for (struct mr_list *list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
     {
         struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
         if (irq->number == number)
@@ -53,6 +55,9 @@ static int pin_set_mode(struct mr_pin *pin, int number, int mode)
                 irq->desc = pin->dev.rd_call.desc;
                 irq->call = pin->dev.rd_call.call;
             }
+
+            /* Enable interrupt */
+            mr_interrupt_enable();
             return MR_EOK;
         }
     }
@@ -70,6 +75,9 @@ static int pin_set_mode(struct mr_pin *pin, int number, int mode)
             mr_list_insert_before(&pin->irq_list, &irq->list);
         }
     }
+
+    /* Enable interrupt */
+    mr_interrupt_enable();
     return MR_EOK;
 }
 

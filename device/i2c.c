@@ -18,6 +18,7 @@ static int mr_i2c_bus_open(struct mr_dev *dev)
     /* Reset the hold */
     i2c_bus->hold = MR_FALSE;
 
+    /* Default address is 0x00 and 7-bit */
     return ops->configure(i2c_bus, &i2c_bus->config, 0x00, MR_I2C_ADDR_BITS_7);
 }
 
@@ -32,12 +33,12 @@ static int mr_i2c_bus_close(struct mr_dev *dev)
 
 static ssize_t mr_i2c_bus_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
-    return MR_EIO;
+    return MR_ENOTSUP;
 }
 
 static ssize_t mr_i2c_bus_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
 {
-    return MR_EIO;
+    return MR_ENOTSUP;
 }
 
 static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
@@ -116,6 +117,7 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
         return MR_EBUSY;
     }
 
+    /* If the owner changes, recheck the configuration */
     if (i2c_dev != i2c_bus->owner)
     {
         /* Reconfigure the bus */
@@ -221,7 +223,6 @@ static int mr_i2c_dev_open(struct mr_dev *dev)
 {
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
-    /* Allocate FIFO buffers */
     return mr_ringbuf_allocate(&i2c_dev->rd_fifo, i2c_dev->rd_bufsz);
 }
 
@@ -229,7 +230,6 @@ static int mr_i2c_dev_close(struct mr_dev *dev)
 {
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
-    /* Free FIFO buffers */
     mr_ringbuf_free(&i2c_dev->rd_fifo);
     return MR_EOK;
 }
@@ -246,9 +246,9 @@ static ssize_t mr_i2c_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
 
     if (i2c_dev->config.host_slave == MR_I2C_HOST)
     {
+        /* Send the address of the register that needs to be read */
         if (off >= 0)
         {
-            /* Send the address of the register that needs to be read */
             i2c_dev_send_addr(i2c_dev, MR_I2C_WR);
             i2c_dev_write(i2c_dev, (uint8_t *)&off, (i2c_dev->config.reg_bits >> 3));
         }
@@ -284,9 +284,10 @@ static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, si
     if (i2c_dev->config.host_slave == MR_I2C_HOST)
     {
         i2c_dev_send_addr(i2c_dev, MR_I2C_WR);
+
+        /* Send the address of the register that needs to be written */
         if (off >= 0)
         {
-            /* Send the address of the register that needs to be written */
             i2c_dev_write(i2c_dev, (uint8_t *)&off, (i2c_dev->config.reg_bits >> 3));
         }
 

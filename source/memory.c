@@ -102,8 +102,6 @@ MR_WEAK void *mr_malloc(size_t size)
 {
     struct mr_heap_block *block_prev = &heap_start;
     struct mr_heap_block *block = block_prev->next;
-    void *memory = MR_NULL;
-    size_t residual = 0;
 
     /* Disable interrupt */
     mr_interrupt_disable();
@@ -134,8 +132,8 @@ MR_WEAK void *mr_malloc(size_t size)
     block_prev->next = block->next;
 
     /* Allocate memory */
-    memory = (void *)((uint8_t *)block + sizeof(struct mr_heap_block));
-    residual = block->size - size;
+    void *memory = (void *)((uint8_t *)block + sizeof(struct mr_heap_block));
+    size_t residual = block->size - size;
 
     /* Set the block information */
     block->size = size;
@@ -158,7 +156,6 @@ MR_WEAK void *mr_malloc(size_t size)
 
     /* Enable interrupt */
     mr_interrupt_enable();
-
     return memory;
 }
 
@@ -201,6 +198,7 @@ MR_WEAK size_t mr_malloc_usable_size(void *memory)
 {
     if (memory != MR_NULL)
     {
+        /* Get the block information */
         struct mr_heap_block *block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
         return block->size;
     }
@@ -218,9 +216,8 @@ MR_WEAK size_t mr_malloc_usable_size(void *memory)
 MR_WEAK void *mr_calloc(size_t num, size_t size)
 {
     size_t total = num * size;
-    void *memory = MR_NULL;
 
-    memory = mr_malloc(total);
+    void *memory = mr_malloc(total);
     if (memory != MR_NULL)
     {
         memset(memory, 0, total);
@@ -239,9 +236,8 @@ MR_WEAK void *mr_calloc(size_t num, size_t size)
 MR_WEAK void *mr_realloc(void *memory, size_t size)
 {
     size_t old_size = mr_malloc_usable_size(memory);
-    void *new_memory = MR_NULL;
 
-    new_memory = mr_malloc(size);
+    void *new_memory = mr_malloc(size);
     if (new_memory != MR_NULL)
     {
         memcpy(new_memory, memory, old_size);

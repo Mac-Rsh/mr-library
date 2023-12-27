@@ -27,10 +27,8 @@ MR_INIT_EXPORT(end, "5.end");
  */
 void mr_auto_init(void)
 {
-    volatile const mr_init_fn_t *fn = MR_NULL;
-
     /* Auto-initialization */
-    for (fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)
+    for (volatile const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)
     {
         (*fn)();
     }
@@ -59,8 +57,6 @@ MR_WEAK void mr_interrupt_enable(void)
  */
 MR_WEAK void mr_delay_us(uint32_t us)
 {
-    volatile uint32_t i = 0;
-
 #ifndef MR_CFG_SYSCLK_FREQ
 #define MR_CFG_SYSCLK_FREQ              (72000000)
 #endif /* MR_CFG_SYSCLK_FREQ */
@@ -69,7 +65,7 @@ MR_WEAK void mr_delay_us(uint32_t us)
 #else
 #define MR_DELAY_COUNT                  (1)
 #endif /* (MR_CFG_SYSCLK_FREQ > 1000000) */
-    for (i = 0; i < us * MR_DELAY_COUNT; i++)
+    for (volatile uint32_t i = 0; i < us * MR_DELAY_COUNT; i++)
     {
         __asm__("nop");
     }
@@ -84,9 +80,7 @@ MR_WEAK void mr_delay_us(uint32_t us)
  */
 MR_WEAK void mr_delay_ms(uint32_t ms)
 {
-    volatile uint32_t i = 0;
-
-    for (i = 0; i < ms; i++)
+    for (volatile uint32_t i = 0; i < ms; i++)
     {
         mr_delay_us(1000);
     }
@@ -209,8 +203,6 @@ void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size)
  */
 int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
 {
-    void *pool = MR_NULL;
-
     mr_assert(ringbuf != MR_NULL);
 
     /* Check the buffer size */
@@ -227,7 +219,7 @@ int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
     }
 
     /* Allocate new buffer */
-    pool = mr_malloc(size);
+    void *pool = mr_malloc(size);
     if (pool == MR_NULL && size != 0)
     {
         return MR_ENOMEM;
@@ -261,7 +253,6 @@ void mr_ringbuf_reset(struct mr_ringbuf *ringbuf)
 
     ringbuf->read_index = 0;
     ringbuf->write_index = 0;
-
     ringbuf->read_mirror = 0;
     ringbuf->write_mirror = 0;
 }
@@ -370,13 +361,12 @@ size_t mr_ringbuf_pop(struct mr_ringbuf *ringbuf, uint8_t *data)
 size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
 {
     uint8_t *read_buffer = (uint8_t *)buffer;
-    size_t data_size = 0;
 
     mr_assert(ringbuf != MR_NULL);
     mr_assert((buffer != MR_NULL) || (size == 0));
 
     /* Get the buf size */
-    data_size = mr_ringbuf_get_data_size(ringbuf);
+    size_t data_size = mr_ringbuf_get_data_size(ringbuf);
     if (data_size == 0)
     {
         return 0;
@@ -498,13 +488,12 @@ size_t mr_ringbuf_push_force(struct mr_ringbuf *ringbuf, uint8_t data)
 size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t size)
 {
     uint8_t *write_buffer = (uint8_t *)buffer;
-    size_t space_size = 0;
 
     mr_assert(ringbuf != MR_NULL);
     mr_assert((buffer != MR_NULL) || (size == 0));
 
     /* Get the space size */
-    space_size = mr_ringbuf_get_space_size(ringbuf);
+    size_t space_size = mr_ringbuf_get_space_size(ringbuf);
     if (space_size == 0)
     {
         return 0;
@@ -547,7 +536,6 @@ size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t s
 size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, size_t size)
 {
     uint8_t *write_buffer = (uint8_t *)buffer;
-    size_t space_size = 0;
 
     mr_assert(ringbuf != MR_NULL);
     mr_assert((buffer != MR_NULL) || (size == 0));
@@ -558,7 +546,7 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
     }
 
     /* Get the space size */
-    space_size = mr_ringbuf_get_space_size(ringbuf);
+    size_t space_size = mr_ringbuf_get_space_size(ringbuf);
 
     /* If the buf exceeds the buffer space_size, the front buf is discarded */
     if (size > ringbuf->size)
@@ -626,8 +614,8 @@ static void mr_avl_left_rotate(struct mr_avl **node)
     right_child->left_child = (*node);
 
     (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
-    right_child->height =
-        mr_max(mr_avl_get_height(right_child->left_child), mr_avl_get_height(right_child->right_child)) + 1;
+    right_child->height = mr_max(mr_avl_get_height(right_child->left_child),
+                                 mr_avl_get_height(right_child->right_child)) + 1;
 
     (*node) = right_child;
 }
@@ -640,8 +628,8 @@ static void mr_avl_right_rotate(struct mr_avl **node)
     left_child->right_child = (*node);
 
     (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
-    left_child->height =
-        mr_max(mr_avl_get_height(left_child->left_child), mr_avl_get_height(left_child->right_child)) + 1;
+    left_child->height = mr_max(mr_avl_get_height(left_child->left_child),
+                                mr_avl_get_height(left_child->right_child)) + 1;
 
     (*node) = left_child;
 }
@@ -670,8 +658,6 @@ void mr_avl_init(struct mr_avl *node, uint32_t value)
  */
 void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
 {
-    int balance = 0;
-
     mr_assert(tree != MR_NULL);
     mr_assert(node != MR_NULL);
 
@@ -693,7 +679,7 @@ void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
 
     (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
-    balance = mr_avl_get_balance((*tree));
+    int balance = mr_avl_get_balance((*tree));
     if (balance > 1 && node->value < (*tree)->left_child->value)
     {
         mr_avl_right_rotate(&(*tree));
