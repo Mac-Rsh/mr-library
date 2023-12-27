@@ -192,7 +192,7 @@ enum mr_dev_type
     Mr_Dev_Type_SPI = Mr_Drv_Type_SPI,                              /**< SPI */
     Mr_Dev_Type_Timer = Mr_Drv_Type_Timer,                          /**< Timer */
     Mr_Dev_Type_PWM = Mr_Drv_Type_PWM,                              /**< PWM */
-    Mr_Dev_Type_Sensor,                                             /**< Sensor */
+    Mr_Dev_Type_Component,                                          /**< Component */
 };
 
 struct mr_dev;

@@ -34,6 +34,7 @@ MR_INLINE void soft_i2c_bus_sda_set(struct mr_soft_i2c_bus *soft_i2c_bus, uint8_
 MR_INLINE uint8_t soft_i2c_sda_get(struct mr_soft_i2c_bus *soft_i2c_bus)
 {
     uint8_t value = 0;
+
     mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->sda_pin);
     mr_dev_read(soft_i2c_bus->desc, &value, sizeof(value));
     return value;
@@ -185,13 +186,12 @@ static uint8_t mr_soft_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
     uint8_t data = 0;
-    size_t bits = 0;
 
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
     mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
 
-    for (bits = 0; bits < 8; bits++)
+    for (size_t bits = 0; bits < 8; bits++)
     {
         mr_delay_us(soft_i2c_bus->delay);
         soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
@@ -214,9 +214,8 @@ static uint8_t mr_soft_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
 static void mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
-    size_t bits = 0;
 
-    for (bits = 0; bits < 8; bits++)
+    for (size_t bits = 0; bits < 8; bits++)
     {
         if (data & 0x80)
         {
@@ -272,6 +271,7 @@ int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *n
     soft_i2c_bus->sda_pin = sda_pin;
     soft_i2c_bus->desc = -1;
 
+    /* Register the soft-i2c-bus */
     return mr_i2c_bus_register(&soft_i2c_bus->i2c_bus, name, &drv);
 }
 

@@ -46,6 +46,7 @@ static int adc_channel_get_state(struct mr_adc *adc, int channel)
         return MR_EINVAL;
     }
 
+    /* Check if the channel is enabled */
     return mr_bits_is_set(adc->channel, (1 << channel));
 }
 
@@ -63,8 +64,7 @@ static int mr_adc_close(struct mr_dev *dev)
     struct mr_adc_ops *ops = (struct mr_adc_ops *)dev->drv->ops;
 
     /* Disable all channels */
-    int i = 0;
-    for (i = 0; i < 32; i++)
+    for (int i = 0; i < 32; i++)
     {
         if (mr_bits_is_set(adc->channel, (1 << i)) == MR_ENABLE)
         {

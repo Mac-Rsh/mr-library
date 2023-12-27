@@ -15,7 +15,6 @@ static int mr_serial_open(struct mr_dev *dev)
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
 
-    /* Allocate FIFO buffers */
     int ret = mr_ringbuf_allocate(&serial->rd_fifo, serial->rd_bufsz);
     if (ret != MR_EOK)
     {
@@ -36,7 +35,6 @@ static int mr_serial_close(struct mr_dev *dev)
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
     struct mr_serial_config close_config = {0};
 
-    /* Free FIFO buffers */
     mr_ringbuf_free(&serial->rd_fifo);
     mr_ringbuf_free(&serial->wr_fifo);
 
@@ -232,7 +230,7 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
 
         case MR_ISR_SERIAL_WR_INT:
         {
-            /* Write data from FIFO */
+            /* Write data from FIFO, if FIFO is empty, stop transmit */
             uint8_t data = 0;
             if (mr_ringbuf_pop(&serial->wr_fifo, &data) == sizeof(data))
             {

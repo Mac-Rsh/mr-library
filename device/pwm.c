@@ -67,9 +67,7 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
 {
     uint32_t clk = pwm->info->clk, psc_max = pwm->info->prescaler_max, per_max = pwm->info->period_max;
     uint32_t psc_best = 0, per_best = 0;
-    uint32_t psc = 0, per = 0;
-    uint32_t timeout = 0;
-    int error = 0, error_min = INT32_MAX;
+    int error_min = INT32_MAX;
 
     /* Check the clock */
     if (clk == 0 || freq == 0)
@@ -78,15 +76,15 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
     }
 
     /* Calculate the timeout */
-    timeout = (clk * 1000000) / freq;
+    uint32_t timeout = (clk * 1000000) / freq;
 
     /* Calculate the Least error period */
-    for (per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 0; per--)
+    for (uint32_t per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 0; per--)
     {
-        psc = timeout / per;
+        uint32_t psc = timeout / per;
 
         /* Calculate the error */
-        error = (int)timeout - (int)(psc * per);
+        int error = (int)timeout - (int)(psc * per);
         if (error == 0)
         {
             psc_best = psc;
@@ -120,7 +118,7 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
                 break;
             }
 
-            /* Check if reload can be used as period or prescaler */
+            /* Check if prescaler can be used as period */
             if ((psc_best > per_best) && (psc_best < per_max))
             {
                 mr_swap(per_best, psc_best);
@@ -154,8 +152,7 @@ static int mr_pwm_close(struct mr_dev *dev)
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
 
     /* Disable all channels */
-    int i = 0;
-    for (i = 0; i < 32; i++)
+    for (int i = 0; i < 32; i++)
     {
         if (mr_bits_is_set(pwm->channel, (1 << i)) == MR_ENABLE)
         {
@@ -318,6 +315,7 @@ int mr_pwm_register(struct mr_pwm *pwm, const char *name, struct mr_drv *drv, st
     pwm->channel_polarity = 0;
     pwm->info = info;
 
+    /* Register the pwm */
     return mr_dev_register(&pwm->dev, name, Mr_Dev_Type_PWM, MR_SFLAG_RDWR, &ops, drv);
 }
 

@@ -376,7 +376,7 @@ int mr_can_dev_register(struct mr_can_dev *can_dev, const char *name, int id, in
     can_dev->id = id;
     can_dev->ide = ide;
 
-    /* Register the can-dev */
+    /* Register the can-device */
     return mr_dev_register(&can_dev->dev, name, Mr_Dev_Type_CAN, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
 }
 

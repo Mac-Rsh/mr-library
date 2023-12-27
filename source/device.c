@@ -20,19 +20,18 @@ static struct mr_dev root_dev =
         {&root_dev.clist, &root_dev.clist}
     };
 
-static int dev_is_root(struct mr_dev *dev)
+MR_INLINE int dev_is_root(struct mr_dev *dev)
 {
     return (int)dev->type == Mr_Dev_Type_Root;
 }
 
-static struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
+MR_INLINE struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
 {
     /* Disable interrupt */
     mr_interrupt_disable();
 
     /* Find the child device */
-    struct mr_list *list = MR_NULL;
-    for (list = parent->clist.next; list != &parent->clist; list = list->next)
+    for (struct mr_list *list = parent->clist.next; list != &parent->clist; list = list->next)
     {
         struct mr_dev *dev = (struct mr_dev *)mr_container_of(list, struct mr_dev, list);
         if (strncmp(name, dev->name, MR_CFG_NAME_MAX) == 0)
@@ -48,7 +47,7 @@ static struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
     return MR_NULL;
 }
 
-static int dev_register_child(struct mr_dev *parent, struct mr_dev *child, const char *name)
+MR_INLINE int dev_register_child(struct mr_dev *parent, struct mr_dev *child, const char *name)
 {
     /* Check whether the device with the same name exists */
     if (dev_find_child(parent, name) != MR_NULL)
@@ -70,7 +69,7 @@ static int dev_register_child(struct mr_dev *parent, struct mr_dev *child, const
     return MR_EOK;
 }
 
-static const char *dev_clear_path(const char *path)
+MR_INLINE const char *dev_clear_path(const char *path)
 {
     /* Skip the leading '/' */
     if (*path == '/')
@@ -86,7 +85,7 @@ static const char *dev_clear_path(const char *path)
     return path;
 }
 
-static int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const char *path)
+MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const char *path)
 {
     char parent_name[MR_CFG_NAME_MAX + 1] = {0};
     char *parent_path = MR_NULL;
@@ -119,7 +118,7 @@ static int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const
     }
 }
 
-static struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
+MR_INLINE struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 {
     char parent_name[MR_CFG_NAME_MAX + 1] = {0};
     char *parent_path = MR_NULL;
@@ -149,7 +148,7 @@ static struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 }
 
 #ifdef MR_USING_RDWR_CTL
-static int dev_lock_take(struct mr_dev *dev, int take, int set)
+MR_INLINE int dev_lock_take(struct mr_dev *dev, int take, int set)
 {
     /* Continue iterating until reach the root device */
     if (dev_is_root(dev->parent) != MR_TRUE)
@@ -172,7 +171,7 @@ static int dev_lock_take(struct mr_dev *dev, int take, int set)
     return MR_EOK;
 }
 
-static void dev_lock_release(struct mr_dev *dev, int release)
+MR_INLINE void dev_lock_release(struct mr_dev *dev, int release)
 {
     /* Continue iterating until reach the root device */
     if (dev_is_root(dev->parent) != MR_TRUE)
@@ -185,19 +184,19 @@ static void dev_lock_release(struct mr_dev *dev, int release)
 }
 #endif /* MR_USING_RDWR_CTL */
 
-static int dev_register(struct mr_dev *dev, const char *path)
+MR_INLINE int dev_register(struct mr_dev *dev, const char *path)
 {
     /* Register the device to the root device */
     return dev_register_by_path(&root_dev, dev, path);
 }
 
-static struct mr_dev *dev_find(const char *path)
+MR_INLINE struct mr_dev *dev_find(const char *path)
 {
     /* Find the device from the root device */
     return dev_find_by_path(&root_dev, path);
 }
 
-static int dev_open(struct mr_dev *dev, int oflags)
+MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
 {
 #ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(dev->sflags, oflags) != MR_ENABLE)
@@ -241,7 +240,7 @@ static int dev_open(struct mr_dev *dev, int oflags)
     return MR_EOK;
 }
 
-static int dev_close(struct mr_dev *dev)
+MR_INLINE int dev_close(struct mr_dev *dev)
 {
     /* Decrease the reference count */
     dev->ref_count--;
@@ -268,7 +267,7 @@ static int dev_close(struct mr_dev *dev)
     return MR_EOK;
 }
 
-static ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
+MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
 {
 #ifdef MR_USING_RDWR_CTL
     do
@@ -296,7 +295,7 @@ static ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int
     return ret;
 }
 
-static ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t size, int async)
+MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t size, int async)
 {
 #ifdef MR_USING_RDWR_CTL
     do
@@ -334,7 +333,7 @@ static ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, size_t
     return ret;
 }
 
-static int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
+MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 {
     /* Check whether the device has an ioctl function */
     if (dev->ops->ioctl == MR_NULL)
@@ -579,14 +578,13 @@ static struct mr_desc
 static int desc_allocate(const char *path)
 {
     int desc = -1;
-    int i = 0;
 
     /* Find a free descriptor */
-    for (i = 0; i < MR_CFG_DESC_MAX; i++)
+    for (size_t i = 0; i < MR_CFG_DESC_MAX; i++)
     {
         if (desc_of(i).dev == MR_NULL)
         {
-            desc = i;
+            desc = (int)i;
             break;
         }
     }
@@ -721,7 +719,6 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size)
 #ifdef MR_USING_RDWR_CTL
     if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_WRONLY) == MR_DISABLE)
     {
-
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
@@ -771,6 +768,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
 
         default:
         {
+            /* I/O control to the device */
             return dev_ioctl(desc_of(desc).dev, desc, desc_of(desc).offset, cmd, args);
         }
     }
