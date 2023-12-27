@@ -1,10 +1,10 @@
 # 如何为项目引入Kconfig配置系统
 
+[English](Kconfig_EN.md)
+
 <!-- TOC -->
 * [如何为项目引入Kconfig配置系统](#如何为项目引入kconfig配置系统)
-* [环境搭建](#环境搭建)
   * [验证 python 环境](#验证-python-环境)
-  * [安装Kconfig](#安装kconfig)
   * [C语言头文件生成脚本](#c语言头文件生成脚本)
 * [应用](#应用)
   * [创建Kconfig](#创建kconfig)
@@ -30,15 +30,12 @@ void printf_args(void)
 对于规模较大的项目来说，需要一套专业的配置管理系统来解决这些问题。Kconfig正是为了应对这种需求而产生的。它通过配置脚本定义各配置选项及其依赖关系，并提供`图形化界面`
 供配置者操作。同时还会检查配置`合理性`，帮助我们实现定制化构建的同时`防止错误配置`。
 
-如果有接触过Linux内核或者嵌入式操作系统RTTHREAD等，相信对Kconfig系统都不陌生。Kconfig是Linux内核和许多其他系统广泛使用的一款配置管理工具。它可以让开发人员在编译时选择性地包含或排除某些功能模块。
+如果有接触过Linux或者RT-Thread等，相信对Kconfig系统都不陌生。Kconfig是Linux内核和许多其他系统广泛使用的一款配置管理工具。它可以让开发人员在编译时选择性地包含或排除某些功能模块。
 
-Kconfig
-使用配置脚本定义各种配置选项及其依赖关系。通过图形或字符型用户界面，开发者可以查看并设置各种配置。然后Kconfig会生成 `.config`
+Kconfig使用配置脚本定义各种配置选项及其依赖关系。通过图形或字符型用户界面，开发者可以查看并设置各种配置。然后Kconfig会生成 `.config`
 文件保存选择结果。在编译的时候，会根据 `.config` 文件里设置的符号自动包含或排除对应的源代码。
 
-![Kconfig](picture/Kconfig/Kconfig.png)
-
-# 环境搭建
+![Kconfig](../picture/Kconfig/Kconfig.png)
 
 ## 验证 python 环境
 
@@ -56,46 +53,59 @@ python --version
 Python 3.11.4
 ```
 
-## 安装Kconfig
-
-```cmd
-python -m pip install windows-curses
-python -m pip install kconfiglib
-```
-
-在命令行中使用所示命令验证：
-
-```cmd
-menuconfig -h
-```
-
-显示信息即安装成功。
-
 ## C语言头文件生成脚本
 
 Kconfiglib 生成的是 `.config` 文件，并非C语言文件，需要使用脚本生成，`将以下代码复制到文件中并命名为kconfig.py`。
 
 ```python
-import os
 import re
-import sys
-import textwrap
+import pip
 
-from kconfiglib import Kconfig, split_expr, expr_value, expr_str, BOOL, TRISTATE, TRI_TO_STR, AND, OR
+
+def log_print(level, text):
+    # Log level colors
+    LEVEL_COLORS = {
+        'error': '\033[31m',
+        'success': '\033[32m',
+        'warning': '\033[33m',
+        'info': '\033[34m',
+    }
+    RESET_COLOR = '\033[0m'
+    # Log level name
+    LEVEL_NAME = {
+        'error': 'ERROR',
+        'success': 'SUCCESS',
+        'warning': 'WARNING',
+        'info': 'INFO',
+    }
+    print(LEVEL_COLORS[level] + LEVEL_NAME[level] + ': ' + text + RESET_COLOR)
+
+
+def install_package(package):
+    log_print('info', "%s package installing..." % package)
+    pip.main(['install', package])
+
+
+try:
+    from kconfiglib import Kconfig
+except ImportError:
+    install_package('kconfiglib')
+    from kconfiglib import Kconfig
+
+try:
+    import curses
+except ImportError:
+    install_package('windows-curses')
+    import curses
+
 
 def generate_config(kconfig_file, config_in, config_out, header_out):
-    print("Parsing " + kconfig_file)
-    kconf = Kconfig(kconfig_file, warn_to_stderr=False,
-                    suppress_traceback=True)
+    kconf = Kconfig(kconfig_file, warn=False, warn_to_stderr=False)
 
-    # Load config files
-    print(kconf.load_config(config_in))
-
-    # Write merged config        
-    print(kconf.write_config(config_out))
-
-    # Write headers
-    print(kconf.write_autoconf(header_out))
+    # Load config
+    kconf.load_config(config_in)
+    kconf.write_config(config_out)
+    kconf.write_autoconf(header_out)
 
     with open(header_out, 'r+') as header_file:
         content = header_file.read()
@@ -104,10 +114,11 @@ def generate_config(kconfig_file, config_in, config_out, header_out):
 
         # Remove CONFIG_ and MR_USING_XXX following number
         content = content.replace("#define CONFIG_", "#define ")
+        content = re.sub(r'#define MR_USING_(\w+) (\d+)', r'#define MR_USING_\1', content)
 
         # Add the micro
-        header_file.write("#ifndef _CONFIG_H_\n")
-        header_file.write("#define _CONFIG_H_\n\n")
+        header_file.write("#ifndef _MR_CONFIG_H_\n")
+        header_file.write("#define _MR_CONFIG_H_\n\n")
 
         header_file.write("#ifdef __cplusplus\n")
         header_file.write("extern \"C\" {\n")
@@ -120,11 +131,14 @@ def generate_config(kconfig_file, config_in, config_out, header_out):
         header_file.write("\n#ifdef __cplusplus\n")
         header_file.write("}\n")
         header_file.write("#endif /* __cplusplus */\n\n")
-        header_file.write("#endif /* _CONFIG_H_*/\n")
+        header_file.write("#endif /* _MR_CONFIG_H_ */\n")
+
+        header_file.close()
+        log_print('success', "menuconfig %s make success" % header_out)
 
 
 def main():
-    kconfig_file = 'Kconfig'
+    kconfig_file = ''
     config_in = '.config'
     config_out = '.config'
     header_out = 'config.h'
@@ -137,8 +151,7 @@ if __name__ == "__main__":
 
 修改`main`函数中`header_out `可修改生成的函数文件名。
 
-此脚本去除了Kconfig默认添加的`CONFIG_`前缀，并为其加上了`_CONFIG_H_`
-和`C`声明。
+此脚本去除了Kconfig默认添加的`CONFIG_`前缀，并为其加上了`_CONFIG_H_` 和`C`声明。
 
 # 应用
 
@@ -170,15 +183,15 @@ menuconfig
 
 就可以看到我们刚刚写的Demo界面
 
-![Kconfig1](picture/Kconfig/Kconfig1.png)
+![Kconfig1](../picture/Kconfig/Kconfig1.png)
 
 回车后就可以看到配置的2个参数：
 
-![Kconfig2](picture/Kconfig/Kconfig2.png)
+![Kconfig2](../picture/Kconfig/Kconfig2.png)
 
 设置的范围也在输入时生效了：
 
-![Kconfig3](picture/Kconfig/Kconfig3.png)
+![Kconfig3](../picture/Kconfig/Kconfig3.png)
 
 配置完成后按`Q`退出，`Y`保存配置。
 
@@ -190,15 +203,6 @@ python kconfig.py
 
 运行 `python` 脚本生成`.h`文件。
 
-运行结果：
-
-```cmd
-Parsing Kconfig
-Loaded configuration '.config'
-Configuration saved to '.config'
-Kconfig header saved to 'config.h'
-```
-
 显示生成`config.h`成功。打开这个文件：
 
-![Kconfig4](picture/Kconfig/Kconfig4.png)
+![Kconfig4](../picture/Kconfig/Kconfig4.png)

@@ -1,5 +1,7 @@
 # DAC设备
 
+[English](dac_EN.md)
+
 <!-- TOC -->
 * [DAC设备](#dac设备)
   * [打开DAC设备](#打开dac设备)

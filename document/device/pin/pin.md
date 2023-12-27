@@ -1,5 +1,7 @@
 # PIN设备
 
+[English](pin_EN.md)
+
 <!-- TOC -->
 * [PIN设备](#pin设备)
   * [打开PIN设备](#打开pin设备)
@@ -212,7 +214,7 @@ if (ret != sizeof(pin_level))
 ```c
 #include "include/mr_lib.h"
 
-/* 定义LED引脚（PC13）和KEY引脚（PA0）*/
+/* 定义LED引脚(PC13)和KEY引脚(PA0) */
 #define LED_PIN_NUMBER                  45
 #define KEY_PIN_NUMBER                  0
 

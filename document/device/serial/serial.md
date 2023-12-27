@@ -1,5 +1,7 @@
 # SERIAL设备
 
+[English](serial_EN.md)
+
 <!-- TOC -->
 * [SERIAL设备](#serial设备)
   * [打开SERIAL设备](#打开serial设备)
@@ -151,12 +153,12 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
 /* 定义回调函数 */
 int call(int desc, void *args)
 {
-  /* 获取缓冲区数据大小 */
-  ssize_t data_size = *(ssize_t *)args;
-  
-  /* 处理中断 */
-  
-  return MR_EOK;
+    /* 获取缓冲区数据大小 */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* 处理中断 */
+    
+    return MR_EOK;
 }
 int (*callback)(int, void *args);
 
