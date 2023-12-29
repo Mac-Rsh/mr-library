@@ -259,7 +259,7 @@ int serial_init(void)
     return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
-MR_APP_EXPORT(serial_init);
+MR_INIT_APP_EXPORT(serial_init);
 
 int main(void)
 {

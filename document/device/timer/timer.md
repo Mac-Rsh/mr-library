@@ -78,7 +78,7 @@ TIMER设备配置：
 #define TIMER_MODE                      MR_TIMER_MODE_ONESHOT
 
 /* 设置TIMER设备模式 */
-mr_dev_ioctl(ds, MR_CTL_TIMER_SET_MODE, mr_make_local(int, TIMER_MODE));
+mr_dev_ioctl(ds, MR_CTL_TIMER_SET_MODE, MR_MAKE_LOCAL(int, TIMER_MODE));
 
 /* 获取TIMER设备模式 */
 int mode;
@@ -195,7 +195,7 @@ int timer_init(void)
     return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
-MR_APP_EXPORT(timer_init);
+MR_INIT_APP_EXPORT(timer_init);
 
 int main(void)
 {

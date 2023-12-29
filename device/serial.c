@@ -272,10 +272,10 @@ int mr_serial_register(struct mr_serial *serial, const char *name, struct mr_drv
         };
     struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
 
-    mr_assert(serial != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
+    MR_ASSERT(serial != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
 
     /* Initialize the fields */
     serial->config = default_config;
