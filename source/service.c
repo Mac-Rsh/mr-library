@@ -181,8 +181,8 @@ const char *mr_strerror(int err)
  */
 void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size)
 {
-    mr_assert(ringbuf != MR_NULL);
-    mr_assert((pool != MR_NULL) || (size == 0));
+    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT((pool != MR_NULL) || (size == 0));
 
     ringbuf->read_index = 0;
     ringbuf->write_index = 0;
@@ -203,7 +203,7 @@ void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size)
  */
 int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     /* Check the buffer size */
     if (mr_ringbuf_get_bufsz(ringbuf) == size)
@@ -236,7 +236,7 @@ int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
  */
 void mr_ringbuf_free(struct mr_ringbuf *ringbuf)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     mr_free(ringbuf->buffer);
     mr_ringbuf_init(ringbuf, MR_NULL, 0);
@@ -249,7 +249,7 @@ void mr_ringbuf_free(struct mr_ringbuf *ringbuf)
  */
 void mr_ringbuf_reset(struct mr_ringbuf *ringbuf)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     ringbuf->read_index = 0;
     ringbuf->write_index = 0;
@@ -266,7 +266,7 @@ void mr_ringbuf_reset(struct mr_ringbuf *ringbuf)
  */
 size_t mr_ringbuf_get_data_size(struct mr_ringbuf *ringbuf)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     /* Empty or full according to the mirror flag */
     if (ringbuf->read_index == ringbuf->write_index)
@@ -298,7 +298,7 @@ size_t mr_ringbuf_get_data_size(struct mr_ringbuf *ringbuf)
  */
 size_t mr_ringbuf_get_space_size(struct mr_ringbuf *ringbuf)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     return ringbuf->size - mr_ringbuf_get_data_size(ringbuf);
 }
@@ -312,7 +312,7 @@ size_t mr_ringbuf_get_space_size(struct mr_ringbuf *ringbuf)
  */
 size_t mr_ringbuf_get_bufsz(struct mr_ringbuf *ringbuf)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     return ringbuf->size;
 }
@@ -327,8 +327,8 @@ size_t mr_ringbuf_get_bufsz(struct mr_ringbuf *ringbuf)
  */
 size_t mr_ringbuf_pop(struct mr_ringbuf *ringbuf, uint8_t *data)
 {
-    mr_assert(ringbuf != MR_NULL);
-    mr_assert(data != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT(data != MR_NULL);
 
     /* Get the buf size */
     if (mr_ringbuf_get_data_size(ringbuf) == 0)
@@ -362,8 +362,8 @@ size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
 {
     uint8_t *read_buffer = (uint8_t *)buffer;
 
-    mr_assert(ringbuf != MR_NULL);
-    mr_assert((buffer != MR_NULL) || (size == 0));
+    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT((buffer != MR_NULL) || (size == 0));
 
     /* Get the buf size */
     size_t data_size = mr_ringbuf_get_data_size(ringbuf);
@@ -407,7 +407,7 @@ size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
  */
 size_t mr_ringbuf_push(struct mr_ringbuf *ringbuf, uint8_t data)
 {
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     /* Get the space size */
     if (mr_ringbuf_get_space_size(ringbuf) == 0)
@@ -440,7 +440,7 @@ size_t mr_ringbuf_push_force(struct mr_ringbuf *ringbuf, uint8_t data)
 {
     int state = 0;
 
-    mr_assert(ringbuf != MR_NULL);
+    MR_ASSERT(ringbuf != MR_NULL);
 
     /* Get the buffer size */
     if (mr_ringbuf_get_bufsz(ringbuf) == 0)
@@ -489,8 +489,8 @@ size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t s
 {
     uint8_t *write_buffer = (uint8_t *)buffer;
 
-    mr_assert(ringbuf != MR_NULL);
-    mr_assert((buffer != MR_NULL) || (size == 0));
+    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT((buffer != MR_NULL) || (size == 0));
 
     /* Get the space size */
     size_t space_size = mr_ringbuf_get_space_size(ringbuf);
@@ -537,8 +537,8 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
 {
     uint8_t *write_buffer = (uint8_t *)buffer;
 
-    mr_assert(ringbuf != MR_NULL);
-    mr_assert((buffer != MR_NULL) || (size == 0));
+    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT((buffer != MR_NULL) || (size == 0));
 
     if ((mr_ringbuf_get_bufsz(ringbuf) == 0) || (size == 0))
     {
@@ -613,8 +613,8 @@ static void mr_avl_left_rotate(struct mr_avl **node)
     (*node)->right_child = right_child->left_child;
     right_child->left_child = (*node);
 
-    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
-    right_child->height = mr_max(mr_avl_get_height(right_child->left_child),
+    (*node)->height = MR_MAX(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    right_child->height = MR_MAX(mr_avl_get_height(right_child->left_child),
                                  mr_avl_get_height(right_child->right_child)) + 1;
 
     (*node) = right_child;
@@ -627,8 +627,8 @@ static void mr_avl_right_rotate(struct mr_avl **node)
     (*node)->left_child = left_child->right_child;
     left_child->right_child = (*node);
 
-    (*node)->height = mr_max(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
-    left_child->height = mr_max(mr_avl_get_height(left_child->left_child),
+    (*node)->height = MR_MAX(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
+    left_child->height = MR_MAX(mr_avl_get_height(left_child->left_child),
                                 mr_avl_get_height(left_child->right_child)) + 1;
 
     (*node) = left_child;
@@ -642,7 +642,7 @@ static void mr_avl_right_rotate(struct mr_avl **node)
  */
 void mr_avl_init(struct mr_avl *node, uint32_t value)
 {
-    mr_assert(node != MR_NULL);
+    MR_ASSERT(node != MR_NULL);
 
     node->height = 0;
     node->value = value;
@@ -658,8 +658,8 @@ void mr_avl_init(struct mr_avl *node, uint32_t value)
  */
 void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
 {
-    mr_assert(tree != MR_NULL);
-    mr_assert(node != MR_NULL);
+    MR_ASSERT(tree != MR_NULL);
+    MR_ASSERT(node != MR_NULL);
 
     if ((*tree) == MR_NULL)
     {
@@ -677,7 +677,7 @@ void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
         return;
     }
 
-    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = MR_MAX(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
     int balance = mr_avl_get_balance((*tree));
     if (balance > 1 && node->value < (*tree)->left_child->value)
@@ -715,8 +715,8 @@ void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
  */
 void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node)
 {
-    mr_assert(tree != MR_NULL);
-    mr_assert(node != MR_NULL);
+    MR_ASSERT(tree != MR_NULL);
+    MR_ASSERT(node != MR_NULL);
 
     if (*tree == MR_NULL)
     {
@@ -751,7 +751,7 @@ void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node)
         return;
     }
 
-    (*tree)->height = mr_max(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
+    (*tree)->height = MR_MAX(mr_avl_get_height((*tree)->left_child), mr_avl_get_height((*tree)->right_child)) + 1;
 
     int balance = mr_avl_get_balance(*tree);
 

@@ -80,7 +80,7 @@ TIMER device configuration:
 #define TIMER_MODE                      MR_TIMER_MODE_ONESHOT
 
 /* Set TIMER device mode */
-mr_dev_ioctl(ds, MR_CTL_TIMER_SET_MODE, mr_make_local(int, TIMER_MODE));
+mr_dev_ioctl(ds, MR_CTL_TIMER_SET_MODE, MR_MAKE_LOCAL(int, TIMER_MODE));
 
 /* Get TIMER device mode */
 int mode;
@@ -200,7 +200,7 @@ int timer_init(void)
     return MR_EOK;
 }
 /* Export to automatic initialization (APP level) */
-MR_APP_EXPORT(timer_init);
+MR_INIT_APP_EXPORT(timer_init);
 
 int main(void)
 {

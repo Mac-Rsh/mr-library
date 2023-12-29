@@ -84,10 +84,10 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
             /* Check if reload can be used as period or prescaler */
             if ((reload_best > per_best) && (reload_best < per_max))
             {
-                mr_swap(per_best, reload_best);
+                MR_SWAP(per_best, reload_best);
             } else if ((reload_best > psc_best) && (reload_best < psc_max))
             {
-                mr_swap(psc_best, reload_best);
+                MR_SWAP(psc_best, reload_best);
             }
         }
     }
@@ -129,7 +129,7 @@ static ssize_t mr_timer_read(struct mr_dev *dev, int off, void *buf, size_t size
     uint32_t *rd_buf = (uint32_t *)buf;
     ssize_t rd_size = 0;
 
-    mr_bits_clr(size, sizeof(*rd_buf) - 1);
+    MR_BIT_CLR(size, sizeof(*rd_buf) - 1);
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
         uint32_t count = ops->get_count(timer);
@@ -151,7 +151,7 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
     ssize_t wr_size = 0;
 
     /* Only the last write is valid */
-    mr_bits_clr(size, sizeof(*wr_buf) - 1);
+    MR_BIT_CLR(size, sizeof(*wr_buf) - 1);
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
         timeout = *wr_buf;
@@ -268,11 +268,11 @@ int mr_timer_register(struct mr_timer *timer, const char *name, struct mr_drv *d
         };
     struct mr_timer_config default_config = MR_TIMER_CONFIG_DEFAULT;
 
-    mr_assert(timer != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
-    mr_assert(info != MR_NULL);
+    MR_ASSERT(timer != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
+    MR_ASSERT(info != MR_NULL);
 
     /* Initialize the fields */
     timer->config = default_config;

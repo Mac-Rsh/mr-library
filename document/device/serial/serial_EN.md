@@ -271,7 +271,7 @@ int serial_init(void)
     return MR_EOK;
 }
 /* Export to auto initialization (APP level) */
-MR_APP_EXPORT(serial_init);
+MR_INIT_APP_EXPORT(serial_init);
 
 int main(void) 
 {

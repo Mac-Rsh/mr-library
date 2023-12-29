@@ -103,7 +103,7 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
 
             /* Configure SCL pin */
             mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->scl_pin);
-            int ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT_OD));
+            int ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT_OD));
             if (ret < 0)
             {
                 return ret;
@@ -111,7 +111,7 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
 
             /* Configure SDA pin */
             mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->sda_pin);
-            ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT_OD));
+            ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT_OD));
             if (ret < 0)
             {
                 return ret;
@@ -124,7 +124,7 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
         {
             /* Reconfigure SCL pin */
             mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->scl_pin);
-            int ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
+            int ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_NONE));
             if (ret < 0)
             {
                 return ret;
@@ -132,7 +132,7 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
 
             /* Reconfigure SDA pin */
             mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->sda_pin);
-            ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_NONE));
+            ret = mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_NONE));
             if (ret < 0)
             {
                 return ret;
@@ -262,8 +262,8 @@ int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *n
             MR_NULL
         };
 
-    mr_assert(soft_i2c_bus != MR_NULL);
-    mr_assert(name != MR_NULL);
+    MR_ASSERT(soft_i2c_bus != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
 
     /* Initialize the fields */
     soft_i2c_bus->delay = 0;

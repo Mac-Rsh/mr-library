@@ -149,7 +149,7 @@ The register value will be written first (range: `0` ~ `INT32_MAX`) before readi
 
 ```c
 /* Set register value */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_REG, mr_make_local(int, 0x12));
+mr_dev_ioctl(ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
 
 /* Get register value */
 uint8_t reg;
@@ -344,7 +344,7 @@ int spi_init(void)
     }
     
     /* Set register value */
-    mr_dev_ioctl(host_ds, MR_CTL_SPI_SET_REG, mr_make_local(int, 0x12));
+    mr_dev_ioctl(host_ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
     
     /* Open SLAVE SPI device */
     slave_ds = mr_dev_open("spi2/slave", MR_OFLAG_RDWR);
@@ -366,7 +366,7 @@ int spi_init(void)
     return MR_EOK;
 }
 /* Export to auto init (APP level) */
-MR_APP_EXPORT(spi_init);
+MR_INIT_APP_EXPORT(spi_init);
 
 int main(void) 
 {
