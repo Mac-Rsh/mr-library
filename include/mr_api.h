@@ -14,7 +14,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 /**
  * @addtogroup Interrupt.
@@ -114,6 +114,6 @@ const char *mr_dev_get_name(int desc);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* _MR_API_H_ */

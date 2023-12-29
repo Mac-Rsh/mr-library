@@ -134,7 +134,7 @@ The register value will be written first (range: `0` ~ `INT32_MAX`) before readi
 
 ```c
 /* Set register value */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_REG, mr_make_local(int, 0x12));
+mr_dev_ioctl(ds, MR_CTL_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
 
 /* Get register value */  
 uint8_t reg;
@@ -297,7 +297,7 @@ int i2c_init(void)
        return ret;
     }
     /* Set register value */
-    mr_dev_ioctl(host_ds, MR_CTL_I2C_SET_REG, mr_make_local(int, 0x12));
+    mr_dev_ioctl(host_ds, MR_CTL_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
     
     /* Open I2C-SLAVE device */
     slave_ds = mr_dev_open("i2c2/slave", MR_OFLAG_RDWR);
@@ -318,7 +318,7 @@ int i2c_init(void)
     return MR_EOK;
 }
 /* Export to auto init (APP level) */
-MR_APP_EXPORT(i2c_init);
+MR_INIT_APP_EXPORT(i2c_init);
 
 int main(void) 
 {

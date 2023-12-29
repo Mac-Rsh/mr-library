@@ -77,7 +77,7 @@ Channel number range: `0` ~ `31`.
 #define CHANNEL_NUMBER                  5
 
 /* Set channel number */  
-mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL, mr_make_local(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* Get channel number */
 int number;
@@ -93,7 +93,7 @@ Channel status:
 
 ```c
 /* Set channel status */
-mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_STATE, mr_make_local(int, MR_ADC_STATE_ENABLE)); 
+mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_ADC_STATE_ENABLE)); 
 
 /* Get channel status */  
 int state;
@@ -154,9 +154,9 @@ int adc_init(void)
    /* Print ADC descriptor */
    mr_printf("ADC1 desc: %d\r\n", adc_ds);
    /* Set to channel 5 */
-   mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL, mr_make_local(int, CHANNEL_NUMBER));
+   mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
    /* Set channel enable */
-   ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_STATE, mr_make_local(int, MR_ADC_STATE_ENABLE));
+   ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_ADC_STATE_ENABLE));
    if (ret < 0)
    {
        mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));
@@ -165,7 +165,7 @@ int adc_init(void)
    return MR_EOK;
 }
 /* Export to automatic initialization (APP level) */
-MR_APP_EXPORT(adc_init); 
+MR_INIT_APP_EXPORT(adc_init); 
 
 int main(void)
 {

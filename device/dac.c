@@ -30,10 +30,10 @@ static int dac_channel_set_state(struct mr_dac *dac, int channel, int state)
     /* Enable or disable the channel */
     if (state == MR_DAC_STATE_ENABLE)
     {
-        mr_bits_set(dac->channel, (1 << channel));
+        MR_BIT_SET(dac->channel, (1 << channel));
     } else
     {
-        mr_bits_clr(dac->channel, (1 << channel));
+        MR_BIT_CLR(dac->channel, (1 << channel));
     }
     return MR_EOK;
 }
@@ -47,7 +47,7 @@ static int dac_channel_get_state(struct mr_dac *dac, int channel)
     }
 
     /* Check if the channel is enabled */
-    return mr_bits_is_set(dac->channel, (1 << channel));
+    return MR_BIT_IS_SET(dac->channel, (1 << channel));
 }
 
 static int mr_dac_open(struct mr_dev *dev)
@@ -66,10 +66,10 @@ static int mr_dac_close(struct mr_dev *dev)
     /* Disable all channels */
     for (int i = 0; i < 32; i++)
     {
-        if (mr_bits_is_set(dac->channel, (1 << i)) == MR_ENABLE)
+        if (MR_BIT_IS_SET(dac->channel, (1 << i)) == MR_ENABLE)
         {
             ops->channel_configure(dac, i, MR_DISABLE);
-            mr_bits_clr(dac->channel, (1 << i));
+            MR_BIT_CLR(dac->channel, (1 << i));
         }
     }
 
@@ -84,12 +84,12 @@ static ssize_t mr_dac_write(struct mr_dev *dev, int off, const void *buf, size_t
     ssize_t wr_size = 0;
 
     /* Check if the channel is enabled */
-    if (mr_bits_is_set(dac->channel, (1 << off)) == MR_DISABLE)
+    if (MR_BIT_IS_SET(dac->channel, (1 << off)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
 
-    mr_bits_clr(size, sizeof(*wr_buf) - 1);
+    MR_BIT_CLR(size, sizeof(*wr_buf) - 1);
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
         ops->write(dac, off, *wr_buf);
@@ -160,10 +160,10 @@ int mr_dac_register(struct mr_dac *dac, const char *name, struct mr_drv *drv)
             MR_NULL
         };
 
-    mr_assert(dac != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
+    MR_ASSERT(dac != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
 
     /* Initialize the fields */
     dac->channel = 0;

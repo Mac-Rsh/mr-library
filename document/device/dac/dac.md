@@ -77,7 +77,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 #define CHANNEL_NUMBER                  5
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL, mr_make_local(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
@@ -93,7 +93,7 @@ mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL, &number);
 
 ```c
 /* 设置通道状态 */
-mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL_STATE, mr_make_local(int, MR_DAC_STATE_ENABLE));
+mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_DAC_STATE_ENABLE));
 
 /* 获取通道状态 */
 int state;
@@ -153,9 +153,9 @@ int dac_init(void)
     /* 打印DAC描述符 */
     mr_printf("DAC1 desc: %d\r\n", dac_ds);
     /* 设置到通道5 */
-    mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL, mr_make_local(int, CHANNEL_NUMBER));
+    mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
     /* 设置通道使能 */
-    ret = mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL_STATE, mr_make_local(int, MR_DAC_STATE_ENABLE));
+    ret = mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_DAC_STATE_ENABLE));
     if (ret < 0)
     {
         mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));
@@ -164,7 +164,7 @@ int dac_init(void)
     return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
-MR_APP_EXPORT(dac_init);
+MR_INIT_APP_EXPORT(dac_init);
 
 /* 定义DAC数据最大值 */
 #define DAC_DATA_MAX                    4095

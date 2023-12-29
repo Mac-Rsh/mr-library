@@ -63,7 +63,7 @@ typedef int ssize_t;
 typedef int (*mr_init_fn_t)(void);
 
 /**
- * @brief Exports an auto initialization function.
+ * @brief Exports an auto initialization function with level.
  */
 #define MR_INIT_EXPORT(fn, level) \
     MR_USED const mr_init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
@@ -71,22 +71,22 @@ typedef int (*mr_init_fn_t)(void);
 /**
  * @brief Exports a board auto initialization function.
  */
-#define MR_BOARD_EXPORT(fn)             MR_INIT_EXPORT(fn, "1")
+#define MR_INIT_BOARD_EXPORT(fn)        MR_INIT_EXPORT(fn, "1")
 
 /**
  * @brief Exports a driver auto initialization function.
  */
-#define MR_DRV_EXPORT(fn)               MR_INIT_EXPORT(fn, "2")
+#define MR_INIT_DRV_EXPORT(fn)          MR_INIT_EXPORT(fn, "2")
 
 /**
  * @brief Exports a device auto initialization function.
  */
-#define MR_DEV_EXPORT(fn)               MR_INIT_EXPORT(fn, "3")
+#define MR_INIT_DEV_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")
 
 /**
  * @brief Exports a app auto initialization function.
  */
-#define MR_APP_EXPORT(fn)               MR_INIT_EXPORT(fn, "4")
+#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
 
 /**
  * @brief Error code.

@@ -30,20 +30,20 @@ static int pwm_channel_set_configure(struct mr_pwm *pwm, int channel, struct mr_
     /* Enable or disable the channel */
     if (config.state == MR_PWM_ENABLE)
     {
-        mr_bits_set(pwm->channel, (1 << channel));
+        MR_BIT_SET(pwm->channel, (1 << channel));
 
         /* Configure the polarity */
         if (config.polarity == MR_PWM_POLARITY_NORMAL)
         {
-            mr_bits_clr(pwm->channel_polarity, (1 << channel));
+            MR_BIT_CLR(pwm->channel_polarity, (1 << channel));
         } else
         {
-            mr_bits_set(pwm->channel_polarity, (1 << channel));
+            MR_BIT_SET(pwm->channel_polarity, (1 << channel));
         }
     } else
     {
-        mr_bits_clr(pwm->channel, (1 << channel));
-        mr_bits_clr(pwm->channel_polarity, (1 << channel));
+        MR_BIT_CLR(pwm->channel, (1 << channel));
+        MR_BIT_CLR(pwm->channel_polarity, (1 << channel));
     }
     return MR_EOK;
 }
@@ -57,8 +57,8 @@ static int pwm_channel_get_configure(struct mr_pwm *pwm, int channel, struct mr_
     }
 
     /* Get configure */
-    config->state = mr_bits_is_set(pwm->channel, (1 << channel));
-    config->polarity = mr_bits_is_set(pwm->channel_polarity, (1 << channel));
+    config->state = MR_BIT_IS_SET(pwm->channel, (1 << channel));
+    config->polarity = MR_BIT_IS_SET(pwm->channel_polarity, (1 << channel));
 
     return config->state;
 }
@@ -121,7 +121,7 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
             /* Check if prescaler can be used as period */
             if ((psc_best > per_best) && (psc_best < per_max))
             {
-                mr_swap(per_best, psc_best);
+                MR_SWAP(per_best, psc_best);
             }
         }
     }
@@ -154,10 +154,10 @@ static int mr_pwm_close(struct mr_dev *dev)
     /* Disable all channels */
     for (int i = 0; i < 32; i++)
     {
-        if (mr_bits_is_set(pwm->channel, (1 << i)) == MR_ENABLE)
+        if (MR_BIT_IS_SET(pwm->channel, (1 << i)) == MR_ENABLE)
         {
             ops->channel_configure(pwm, i, MR_DISABLE, MR_PWM_POLARITY_NORMAL);
-            mr_bits_clr(pwm->channel, (1 << i));
+            MR_BIT_CLR(pwm->channel, (1 << i));
         }
     }
 
@@ -172,12 +172,12 @@ static ssize_t mr_pwm_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     ssize_t rd_size = 0;
 
     /* Check if the channel is enabled */
-    if (mr_bits_is_set(pwm->channel, (1 << off)) == MR_DISABLE)
+    if (MR_BIT_IS_SET(pwm->channel, (1 << off)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
 
-    mr_bits_clr(size, sizeof(*rd_buf) - 1);
+    MR_BIT_CLR(size, sizeof(*rd_buf) - 1);
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
         *rd_buf = ops->read(pwm, off);
@@ -194,12 +194,12 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
     ssize_t wr_size = 0;
 
     /* Check if the channel is enabled */
-    if (mr_bits_is_set(pwm->channel, (1 << off)) == MR_DISABLE)
+    if (MR_BIT_IS_SET(pwm->channel, (1 << off)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
 
-    mr_bits_clr(size, sizeof(*wr_buf) - 1);
+    MR_BIT_CLR(size, sizeof(*wr_buf) - 1);
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
         ops->write(pwm, off, *wr_buf);
@@ -301,11 +301,11 @@ int mr_pwm_register(struct mr_pwm *pwm, const char *name, struct mr_drv *drv, st
             MR_NULL
         };
 
-    mr_assert(pwm != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
-    mr_assert(info != MR_NULL);
+    MR_ASSERT(pwm != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
+    MR_ASSERT(info != MR_NULL);
 
     /* Initialize the fields */
     pwm->freq = 0;

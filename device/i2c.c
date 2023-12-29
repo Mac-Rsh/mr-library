@@ -92,10 +92,10 @@ int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *name, struct mr_
         };
     struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
 
-    mr_assert(i2c_bus != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
+    MR_ASSERT(i2c_bus != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
 
     /* Initialize the fields */
     i2c_bus->config = default_config;
@@ -419,9 +419,9 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
         };
     struct mr_i2c_config default_config = MR_I2C_CONFIG_DEFAULT;
 
-    mr_assert(i2c_dev != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert((addr_bits == MR_I2C_ADDR_BITS_7) || (addr_bits == MR_I2C_ADDR_BITS_10));
+    MR_ASSERT(i2c_dev != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT((addr_bits == MR_I2C_ADDR_BITS_7) || (addr_bits == MR_I2C_ADDR_BITS_10));
 
     /* Initialize the fields */
     i2c_dev->config = default_config;
