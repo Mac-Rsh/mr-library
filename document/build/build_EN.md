@@ -1,114 +1,38 @@
-# MR Development Tools Python Library
+# Automated Build Tool
 
 [中文](build.md)
 
-This Python library provides functions for building and configuring embedded projects using the MDK-ARM and Eclipse IDEs.
-
- ----------
-
 <!-- TOC -->
-* [MR Development Tools Python Library](#mr-development-tools-python-library)
-  * [Classes](#classes)
-    * [MDK5](#mdk5)
-    * [Eclipse](#eclipse)
-  * [Functions](#functions)
-    * [build_mdk()](#buildmdk)
-    * [build_eclipse()](#buildeclipse)
-    * [menuconfig()](#menuconfig)
-    * [show_logo()](#showlogo)
-    * [show_license()](#showlicense)
-  * [Classes](#classes-1)
-  * [Command Line](#command-line)
-  * [Usage Example](#usage-example)
+* [Automated Build Tool](#automated-build-tool)
+  * [Build Process](#build-process)
+  * [Supported Commands](#supported-commands)
 <!-- TOC -->
 
- ----------
+The MR framework provides an automated build system. The script-driven build tool can automatically and efficiently
+complete the introduction and configuration according to different IDEs, greatly reducing the learning cost of using the
+framework and the difficulty of integration with different environments.
 
-## Classes
+## Build Process
 
-### MDK5
+1. Run `python build.py` in the command line to automatically install the required environment for the tool.
 
-Represents an MDK-ARM project file (.uvprojx).
+2. Run `python build.py -m` to complete the configuration of the MR framework in a graphical interface. After the
+   configuration is completed, it will automatically generate the `mr_config.h` header file.
 
-**Methods**
+3. Run `python build.py -ide` according to the IDE type (`-mdk` or `-ecl`) to complete the automatic configuration.
 
-- **add_include_path(path)** - Adds an include path to the project.
+The automated build tool will complete:
 
-- **add_include_paths(paths)** - Adds multiple include paths to the project.
+- Automatic import of MR framework files
+- Automatic addition of MR framework header file paths
+- Automatically enable GNU support for the IDE compilation toolchain
 
-- **add_files_new_group(name, files)** - Adds files to a new group in the project.
+## Supported Commands
 
-- **add_path_files(path)** - Adds all files in a path to a group.
+- `m`: Launches the graphical configuration interface
+- `lic`: Displays license information
+- `mdk`: Configures the project for MDK (Keil)
+- `ecl`: Configures the project for Eclipse
 
-- **add_path_c_files(path)** - Adds C/C++ files in a path to a group.
-
-- **use_gnu(enable)** - Enables or disables the GNU compiler.
-
-- **save()** - Saves changes to the project file.
-
-### Eclipse
-
-Represents an Eclipse CDT project file (.cproject).
-
-**Methods**
-
-- **add_include_path(path)** - Adds an include path to the project.
-
-- **use_auto_init()** - Enables automatic initialization section in linker script.
-
-- **save()** - Saves changes to the project file.
-
-## Functions
-
-### build_mdk()
-
-Builds an MDK project.
-
-### build_eclipse()
-
-Builds an Eclipse project.
-
-### menuconfig()
-
-Runs the Kconfig menuconfig tool.
-
-### show_logo()
-
-Displays the library logo.
-
-### show_license()
-
-Displays or explains the license.
-
-## Classes
-
-- **MR** - Represents the library root path and files.
-
-- **log_print(level, text)** - Prints formatted log messages.
-
-## Command Line
-
-The library can be run from the command line with the following options:
-
-- `-m, --menuconfig` - Runs menuconfig
-- `-mdk, --mdk` - Builds with MDK
-- `-ecl, --eclipse` - Builds with Eclipse
-- `-lic, --license` - Shows license
-
-## Usage Example
-
-```python
-mdk_proj_path = "D:/workspace"
-include_path = "D:/workspace/include"
-c_file_path = "D:/workspace/source"
-# Instance MDK object
-mdk_proj = MDK5(mdk_proj_path)
-# Add contain path
-mdk_proj.add_include_path(include_path)
-# Add C file
-mdk_proj.add_path_c_files(c_file_path)
-# Use GNU
-mdk_proj.use_gnu(True)
-# Save
-mdk_proj.save()
-```
+The build script greatly simplifies the configuration and integration process, allowing developers to quickly start
+development without needing to understand the internal workings of the project.

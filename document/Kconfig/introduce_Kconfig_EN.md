@@ -1,6 +1,6 @@
 # How to introduce the Kconfig configuration system into a project
 
-[中文](Kconfig.md)
+[中文](introduce_Kconfig.md)
 
 <!-- TOC -->
 * [How to introduce the Kconfig configuration system into a project](#how-to-introduce-the-kconfig-configuration-system-into-a-project)

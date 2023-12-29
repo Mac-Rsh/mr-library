@@ -1,114 +1,32 @@
-# MR开发工具Python库
+# 自动构建工具
 
 [English](build_EN.md)
 
-此Python库提供了用于构建和配置嵌入式项目的MDK-ARM和Eclipse IDE功能。
-
- ----------
-
 <!-- TOC -->
-* [MR开发工具Python库](#mr开发工具python库)
-  * [类](#类)
-    * [MDK5](#mdk5)
-    * [Eclipse](#eclipse)
-  * [函数](#函数)
-    * [build_mdk()](#buildmdk)
-    * [build_eclipse()](#buildeclipse)
-    * [menuconfig()](#menuconfig)
-    * [show_logo()](#showlogo)
-    * [show_license()](#showlicense)
-  * [类](#类-1)
-  * [命令行](#命令行)
-  * [使用示例](#使用示例)
+* [自动构建工具](#自动构建工具)
+  * [构建流程](#构建流程)
+  * [支持的命令](#支持的命令)
 <!-- TOC -->
 
- ----------
+`MR` 框架提供自动化构建系统，通过脚本驱动的构建工具可以根据不同`IDE`自动、高效地完成引入与配置。大大降低了框架使用的学习成本以及与不同环境的集成难度。
 
-## 类
+## 构建流程
 
-### MDK5
+1. 在命令行中运行`python build.py`，自动完成工具所需环境的安装。
+2. 运行`python build.py -m`，在图形化界面中完成`MR` 框架的配置。配置完成后，会自动生成`mr_config.h`头文件。
+3. 运行`python build.py -ide`，根据`IDE`类型(`-mdk`或`-ecl`)，完成自动化配置。
 
-表示MDK-ARM项目文件(.uvprojx)。
+自动构建工具将完成：
 
-**方法**
+- `MR` 框架文件的自动导入。
+- `MR` 框架头文件路径的自动添加。
+- 自动使能IDE编译工具链的`GNU`支持。
 
-- **add_include_path(path)** - 添加包含路径到项目中
+## 支持的命令
 
-- **add_include_paths(paths)** - 批量添加包含路径到项目中
+- `m`：启动图形用户界面来配置框架
+- `lic`：显示框架的许可证信息
+- `mdk`：为Keil开发环境构建项目
+- `ecl`：为Eclipse开发环境构建项目设置
 
-- **add_files_new_group(name, files)** - 向项目中添加文件到新组中
-
-- **add_path_files(path)** - 向组中添加路径中的所有文件
-
-- **add_path_c_files(path)** - 向组中添加路径中的C/C++文件
-
-- **use_gnu(enable)** - 启用或禁用GNU编译器
-
-- **save()** - 保存项目文件更改
-
-### Eclipse
-
-表示Eclipse CDT项目文件(.cproject)。
-
-**方法**
-
-- **add_include_path(path)** - 添加包含路径到项目中
-
-- **use_auto_init()** - 在链接脚本中启用自动初始化段
-
-- **save()** - 保存项目文件更改
-
-## 函数
-
-### build_mdk()
-
-构建MDK项目
-
-### build_eclipse()
-
-构建Eclipse项目
-
-### menuconfig()
-
-运行Kconfig菜单配置工具
-
-### show_logo()
-
-显示库logo
-
-### show_license()
-
-显示或说明许可证
-
-## 类
-
-- **MR** - 表示库根路径和文件
-
-- **log_print(level, text)** - 打印格式化日志消息
-
-## 命令行
-
-可以使用以下选项从命令行运行库:
-
-- `-m`、`--menuconfig` - 运行菜单配置
-- `-mdk`、`--mdk` - 使用MDK构建
-- `-ecl`、`--eclipse` - 使用Eclipse构建
-- `-lic`、`--license` - 显示许可证
-
-## 使用示例
-
-```python
-mdk_proj_path = "D:/workspace"
-include_path = "D:/workspace/include"
-c_file_path = "D:/workspace/source"
-# 实例MDK对象
-mdk_proj = MDK5(mdk_proj_path)
-# 添加包含路径
-mdk_proj.add_include_path(include_path)
-# 添加C文件
-mdk_proj.add_path_c_files(c_file_path)
-# 使用GNU
-mdk_proj.use_gnu(True)
-# 保存
-mdk_proj.save()
-```
+构建脚本大大简化了配置和集成流程，开发者无需了解工程内部，就可以快速启动开发。
