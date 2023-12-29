@@ -1,26 +1,52 @@
 mainmenu "mr-library"
 
 menu "Device configure"
+    # Heap
 	config MR_CFG_HEAP_SIZE
 		int "Heap size (Bytes)"
 		default 4096
 		range 32 2147483647
 		help
-			"Size of dynamic memory for system."
+			"This option sets the size of the heap used by the library."
 
-    config MR_CFG_PRINTF_BUFSZ
-        int "Printf buffer size"
-        default 128
-        range 32 2147483647
-        help
-            "Size of the buffer used by the printf function."
-
+    # Assert
     config MR_USING_ASSERT
     	bool "Use assert"
     	default y
     	help
     		"Use this option allows the use of assert statements in the code."
 
+    # Console
+    config MR_USING_CONSOLE
+        bool "Use console"
+        default y
+        help
+            "Use this option allows for the use of the console."
+
+    menu "Console configure"
+        depends on MR_USING_CONSOLE
+
+        config MR_CFG_PRINTF_BUFSZ
+            int "Printf buffer size"
+            default 128
+            range 32 2147483647
+            help
+                "This option sets the buffer size used by the printf function."
+
+        config MR_CFG_CONSOLE_NAME
+            string "Console device name"
+            default "serial1"
+            help
+                "This option sets the name of the console device."
+
+        config MR_USING_CONSOLE_NONBLOCK
+            bool "Use console non-blocking"
+            default n
+            help
+                "Use this option allows for the use of the console device in non-blocking mode."
+    endmenu
+
+    # Log
     config MR_USING_LOG
         bool "Use log"
         default y
@@ -67,47 +93,26 @@ menu "Device configure"
                 "Use this option allows for the use of success log."
     endmenu
 
+   # Device
 	config MR_CFG_NAME_MAX
 		int "Name max length"
 		default 8
 		range 4 1024
 		help
-			"Maximum length of device name."
+			"This option sets the max length of the name."
 
 	config MR_CFG_DESC_MAX
 		int "Descriptors max number"
 		default 64
 		range 16 1024
 		help
-			"Maximum number of descriptors."
+			"This option sets the max number of descriptors."
 
 	config MR_USING_RDWR_CTL
 		bool "Use read/write control"
 		default y
 		help
 			"Use this option allows for read and write control of devices."
-
-    config MR_USING_CONSOLE
-        bool "Use console"
-        default y
-        help
-            "Use this option allows for the use of the console device."
-
-    menu "Console configure"
-        depends on MR_USING_CONSOLE
-
-        config MR_CFG_CONSOLE_NAME
-            string "Console name"
-            default "serial1"
-            help
-                "Name of the console device."
-
-        config MR_USING_CONSOLE_NONBLOCK
-            bool "Use console non-blocking"
-            default n
-            help
-            "Use this option allows for the use of the console device in non-blocking mode."
-    endmenu
 
 	config MR_USING_ADC
 		bool "Use ADC device"
@@ -222,6 +227,8 @@ menu "Device configure"
         	"Use this option allows for the use of Timer devices."
 endmenu
 
+# Driver
 source "driver/Kconfig"
 
+# Components
 source "components/Kconfig"
