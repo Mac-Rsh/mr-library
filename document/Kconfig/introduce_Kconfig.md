@@ -1,6 +1,6 @@
 # 如何为项目引入Kconfig配置系统
 
-[English](Kconfig_EN.md)
+[English](introduce_Kconfig_EN.md)
 
 <!-- TOC -->
 * [如何为项目引入Kconfig配置系统](#如何为项目引入kconfig配置系统)
