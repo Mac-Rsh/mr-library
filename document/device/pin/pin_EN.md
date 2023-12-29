@@ -89,7 +89,7 @@ Note: This rule may not apply to all MCUs. Special requirements need to check th
 #define PIN_NUMBER                      45
 
 /* Set pin number */  
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, PIN_NUMBER));
+mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, PIN_NUMBER));
 
 /* Get pin number */
 int number;
@@ -122,7 +122,7 @@ And 5 external interrupt modes:
 #define PIN_MODE                        MR_PIN_MODE_OUTPUT
 
 /* Set pin mode */
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, PIN_MODE)); 
+mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE)); 
 ```
 
 ### Set/Get External Interrupt Callback Function
@@ -150,8 +150,7 @@ mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
 
 Note:
 
-- You need to reconfigure the pin mode to external interrupt mode after setting the callback function to bind the callback function to the corresponding pin. So please set the callback function first before configuring the pin mode. And the callback function must judge the pin source is correct (for the case of external interrupt triggered on pins without binding, it will call the unbound callback function).
-- If the external interrupt is set without reconfiguring the callback function, it will use the previous result by default, and will not use the current device descriptor.
+- Before setting the external interrupt mode, you need to configure the callback function, otherwise, it becomes a callback-free interrupt.
 - Even if the PIN device is closed, the callback function will not be invalid until the pin is set to a common mode (external interrupts will be ignored when the PIN device is closed).
 
 ## Read PIN Device Pin Level
@@ -249,9 +248,9 @@ int led_key_init(void)
     /* Print LED descriptor */
     mr_printf("LED desc: %d\r\n", led_ds);
     /* Set to LED pin */
-    mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, LED_PIN_NUMBER));
+    mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
     /* Set LED pin to push-pull output mode */
-    ret = mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
+    ret = mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
     if (ret < 0)
     {
         mr_printf("led set mode failed: %s\r\n", mr_strerror(ret));
@@ -270,9 +269,9 @@ int led_key_init(void)
     /* Print KEY descriptor */
     mr_printf("KEY desc: %d\r\n", key_ds);
     /* Set to KEY pin */
-    mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, KEY_PIN_NUMBER));
+    mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, KEY_PIN_NUMBER));
     /* Set KEY pin to external interrupt (falling edge) mode (without reconfiguring the callback function, use the previous result, i.e. the callback function set by LED) */
-    ret = mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_IRQ_FALLING));
+    ret = mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_IRQ_FALLING));
     if (ret < 0)
     {
         mr_printf("key set mode failed: %s\r\n", mr_strerror(ret));
@@ -281,7 +280,7 @@ int led_key_init(void)
     return MR_EOK;
 }
 /* Export to auto initialization (APP level) */
-MR_APP_EXPORT(led_key_init);
+MR_INIT_APP_EXPORT(led_key_init);
 
 int main(void)
 {

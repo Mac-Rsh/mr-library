@@ -121,7 +121,7 @@ int mr_heap_init(void)
     }
 
     /* 字节向上做4对齐 */
-    size = mr_align4_up(size);
+    size = MR_ALIGN4_UP(size);
 
     /* 找到符合内存分配大小的内存块 */
     while (block->size < size)

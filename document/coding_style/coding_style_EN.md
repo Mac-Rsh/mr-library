@@ -168,9 +168,6 @@
    #define MR_CFG_OBJECT_NAME_SIZE      15
    ```
 
-2. Static macro functions (no computation, assignment etc needed at runtime) follow macro naming. Dynamic macro
-   functions (with runtime operations) follow function naming.
-
 # Comment Conventions
 
 1. Single line comments use `/* */`, multi-line comments:

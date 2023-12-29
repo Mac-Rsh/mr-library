@@ -43,7 +43,7 @@ extern "C" {
  *
  * @return A pointer to the structure.
  */
-#define mr_container_of(pointer, type, member) \
+#define MR_CONTAINER_OF(pointer, type, member) \
     ((type *)((char *)(pointer) - (unsigned long)(&((type *)0)->member)))
 
 /**
@@ -51,14 +51,14 @@ extern "C" {
  *
  * @param size The size to align.
  */
-#define mr_align4_up(size)              (((size) + 3) & (~3))
+#define MR_ALIGN4_UP(size)              (((size) + 3) & (~3))
 
 /**
  * @brief This macro function aligns a size down to a multiple of 4.
  *
  * @param size The size to align.
  */
-#define mr_align4_down(size)            ((size) & (~3))
+#define MR_ALIGN4_DOWN(size)            ((size) & (~3))
 
 /**
  * @brief This macro function checks if a value is set.
@@ -66,7 +66,7 @@ extern "C" {
  * @param value The value to check.
  * @param mask The mask to check.
  */
-#define mr_bits_is_set(value, mask)     (((value) & (mask)) == (mask))
+#define MR_BIT_IS_SET(value, mask)     (((value) & (mask)) == (mask))
 
 /**
  * @brief This macro function sets a value.
@@ -74,7 +74,7 @@ extern "C" {
  * @param value The value to set.
  * @param mask The mask to set.
  */
-#define mr_bits_set(value, mask)        ((value) |= (mask))
+#define MR_BIT_SET(value, mask)        ((value) |= (mask))
 
 /**
  * @brief This macro function clears a value.
@@ -82,7 +82,7 @@ extern "C" {
  * @param value The value to clear.
  * @param mask The mask to clear.
  */
-#define mr_bits_clr(value, mask)        ((value) &= ~(mask))
+#define MR_BIT_CLR(value, mask)        ((value) &= ~(mask))
 
 /**
  * @brief This macro function creates a local variable.
@@ -94,7 +94,7 @@ extern "C" {
  *
  * @note The variable is local, please use it carefully.
  */
-#define mr_make_local(type, ...)        (&((type){__VA_ARGS__}))
+#define MR_MAKE_LOCAL(type, ...)        (&((type){__VA_ARGS__}))
 
 /**
  * @brief This macro function gets the number of elements in an array.
@@ -103,7 +103,7 @@ extern "C" {
  *
  * @return The number of elements in the array.
  */
-#define mr_array_num(array)             (sizeof(array)/sizeof((array)[0]))
+#define MR_ARRAY_SIZE(array)             (sizeof(array)/sizeof((array)[0]))
 
 /**
  * @brief This macro function gets the maximum of two values.
@@ -113,7 +113,7 @@ extern "C" {
  *
  * @return The maximum of the two values.
  */
-#define mr_max(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a > _b ? _a : _b; })
+#define MR_MAX(a, b)                    ({typeof (a) _a = (a); typeof (b) _b = (b); _a > _b ? _a : _b; })
 
 /**
  * @brief This macro function gets the minimum of two values.
@@ -123,7 +123,7 @@ extern "C" {
  *
  * @return The minimum of the two values.
  */
-#define mr_min(a, b)                    ({ typeof (a) _a = (a); typeof (b) _b = (b); _a < _b ? _a : _b; })
+#define MR_MIN(a, b)                    ({typeof (a) _a = (a); typeof (b) _b = (b); _a < _b ? _a : _b; })
 
 /**
  * @brief This macro function ensures that a value is within a specified range.
@@ -134,7 +134,7 @@ extern "C" {
  *
  * @return The value within the specified range.
  */
-#define mr_bound(value, min, max) \
+#define MR_BOUND(value, min, max) \
     ({__typeof__(value) _value = (value); __typeof__(min) _min = (min); __typeof__(max) _max = (max); \
     (_value) < (_min) ? (_min) : ((_value) > (_max) ? (_max) : (_value));})
 
@@ -147,7 +147,7 @@ extern "C" {
  *
  * @return The value within the specified range.
  */
-#define mr_limit(value, min, max)       mr_bound(value, min, max)
+#define MR_LIMIT(value, min, max)       MR_BOUND(value, min, max)
 
 /**
  * @brief This macro function swaps two values.
@@ -155,7 +155,7 @@ extern "C" {
  * @param a The first value.
  * @param b The second value.
  */
-#define mr_swap(a, b)                   do { typeof (a) temp = (a); (a) = (b); (b) = temp; } while (0)
+#define MR_SWAP(a, b)                   do { typeof (a) temp = (a); (a) = (b); (b) = temp; } while (0)
 
 /**
  * @brief This macro function converts a value to a boolean.
@@ -164,31 +164,7 @@ extern "C" {
  *
  * @return The boolean value.
  */
-#define mr_to_bool(value)               (!!(value))
-
-/**
- * @brief This macro function asserts a condition.
- *
- * @param ex The condition to assert.
- */
-#ifdef MR_USING_ASSERT
-#define mr_assert(ex)                   \
-    do{                                 \
-        if (!(ex))                      \
-        {                               \
-            mr_printf("assert > "       \
-                      "failed: %s, "    \
-                      "file: %s, "      \
-                      "line: %d.\r\n",  \
-                      #ex,              \
-                      (__FUNCTION__),   \
-                      (__LINE__));      \
-            while(1);                   \
-        }                               \
-    } while(0)
-#else
-#define mr_assert(ex)
-#endif /* MR_USING_ASSERT */
+#define MR_TO_BOOL(value)               (!!(value))
 
 /**
  * @brief Log message with color.
@@ -211,30 +187,55 @@ extern "C" {
  * @brief This macro function logs a error-warning-debug-info message.
  */
 #if defined(MR_USING_LOG_ERROR) && defined(MR_USING_LOG)
-#define mr_log_error(fmt, ...)          mr_printf("%s: %s\r\n", MR_LOG_COLOR_RED("ERROR", fmt), ##__VA_ARGS__)
+#define MR_LOG_ERROR(fmt, ...)          mr_printf("%-8s %s\r\n", MR_LOG_COLOR_RED("ERROR:", fmt), ##__VA_ARGS__)
 #else
-#define mr_log_error(fmt, ...)
+#define MR_LOG_ERROR(fmt, ...)
 #endif /* defined(MR_USING_LOG_ERROR) && defined(MR_USING_LOG) */
 #if defined(MR_USING_LOG_WARN) && defined(MR_USING_LOG)
-#define mr_log_warn(fmt, ...)           mr_printf("%s: %s\r\n", MR_LOG_COLOR_YELLOW("WARNING", fmt), ##__VA_ARGS__)
+#define MR_LOG_WARN(fmt, ...)           mr_printf("%-8s %s\r\n", MR_LOG_COLOR_YELLOW("WARNING:", fmt), ##__VA_ARGS__)
 #else
-#define mr_log_warn(fmt, ...)
+#define MR_LOG_WARN(fmt, ...)
 #endif /* defined(MR_USING_LOG_WARN) && defined(MR_USING_LOG) */
 #if defined(MR_USING_LOG_INFO) && defined(MR_USING_LOG)
-#define mr_log_info(fmt, ...)           mr_printf("%s: %s\r\n", MR_LOG_COLOR_BLUE("INFO", fmt), ##__VA_ARGS__)
+#define MR_LOG_INFO(fmt, ...)           mr_printf("%-8s %s\r\n", MR_LOG_COLOR_BLUE("INFO:", fmt), ##__VA_ARGS__)
 #else
-#define mr_log_info(fmt, ...)
+#define MR_LOG_INFO(fmt, ...)
 #endif /* defined(MR_USING_LOG_INFO) && defined(MR_USING_LOG) */
 #if defined(MR_USING_LOG_DEBUG) && defined(MR_USING_LOG)
-#define mr_log_debug(fmt, ...)          mr_printf("%s: %s\r\n", MR_LOG_COLOR_PURPLE("DEBUG", fmt), ##__VA_ARGS__)
+#define MR_LOG_DEBUG(fmt, ...)          mr_printf("%-8s %s\r\n", MR_LOG_COLOR_PURPLE("DEBUG:", fmt), ##__VA_ARGS__)
 #else
-#define mr_log_debug(fmt, ...)
+#define MR_LOG_DEBUG(fmt, ...)
 #endif /* defined(MR_USING_LOG_DEBUG) && defined(MR_USING_LOG) */
 #if defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG)
-#define mr_log_success(fmt, ...)        mr_printf("%s: %s\r\n", MR_LOG_COLOR_GREEN("SUCCESS", fmt), ##__VA_ARGS__)
+#define MR_LOG_SUCCESS(fmt, ...)        mr_printf("%-8s %s\r\n", MR_LOG_COLOR_GREEN("SUCCESS:", fmt), ##__VA_ARGS__)
 #else
-#define mr_log_success(fmt, ...)
+#define MR_LOG_SUCCESS(fmt, ...)
 #endif /* defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG) */
+
+/**
+ * @brief This macro function asserts a condition.
+ *
+ * @param ex The condition to assert.
+ */
+#ifdef MR_USING_ASSERT
+#define MR_ASSERT(ex)                   \
+    do{                                 \
+        if (!(ex))                      \
+        {                               \
+            mr_printf("%-8s "          \
+                      "failed: %s, "    \
+                      "file: %s, "      \
+                      "line: %d.\r\n",  \
+                      "ASSERT:",        \
+                      #ex,              \
+                      (__FUNCTION__),   \
+                      (__LINE__));      \
+            while(1);                   \
+        }                               \
+    } while(0)
+#else
+#define mr_assert(ex)
+#endif /* MR_USING_ASSERT */
 
 /**
  * @brief This function checks if a list is empty.

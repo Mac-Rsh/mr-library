@@ -10,12 +10,15 @@
 
 #ifdef MR_USING_PIN
 
+/**
+ * @brief Pin irq structure.
+ */
 struct pin_irq
 {
-    struct mr_list list;
-    int number;
-    int desc;
-    int (*call)(int desc, void *args);
+    int number;                                                     /**< Pin number */
+    int desc;                                                       /**< Device descriptor */
+    int (*call)(int desc, void *args);                              /**< Callback function */
+    struct mr_list list;                                            /**< List */
 };
 
 static int pin_set_mode(struct mr_pin *pin, int number, int mode)
@@ -41,7 +44,7 @@ static int pin_set_mode(struct mr_pin *pin, int number, int mode)
     /* If the irq exists, update it */
     for (struct mr_list *list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
     {
-        struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
+        struct pin_irq *irq = (struct pin_irq *)MR_CONTAINER_OF(list, struct pin_irq, list);
         if (irq->number == number)
         {
             if (mode < MR_PIN_MODE_IRQ_RISING)
@@ -65,15 +68,22 @@ static int pin_set_mode(struct mr_pin *pin, int number, int mode)
     /* If not exist, allocate new irq */
     if (mode >= MR_PIN_MODE_IRQ_RISING)
     {
+        /* Allocate irq */
         struct pin_irq *irq = (struct pin_irq *)mr_malloc(sizeof(struct pin_irq));
-        if (irq != MR_NULL)
+        if (irq == MR_NULL)
         {
-            mr_list_init(&irq->list);
-            irq->number = number;
-            irq->desc = pin->dev.rd_call.desc;
-            irq->call = pin->dev.rd_call.call;
-            mr_list_insert_before(&pin->irq_list, &irq->list);
+            /* Enable interrupt */
+            mr_interrupt_enable();
+            return MR_ENOMEM;
         }
+        irq->number = number;
+        irq->desc = pin->dev.rd_call.desc;
+        irq->call = pin->dev.rd_call.call;
+        mr_list_init(&irq->list);
+        mr_list_insert_before(&pin->irq_list, &irq->list);
+
+        /* Clear call */
+        pin->dev.rd_call.call = MR_NULL;
     }
 
     /* Enable interrupt */
@@ -161,14 +171,14 @@ static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
             struct mr_list *list = MR_NULL;
             for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
             {
-                struct pin_irq *irq = (struct pin_irq *)mr_container_of(list, struct pin_irq, list);
+                struct pin_irq *irq = (struct pin_irq *)MR_CONTAINER_OF(list, struct pin_irq, list);
                 if (irq->number == number)
                 {
                     irq->call(irq->desc, &number);
                     return MR_EEXIST;
                 }
             }
-            return number;
+            return MR_ENOTFOUND;
         }
 
         default:
@@ -199,10 +209,10 @@ int mr_pin_register(struct mr_pin *pin, const char *name, struct mr_drv *drv)
             mr_pin_isr
         };
 
-    mr_assert(pin != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
+    MR_ASSERT(pin != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
 
     /* Initialize the fields */
     mr_list_init(&pin->irq_list);

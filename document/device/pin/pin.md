@@ -89,7 +89,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 #define PIN_NUMBER                      45
 
 /* 设置引脚编号 */
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, PIN_NUMBER));
+mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, PIN_NUMBER));
 
 /* 获取引脚编号 */
 int number;
@@ -122,7 +122,7 @@ mr_dev_ioctl(ds, MR_CTL_PIN_GET_NUMBER, &number);
 #define PIN_MODE                        MR_PIN_MODE_OUTPUT
 
 /* 设置引脚模式 */
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, PIN_MODE));
+mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE));
 ```
 
 ### 设置/获取外部中断回调函数
@@ -150,9 +150,7 @@ mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
 
 注：
 
--
-在设置回调函数之后，需要重新配置一次引脚模式为外部中断模式才能使回调函数绑定到对应引脚。因此在配置引脚模式之前，请先设置回调函数，且回调函数中一定要判断引脚源是否正确（未绑定的情况下，若同样有配置为外部中断模式的但未绑定引脚触发了外部中断，此时将调用未绑定的回调函数）。
-- 如果设置外部中断时没有重新配置回调函数，则默认使用上一次的结果，并且不会使用当前设备描述符。
+- 设置外部中断模式前需要先配置回调函数，否则将成为无回调中断。
 - 即使PIN设备被关闭，回调函数也不会失效，直至引脚被设置为普通模式（PIN设备关闭时，外部中断将被忽略）。
 
 ## 读取PIN设备引脚电平
@@ -250,9 +248,9 @@ int led_key_init(void)
     /* 打印LED描述符 */
     mr_printf("LED desc: %d\r\n", led_ds);
     /* 设置到LED引脚 */
-    mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, LED_PIN_NUMBER));
+    mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
     /* 设置LED引脚为推挽输出模式 */
-    ret = mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
+    ret = mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
     if (ret < 0)
     {
         mr_printf("led set mode failed: %s\r\n", mr_strerror(ret));
@@ -271,9 +269,9 @@ int led_key_init(void)
     /* 打印KEY描述符 */
     mr_printf("KEY desc: %d\r\n", key_ds);
     /* 设置到KEY引脚 */
-    mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, KEY_PIN_NUMBER));
+    mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, KEY_PIN_NUMBER));
     /* 设置KEY引脚为外部中断（下降沿）模式（未重新配置回调函数，则使用上一次的结果，即LED设置的回调函数） */
-    ret = mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_IRQ_FALLING));
+    ret = mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_IRQ_FALLING));
     if (ret < 0)
     {
         mr_printf("key set mode failed: %s\r\n", mr_strerror(ret));
@@ -282,7 +280,7 @@ int led_key_init(void)
     return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
-MR_APP_EXPORT(led_key_init);
+MR_INIT_APP_EXPORT(led_key_init);
 
 int main(void)
 {
@@ -296,5 +294,4 @@ int main(void)
 }
 ```
 
-按下KEY后，LED将翻转。
-观察串口打印，可以看到LED和KEY的描述符。虽然KEY引脚的外部中断是KEY配置的，但未配置回调函数。故KEY引脚回调函数继承之前的配置，即LED配置的回调函数，所以KEY回调函数中打印的描述符为LED的描述符。
+按下KEY后，LED将翻转。观察串口打印，可以看到LED和KEY的描述符。虽然KEY引脚的外部中断是KEY配置的，但未重新配置回调函数。故KEY引脚回调函数继承之前的配置，即LED配置的回调函数，所以KEY回调函数中打印的描述符为LED的描述符。

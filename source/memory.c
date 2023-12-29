@@ -48,7 +48,7 @@ int mr_heap_init(void)
     heap_start.next = first_block;
     return MR_EOK;
 }
-MR_BOARD_EXPORT(mr_heap_init);
+MR_INIT_BOARD_EXPORT(mr_heap_init);
 
 static void heap_insert_block(struct mr_heap_block *block)
 {
@@ -115,7 +115,7 @@ MR_WEAK void *mr_malloc(size_t size)
     }
 
     /* Align the size up 4 bytes */
-    size = mr_align4_up(size);
+    size = MR_ALIGN4_UP(size);
 
     /* Search for and take blocks that match the criteria */
     while (block->size < size)

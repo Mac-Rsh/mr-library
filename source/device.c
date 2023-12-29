@@ -27,23 +27,15 @@ MR_INLINE int dev_is_root(struct mr_dev *dev)
 
 MR_INLINE struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
 {
-    /* Disable interrupt */
-    mr_interrupt_disable();
-
     /* Find the child device */
     for (struct mr_list *list = parent->clist.next; list != &parent->clist; list = list->next)
     {
-        struct mr_dev *dev = (struct mr_dev *)mr_container_of(list, struct mr_dev, list);
+        struct mr_dev *dev = (struct mr_dev *)MR_CONTAINER_OF(list, struct mr_dev, list);
         if (strncmp(name, dev->name, MR_CFG_NAME_MAX) == 0)
         {
-            /* Enable interrupt */
-            mr_interrupt_enable();
             return dev;
         }
     }
-
-    /* Enable interrupt */
-    mr_interrupt_enable();
     return MR_NULL;
 }
 
@@ -55,17 +47,11 @@ MR_INLINE int dev_register_child(struct mr_dev *parent, struct mr_dev *child, co
         return MR_EEXIST;
     }
 
-    /* Disable interrupt */
-    mr_interrupt_disable();
-
     /* Insert the device into the child list */
     child->magic = MR_MAGIC_NUMBER;
     strncpy(child->name, name, MR_CFG_NAME_MAX);
     child->parent = parent;
     mr_list_insert_before(&parent->clist, &child->list);
-
-    /* Enable interrupt */
-    mr_interrupt_enable();
     return MR_EOK;
 }
 
@@ -87,30 +73,30 @@ MR_INLINE const char *dev_clear_path(const char *path)
 
 MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const char *path)
 {
-    char parent_name[MR_CFG_NAME_MAX + 1] = {0};
-    char *parent_path = MR_NULL;
+    char child_name[MR_CFG_NAME_MAX + 1] = {0};
+    const char *child_path = MR_NULL;
 
     /* Clear the path */
     path = dev_clear_path(path);
 
-    /* Check whether the parent exists */
-    parent_path = strchr(path, '/');
-    if (parent_path != MR_NULL)
+    /* Check whether the child path exists */
+    child_path = strchr(path, '/');
+    if (child_path != MR_NULL)
     {
-        /* Get the parent name */
-        size_t len = (parent_path - path) > MR_CFG_NAME_MAX ? MR_CFG_NAME_MAX : (parent_path - path);
-        strncpy(parent_name, path, len);
-        parent_name[len] = '\0';
+        /* Get the child name */
+        size_t len = (child_path - path) > MR_CFG_NAME_MAX ? MR_CFG_NAME_MAX : (child_path - path);
+        strncpy(child_name, path, len);
+        child_name[len] = '\0';
 
-        /* Find the parent */
-        parent = dev_find_child(parent, parent_name);
-        if (parent == MR_NULL)
+        /* Find the child */
+        struct mr_dev *child = dev_find_child(parent, child_name);
+        if (child == MR_NULL)
         {
             return MR_EINVAL;
         }
 
         /* Continue iterating */
-        return dev_register_by_path(parent, dev, parent_path);
+        return dev_register_by_path(child, dev, child_path);
     } else
     {
         /* Register the child device to the parent */
@@ -120,29 +106,33 @@ MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, co
 
 MR_INLINE struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 {
-    char parent_name[MR_CFG_NAME_MAX + 1] = {0};
-    char *parent_path = MR_NULL;
+    char child_name[MR_CFG_NAME_MAX + 1] = {0};
+    const char *child_path = MR_NULL;
 
     /* Clear the path */
     path = dev_clear_path(path);
 
-    /* Check whether the parent exists */
-    parent_path = strchr(path, '/');
-    if (parent_path != MR_NULL)
+    /* Check whether the child path exists */
+    child_path = strchr(path, '/');
+    if (child_path != MR_NULL)
     {
-        /* Get the parent name */
-        size_t len = (parent_path - path) > MR_CFG_NAME_MAX ? MR_CFG_NAME_MAX : (parent_path - path);
-        strncpy(parent_name, path, len);
-        parent_name[len] = '\0';
+        /* Get the child name */
+        size_t len = (child_path - path) > MR_CFG_NAME_MAX ? MR_CFG_NAME_MAX : (child_path - path);
+        strncpy(child_name, path, len);
+        child_name[len] = '\0';
 
-        parent = dev_find_child(parent, parent_name);
-        if (parent == MR_NULL)
+        /* Find the child */
+        struct mr_dev *child = dev_find_child(parent, child_name);
+        if (child == MR_NULL)
         {
             return MR_NULL;
         }
-        return dev_find_by_path(parent, parent_path);
+
+        /* Continue iterating */
+        return dev_find_by_path(child, child_path);
     } else
     {
+        /* Find the child */
         return dev_find_child(parent, path);
     }
 }
@@ -167,7 +157,7 @@ MR_INLINE int dev_lock_take(struct mr_dev *dev, int take, int set)
     }
 
     /* Take the device */
-    mr_bits_set(dev->lflags, set);
+    MR_BIT_SET(dev->lflags, set);
     return MR_EOK;
 }
 
@@ -180,14 +170,21 @@ MR_INLINE void dev_lock_release(struct mr_dev *dev, int release)
     }
 
     /* Release the device */
-    mr_bits_clr(dev->lflags, release);
+    MR_BIT_CLR(dev->lflags, release);
 }
 #endif /* MR_USING_RDWR_CTL */
 
 MR_INLINE int dev_register(struct mr_dev *dev, const char *path)
 {
+    /* Disable interrupt */
+    mr_interrupt_disable();
+
     /* Register the device to the root device */
-    return dev_register_by_path(&root_dev, dev, path);
+    int ret = dev_register_by_path(&root_dev, dev, path);
+
+    /* Enable interrupt */
+    mr_interrupt_enable();
+    return ret;
 }
 
 MR_INLINE struct mr_dev *dev_find(const char *path)
@@ -199,7 +196,7 @@ MR_INLINE struct mr_dev *dev_find(const char *path)
 MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
 {
 #ifdef MR_USING_RDWR_CTL
-    if (mr_bits_is_set(dev->sflags, oflags) != MR_ENABLE)
+    if (MR_BIT_IS_SET(dev->sflags, oflags) != MR_ENABLE)
     {
         return MR_ENOTSUP;
     }
@@ -229,7 +226,7 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
         }
     }
 #ifdef MR_USING_RDWR_CTL
-    else if (mr_bits_is_set(dev->sflags, MR_SFLAG_ONLY) == MR_ENABLE)
+    else if (MR_BIT_IS_SET(dev->sflags, MR_SFLAG_ONLY) == MR_ENABLE)
     {
         return MR_EBUSY;
     }
@@ -426,15 +423,15 @@ int mr_dev_register(struct mr_dev *dev,
 {
     static struct mr_dev_ops null_ops = {0};
 
-    mr_assert(dev != MR_NULL);
-    mr_assert(dev->magic != MR_MAGIC_NUMBER);
-    mr_assert(path != MR_NULL);
-    mr_assert(type != Mr_Dev_Type_Root);
-    mr_assert((ops != MR_NULL) || (sflags == MR_SFLAG_NONRDWR));
-    mr_assert((ops->read != MR_NULL) || (mr_bits_is_set(sflags, MR_SFLAG_RDONLY) == MR_DISABLE));
-    mr_assert((ops->write != MR_NULL) || (mr_bits_is_set(sflags, MR_SFLAG_WRONLY) == MR_DISABLE));
-    mr_assert((drv != MR_NULL) || (sflags & MR_SFLAG_NONDRV));
-    mr_assert((drv == MR_NULL) || (drv->type == type));
+    MR_ASSERT(dev != MR_NULL);
+    MR_ASSERT(dev->magic != MR_MAGIC_NUMBER);
+    MR_ASSERT(path != MR_NULL);
+    MR_ASSERT(type != Mr_Dev_Type_Root);
+    MR_ASSERT((ops != MR_NULL) || (sflags == MR_SFLAG_NONRDWR));
+    MR_ASSERT((ops->read != MR_NULL) || (MR_BIT_IS_SET(sflags, MR_SFLAG_RDONLY) == MR_DISABLE));
+    MR_ASSERT((ops->write != MR_NULL) || (MR_BIT_IS_SET(sflags, MR_SFLAG_WRONLY) == MR_DISABLE));
+    MR_ASSERT((drv != MR_NULL) || (sflags & MR_SFLAG_NONDRV));
+    MR_ASSERT((drv == MR_NULL) || (drv->type == type));
 
     /* Initialize the fields */
     dev->magic = 0;
@@ -468,7 +465,7 @@ int mr_dev_register(struct mr_dev *dev,
  */
 int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 {
-    mr_assert(dev != MR_NULL);
+    MR_ASSERT(dev != MR_NULL);
 
     /* Check whether the device is opened */
     if (dev->ref_count == 0)
@@ -537,8 +534,8 @@ int mr_dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz)
 {
     int ret = 0;
 
-    mr_assert(dev != MR_NULL);
-    mr_assert((buf != MR_NULL) || (bufsz == 0));
+    MR_ASSERT(dev != MR_NULL);
+    MR_ASSERT((buf != MR_NULL) || (bufsz == 0));
 
     /* Continue to get the path of the parent device */
     if (dev->parent != MR_NULL)
@@ -572,8 +569,8 @@ static struct mr_desc
 #endif /* MR_CFG_DESC_MAX */
 } desc_map[MR_CFG_DESC_MAX] = {0};
 
-#define desc_of(desc)                   (desc_map[(desc)])
-#define desc_is_valid(desc)             (((desc) >= 0 && (desc) < MR_CFG_DESC_MAX) && ((desc_of(desc).dev) != MR_NULL))
+#define DESC_OF(desc)                   (desc_map[(desc)])
+#define DESC_IS_VALID(desc)             (((desc) >= 0 && (desc) < MR_CFG_DESC_MAX) && ((DESC_OF(desc).dev) != MR_NULL))
 
 static int desc_allocate(const char *path)
 {
@@ -582,7 +579,7 @@ static int desc_allocate(const char *path)
     /* Find a free descriptor */
     for (size_t i = 0; i < MR_CFG_DESC_MAX; i++)
     {
-        if (desc_of(i).dev == MR_NULL)
+        if (DESC_OF(i).dev == MR_NULL)
         {
             desc = (int)i;
             break;
@@ -601,9 +598,9 @@ static int desc_allocate(const char *path)
     }
 
     /* Initialize the fields */
-    desc_of(desc).dev = dev;
-    desc_of(desc).offset = -1;
-    desc_of(desc).oflags = MR_OFLAG_CLOSED;
+    DESC_OF(desc).dev = dev;
+    DESC_OF(desc).offset = -1;
+    DESC_OF(desc).oflags = MR_OFLAG_CLOSED;
     return desc;
 }
 
@@ -611,9 +608,9 @@ static void desc_free(int desc)
 {
     if (desc >= 0 && desc < MR_CFG_DESC_MAX)
     {
-        desc_of(desc).dev = MR_NULL;
-        desc_of(desc).oflags = MR_OFLAG_CLOSED;
-        desc_of(desc).offset = -1;
+        DESC_OF(desc).dev = MR_NULL;
+        DESC_OF(desc).oflags = MR_OFLAG_CLOSED;
+        DESC_OF(desc).offset = -1;
     }
 }
 
@@ -627,8 +624,8 @@ static void desc_free(int desc)
  */
 int mr_dev_open(const char *path, int oflags)
 {
-    mr_assert(path != MR_NULL);
-    mr_assert(oflags != MR_OFLAG_CLOSED);
+    MR_ASSERT(path != MR_NULL);
+    MR_ASSERT(oflags != MR_OFLAG_CLOSED);
 
     /* Allocate a descriptor */
     int desc = desc_allocate(path);
@@ -638,7 +635,7 @@ int mr_dev_open(const char *path, int oflags)
     }
 
     /* Open the device */
-    int ret = dev_open(desc_of(desc).dev, oflags);
+    int ret = dev_open(DESC_OF(desc).dev, oflags);
     if (ret != MR_EOK)
     {
         desc_free(desc);
@@ -646,7 +643,7 @@ int mr_dev_open(const char *path, int oflags)
     }
 
     /* Initialize the open flags */
-    desc_of(desc).oflags = oflags;
+    DESC_OF(desc).oflags = oflags;
     return desc;
 }
 
@@ -659,10 +656,10 @@ int mr_dev_open(const char *path, int oflags)
  */
 int mr_dev_close(int desc)
 {
-    mr_assert(desc_is_valid(desc));
+    MR_ASSERT(DESC_IS_VALID(desc));
 
     /* Close the device */
-    int ret = dev_close(desc_of(desc).dev);
+    int ret = dev_close(DESC_OF(desc).dev);
     if (ret != MR_EOK)
     {
         return ret;
@@ -684,22 +681,22 @@ int mr_dev_close(int desc)
  */
 ssize_t mr_dev_read(int desc, void *buf, size_t size)
 {
-    mr_assert(desc_is_valid(desc));
-    mr_assert(buf != MR_NULL || size == 0);
+    MR_ASSERT(DESC_IS_VALID(desc));
+    MR_ASSERT(buf != MR_NULL || size == 0);
 
 #ifdef MR_USING_RDWR_CTL
-    if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_RDONLY) == MR_DISABLE)
+    if (MR_BIT_IS_SET(DESC_OF(desc).oflags, MR_OFLAG_RDONLY) == MR_DISABLE)
     {
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
 
     /* Read buffer from the device */
-    return dev_read(desc_of(desc).dev,
-                    desc_of(desc).offset,
+    return dev_read(DESC_OF(desc).dev,
+                    DESC_OF(desc).offset,
                     buf,
                     size,
-                    (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_NONBLOCK)));
+                    (MR_BIT_IS_SET(DESC_OF(desc).oflags, MR_OFLAG_NONBLOCK)));
 }
 
 /**
@@ -713,22 +710,22 @@ ssize_t mr_dev_read(int desc, void *buf, size_t size)
  */
 ssize_t mr_dev_write(int desc, const void *buf, size_t size)
 {
-    mr_assert(desc_is_valid(desc));
-    mr_assert(buf != MR_NULL || size == 0);
+    MR_ASSERT(DESC_IS_VALID(desc));
+    MR_ASSERT(buf != MR_NULL || size == 0);
 
 #ifdef MR_USING_RDWR_CTL
-    if (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_WRONLY) == MR_DISABLE)
+    if (MR_BIT_IS_SET(DESC_OF(desc).oflags, MR_OFLAG_WRONLY) == MR_DISABLE)
     {
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
 
     /* Write buffer to the device */
-    return dev_write(desc_of(desc).dev,
-                     desc_of(desc).offset,
+    return dev_write(DESC_OF(desc).dev,
+                     DESC_OF(desc).offset,
                      buf,
                      size,
-                     (mr_bits_is_set(desc_of(desc).oflags, MR_OFLAG_NONBLOCK)));
+                     (MR_BIT_IS_SET(DESC_OF(desc).oflags, MR_OFLAG_NONBLOCK)));
 }
 
 /**
@@ -742,7 +739,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size)
  */
 int mr_dev_ioctl(int desc, int cmd, void *args)
 {
-    mr_assert(desc_is_valid(desc));
+    MR_ASSERT(DESC_IS_VALID(desc));
 
     switch (cmd)
     {
@@ -750,7 +747,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                desc_of(desc).offset = *(int *)args;
+                DESC_OF(desc).offset = *(int *)args;
                 return MR_EOK;
             }
             return MR_EINVAL;
@@ -760,7 +757,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                *(int *)args = desc_of(desc).offset;
+                *(int *)args = DESC_OF(desc).offset;
                 return MR_EOK;
             }
             return MR_EINVAL;
@@ -769,7 +766,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
         default:
         {
             /* I/O control to the device */
-            return dev_ioctl(desc_of(desc).dev, desc, desc_of(desc).offset, cmd, args);
+            return dev_ioctl(DESC_OF(desc).dev, desc, DESC_OF(desc).offset, cmd, args);
         }
     }
 }
@@ -783,7 +780,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
  */
 const char *mr_dev_get_name(int desc)
 {
-    mr_assert(desc_is_valid(desc));
+    MR_ASSERT(DESC_IS_VALID(desc));
 
-    return desc_of(desc).dev->name;
+    return DESC_OF(desc).dev->name;
 }

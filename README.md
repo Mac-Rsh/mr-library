@@ -217,16 +217,16 @@ int main(void)
     /* 打开PIN设备 */
     int ds = mr_dev_open("pin", MR_OFLAG_RDWR);
     /* 设置到LED引脚 */
-    mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, mr_make_local(int, LED_PIN_NUMBER));
+    mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
     /* 设置LED引脚为推挽输出模式 */
-    mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, mr_make_local(int, MR_PIN_MODE_OUTPUT));
+    mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
 
     while(1)
     {
         /* 点亮LED */
-        mr_dev_write(ds, mr_make_local(uint8_t, MR_PIN_HIGH_LEVEL), sizeof(uint8_t));
+        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, MR_PIN_HIGH_LEVEL), sizeof(uint8_t));
         mr_delay_ms(500);
-        mr_dev_write(ds, mr_make_local(uint8_t, MR_PIN_LOW_LEVEL), sizeof(uint8_t));
+        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, MR_PIN_LOW_LEVEL), sizeof(uint8_t));
         mr_delay_ms(500);
     }
 }

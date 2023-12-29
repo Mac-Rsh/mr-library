@@ -57,7 +57,7 @@ static ssize_t mr_can_bus_isr(struct mr_dev *dev, int event, void *args)
             /* Search the matching device */
             for (list = dev->clist.next; list != &dev->clist; list = list->next)
             {
-                struct mr_can_dev *can_dev = (struct mr_can_dev *)mr_container_of(list, struct mr_dev, list);
+                struct mr_can_dev *can_dev = (struct mr_can_dev *)MR_CONTAINER_OF(list, struct mr_dev, list);
 
                 /* Check id is valid */
                 if (can_dev->id == (id & ((1 << 29) - 1)))
@@ -104,10 +104,10 @@ int mr_can_bus_register(struct mr_can_bus *can_bus, const char *name, struct mr_
         };
     struct mr_can_config default_config = MR_CAN_CONFIG_DEFAULT;
 
-    mr_assert(can_bus != MR_NULL);
-    mr_assert(name != MR_NULL);
-    mr_assert(drv != MR_NULL);
-    mr_assert(drv->ops != MR_NULL);
+    MR_ASSERT(can_bus != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(drv != MR_NULL);
+    MR_ASSERT(drv->ops != MR_NULL);
 
     /* Initialize the fields */
     can_bus->config = default_config;
@@ -261,8 +261,8 @@ static ssize_t mr_can_dev_write(struct mr_dev *dev, int off, const void *buf, si
 
     ret = can_dev_write(can_dev,
                         (off & ((1 << 29) - 1)),
-                        mr_bits_is_set(off, MR_CAN_IDE_EXT),
-                        mr_bits_is_set(off, MR_CAN_RTR_REMOTE),
+                        MR_BIT_IS_SET(off, MR_CAN_IDE_EXT),
+                        MR_BIT_IS_SET(off, MR_CAN_RTR_REMOTE),
                         (uint8_t *)buf,
                         size);
 
@@ -363,8 +363,8 @@ int mr_can_dev_register(struct mr_can_dev *can_dev, const char *name, int id, in
         };
     struct mr_can_config default_config = MR_CAN_CONFIG_DEFAULT;
 
-    mr_assert(can_dev != MR_NULL);
-    mr_assert(name != MR_NULL);
+    MR_ASSERT(can_dev != MR_NULL);
+    MR_ASSERT(name != MR_NULL);
 
     /* Initialize the fields */
     can_dev->config = default_config;
