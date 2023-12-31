@@ -33,7 +33,7 @@ except ImportError:
     exit(1)
 
 
-def generate_config(kconfig_file, config_in, config_out, header_out):
+def generate_config_file(kconfig_file, config_in, config_out, header_out):
     kconf = Kconfig(kconfig_file, warn=False, warn_to_stderr=False)
 
     # Load config
@@ -68,7 +68,7 @@ def generate_config(kconfig_file, config_in, config_out, header_out):
         header_file.write("#endif /* _MR_CONFIG_H_ */\n")
 
         header_file.close()
-        log_print('success', "menuconfig %s make success" % header_out)
+        log_print('success', "config file make success")
 
 
 def main():
@@ -76,7 +76,7 @@ def main():
     config_in = '.config'
     config_out = '.config'
     header_out = 'include/mr_config.h'
-    generate_config(kconfig_file, config_in, config_out, header_out)
+    generate_config_file(kconfig_file, config_in, config_out, header_out)
 
 
 if __name__ == "__main__":
