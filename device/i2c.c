@@ -194,7 +194,7 @@ MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t 
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     uint8_t *rd_buf = (uint8_t *)buf;
-    ssize_t rd_size = 0;
+    ssize_t rd_size;
 
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
@@ -209,7 +209,7 @@ MR_INLINE ssize_t i2c_dev_write(struct mr_i2c_dev *i2c_dev, const uint8_t *buf, 
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
     uint8_t *wr_buf = (uint8_t *)buf;
-    ssize_t wr_size = 0;
+    ssize_t wr_size;
 
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {

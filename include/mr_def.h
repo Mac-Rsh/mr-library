@@ -66,7 +66,7 @@ typedef int (*mr_init_fn_t)(void);
  * @brief Exports an auto initialization function with level.
  */
 #define MR_INIT_EXPORT(fn, level) \
-    MR_USED const mr_init_fn_t _mr_auto_init_##fn MR_SECTION(".auto_init."level) = fn
+    MR_USED const mr_init_fn_t _mr_auto_init_##fn MR_SECTION(".mr_auto_init."level) = fn
 
 /**
  * @brief Exports a board auto initialization function.

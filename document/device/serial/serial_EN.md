@@ -91,7 +91,7 @@ SERIAL device configuration:
 - `stop_bits`: Stop bits
 - `parity`: Parity check
 - `bit_order`: Data transmission order
-- `invert`: Polarity inversion
+- `polarity`: Polarity inversion
 
 ```c
 /* Set default configuration */

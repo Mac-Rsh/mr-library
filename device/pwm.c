@@ -100,8 +100,7 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
     }
 
     /* Optimize the prescaler and period */
-    uint32_t divisor = 0;
-    for (divisor = 9; divisor > 1; divisor--)
+    for (uint32_t divisor = 9; divisor > 1; divisor--)
     {
         /* Check if reload value can be divided by current divisor */
         while ((psc_best % divisor) == 0)
@@ -152,11 +151,11 @@ static int mr_pwm_close(struct mr_dev *dev)
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
 
     /* Disable all channels */
-    for (int i = 0; i < 32; i++)
+    for (size_t i = 0; i < 32; i++)
     {
         if (MR_BIT_IS_SET(pwm->channel, (1 << i)) == MR_ENABLE)
         {
-            ops->channel_configure(pwm, i, MR_DISABLE, MR_PWM_POLARITY_NORMAL);
+            ops->channel_configure(pwm, (int)i, MR_DISABLE, MR_PWM_POLARITY_NORMAL);
             MR_BIT_CLR(pwm->channel, (1 << i));
         }
     }
@@ -169,7 +168,7 @@ static ssize_t mr_pwm_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
     uint32_t *rd_buf = (uint32_t *)buf;
-    ssize_t rd_size = 0;
+    ssize_t rd_size;
 
     /* Check if the channel is enabled */
     if (MR_BIT_IS_SET(pwm->channel, (1 << off)) == MR_DISABLE)
@@ -191,7 +190,7 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
     uint32_t *wr_buf = (uint32_t *)buf;
-    ssize_t wr_size = 0;
+    ssize_t wr_size;
 
     /* Check if the channel is enabled */
     if (MR_BIT_IS_SET(pwm->channel, (1 << off)) == MR_DISABLE)

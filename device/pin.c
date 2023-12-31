@@ -96,7 +96,7 @@ static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     struct mr_pin *pin = (struct mr_pin *)dev;
     struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
     uint8_t *rd_buf = (uint8_t *)buf;
-    ssize_t rd_size = 0;
+    ssize_t rd_size;
 
     /* Check offset is valid */
     if (off < 0)
@@ -117,7 +117,7 @@ static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t
     struct mr_pin *pin = (struct mr_pin *)dev;
     struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
     uint8_t *wr_buf = (uint8_t *)buf;
-    ssize_t wr_size = 0;
+    ssize_t wr_size;
 
     /* Check offset is valid */
     if (off < 0)
@@ -168,8 +168,7 @@ static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
             ssize_t number = *(int *)args;
 
             /* If the irq exists, call it */
-            struct mr_list *list = MR_NULL;
-            for (list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
+            for (struct mr_list *list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
             {
                 struct pin_irq *irq = (struct pin_irq *)MR_CONTAINER_OF(list, struct pin_irq, list);
                 if (irq->number == number)

@@ -89,7 +89,7 @@ SERIAL设备配置：
 - `stop_bits`：停止位数。
 - `parity`：校验位。
 - `bit_order`：数据传输顺序。
-- `invert`：极性反转。
+- `polarity`：极性反转。
 
 ```c
 /* 设置默认配置 */

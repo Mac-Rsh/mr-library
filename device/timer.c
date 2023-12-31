@@ -14,7 +14,7 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
 {
     uint32_t clk = timer->info->clk, psc_max = timer->info->prescaler_max, per_max = timer->info->period_max;
     uint32_t psc_best = 0, per_best = 0, reload_best = 0;
-    uint32_t psc = 0;
+    uint32_t psc;
     int error_min = INT32_MAX;
 
     /* Check the clock */
@@ -127,7 +127,7 @@ static ssize_t mr_timer_read(struct mr_dev *dev, int off, void *buf, size_t size
     struct mr_timer *timer = (struct mr_timer *)dev;
     struct mr_timer_ops *ops = (struct mr_timer_ops *)dev->drv->ops;
     uint32_t *rd_buf = (uint32_t *)buf;
-    ssize_t rd_size = 0;
+    ssize_t rd_size;
 
     MR_BIT_CLR(size, sizeof(*rd_buf) - 1);
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
@@ -148,7 +148,7 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
     struct mr_timer_ops *ops = (struct mr_timer_ops *)dev->drv->ops;
     uint32_t *wr_buf = (uint32_t *)buf;
     uint32_t timeout = 0;
-    ssize_t wr_size = 0;
+    ssize_t wr_size;
 
     /* Only the last write is valid */
     MR_BIT_CLR(size, sizeof(*wr_buf) - 1);
