@@ -46,7 +46,7 @@ static ssize_t mr_serial_read(struct mr_dev *dev, int off, void *buf, size_t siz
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
     uint8_t *rd_buf = (uint8_t *)buf;
-    ssize_t rd_size = 0;
+    ssize_t rd_size;
 
     if (mr_ringbuf_get_bufsz(&serial->rd_fifo) == 0)
     {
@@ -67,7 +67,7 @@ static ssize_t mr_serial_write(struct mr_dev *dev, int off, const void *buf, siz
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
     uint8_t *wr_buf = (uint8_t *)buf;
-    ssize_t wr_size = 0;
+    ssize_t wr_size;
 
     if ((async == MR_SYNC) || (mr_ringbuf_get_bufsz(&serial->wr_fifo) == 0))
     {
@@ -231,7 +231,7 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
         case MR_ISR_SERIAL_WR_INT:
         {
             /* Write data from FIFO, if FIFO is empty, stop transmit */
-            uint8_t data = 0;
+            uint8_t data;
             if (mr_ringbuf_pop(&serial->wr_fifo, &data) == sizeof(data))
             {
                 ops->write(serial, data);

@@ -74,13 +74,12 @@ MR_INLINE const char *dev_clear_path(const char *path)
 MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const char *path)
 {
     char child_name[MR_CFG_NAME_MAX + 1] = {0};
-    const char *child_path = MR_NULL;
 
     /* Clear the path */
     path = dev_clear_path(path);
 
     /* Check whether the child path exists */
-    child_path = strchr(path, '/');
+    const char *child_path = strchr(path, '/');
     if (child_path != MR_NULL)
     {
         /* Get the child name */
@@ -107,13 +106,12 @@ MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, co
 MR_INLINE struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 {
     char child_name[MR_CFG_NAME_MAX + 1] = {0};
-    const char *child_path = MR_NULL;
 
     /* Clear the path */
     path = dev_clear_path(path);
 
     /* Check whether the child path exists */
-    child_path = strchr(path, '/');
+    const char *child_path = strchr(path, '/');
     if (child_path != MR_NULL)
     {
         /* Get the child name */
@@ -421,7 +419,7 @@ int mr_dev_register(struct mr_dev *dev,
                     struct mr_dev_ops *ops,
                     struct mr_drv *drv)
 {
-    static struct mr_dev_ops null_ops = {0};
+    static struct mr_dev_ops null_ops = {MR_NULL};
 
     MR_ASSERT(dev != MR_NULL);
     MR_ASSERT(dev->magic != MR_MAGIC_NUMBER);

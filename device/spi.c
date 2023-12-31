@@ -263,7 +263,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
 {
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
     struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)spi_bus->dev.drv->ops;
-    size_t tf_size = 0;
+    size_t tf_size;
 
     if (rdwr == MR_SPI_RD)
     {

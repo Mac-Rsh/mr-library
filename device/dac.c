@@ -64,11 +64,11 @@ static int mr_dac_close(struct mr_dev *dev)
     struct mr_dac_ops *ops = (struct mr_dac_ops *)dev->drv->ops;
 
     /* Disable all channels */
-    for (int i = 0; i < 32; i++)
+    for (size_t i = 0; i < 32; i++)
     {
         if (MR_BIT_IS_SET(dac->channel, (1 << i)) == MR_ENABLE)
         {
-            ops->channel_configure(dac, i, MR_DISABLE);
+            ops->channel_configure(dac, (int)i, MR_DISABLE);
             MR_BIT_CLR(dac->channel, (1 << i));
         }
     }
@@ -81,7 +81,7 @@ static ssize_t mr_dac_write(struct mr_dev *dev, int off, const void *buf, size_t
     struct mr_dac *dac = (struct mr_dac *)dev;
     struct mr_dac_ops *ops = (struct mr_dac_ops *)dev->drv->ops;
     uint32_t *wr_buf = (uint32_t *)buf;
-    ssize_t wr_size = 0;
+    ssize_t wr_size;
 
     /* Check if the channel is enabled */
     if (MR_BIT_IS_SET(dac->channel, (1 << off)) == MR_DISABLE)

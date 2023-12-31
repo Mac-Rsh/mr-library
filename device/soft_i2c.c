@@ -33,7 +33,7 @@ MR_INLINE void soft_i2c_bus_sda_set(struct mr_soft_i2c_bus *soft_i2c_bus, uint8_
 
 MR_INLINE uint8_t soft_i2c_sda_get(struct mr_soft_i2c_bus *soft_i2c_bus)
 {
-    uint8_t value = 0;
+    uint8_t value;
 
     mr_dev_ioctl(soft_i2c_bus->desc, MR_CTL_PIN_SET_NUMBER, &soft_i2c_bus->sda_pin);
     mr_dev_read(soft_i2c_bus->desc, &value, sizeof(value));

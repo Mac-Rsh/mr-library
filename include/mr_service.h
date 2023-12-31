@@ -103,7 +103,7 @@ extern "C" {
  *
  * @return The number of elements in the array.
  */
-#define MR_ARRAY_SIZE(array)             (sizeof(array)/sizeof((array)[0]))
+#define MR_ARRAY_NUM(array)             (sizeof(array)/sizeof((array)[0]))
 
 /**
  * @brief This macro function gets the maximum of two values.
