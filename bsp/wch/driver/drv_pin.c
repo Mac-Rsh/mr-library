@@ -41,7 +41,7 @@ static struct mr_pin pin_dev;
 static struct drv_pin_port_data *drv_pin_get_port_data(int pin)
 {
     pin >>= 4;
-    if ((pin >= mr_array_num(pin_port_drv_data)) || (pin_port_drv_data[pin].port == MR_NULL))
+    if ((pin >= MR_ARRAY_NUM(pin_port_drv_data)) || (pin_port_drv_data[pin].port == MR_NULL))
     {
         return MR_NULL;
     }
@@ -51,7 +51,7 @@ static struct drv_pin_port_data *drv_pin_get_port_data(int pin)
 static struct drv_pin_data *drv_pin_get_data(int pin)
 {
     pin &= 0x0f;
-    if (pin >= mr_array_num(pin_drv_data))
+    if (pin >= MR_ARRAY_NUM(pin_drv_data))
     {
         return MR_NULL;
     }
@@ -451,6 +451,6 @@ int drv_pin_init(void)
 {
     return mr_pin_register(&pin_dev, "pin", &pin_drv);
 }
-MR_DRV_EXPORT(drv_pin_init);
+MR_INIT_DRV_EXPORT(drv_pin_init);
 
 #endif /* MR_USING_PIN */

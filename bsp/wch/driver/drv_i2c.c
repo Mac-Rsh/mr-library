@@ -40,7 +40,7 @@ static struct drv_i2c_bus_data i2c_bus_drv_data[] =
 #endif /* MR_USING_I2C2 */
     };
 
-static struct mr_i2c_bus i2c_bus_dev[mr_array_num(i2c_bus_drv_data)];
+static struct mr_i2c_bus i2c_bus_dev[MR_ARRAY_NUM(i2c_bus_drv_data)];
 
 static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits)
 {
@@ -277,12 +277,12 @@ int drv_i2c_bus_init(void)
 {
     int index = 0;
 
-    for (index = 0; index < mr_array_num(i2c_bus_dev); index++)
+    for (index = 0; index < MR_ARRAY_NUM(i2c_bus_dev); index++)
     {
         mr_i2c_bus_register(&i2c_bus_dev[index], i2c_bus_name[index], &i2c_bus_drv[index]);
     }
     return MR_EOK;
 }
-MR_DRV_EXPORT(drv_i2c_bus_init);
+MR_INIT_DRV_EXPORT(drv_i2c_bus_init);
 
 #endif /* MR_USING_I2C */

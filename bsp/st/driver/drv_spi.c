@@ -76,7 +76,7 @@ static struct drv_spi_bus_data spi_bus_drv_data[] =
 #endif /* MR_USING_SPI6 */
     };
 
-static struct mr_spi_bus spi_bus_dev[mr_array_num(spi_bus_drv_data)];
+static struct mr_spi_bus spi_bus_dev[MR_ARRAY_NUM(spi_bus_drv_data)];
 
 static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_config *config)
 {
@@ -384,12 +384,12 @@ int drv_spi_bus_init(void)
 {
     int index = 0;
 
-    for (index = 0; index < mr_array_num(spi_bus_dev); index++)
+    for (index = 0; index < MR_ARRAY_NUM(spi_bus_dev); index++)
     {
         mr_spi_bus_register(&spi_bus_dev[index], spi_bus_name[index], &spi_bus_drv[index]);
     }
     return MR_EOK;
 }
-MR_DRV_EXPORT(drv_spi_bus_init);
+MR_INIT_DRV_EXPORT(drv_spi_bus_init);
 
 #endif /* MR_USING_SPI */

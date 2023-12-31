@@ -42,11 +42,11 @@ static struct drv_adc_data adc_drv_data[] =
 
 static struct drv_adc_channel_data adc_channel_drv_data[] = DRV_ADC_CHANNEL_CONFIG;
 
-static struct mr_adc adc_dev[mr_array_num(adc_drv_data)];
+static struct mr_adc adc_dev[MR_ARRAY_NUM(adc_drv_data)];
 
 static struct drv_adc_channel_data *drv_adc_get_channel_data(int channel)
 {
-    if (channel >= mr_array_num(adc_channel_drv_data))
+    if (channel >= MR_ARRAY_NUM(adc_channel_drv_data))
     {
         return NULL;
     }
@@ -170,12 +170,12 @@ int drv_adc_init(void)
 {
     int index = 0;
 
-    for (index = 0; index < mr_array_num(adc_dev); index++)
+    for (index = 0; index < MR_ARRAY_NUM(adc_dev); index++)
     {
         mr_adc_register(&adc_dev[index], adc_name[index], &adc_drv[index]);
     }
     return MR_EOK;
 }
-MR_DRV_EXPORT(drv_adc_init);
+MR_INIT_DRV_EXPORT(drv_adc_init);
 
 #endif /* MR_USING_ADC */

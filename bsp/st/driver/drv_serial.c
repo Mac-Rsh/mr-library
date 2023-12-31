@@ -94,7 +94,7 @@ static struct drv_serial_data serial_drv_data[] =
 #endif /* MR_USING_UART8 */
     };
 
-static struct mr_serial serial_dev[mr_array_num(serial_drv_data)];
+static struct mr_serial serial_dev[MR_ARRAY_NUM(serial_drv_data)];
 
 static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_config *config)
 {
@@ -170,9 +170,9 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
             }
         }
 
-        switch (config->invert)
+        switch (config->polarity)
         {
-            case MR_SERIAL_NRZ_NORMAL:
+            case MR_SERIAL_POLARITY_NORMAL:
             {
                 break;
             }
@@ -420,12 +420,12 @@ int drv_serial_init(void)
 {
     int index = 0;
 
-    for (index = 0; index < mr_array_num(serial_dev); index++)
+    for (index = 0; index < MR_ARRAY_NUM(serial_dev); index++)
     {
         mr_serial_register(&serial_dev[index], serial_name[index], &serial_drv[index]);
     }
     return MR_EOK;
 }
-MR_DRV_EXPORT(drv_serial_init);
+MR_INIT_DRV_EXPORT(drv_serial_init);
 
 #endif /* MR_USING_SERIAL */
