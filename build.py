@@ -185,7 +185,7 @@ class MDK5:
 
     def save(self):
         self.tree.write(self.file, pretty_print=True, encoding="utf-8", xml_declaration=True)
-        log_print('success', "MDK %s build success" % self.file)
+        log_print('success', "project build success")
 
 
 class Eclipse:
@@ -248,7 +248,7 @@ class Eclipse:
                     log_print('warning', "use auto init failed, '.text' not found")
                     return
                 # Check auto init is existed
-                if content.find('/* mr-library auto init */') == -1:
+                if content.find('/* mr-library */') == -1:
                     # Find pos offset
                     pos_offset = content[pos:].find('}')
                     # Check pos offset
@@ -259,15 +259,14 @@ class Eclipse:
                     # Use auto init
                     with open(ld_file, 'w') as fw:
                         front = content[:pos]
-                        auto_init = """
-        /* mr-library auto init */
+                        link_config = """
+        /* mr-library */
         . = ALIGN(4);
-        _mr_auto_init_start = .;
-        KEEP(*(SORT(.auto_init*)))
-        _mr_auto_init_end = .;
+        KEEP(*(SORT(.mr_auto_init*)))
+        KEEP(*(SORT(.mr_msh_cmd.*)))
     """
                         back = content[pos:]
-                        fw.write(front + auto_init + back)
+                        fw.write(front + link_config + back)
                         fw.close()
                     fr.close()
                     log_print('info', "use auto init")
@@ -276,7 +275,7 @@ class Eclipse:
 
     def save(self):
         self.tree.write(self.file, pretty_print=True, encoding="utf-8", xml_declaration=True)
-        log_print('success', "eclipse %s build success" % self.file)
+        log_print('success', "project build success")
 
 
 class MR:
@@ -291,6 +290,50 @@ class MR:
                     self.files_paths.append(file_path)
             break
         self.project_path = os.path.dirname(self.path)
+
+    def generate_include_file(self):
+        header_out = os.path.join(self.path, "include/mr_lib.h").replace('\\', '/')
+        include_path = []
+        for root, dirs, files in os.walk(self.path):
+            for d in dirs:
+                if d == "include":
+                    include_path = os.path.join(root, d)
+                    break
+            if include_path:
+                break
+
+        header_files = []
+        for root, dirs, files in os.walk(include_path):
+            for file in files:
+                if file.endswith('.h'):
+                    f = os.path.relpath(os.path.join(root, file), include_path).replace('\\', '/')
+                    header_files.append(f)
+
+        with open(header_out, 'r+') as header_file:
+            header_file.truncate(0)
+            header_file.seek(0)
+
+            # Add the micro
+            header_file.write("#ifndef _MR_LIB_H_\n")
+            header_file.write("#define _MR_LIB_H_\n\n")
+
+            header_file.write("#ifdef __cplusplus\n")
+            header_file.write("extern \"C\" {\n")
+            header_file.write("#endif /* __cplusplus */\n\n")
+
+            # Link include
+            for hf in header_files:
+                if hf != os.path.basename(header_out):
+                    header_file.write('#include "' + hf + '"\n')
+
+            # Add the micro
+            header_file.write("\n#ifdef __cplusplus\n")
+            header_file.write("}\n")
+            header_file.write("#endif /* __cplusplus */\n\n")
+            header_file.write("#endif /* _MR_LIB_H_ */\n")
+
+            header_file.close()
+            log_print('success', "library include file make success")
 
 
 def show_logo():
@@ -334,6 +377,8 @@ def build_mdk():
     mdk_proj.use_gnu(True)
     # Save
     mdk_proj.save()
+    # Generate include file
+    mr.generate_include_file()
 
 
 def build_eclipse():
@@ -346,6 +391,8 @@ def build_eclipse():
     eclipse_proj.use_auto_init()
     # Save
     eclipse_proj.save()
+    # Generate include file
+    mr.generate_include_file()
 
 
 def menuconfig():
@@ -373,20 +420,26 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--menuconfig", action="store_true", help="Run menuconfig")
+    parser.add_argument("-lic", "--license", action="store_true", help="Show license")
+    parser.add_argument("-gli", "--generate_lib_include_file", action="store_true", help="Generate library include file")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
     group.add_argument("-ecl", "--eclipse", action="store_true", help="Build with Eclipse")
-    parser.add_argument("-lic", "--license", action="store_true", help="Show license")
     args = parser.parse_args()
 
-    # Build
-    if args.mdk:
-        build_mdk()
-    elif args.eclipse:
-        build_eclipse()
     # Menuconfig
     if args.menuconfig:
         menuconfig()
     # Show license
     if args.license:
         show_license()
+    # Generate library include file
+    if args.generate_lib_include_file:
+        mr = MR()
+        mr.generate_include_file()
+
+    # Build
+    if args.mdk:
+        build_mdk()
+    elif args.eclipse:
+        build_eclipse()
