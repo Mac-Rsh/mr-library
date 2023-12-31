@@ -148,7 +148,7 @@ static struct drv_timer_data timer_drv_data[] =
 #endif /* MR_USING_TIMER14 */
     };
 
-static struct mr_timer timer_dev[mr_array_num(timer_drv_data)];
+static struct mr_timer timer_dev[MR_ARRAY_NUM(timer_drv_data)];
 
 static struct mr_timer_info timer_info[] =
     {
@@ -497,12 +497,12 @@ int drv_timer_init(void)
 {
     int index = 0;
 
-    for (index = 0; index < mr_array_num(timer_dev); index++)
+    for (index = 0; index < MR_ARRAY_NUM(timer_dev); index++)
     {
         mr_timer_register(&timer_dev[index], timer_name[index], &timer_drv[index], &timer_info[index]);
     }
     return MR_EOK;
 }
-MR_DRV_EXPORT(drv_timer_init);
+MR_INIT_DRV_EXPORT(drv_timer_init);
 
 #endif /* MR_USING_TIMER */

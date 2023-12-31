@@ -23,7 +23,7 @@ static struct mr_dac dac_dev;
 
 static struct drv_dac_channel_data *drv_dac_get_channel_data(int channel)
 {
-    if (channel >= mr_array_num(dac_channel_drv_data))
+    if (channel >= MR_ARRAY_NUM(dac_channel_drv_data))
     {
         return NULL;
     }
@@ -153,6 +153,6 @@ int drv_dac_init(void)
 {
     return mr_dac_register(&dac_dev, "dac1", &dac_drv);
 }
-MR_DRV_EXPORT(drv_dac_init);
+MR_INIT_DRV_EXPORT(drv_dac_init);
 
 #endif /* MR_USING_DAC */
