@@ -36,7 +36,7 @@ struct mr_msh_cmd
  * @param level The level of the command.
  */
 #define MR_MSH_EXPORT(name, fn, help, level) \
-    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION(".msh_cmd."level) = {#name, fn, help};
+    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION(".mr_msh_cmd."level) = {#name, fn, help};
 
 /**
  * @brief Exports a MSH command.
@@ -49,15 +49,15 @@ struct mr_msh_cmd
     MR_MSH_EXPORT(name, fn, help, "1")
 
 /**
- * @brief Parses the arguments for the MSH command.
+ * @brief This macro function gets the argument at the specified index.
  *
  * @param index The index of the argument.
  *
  * @note This macro must be called from a function where the first parameter is argc and the second parameter is args.
  *       1 -> argc, 2 -> args.
  */
-#define MR_MSH_PARSE_ARGS(index) \
-    (((index) < (argc)) ? (((const char **)(args))[index]) : MR_NULL)
+#define MR_MSH_GET_ARG(index) \
+    (((index) < (argc)) ? (((const char **)(argv))[index]) : MR_NULL)
 
 /**
  * @addtogroup Msh.
