@@ -178,7 +178,7 @@ version (the `MR` scripting tool relies on Python, install it yourself if there 
 
    ![Driver directory](document/picture/readme/driver.png)
 
-4. Remove unnecessary files` bsp `, `document`, `module` directories (you can also remove `.git `files if you don`t
+4. Remove unnecessary files` bsp `, `document`directories (you can also remove `.git `files if you don`t
    need` git `). When complete, the directory structure looks like this:
 
    ![project directory](document/picture/readme/project.png)
@@ -197,9 +197,6 @@ version (the `MR` scripting tool relies on Python, install it yourself if there 
 1. Open the command line tool in the `mr-library` directory and run `python build.py -m` for menu configuration.
 
    ![Tool1](document/picture/readme/kconfig_main1.png)
-
-   Note: When the corresponding chip driver is added, `Device configure` and `Driver configure` will be displayed.
-   For `Driver configure` please refer to the documentation under `bsp`.
 
 2. Enter the menu by pressing the Enter key on `Device configure`, and configure the desired functions according to
    needs.
