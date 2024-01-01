@@ -94,7 +94,7 @@ menu "Device configure"
     endmenu
 
    # Device
-	config MR_CFG_NAME_MAX
+	config MR_CFG_DEV_NAME_MAX
 		int "Name max length"
 		default 8
 		range 4 1024
