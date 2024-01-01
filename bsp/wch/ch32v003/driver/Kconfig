@@ -1,4 +1,4 @@
-menu "Board configure"
+menu "Driver configure"
 
     config MR_USING_CH32V00X
         bool "Enable CH32V00X driver"
