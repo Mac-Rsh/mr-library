@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@copyright (c) 2023, MR Development Team
+@copyright (c) 2023-2024, MR Development Team
 
 @license SPDX-License-Identifier: Apache-2.0
 

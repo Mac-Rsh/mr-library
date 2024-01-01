@@ -1,12 +1,12 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include "include/device/serial.h"
+#include "include/device/mr_serial.h"
 
 #ifdef MR_USING_SERIAL
 

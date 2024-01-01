@@ -1,17 +1,17 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-11-01    MacRsh       First version
  */
 
-#include "include/device/spi.h"
+#include "include/device/mr_spi.h"
 
 #ifdef MR_USING_SPI
 
 #ifdef MR_USING_PIN
-#include "include/device/pin.h"
+#include "include/device/mr_pin.h"
 #else
 #warning "Please define MR_USING_PIN. Otherwise SPI-CS will not work."
 #endif /* MR_USING_PIN */

@@ -1,5 +1,5 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
@@ -9,7 +9,7 @@
 #ifndef _DRV_I2C_H_
 #define _DRV_I2C_H_
 
-#include "include/device/i2c.h"
+#include "include/device/mr_i2c.h"
 #include "mr_board.h"
 
 #ifdef __cplusplus
