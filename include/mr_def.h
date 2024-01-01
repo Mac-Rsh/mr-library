@@ -290,10 +290,10 @@ struct mr_dev_ops
 struct mr_dev
 {
     int magic;                                                      /**< Magic number */
-#ifndef MR_CFG_NAME_MAX
+#ifndef MR_CFG_DEV_NAME_MAX
 #define MR_CFG_NAME_MAX                 (8)
 #endif /* MR_CFG_NAME_MAX */
-    char name[MR_CFG_NAME_MAX];                                     /**< Name */
+    char name[MR_CFG_DEV_NAME_MAX];                                     /**< Name */
     int type;                                                       /**< Device type */
     void *parent;                                                   /**< Parent */
     struct mr_list list;                                            /**< List */
