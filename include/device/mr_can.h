@@ -6,8 +6,8 @@
  * @date 2023-11-22    MacRsh       First version
  */
 
-#ifndef _CAN_H_
-#define _CAN_H_
+#ifndef _MR_CAN_H_
+#define _MR_CAN_H_
 
 #include "include/mr_api.h"
 
@@ -126,4 +126,4 @@ int mr_can_dev_register(struct mr_can_dev *can_dev, const char *name, int id, in
 }
 #endif /* __cplusplus */
 
-#endif /* _CAN_H_ */
+#endif /* _MR_CAN_H_ */

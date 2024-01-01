@@ -6,8 +6,8 @@
  * @date 2023-12-10    MacRsh       First version
  */
 
-#ifndef _PWM_H_
-#define _PWM_H_
+#ifndef _MR_PWM_H_
+#define _MR_PWM_H_
 
 #include "include/mr_api.h"
 
@@ -104,4 +104,4 @@ int mr_pwm_register(struct mr_pwm *pwm, const char *name, struct mr_drv *drv, st
 }
 #endif /* __cplusplus */
 
-#endif /* _PWM_H_ */
+#endif /* _MR_PWM_H_ */

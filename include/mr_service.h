@@ -234,7 +234,7 @@ extern "C" {
         }                               \
     } while(0)
 #else
-#define mr_assert(ex)
+#define MR_ASSERT(ex)
 #endif /* MR_USING_ASSERT */
 
 /**

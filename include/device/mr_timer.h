@@ -6,8 +6,8 @@
  * @date 2023-11-15    MacRsh       First version
  */
 
-#ifndef _PWM_H_
-#define _PWM_H_
+#ifndef _MR_TIMER_H_
+#define _MR_TIMER_H_
 
 #include "include/mr_api.h"
 
@@ -110,4 +110,4 @@ int mr_timer_register(struct mr_timer *timer, const char *name, struct mr_drv *d
 }
 #endif /* __cplusplus */
 
-#endif /* _PWM_H_ */
+#endif /* _MR_TIMER_H_ */
