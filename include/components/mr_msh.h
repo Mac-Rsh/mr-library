@@ -6,8 +6,8 @@
  * @date 2023-12-25    MacRsh       First version
  */
 
-#ifndef _MSH_H_
-#define _MSH_H_
+#ifndef _MR_MSH_H_
+#define _MR_MSH_H_
 
 #include "include/mr_api.h"
 
@@ -74,4 +74,4 @@ void mr_msh_recv_char(char c);
 }
 #endif /* __cplusplus */
 
-#endif /* _MSH_H_ */
+#endif /* _MR_MSH_H_ */
