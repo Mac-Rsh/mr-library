@@ -156,6 +156,7 @@ the `Python` script automatically generates the configuration file.
 | `Timer`          |      |         | [√]    | [√]      |
 | `LCD`            | [√]  |         |        |          |
 | `Senser`         | [√]  |         |        |          |
+| `msh`            |      |         | [√]    | [√]      |
 
  ----------
 
