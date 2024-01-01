@@ -60,6 +60,14 @@ struct mr_msh_cmd
     (((index) < (argc)) ? (((const char **)(argv))[index]) : MR_NULL)
 
 /**
+ * @brief This macro function prints a formatted string.
+ *
+ * @param fmt The format string.
+ * @param ... The arguments.
+ */
+#define mr_msh_printf(fmt, ...) mr_printf(fmt, ##__VA_ARGS__)
+
+/**
  * @addtogroup Msh.
  * @{
  */
@@ -68,6 +76,7 @@ void mr_msh_recv_char(char c);
 #else
 #define MR_MSH_EXPORT(name, fn, help, level)
 #define MR_MSH_CMD_EXPORT(name, fn, help)
+#define mr_msh_printf(...)
 #endif /* MR_USING_MSH */
 
 #ifdef __cplusplus
