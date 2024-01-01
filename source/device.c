@@ -31,7 +31,7 @@ MR_INLINE struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
     for (struct mr_list *list = parent->clist.next; list != &parent->clist; list = list->next)
     {
         struct mr_dev *dev = (struct mr_dev *)MR_CONTAINER_OF(list, struct mr_dev, list);
-        if (strncmp(name, dev->name, MR_CFG_NAME_MAX) == 0)
+        if (strncmp(name, dev->name, MR_CFG_DEV_NAME_MAX) == 0)
         {
             return dev;
         }
@@ -49,7 +49,7 @@ MR_INLINE int dev_register_child(struct mr_dev *parent, struct mr_dev *child, co
 
     /* Insert the device into the child list */
     child->magic = MR_MAGIC_NUMBER;
-    strncpy(child->name, name, MR_CFG_NAME_MAX);
+    strncpy(child->name, name, MR_CFG_DEV_NAME_MAX);
     child->parent = parent;
     mr_list_insert_before(&parent->clist, &child->list);
     return MR_EOK;
@@ -73,7 +73,7 @@ MR_INLINE const char *dev_clear_path(const char *path)
 
 MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const char *path)
 {
-    char child_name[MR_CFG_NAME_MAX + 1] = {0};
+    char child_name[MR_CFG_DEV_NAME_MAX + 1] = {0};
 
     /* Clear the path */
     path = dev_clear_path(path);
@@ -83,7 +83,7 @@ MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, co
     if (child_path != MR_NULL)
     {
         /* Get the child name */
-        size_t len = (child_path - path) > MR_CFG_NAME_MAX ? MR_CFG_NAME_MAX : (child_path - path);
+        size_t len = (child_path - path) > MR_CFG_DEV_NAME_MAX ? MR_CFG_DEV_NAME_MAX : (child_path - path);
         strncpy(child_name, path, len);
         child_name[len] = '\0';
 
@@ -105,7 +105,7 @@ MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, co
 
 MR_INLINE struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 {
-    char child_name[MR_CFG_NAME_MAX + 1] = {0};
+    char child_name[MR_CFG_DEV_NAME_MAX + 1] = {0};
 
     /* Clear the path */
     path = dev_clear_path(path);
@@ -115,7 +115,7 @@ MR_INLINE struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *pat
     if (child_path != MR_NULL)
     {
         /* Get the child name */
-        size_t len = (child_path - path) > MR_CFG_NAME_MAX ? MR_CFG_NAME_MAX : (child_path - path);
+        size_t len = (child_path - path) > MR_CFG_DEV_NAME_MAX ? MR_CFG_DEV_NAME_MAX : (child_path - path);
         strncpy(child_name, path, len);
         child_name[len] = '\0';
 
@@ -433,7 +433,7 @@ int mr_dev_register(struct mr_dev *dev,
 
     /* Initialize the fields */
     dev->magic = 0;
-    memset(dev->name, '\0', MR_CFG_NAME_MAX);
+    memset(dev->name, '\0', MR_CFG_DEV_NAME_MAX);
     dev->parent = MR_NULL;
     mr_list_init(&dev->list);
     mr_list_init(&dev->clist);
@@ -782,3 +782,36 @@ const char *mr_dev_get_name(int desc)
 
     return DESC_OF(desc).dev->name;
 }
+
+#ifdef MR_USING_MSH
+#include "include/components/mr_msh.h"
+static void msh_list_tree(struct mr_dev *parent, int level)
+{
+    if (level == 0)
+    {
+        mr_printf("|-- %-*s", MR_CFG_DEV_NAME_MAX, parent->name);
+    } else
+    {
+        mr_printf("%*s|-- %-*s", level, " ", MR_CFG_DEV_NAME_MAX, parent->name);
+    }
+    for (size_t i = 0; i < MR_CFG_DESC_MAX; i++)
+    {
+        if (desc_map[i].dev == parent)
+        {
+            mr_printf(" [%d]", i);
+        }
+    }
+    mr_printf("\r\n");
+    for (struct mr_list *child = parent->clist.next; child != &parent->clist; child = child->next)
+    {
+        struct mr_dev *dev = MR_CONTAINER_OF(child, struct mr_dev, list);
+        msh_list_tree(dev, level + 4);
+    }
+}
+static int msh_list_dev(int argc, void *argv)
+{
+    msh_list_tree(&root_dev, 0);
+    return MR_EOK;
+}
+MR_MSH_CMD_EXPORT(lsdev, msh_list_dev, "List all devices.");
+#endif /* MR_USING_MSH */
