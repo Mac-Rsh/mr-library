@@ -6,7 +6,7 @@
  * @date 2023-12-25    MacRsh       First version
  */
 
-#include "include/components/msh.h"
+#include "include/components/mr_msh.h"
 
 #ifdef MR_USING_MSH
 
@@ -258,7 +258,7 @@ static void msh_key_table(void)
     }
 
     /* Complete the command */
-    for (size_t i = msh.cursor; i < strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); ++i)
+    for (size_t i = msh.cursor; i < strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); i++)
     {
         msh_insert_char(msh_comp->name[i]);
     }
