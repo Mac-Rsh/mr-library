@@ -6,8 +6,8 @@
  * @date 2023-12-13    MacRsh       First version
  */
 
-#ifndef _SOFT_I2C_H_
-#define _SOFT_I2C_H_
+#ifndef _MR_SOFT_I2C_H_
+#define _MR_SOFT_I2C_H_
 
 #include "include/mr_api.h"
 
@@ -44,4 +44,4 @@ int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *n
 }
 #endif /* __cplusplus */
 
-#endif /* _SOFT_I2C_H_ */
+#endif /* _MR_SOFT_I2C_H_ */
