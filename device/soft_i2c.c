@@ -1,17 +1,17 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-12-13    MacRsh       First version
  */
 
-#include "include/device/soft_i2c.h"
+#include "include/device/mr_soft_i2c.h"
 
 #if defined(MR_USING_I2C) && defined(MR_USING_SOFT_I2C)
 
 #ifdef MR_USING_PIN
-#include "include/device/pin.h"
+#include "include/device/mr_pin.h"
 #else
 #warning "Please define MR_USING_PIN. Otherwise Soft-I2C will not work."
 #endif /* MR_USING_PIN */

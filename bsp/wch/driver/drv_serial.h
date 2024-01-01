@@ -1,5 +1,5 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
@@ -9,7 +9,7 @@
 #ifndef _DRV_SERIAL_H_
 #define _DRV_SERIAL_H_
 
-#include "include/device/serial.h"
+#include "include/device/mr_serial.h"
 #include "mr_board.h"
 
 #ifdef __cplusplus

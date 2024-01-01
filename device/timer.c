@@ -1,12 +1,12 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-11-15    MacRsh       First version
  */
 
-#include "include/device/timer.h"
+#include "include/device/mr_timer.h"
 
 #ifdef MR_USING_TIMER
 

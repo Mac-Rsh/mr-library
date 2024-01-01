@@ -1,12 +1,12 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-11-09    MacRsh       First version
  */
 
-#include "include/device/i2c.h"
+#include "include/device/mr_i2c.h"
 
 #ifdef MR_USING_I2C
 

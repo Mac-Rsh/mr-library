@@ -3,7 +3,7 @@ menu "Components configure"
     # Msh
     config MR_USING_MSH
         bool "Use msh"
-        default y
+        default n
         help
             "Use this option allows for the use of the shell."
 

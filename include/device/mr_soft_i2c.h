@@ -1,5 +1,5 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@ extern "C" {
 
 #if defined(MR_USING_I2C) && defined(MR_USING_SOFT_I2C)
 
-#include "include/device/i2c.h"
+#include "include/device/mr_i2c.h"
 
 /**
 * @brief Soft-I2C bus structure.
