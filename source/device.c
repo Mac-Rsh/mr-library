@@ -789,19 +789,19 @@ static void msh_list_tree(struct mr_dev *parent, int level)
 {
     if (level == 0)
     {
-        mr_printf("|-- %-*s", MR_CFG_DEV_NAME_MAX, parent->name);
+        mr_msh_printf("|-- %-*s", MR_CFG_DEV_NAME_MAX, parent->name);
     } else
     {
-        mr_printf("%*s|-- %-*s", level, " ", MR_CFG_DEV_NAME_MAX, parent->name);
+        mr_msh_printf("%*s|-- %-*s", level, " ", MR_CFG_DEV_NAME_MAX, parent->name);
     }
     for (size_t i = 0; i < MR_CFG_DESC_MAX; i++)
     {
         if (desc_map[i].dev == parent)
         {
-            mr_printf(" [%d]", i);
+            mr_msh_printf(" [%d]", i);
         }
     }
-    mr_printf("\r\n");
+    mr_msh_printf("\r\n");
     for (struct mr_list *child = parent->clist.next; child != &parent->clist; child = child->next)
     {
         struct mr_dev *dev = MR_CONTAINER_OF(child, struct mr_dev, list);

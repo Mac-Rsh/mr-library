@@ -43,7 +43,7 @@ static void msh_refresh_line(void)
 #ifndef MR_CFG_MSH_PROMPT
 #define MR_CFG_MSH_PROMPT               "msh>"
 #endif /* MR_CFG_MSH_PROMPT */
-        mr_printf(MR_CFG_MSH_PROMPT" ");
+        mr_msh_printf(MR_CFG_MSH_PROMPT" ");
     }
     msh.cursor = 0;
     msh.bytes = 0;
@@ -58,7 +58,7 @@ static void msh_new_line(void)
 #ifndef MR_CFG_MSH_PROMPT
 #define MR_CFG_MSH_PROMPT               "msh>"
 #endif /* MR_CFG_MSH_PROMPT */
-        mr_printf("\r\n"MR_CFG_MSH_PROMPT" ");
+        mr_msh_printf("\r\n"MR_CFG_MSH_PROMPT" ");
     }
     msh.cursor = 0;
     msh.bytes = 0;
@@ -70,7 +70,7 @@ static void msh_move_cursor_left(void)
     if (msh.cursor > 0)
     {
         msh.cursor--;
-        mr_printf(MSH_CURSOR_FORWARD(1));
+        mr_msh_printf(MSH_CURSOR_FORWARD(1));
     }
 }
 
@@ -79,7 +79,7 @@ static void msh_move_cursor_right(void)
     if (msh.cursor < msh.bytes)
     {
         msh.cursor++;
-        mr_printf(MSH_CURSOR_BACKWARD(1));
+        mr_msh_printf(MSH_CURSOR_BACKWARD(1));
     }
 }
 
@@ -88,7 +88,7 @@ static void msh_delete_char(void)
     if (msh.cursor > 0)
     {
         /* Move the cursor forward and delete the character */
-        mr_printf(MSH_CURSOR_FORWARD(1)MSH_DELETE_CHAR(1));
+        mr_msh_printf(MSH_CURSOR_FORWARD(1)MSH_DELETE_CHAR(1));
 
         /* Check if you need to remove characters from the middle */
         if (msh.cursor != msh.bytes)
@@ -119,7 +119,7 @@ static void msh_insert_char(char c)
     } else
     {
         /* Insert the character */
-        mr_printf(MSH_INSERT_CHAR(1));
+        mr_msh_printf(MSH_INSERT_CHAR(1));
 
         /* Readjust string */
         for (size_t i = msh.cursor; i < msh.bytes; i++)
@@ -135,7 +135,7 @@ static void msh_insert_char(char c)
     /* Echo the character */
     if (msh.echo == MR_ENABLE)
     {
-        mr_printf("%c", c);
+        mr_msh_printf("%c", c);
     }
 }
 
@@ -187,7 +187,7 @@ static int msh_parse_cmd(void)
             old_arg = arg;
         }
 
-        mr_printf("\r\n");
+        mr_msh_printf("\r\n");
         msh_cmd->call(argc, argv);
         return MR_TRUE;
     }
@@ -334,25 +334,25 @@ static int msh_cmd_help(int argc, void *argv)
 {
     for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
     {
-        mr_printf("%-*s - %s\r\n", MR_CFG_MSH_NAME_MAX, msh_cmd->name, msh_cmd->help);
+        mr_msh_printf("%-*s - %s\r\n", MR_CFG_MSH_NAME_MAX, msh_cmd->name, msh_cmd->help);
     }
     return MR_EOK;
 }
 
 static int msh_cmd_clear(int argc, void *argv)
 {
-    mr_printf(MSH_CLEAR);
+    mr_msh_printf(MSH_CLEAR);
     return MR_EOK;
 }
 
 static int msh_cmd_logo(int argc, void *argv)
 {
-    mr_printf(" __  __                  _   _   _                                 \r\n");
-    mr_printf("|  \\/  |  _ __          | | (_) | |__    _ __    __ _   _ __   _   _\r\n");
-    mr_printf("| |\\/| | | '__|  _____  | | | | | '_ \\  | '__|  / _` | | '__| | | | |\r\n");
-    mr_printf("| |  | | | |    |_____| | | | | | |_) | | |    | (_| | | |    | |_| |\r\n");
-    mr_printf("|_|  |_| |_|            |_| |_| |_.__/  |_|     \\__,_| |_|     \\__, |\r\n");
-    mr_printf("                                                               |___/\r\n");
+    mr_msh_printf(" __  __                  _   _   _                                 \r\n");
+    mr_msh_printf("|  \\/  |  _ __          | | (_) | |__    _ __    __ _   _ __   _   _\r\n");
+    mr_msh_printf("| |\\/| | | '__|  _____  | | | | | '_ \\  | '__|  / _` | | '__| | | | |\r\n");
+    mr_msh_printf("| |  | | | |    |_____| | | | | | |_) | | |    | (_| | | |    | |_| |\r\n");
+    mr_msh_printf("|_|  |_| |_|            |_| |_| |_.__/  |_|     \\__,_| |_|     \\__, |\r\n");
+    mr_msh_printf("                                                               |___/\r\n");
     return MR_EOK;
 }
 
@@ -384,7 +384,7 @@ int mr_msh_init(void)
     msh.echo = MR_ENABLE;
 #endif /* MR_USING_MSH_ECHO */
     /* Print the prompt */
-    mr_printf(MSH_CLEAR);
+    mr_msh_printf(MSH_CLEAR);
     msh_refresh_line();
     return MR_EOK;
 }
