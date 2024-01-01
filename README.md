@@ -166,7 +166,7 @@ int main(void)
 
    ![Driver目录](document/picture/readme/driver.png)
 
-4. 移除不需要的文件 `bsp`、`document`、`module` 目录（如不需要`GIT`也可以移除`.git`文件）。完成后，目录结构如下所示：
+4. 移除不需要的文件 `bsp`、`document`目录（如不需要`GIT`也可以移除`.git`文件）。完成后，目录结构如下所示：
 
    ![工程目录](document/picture/readme/project.png)
 
@@ -184,8 +184,6 @@ int main(void)
 1. 在 `mr-library` 目录下打开命令行工具，运行 `python build.py -m` 进行菜单配置。
 
    ![配置工具1](document/picture/readme/kconfig_main1.png)
-
-   注：当添加对应芯片驱动的后，将显示 `Device configure` 和 `Driver configure`。对应 `Driver configure` 请参考 `bsp` 下文档。
 
 2. 选中 `Device configure` 回车进入菜单，按照需要配置功能。
 
