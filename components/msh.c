@@ -1,5 +1,5 @@
 /*
- * @copyright (c) 2023, MR Development Team
+ * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
  *
@@ -241,6 +241,18 @@ static void msh_key_delete(void)
     msh_delete_char();
 }
 
+static size_t msh_strnlen(const char *str, size_t max_len)
+{
+    for (size_t i = 0; i < max_len; i++)
+    {
+        if (str[i] == '\0')
+        {
+            return i;
+        }
+    }
+    return max_len;
+}
+
 static void msh_key_table(void)
 {
     /* Find the command */
@@ -258,7 +270,7 @@ static void msh_key_table(void)
     }
 
     /* Complete the command */
-    for (size_t i = msh.cursor; i < strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); i++)
+    for (size_t i = msh.cursor; i < msh_strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); i++)
     {
         msh_insert_char(msh_comp->name[i]);
     }
