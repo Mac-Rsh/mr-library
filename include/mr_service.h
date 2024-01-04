@@ -222,7 +222,7 @@ extern "C" {
     do{                                 \
         if (!(ex))                      \
         {                               \
-            mr_printf("%-8s "          \
+            mr_printf("%-8s "           \
                       "failed: %s, "    \
                       "file: %s, "      \
                       "line: %d.\r\n",  \
