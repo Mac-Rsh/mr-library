@@ -90,7 +90,7 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
         }
 
         /* Calculate the delay time */
-        soft_i2c_bus->delay = 1000000 / config->baud_rate;
+        soft_i2c_bus->delay = (1000000 / config->baud_rate) / 2;
 
         /* Configure SCL and SDA */
         if (soft_i2c_bus->desc < 0)
