@@ -225,7 +225,6 @@ int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
         return MR_ENOMEM;
     }
     mr_ringbuf_init(ringbuf, pool, size);
-
     return MR_EOK;
 }
 
@@ -616,7 +615,6 @@ static void mr_avl_left_rotate(struct mr_avl **node)
     (*node)->height = MR_MAX(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     right_child->height = MR_MAX(mr_avl_get_height(right_child->left_child),
                                  mr_avl_get_height(right_child->right_child)) + 1;
-
     (*node) = right_child;
 }
 
@@ -630,7 +628,6 @@ static void mr_avl_right_rotate(struct mr_avl **node)
     (*node)->height = MR_MAX(mr_avl_get_height((*node)->left_child), mr_avl_get_height((*node)->right_child)) + 1;
     left_child->height = MR_MAX(mr_avl_get_height(left_child->left_child),
                                 mr_avl_get_height(left_child->right_child)) + 1;
-
     (*node) = left_child;
 }
 
