@@ -112,23 +112,13 @@ msh>
 ```c
 int main(void)
 {
-    int ds = mr_dev_open("serial1", MR_OFLAG_RDWR);
+    /* 自动初始化 */
+    mr_auto_init();
+    
     while(1)
     {
-        char buf[10];
-        int ret = mr_dev_read(ds, buf, sizeof(buf));
-        for (size_t i = 0; i < ret; i++)
-        {
-            mr_msh_recv_char(buf[i]);
-        }
+        /* msh处理 */
+        mr_msh_handle();
     }   
 }
 ```
-
-以上仅为一种可参考的使用示例，命令处理函数最终将在`mr_msh_recv_char`中运行。
-
-```c
-mr_msh_printf
-```
-
-`msh`输出接口，默认使用`mr_printf`，当有特殊需求时可修改。

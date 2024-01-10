@@ -13,7 +13,9 @@
   * [How to use](#how-to-use)
 <!-- TOC -->
 
-The `msh` is a command line component of the `mr-library`. `msh` is a command line interpreter that provides a user interface for interaction. Users can input commands and parameters in the command line to have `msh` interpret and execute the user input commands.
+The `msh` is a command line component of the `mr-library`. `msh` is a command line interpreter that provides a user
+interface for interaction. Users can input commands and parameters in the command line to have `msh` interpret and
+execute the user input commands.
 
 ## Supported Keys
 
@@ -73,7 +75,8 @@ int cmd_fn(int argc, void *argv)
 | argc      | Number of parameters |
 | argv      | Parameter table      |
 
-Note: The command handling function needs to output `\r\n` at the end, otherwise the prompt will follow the current line.
+Note: The command handling function needs to output `\r\n` at the end, otherwise the prompt will follow the current
+line.
 
 ## Parameter Access
 
@@ -111,23 +114,13 @@ msh>
 ```c
 int main(void)
 {
-    int ds = mr_dev_open("serial1", MR_OFLAG_RDWR);
+    /* Automatic initialization */
+    mr_auto_init();
+    
     while(1)
     {
-        char buf[10];
-        int ret = mr_dev_read(ds, buf, sizeof(buf));
-        for (size_t i = 0; i < ret; i++)
-        {
-            mr_msh_recv_char(buf[i]);
-        }
-    }    
+        /* msh processing */
+        mr_msh_handle();
+    }
 }
 ```
-
-The above is just one example of how it can be used. The command handling function will ultimately run in `mr_msh_recv_char`.
-
-```c
-mr_msh_printf
-```
-
-The `msh` output interface, by default uses `mr_printf`. It can be modified if there are special needs.
