@@ -169,7 +169,7 @@ extern "C" {
 /**
  * @brief Log message with color.
  */
-#if defined(MR_USING_LOG_COLOR) && defined(MR_USING_LOG)
+#ifdef MR_USING_LOG_COLOR
 #define MR_LOG_COLOR_RED(str, fmt)      "\033[31m"str, fmt"\033[0m"
 #define MR_LOG_COLOR_YELLOW(str, fmt)   "\033[33m"str, fmt"\033[0m"
 #define MR_LOG_COLOR_BLUE(str, fmt)     "\033[34m"str, fmt"\033[0m"
@@ -186,31 +186,31 @@ extern "C" {
 /**
  * @brief This macro function logs a error-warning-debug-info message.
  */
-#if defined(MR_USING_LOG_ERROR) && defined(MR_USING_LOG)
+#ifdef MR_USING_LOG_ERROR
 #define MR_LOG_ERROR(fmt, ...)          mr_printf("%-8s %s\r\n", MR_LOG_COLOR_RED("ERROR:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_ERROR(fmt, ...)
-#endif /* defined(MR_USING_LOG_ERROR) && defined(MR_USING_LOG) */
-#if defined(MR_USING_LOG_WARN) && defined(MR_USING_LOG)
+#endif /* MR_USING_LOG_ERROR */
+#ifdef MR_USING_LOG_WARN
 #define MR_LOG_WARN(fmt, ...)           mr_printf("%-8s %s\r\n", MR_LOG_COLOR_YELLOW("WARNING:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_WARN(fmt, ...)
-#endif /* defined(MR_USING_LOG_WARN) && defined(MR_USING_LOG) */
-#if defined(MR_USING_LOG_INFO) && defined(MR_USING_LOG)
+#endif /* MR_USING_LOG_WARN */
+#ifdef MR_USING_LOG_INFO
 #define MR_LOG_INFO(fmt, ...)           mr_printf("%-8s %s\r\n", MR_LOG_COLOR_BLUE("INFO:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_INFO(fmt, ...)
-#endif /* defined(MR_USING_LOG_INFO) && defined(MR_USING_LOG) */
-#if defined(MR_USING_LOG_DEBUG) && defined(MR_USING_LOG)
+#endif /* MR_USING_LOG_INFO */
+#ifdef MR_USING_LOG_DEBUG
 #define MR_LOG_DEBUG(fmt, ...)          mr_printf("%-8s %s\r\n", MR_LOG_COLOR_PURPLE("DEBUG:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_DEBUG(fmt, ...)
-#endif /* defined(MR_USING_LOG_DEBUG) && defined(MR_USING_LOG) */
-#if defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG)
+#endif /* MR_USING_LOG_DEBUG */
+#ifdef MR_USING_LOG_SUCCESS
 #define MR_LOG_SUCCESS(fmt, ...)        mr_printf("%-8s %s\r\n", MR_LOG_COLOR_GREEN("SUCCESS:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_SUCCESS(fmt, ...)
-#endif /* defined(MR_USING_LOG_SUCCESS) && defined(MR_USING_LOG) */
+#endif /* MR_USING_LOG_SUCCESS */
 
 /**
  * @brief This macro function asserts a condition.
