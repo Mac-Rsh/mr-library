@@ -100,6 +100,9 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 
     if (desc < 0)
     {
+#ifndef MR_CFG_PRINTF_DEV_NAME
+#define MR_CFG_PRINTF_DEV_NAME          "serial1"
+#endif /* MR_CFG_PRINTF_DEV_NAME */
 #ifndef MR_USING_PRINTF_NONBLOCKING
         desc = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR);
 #else
@@ -148,7 +151,7 @@ const char *mr_strerror(int err)
     switch (err)
     {
         case MR_EOK:
-            return "no error";
+            return "ok";
         case MR_ENOMEM:
             return "no enough memory";
         case MR_EIO:
