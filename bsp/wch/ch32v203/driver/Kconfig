@@ -1,0 +1,149 @@
+menu "Driver configure"
+
+    config MR_USING_CH32V20X
+        bool "Enable CH32V20X driver"
+        default y
+
+    menu "ADC"
+        config MR_USING_ADC1
+            bool "Enable ADC1 driver"
+            default n
+
+        config MR_USING_ADC2
+            bool "Enable ADC2 driver"
+            default n
+    endmenu
+
+    menu "I2C"
+        config MR_USING_I2C1
+            bool "Enable I2C1 driver"
+            default n
+
+        menu "I2C1 driver configure"
+            depends on MR_USING_I2C1
+
+            config MR_CFG_I2C1_GROUP
+                int "I2C1 Group"
+                default 1
+                range 1 2
+        endmenu
+
+        config MR_USING_I2C2
+            bool "Enable I2C2 driver"
+            default n
+
+        menu "I2C2 driver configure"
+            depends on MR_USING_I2C2
+
+            config MR_CFG_I2C2_GROUP
+                int "I2C2 Group"
+                default 1
+                range 1 1
+        endmenu
+    endmenu
+
+    menu "UART"
+        config MR_USING_UART1
+            bool "Enable UART1 driver"
+            default n
+
+        menu "UART1 driver configure"
+            depends on MR_USING_UART1
+
+            config MR_CFG_UART1_GROUP
+                int "UART1 Group"
+                default 1
+                range 1 2
+        endmenu
+
+        config MR_USING_UART2
+            bool "Enable UART2 driver"
+            default n
+
+        menu "UART2 driver configure"
+            depends on MR_USING_UART2
+
+            config MR_CFG_UART2_GROUP
+                int "UART2 Group"
+                default 1
+                range 1 1
+        endmenu
+
+        config MR_USING_UART3
+            bool "Enable UART3 driver"
+            default n
+
+        menu "UART3 driver configure"
+            depends on MR_USING_UART3
+
+            config MR_CFG_UART3_GROUP
+                int "UART3 Group"
+                default 1
+                range 1 2
+        endmenu
+
+        config MR_USING_UART4
+            bool "Enable UART4 driver"
+            default n
+
+        menu "UART4 driver configure"
+            depends on MR_USING_UART4
+
+            config MR_CFG_UART4_GROUP
+                int "UART4 Group"
+                default 1
+                range 1 2
+        endmenu
+    endmenu
+
+    menu "SPI"
+        config MR_USING_SPI1
+            bool "Enable SPI1 driver"
+            default n
+
+        menu "SPI1 driver configure"
+            depends on MR_USING_SPI1
+
+            config MR_CFG_SPI1_GROUP
+                int "SPI1 Group"
+                default 1
+                range 1 2
+        endmenu
+
+        config MR_USING_SPI2
+            bool "Enable SPI2 driver"
+            default n
+
+        menu "SPI2 driver configure"
+            depends on MR_USING_SPI2
+
+            config MR_CFG_SPI2_GROUP
+                int "SPI2 Group"
+                default 1
+                range 1 1
+        endmenu
+    endmenu
+
+    menu "Timer"
+        config MR_USING_TIMER1
+                    bool "Enable Timer1 driver"
+                    default n
+
+        config MR_USING_TIMER2
+                        bool "Enable Timer2 driver"
+                        default n
+
+        config MR_USING_TIMER3
+                    bool "Enable Timer3 driver"
+                    default n
+
+        config MR_USING_TIMER4
+                    bool "Enable Timer4 driver"
+                    default n
+
+        config MR_USING_TIMER5
+                    bool "Enable Timer5 driver"
+                    default n
+    endmenu
+
+endmenu
