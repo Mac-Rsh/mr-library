@@ -98,11 +98,13 @@ static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     uint8_t *rd_buf = (uint8_t *)buf;
     ssize_t rd_size;
 
+#ifdef MR_USING_PIN_CHECK
     /* Check offset is valid */
     if (off < 0)
     {
         return MR_EINVAL;
     }
+#endif /* MR_USING_PIN_CHECK */
 
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
@@ -119,11 +121,13 @@ static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t
     uint8_t *wr_buf = (uint8_t *)buf;
     ssize_t wr_size;
 
+#ifdef MR_USING_PIN_CHECK
     /* Check offset is valid */
     if (off < 0)
     {
         return MR_EINVAL;
     }
+#endif /* MR_USING_PIN_CHECK */
 
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
