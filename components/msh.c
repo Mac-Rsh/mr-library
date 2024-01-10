@@ -24,6 +24,7 @@ static struct
     char key_buf[8];                                                /**< Buffer for keys */
     size_t key_bytes;                                               /**< Bytes in the key buffer */
     int echo;                                                       /**< Echo or not */
+    int desc;                                                       /**< Device descriptor */
 } msh;
 
 MR_MSH_EXPORT(start, MR_NULL, MR_NULL, "0");
@@ -173,7 +174,7 @@ static int msh_parse_cmd(void)
 #ifndef MR_CFG_MSH_ARGS_MAX
 #define MR_CFG_MSH_ARGS_MAX             (8)
 #endif /* MR_CFG_MSH_ARGS_MAX */
-        char *argv[MR_CFG_MSH_ARGS_MAX];
+        char *argv[MR_CFG_MSH_ARGS_MAX] = {MR_NULL};
         char *old_arg = msh.buf;
         for (argc = 0; argc < MR_CFG_MSH_ARGS_MAX; argc++)
         {
@@ -203,8 +204,7 @@ static int msh_parse_cmd(void)
 
 #define MSH_IS_PRINTABLE(c)             ((c) >= 0x20 && (c) <= 0x7e)
 #define MSH_IS_ESC_KEY(c)               ((c) == 0x1b)
-#define MSH_IS_END_KEY(c) \
-    ((((c) >= 'A') && ((c) <= 'Z')) || ((c) >= '~'))
+#define MSH_IS_END_KEY(c)               ((((c) >= 'A') && ((c) <= 'Z')) || ((c) >= '~'))
 
 static void msh_key_enter(void)
 {
@@ -257,6 +257,7 @@ static void msh_key_table(void)
 {
     /* Find the command */
     const struct mr_msh_cmd *msh_comp = MR_NULL;
+
     for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
     {
         if (strncmp(msh_cmd->name, msh.buf, msh.cursor) == 0)
@@ -270,9 +271,12 @@ static void msh_key_table(void)
     }
 
     /* Complete the command */
-    for (size_t i = msh.cursor; i < msh_strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); i++)
+    if (msh_comp != MR_NULL)
     {
-        msh_insert_char(msh_comp->name[i]);
+        for (size_t i = msh.cursor; i < msh_strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); i++)
+        {
+            msh_insert_char(msh_comp->name[i]);
+        }
     }
 }
 
@@ -342,6 +346,18 @@ static void msh_parse_key(char c)
     }
 }
 
+static void mr_msh_recv_char(char c)
+{
+    /* Judgments are characters and keys */
+    if (MSH_IS_PRINTABLE(c) && (msh.key_bytes == 0))
+    {
+        msh_insert_char(c);
+    } else
+    {
+        msh_parse_key(c);
+    }
+}
+
 static int msh_cmd_help(int argc, void *argv)
 {
     for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
@@ -368,21 +384,25 @@ static int msh_cmd_logo(int argc, void *argv)
     return MR_EOK;
 }
 
-/**
- * @brief This function receives a character for the msh.
- *
- * @param c The character to receive.
- */
-void mr_msh_recv_char(char c)
+static int msh_cmd_echo(int argc, void *argv)
 {
-    /* Judgments are characters and keys */
-    if (MSH_IS_PRINTABLE(c) && (msh.key_bytes == 0))
+    /* Check the arguments */
+    if (argc == 1)
     {
-        msh_insert_char(c);
-    } else
-    {
-        msh_parse_key(c);
+        if (strncmp(MR_MSH_GET_ARG(0), "on", 2) == 0)
+        {
+            msh.echo = MR_ENABLE;
+            mr_msh_printf("Echo is on.\r\n");
+            return MR_EOK;
+        } else if (strncmp(MR_MSH_GET_ARG(0), "off", 3) == 0)
+        {
+            msh.echo = MR_DISABLE;
+            mr_msh_printf("Echo is off.\r\n");
+            return MR_EOK;
+        }
     }
+    mr_msh_printf("Usage: echo [on|off]\r\n");
+    return MR_EINVAL;
 }
 
 /**
@@ -390,11 +410,12 @@ void mr_msh_recv_char(char c)
  *
  * @return MR_ERR_OK on success, otherwise an error code.
  */
-int mr_msh_init(void)
+static int mr_msh_init(void)
 {
 #ifdef MR_USING_MSH_ECHO
     msh.echo = MR_ENABLE;
 #endif /* MR_USING_MSH_ECHO */
+    msh.desc = -1;
     /* Print the prompt */
     mr_msh_printf(MSH_CLEAR);
     msh_refresh_line();
@@ -408,5 +429,90 @@ MR_INIT_DEV_EXPORT(mr_msh_init);
 MR_MSH_CMD_EXPORT(help, msh_cmd_help, "Show help information.");
 MR_MSH_CMD_EXPORT(clear, msh_cmd_clear, "Clear the screen.");
 MR_MSH_CMD_EXPORT(logo, msh_cmd_logo, "Show the logo.");
+MR_MSH_CMD_EXPORT(echo, msh_cmd_echo, "Enable or disable echo.");
+
+/**
+ * @brief This function printf output to the msh.
+ *
+ * @param buf The buffer to receive.
+ * @param size The size of the buffer.
+ * @return
+ */
+MR_WEAK int mr_msh_printf_output(const char *buf, size_t size)
+{
+    if (msh.desc < 0)
+    {
+#ifndef MR_CFG_MSH_NONBLOCKING
+        msh.desc = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR);
+#else
+        console = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+#endif /* MR_CFG_MSH_NONBLOCKING */
+        if (msh.desc < 0)
+        {
+            return msh.desc;
+        }
+    }
+    return (int)mr_dev_write(msh.desc, buf, size);
+}
+
+/**
+ * @brief This function input from the msh.
+ *
+ * @param c The buffer to receive.
+ *
+ * @return The actual input size.
+ */
+MR_WEAK int mr_msh_input(char *c)
+{
+    if (msh.desc < 0)
+    {
+#ifndef MR_CFG_MSH_NONBLOCKING
+        msh.desc = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR);
+#else
+        console = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+#endif /* MR_CFG_MSH_NONBLOCKING */
+        if (msh.desc < 0)
+        {
+            return 0;
+        }
+    }
+    return (int)mr_dev_read(msh.desc, c, sizeof(*c));
+}
+
+/**
+ * @brief This function printf to the msh.
+ *
+ * @param fmt The format string.
+ * @param ... The arguments.
+ *
+ * @return The actual output size.
+ */
+int mr_msh_printf(const char *fmt, ...)
+{
+#ifndef MR_CFG_MSH_PRINTF_BUFSZ
+#define MR_CFG_MSH_PRINTF_BUFSZ         (128)
+#endif /* MR_CFG_MSH_PRINTF_BUFSZ */
+    char buf[MR_CFG_MSH_PRINTF_BUFSZ] = {0};
+    va_list args;
+
+    va_start(args, fmt);
+    int ret = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
+    ret = mr_msh_printf_output(buf, ret);
+    va_end(args);
+    return ret;
+}
+
+/**
+ * @brief This function handles the msh.
+ */
+void mr_msh_handle(void)
+{
+    char c;
+
+    while (mr_msh_input(&c) > 0)
+    {
+        mr_msh_recv_char(c);
+    }
+}
 
 #endif /* MR_USING_MSH */
