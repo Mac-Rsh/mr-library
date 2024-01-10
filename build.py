@@ -168,6 +168,9 @@ class MDK5:
     def use_gnu(self, enable=True):
         # Check uAC6
         ac6_node = self.tree.find('//Target/uAC6')
+        if ac6_node is None:
+            log_print('error', "GNU use failed")
+            return
         # Use GNU
         if ac6_node.text == '0':
             # Get uGnu
@@ -281,7 +284,7 @@ class Eclipse:
 class MR:
 
     def __init__(self):
-        self.path = os.path.dirname(__file__)
+        self.path = os.getcwd()
         self.files_paths = []
         for root, dirs, files in os.walk(self.path):
             if root == self.path:
@@ -421,7 +424,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--menuconfig", action="store_true", help="Run menuconfig")
     parser.add_argument("-lic", "--license", action="store_true", help="Show license")
-    parser.add_argument("-gli", "--generate_lib_include_file", action="store_true", help="Generate library include file")
+    parser.add_argument("-gli", "--generate_lib_include_file", action="store_true",
+                        help="Generate library include file")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
     group.add_argument("-ecl", "--eclipse", action="store_true", help="Build with Eclipse")
