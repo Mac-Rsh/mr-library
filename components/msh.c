@@ -401,7 +401,7 @@ static int msh_cmd_echo(int argc, void *argv)
             return MR_EOK;
         }
     }
-    mr_msh_printf("Usage: echo [on|off]\r\n");
+    mr_msh_printf("Usage: echo <on|off>\r\n");
     return MR_EINVAL;
 }
 

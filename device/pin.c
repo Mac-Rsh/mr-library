@@ -224,4 +224,134 @@ int mr_pin_register(struct mr_pin *pin, const char *name, struct mr_drv *drv)
     return mr_dev_register(&pin->dev, name, Mr_Dev_Type_Pin, MR_SFLAG_RDWR, &ops, drv);
 }
 
+#ifdef MR_USING_MSH
+#include "include/components/mr_msh.h"
+static int desc = -1;
+static int msh_pin_mode(const char *arg)
+{
+    /* Parse mode */
+    int mode;
+    if (strncmp(arg, "in", 2) == 0)
+    {
+        mode = MR_PIN_MODE_INPUT;
+    } else if (strncmp(arg, "out", 3) == 0)
+    {
+        mode = MR_PIN_MODE_OUTPUT;
+    } else
+    {
+        return MR_EINVAL;
+    }
+    /* Set mode */
+    int ret = mr_dev_ioctl(desc, MR_CTL_PIN_SET_MODE, &mode);
+    mr_msh_printf("%s\r\n", mr_strerror((ret < 0 ? ret : MR_EOK)));
+    return ret;
+}
+static int msh_pin_write(const char *arg)
+{
+    /* Parse level */
+    uint8_t level;
+    if ((strncmp(arg, "high", 4) == 0) || (strncmp(arg, "1", 1) == 0))
+    {
+        level = MR_PIN_HIGH_LEVEL;
+    } else if ((strncmp(arg, "low", 3) == 0) || (strncmp(arg, "0", 1) == 0))
+    {
+        level = MR_PIN_LOW_LEVEL;
+    } else
+    {
+        return MR_EINVAL;
+    }
+    /* Write level */
+    int ret = (int)mr_dev_write(desc, &level, sizeof(level));
+    mr_msh_printf("%s\r\n", mr_strerror((ret < 0 ? ret : MR_EOK)));
+    return ret;
+}
+static int msh_pin_read(void)
+{
+    /* Read level */
+    uint8_t level;
+    int ret = (int)mr_dev_read(desc, &level, sizeof(level));
+    if (ret < 0)
+    {
+        mr_msh_printf("%s\r\n", mr_strerror(ret));
+    } else
+    {
+        mr_msh_printf("%s\r\n", (level ? "high" : "low"));
+    }
+    return ret;
+}
+static int msh_pin_toggle(void)
+{
+    /* Read level */
+    uint8_t level;
+    int ret = (int)mr_dev_read(desc, &level, sizeof(level));
+    if (ret < 0)
+    {
+        mr_msh_printf("%s\r\n", mr_strerror(ret));
+        return ret;
+    }
+    /* Toggle level */
+    level = !level;
+    ret = (int)mr_dev_write(desc, &level, sizeof(level));
+    mr_msh_printf("%s\r\n", mr_strerror((ret < 0 ? ret : MR_EOK)));
+    return ret;
+}
+static void msh_pin_printf_usage(void)
+{
+    mr_msh_printf("Usage: pin mode <number> <mode>\r\n");
+    mr_msh_printf("       pin write <number> <level>\r\n");
+    mr_msh_printf("       pin read <number>\r\n");
+    mr_msh_printf("       pin toggle <number>\r\n");
+}
+static int msh_pin(int argc, void *argv)
+{
+    /* Open the pin */
+    if (desc < 0)
+    {
+        desc = mr_dev_open("pin", MR_OFLAG_RDWR);
+        if (desc < 0)
+        {
+            return desc;
+        }
+    }
+
+    /* Check the arguments */
+    if (argc < 2)
+    {
+        msh_pin_printf_usage();
+        return MR_EINVAL;
+    }
+
+    /* Parse number */
+    int number = -1;
+    sscanf(MR_MSH_GET_ARG(1), "%d", &number);
+    int ret = mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, &number);
+    if (ret < 0)
+    {
+        mr_msh_printf("%s\r\n", mr_strerror(ret));
+        return ret;
+    }
+    /* Parse command */
+    if (strncmp(MR_MSH_GET_ARG(0), "read", 4) == 0)
+    {
+        return msh_pin_read();
+    } else if (strncmp(MR_MSH_GET_ARG(0), "toggle", 6) == 0)
+    {
+        return msh_pin_toggle();
+    }
+    if (argc >= 3)
+    {
+        if (strncmp(MR_MSH_GET_ARG(0), "mode", 4) == 0)
+        {
+            return msh_pin_mode(MR_MSH_GET_ARG(2));
+        } else if (strncmp(MR_MSH_GET_ARG(0), "write", 5) == 0)
+        {
+            return msh_pin_write(MR_MSH_GET_ARG(2));
+        }
+    }
+    msh_pin_printf_usage();
+    return MR_EINVAL;
+}
+MR_MSH_CMD_EXPORT(pin, msh_pin, "Pin control.");
+#endif /* MR_USING_MSH */
+
 #endif /* MR_USING_PIN */
