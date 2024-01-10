@@ -6,9 +6,9 @@ menu "Components configure"
         default n
         help
             "Use this option allows for the use of the shell."
-
     menu "Msh configure"
         depends on MR_USING_MSH
+
         config MR_CFG_MSH_BUFSZ
             int "Msh buffer size"
             default 32
@@ -29,6 +29,25 @@ menu "Components configure"
             range 1 16
             help
                 "This option sets the max number of arguments."
+
+        config MR_CFG_MSH_DEV_NAME
+            string "Msh device name"
+            default "serial1"
+            help
+                "This option sets the name of the device used by the shell."
+
+        config MR_CFG_MSH_NONBLOCKING
+            bool "Use msh non-blocking"
+            default n
+            help
+                "Use this option allows for the use of the shell non-blocking."
+
+        config MR_CFG_MSH_PRINTF_BUFSZ
+            int "Printf buffer size"
+            default 128
+            range 32 2147483647
+            help
+                "This option sets the buffer size used by the printf function."
 
         config MR_CFG_MSH_PROMPT
             string "Msh prompt"
