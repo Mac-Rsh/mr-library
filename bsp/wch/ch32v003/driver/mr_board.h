@@ -15,6 +15,8 @@ extern "C" {
 
 #include "ch32v00x.h"
 
+#define MR_USING_CH32V00X
+
 #define DRV_ADC_CHANNEL_CONFIG \
     {                          \
         {ADC_Channel_0, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_2}, \

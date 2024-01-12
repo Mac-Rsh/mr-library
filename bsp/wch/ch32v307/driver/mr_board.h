@@ -15,6 +15,8 @@ extern "C" {
 
 #include "ch32v30x.h"
 
+#define MR_USING_CH32V30X
+
 #define DRV_ADC_CHANNEL_CONFIG \
     {                          \
         {ADC_Channel_0,  RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_0}, \
@@ -49,7 +51,7 @@ extern "C" {
     {I2C1, RCC_APB1Periph_I2C1, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_6, GPIOB, GPIO_Pin_7, I2C1_EV_IRQn, 0}
 #elif (MR_CFG_I2C1_GROUP == 2)
 #define DRV_I2C1_CONFIG                 \
-    {I2C1, RCC_APB1Periph_I2C1, RCC_APB2Periph_GPIOD, GPIOB, GPIO_Pin_8, GPIOB, GPIO_Pin_9, I2C1_EV_IRQn, GPIO_Remap_I2C1}
+    {I2C1, RCC_APB1Periph_I2C1, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_8, GPIOB, GPIO_Pin_9, I2C1_EV_IRQn, GPIO_Remap_I2C1}
 #endif /* MR_CFG_I2C1_GROUP */
 #if (MR_CFG_I2C2_GROUP == 1)
 #define DRV_I2C2_CONFIG                 \
@@ -105,6 +107,95 @@ extern "C" {
         GPIO_Pin_15,                    \
     }
 
+#if (MR_CFG_PWM1_GROUP == 1)
+#define DRV_PWM1_CONFIG                 \
+    {TIM1, RCC_APB2Periph_TIM1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_8, GPIOA, GPIO_Pin_9, GPIOA, GPIO_Pin_10, GPIOA, GPIO_Pin_11, 0}
+#elif (MR_CFG_PWM1_GROUP == 2)
+#define DRV_PWM1_CONFIG                 \
+       {TIM1, RCC_APB2Periph_TIM1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_8, GPIOA, GPIO_Pin_9, GPIOA, GPIO_Pin_10, GPIOA, GPIO_Pin_11, GPIO_PartialRemap_TIM1}
+#elif (MR_CFG_PWM1_GROUP == 3)
+#define DRV_PWM1_CONFIG                 \
+    {TIM1, RCC_APB2Periph_TIM1, RCC_APB2Periph_GPIOE, GPIOE, GPIO_Pin_9, GPIOE, GPIO_Pin_11, GPIOE, GPIO_Pin_13, GPIOE, GPIO_Pin_14, GPIO_FullRemap_TIM1}
+#endif /* MR_CFG_PWM1_GROUP */
+#if (MR_CFG_PWM2_GROUP == 1)
+#define DRV_PWM2_CONFIG                 \
+    {TIM2, RCC_APB1Periph_TIM2, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_0, GPIOA, GPIO_Pin_1, GPIOA, GPIO_Pin_2, GPIOA, GPIO_Pin_3, 0}
+#elif (MR_CFG_PWM2_GROUP == 2)
+#define DRV_PWM2_CONFIG                 \
+    {TIM2, RCC_APB1Periph_TIM2, RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB, GPIOA, GPIO_Pin_15, GPIOB, GPIO_Pin_3, GPIOA, GPIO_Pin_2, GPIOA, GPIO_Pin_3, GPIO_PartialRemap1_TIM2}
+#elif (MR_CFG_PWM2_GROUP == 3)
+#define DRV_PWM2_CONFIG                 \
+    {TIM2, RCC_APB1Periph_TIM2, RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB, GPIOA, GPIO_Pin_0, GPIOA, GPIO_Pin_1, GPIOB, GPIO_Pin_10, GPIOA, GPIO_Pin_3, GPIO_PartialRemap2_TIM2}
+#elif (MR_CFG_PWM2_GROUP == 4)
+#define DRV_PWM2_CONFIG                 \
+    {TIM2, RCC_APB1Periph_TIM2, RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB, GPIOA, GPIO_Pin_15, GPIOB, GPIO_Pin_3, GPIOB, GPIO_Pin_10, GPIOB, GPIO_Pin_11, GPIO_FullRemap_TIM2}
+#endif /* MR_CFG_PWM2_GROUP */
+#if (MR_CFG_PWM3_GROUP == 1)
+#define DRV_PWM3_CONFIG                 \
+    {TIM3, RCC_APB1Periph_TIM3, RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB, GPIOA, GPIO_Pin_6, GPIOA, GPIO_Pin_7, GPIOB, GPIO_Pin_0, GPIOB, GPIO_Pin_1, 0}
+#elif (MR_CFG_PWM3_GROUP == 2)
+#define DRV_PWM3_CONFIG                 \
+    {TIM3, RCC_APB1Periph_TIM3, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_4, GPIOB, GPIO_Pin_5, GPIOB, GPIO_Pin_0, GPIOB, GPIO_Pin_1, GPIO_PartialRemap_TIM3}
+#elif (MR_CFG_PWM3_GROUP == 3)
+#define DRV_PWM3_CONFIG                 \
+    {TIM3, RCC_APB1Periph_TIM3, RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_6, GPIOC, GPIO_Pin_7, GPIOC, GPIO_Pin_8, GPIOC, GPIO_Pin_9, GPIO_FullRemap_TIM3}
+#endif /* MR_CFG_PWM3_GROUP */
+#if (MR_CFG_PWM4_GROUP == 1)
+#define DRV_PWM4_CONFIG                 \
+    {TIM4, RCC_APB1Periph_TIM4, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_6, GPIOB, GPIO_Pin_7, GPIOB, GPIO_Pin_8, GPIOB, GPIO_Pin_9, 0}
+#elif (MR_CFG_PWM4_GROUP == 2)
+#define DRV_PWM4_CONFIG                 \
+    {TIM4, RCC_APB1Periph_TIM4, RCC_APB2Periph_GPIOD, GPIOD, GPIO_Pin_12, GPIOD, GPIO_Pin_13, GPIOD, GPIO_Pin_14, GPIOD, GPIO_Pin_15, GPIO_Remap_TIM4}
+#endif /* MR_CFG_PWM4_GROUP */
+#if (MR_CFG_PWM5_GROUP == 1)
+#define DRV_PWM5_CONFIG                 \
+    {TIM5, RCC_APB1Periph_TIM5, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_0, GPIOA, GPIO_Pin_1, GPIOA, GPIO_Pin_2, GPIOA, GPIO_Pin_3, 0}
+#endif /* MR_CFG_PWM5_GROUP */
+#if (MR_CFG_PWM8_GROUP == 1)
+#define DRV_PWM8_CONFIG                 \
+    {TIM8, RCC_APB2Periph_TIM8, RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_6, GPIOC, GPIO_Pin_7, GPIOC, GPIO_Pin_8, GPIOC, GPIO_Pin_9, 0}
+#elif (MR_CFG_PWM8_GROUP == 2)
+#defined DRV_PWM8_CONFIG                 \
+    {TIM8, RCC_APB2Periph_TIM8, RCC_APB2Periph_GPIOB|RCC_APB2Periph_GPIOC, GPIOB, GPIO_Pin_6, GPIOB, GPIO_Pin_7, GPIOB, GPIO_Pin_8, GPIOC, GPIO_Pin_13, GPIO_Remap_TIM8}
+#endif /* MR_CFG_PWM8_GROUP */
+#if (MR_CFG_PWM9_GROUP == 1)
+#define DRV_PWM9_CONFIG                 \
+    {TIM9, RCC_APB2Periph_TIM9, RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOC, GPIOA, GPIO_Pin_2, GPIOA, GPIO_Pin_3, GPIOA, GPIO_Pin_4, GPIOC, GPIO_Pin_4, 0}
+#elif (MR_CFG_PWM9_GROUP == 2)
+#define DRV_PWM9_CONFIG                 \
+    {TIM9, RCC_APB2Periph_TIM9, RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOC, GPIOA, GPIO_Pin_2, GPIOA, GPIO_Pin_3, GPIOA, GPIO_Pin_4, GPIOC, GPIO_Pin_14, GPIO_PartialRemap_TIM9}
+#elif (MR_CFG_PWM9_GROUP == 3)
+#define DRV_PWM9_CONFIG                 \
+    {TIM9, RCC_APB2Periph_TIM9, RCC_APB2Periph_GPIOD, GPIOD, GPIO_Pin_9, GPIOD, GPIO_Pin_11, GPIOD, GPIO_Pin_13, GPIOD, GPIO_Pin_15, GPIO_FullRemap_TIM9}
+#endif /* MR_CFG_PWM9_GROUP */
+#if (MR_CFG_PWM10_GROUP == 1)
+#define DRV_PWM10_CONFIG                \
+    {TIM10, RCC_APB2Periph_TIM10, RCC_APB2Periph_GPIOB|RCC_APB2Periph_GPIOC, GPIOB, GPIO_Pin_8, GPIOB, GPIO_Pin_9, GPIOC, GPIO_Pin_3, GPIOC, GPIO_Pin_11, 0}
+#elif (MR_CFG_PWM10_GROUP == 2)
+#define DRV_PWM10_CONFIG                \
+    {TIM10, RCC_APB2Periph_TIM10, RCC_APB2Periph_GPIOB|RCC_APB2Periph_GPIOC, GPIOB, GPIO_Pin_3, GPIOB, GPIO_Pin_4, GPIOB, GPIO_Pin_5, GPIOC, GPIO_Pin_15, GPIO_PartialRemap_TIM10}
+#elif (MR_CFG_PWM10_GROUP == 3)
+#define DRV_PWM10_CONFIG                \
+    {TIM10, RCC_APB2Periph_TIM10, RCC_APB2Periph_GPIOD, GPIOD, GPIO_Pin_1, GPIOD, GPIO_Pin_3, GPIOD, GPIO_Pin_5, GPIOD, GPIO_Pin_7, GPIO_FullRemap_TIM10}
+#endif /* MR_CFG_PWM10_GROUP */
+
+#define DRV_PWM1_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM2_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM3_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM4_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM5_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM8_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM9_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM10_INFO_CONFIG           \
+    {0, UINT16_MAX, UINT16_MAX}
+
 #if (MR_CFG_UART1_GROUP == 1)
 #define DRV_UART1_CONFIG                \
     {USART1, RCC_APB2Periph_USART1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_10, GPIOA, GPIO_Pin_9, USART1_IRQn, 0}
@@ -150,7 +241,7 @@ extern "C" {
 #endif /* MR_CFG_UART4_GROUP */
 #if (MR_CFG_UART5_GROUP == 1)
 #define DRV_UART5_CONFIG                \
-    {UART5, RCC_APB1Periph_UART5, RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_13, GPIOC, GPIO_Pin_12, UART5_IRQn, 0}
+    {UART5, RCC_APB1Periph_UART5, RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD, GPIOD, GPIO_Pin_2, GPIOC, GPIO_Pin_12, UART5_IRQn, 0}
 #elif (MR_CFG_UART5_GROUP == 2)
 #define DRV_UART5_CONFIG                \
     {UART5, RCC_APB1Periph_UART5, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_5, GPIOB, GPIO_Pin_4, UART5_IRQn, GPIO_PartialRemap_USART5}

@@ -1,9 +1,5 @@
 menu "Driver configure"
 
-    config MR_USING_CH32V30X
-        bool "Enable CH32V30X driver"
-        default y
-
     menu "ADC"
         config MR_USING_ADC1
             bool "Enable ADC1 driver"
@@ -45,6 +41,112 @@ menu "Driver configure"
                 int "I2C2 Group"
                 default 1
                 range 1 1
+        endmenu
+    endmenu
+
+    menu "PWM"
+        config MR_USING_PWM1
+            bool "Enable PWM1 driver"
+            default n
+
+        menu "PWM1 driver configure"
+            depends on MR_USING_PWM1
+
+            config MR_CFG_PWM1_GROUP
+                int "PWM1 Group"
+                default 1
+                range 1 3
+        endmenu
+
+        config MR_USING_PWM2
+            bool "Enable PWM2 driver"
+            default n
+
+        menu "PWM2 driver configure"
+            depends on MR_USING_PWM2
+
+            config MR_CFG_PWM2_GROUP
+                int "PWM2 Group"
+                default 1
+                range 1 4
+        endmenu
+
+        config MR_USING_PWM3
+            bool "Enable PWM3 driver"
+            default n
+
+        menu "PWM3 driver configure"
+            depends on MR_USING_PWM3
+
+            config MR_CFG_PWM3_GROUP
+                int "PWM3 Group"
+                default 1
+                range 1 3
+        endmenu
+
+        config MR_USING_PWM4
+            bool "Enable PWM4 driver"
+            default n
+
+        menu "PWM4 driver configure"
+            depends on MR_USING_PWM4
+
+            config MR_CFG_PWM4_GROUP
+                int "PWM4 Group"
+                default 1
+                range 1 2
+        endmenu
+
+        config MR_USING_PWM5
+            bool "Enable PWM5 driver"
+            default n
+
+        menu "PWM5 driver configure"
+            depends on MR_USING_PWM5
+
+            config MR_CFG_PWM5_GROUP
+                int "PWM5 Group"
+                default 1
+                range 1 1
+        endmenu
+
+        config MR_USING_PWM8
+            bool "Enable PWM8 driver"
+            default n
+
+        menu "PWM8 driver configure"
+            depends on MR_USING_PWM8
+
+            config MR_CFG_PWM8_GROUP
+                int "PWM8 Group"
+                default 1
+                range 1 2
+        endmenu
+
+        config MR_USING_PWM9
+            bool "Enable PWM9 driver"
+            default n
+
+        menu "PWM9 driver configure"
+            depends on MR_USING_PWM9
+
+            config MR_CFG_PWM9_GROUP
+                int "PWM9 Group"
+                default 1
+                range 1 3
+        endmenu
+
+        config MR_USING_PWM10
+            bool "Enable PWM10 driver"
+            default n
+
+        menu "PWM10 driver configure"
+            depends on MR_USING_PWM10
+
+            config MR_CFG_PWM10_GROUP
+                int "PWM10 Group"
+                default 1
+                range 1 3
         endmenu
     endmenu
 
