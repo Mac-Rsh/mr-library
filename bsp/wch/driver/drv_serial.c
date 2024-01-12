@@ -36,6 +36,7 @@ enum drv_serial_index
 #ifdef MR_USING_UART8
     DRV_INDEX_UART8,
 #endif /* MR_USING_UART8 */
+    DRV_INDEX_UART_MAX
 };
 
 static const char *serial_name[] =
@@ -241,26 +242,25 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = state;
     NVIC_Init(&NVIC_InitStructure);
+    USART_ClearITPendingBit(serial_data->instance, USART_IT_RXNE);
     USART_ITConfig(serial_data->instance, USART_IT_RXNE, state);
     if (state == DISABLE)
     {
         USART_ITConfig(serial_data->instance, USART_IT_TXE, DISABLE);
     }
-    USART_ClearITPendingBit(serial_data->instance, USART_IT_RXNE);
-    USART_ClearITPendingBit(serial_data->instance, USART_IT_TXE);
     return MR_EOK;
 }
 
 static uint8_t drv_serial_read(struct mr_serial *serial)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     /* Read data */
     while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_RXNE) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return 0;
         }
@@ -271,14 +271,14 @@ static uint8_t drv_serial_read(struct mr_serial *serial)
 static void drv_serial_write(struct mr_serial *serial, uint8_t data)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     /* Write data */
     USART_SendData(serial_data->instance, data);
     while (USART_GetFlagStatus(serial_data->instance, USART_FLAG_TC) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return;
         }
@@ -290,6 +290,7 @@ static void drv_serial_start_tx(struct mr_serial *serial)
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
 
     /* Enable TX interrupt */
+    USART_ClearITPendingBit(serial_data->instance, USART_IT_TXE);
     USART_ITConfig(serial_data->instance, USART_IT_TXE, ENABLE);
 }
 
@@ -451,13 +452,11 @@ static struct mr_drv serial_drv[] =
 #endif /* MR_USING_UART8 */
     };
 
-int drv_serial_init(void)
+static int drv_serial_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(serial_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(serial_dev); i++)
     {
-        mr_serial_register(&serial_dev[index], serial_name[index], &serial_drv[index]);
+        mr_serial_register(&serial_dev[i], serial_name[i], &serial_drv[i]);
     }
     return MR_EOK;
 }

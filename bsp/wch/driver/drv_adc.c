@@ -18,6 +18,7 @@ enum drv_adc_index
 #ifdef MR_USING_ADC2
     DRV_INDEX_ADC2,
 #endif /* MR_USING_ADC2 */
+    DRV_INDEX_ADC_MAX
 };
 
 static const char *adc_name[] =
@@ -114,7 +115,7 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
 {
     struct drv_adc_data *adc_data = (struct drv_adc_data *)adc->dev.drv->data;
     struct drv_adc_channel_data *adc_channel_data = drv_adc_get_channel_data(channel);
-    int i = 0;
+    size_t i = 0;
 
     /* Check channel is valid */
     if (adc_channel_data == NULL)
@@ -124,15 +125,15 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
 
     /* Read data */
 #ifdef MR_USING_CH32V00X
-    ADC_RegularChannelConfig(adc_data->instance, adc_channel_data->channel, 1, ADC_SampleTime_43Cycles);
+    ADC_RegularChannelConfig(adc_data->instance, adc_channel_data->channel, 1, ADC_SampleTime_15Cycles);
 #else
-    ADC_RegularChannelConfig(adc_data->instance, adc_channel_data->channel, 1, ADC_SampleTime_239Cycles5);
+    ADC_RegularChannelConfig(adc_data->instance, adc_channel_data->channel, 1, ADC_SampleTime_13Cycles5);
 #endif /* MR_USING_CH32V00X */
     ADC_SoftwareStartConvCmd(adc_data->instance, ENABLE);
     while (ADC_GetFlagStatus(adc_data->instance, ADC_FLAG_EOC) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return 0;
         }
@@ -166,13 +167,11 @@ static struct mr_drv adc_drv[] =
 #endif /* MR_USING_ADC2 */
     };
 
-int drv_adc_init(void)
+static int drv_adc_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(adc_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(adc_dev); i++)
     {
-        mr_adc_register(&adc_dev[index], adc_name[index], &adc_drv[index]);
+        mr_adc_register(&adc_dev[i], adc_name[i], &adc_drv[i]);
     }
     return MR_EOK;
 }

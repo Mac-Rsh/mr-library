@@ -18,6 +18,7 @@ enum drv_i2c_index
 #ifdef MR_USING_I2C2
     DRV_INDEX_I2C2,
 #endif /* MR_USING_I2C2 */
+    DRV_INDEX_I2C_MAX
 };
 
 static const char *i2c_bus_name[] =
@@ -122,22 +123,22 @@ static int drv_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_confi
         I2C_ITConfig(i2c_bus_data->instance, I2C_IT_EVT, DISABLE);
     } else
     {
+        I2C_ClearITPendingBit(i2c_bus_data->instance, I2C_IT_RXNE);
         I2C_ITConfig(i2c_bus_data->instance, I2C_IT_EVT, state);
     }
-    I2C_ClearITPendingBit(i2c_bus_data->instance, I2C_IT_RXNE);
     return MR_EOK;
 }
 
 static void drv_i2c_bus_start(struct mr_i2c_bus *i2c_bus)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     I2C_GenerateSTART(i2c_bus_data->instance, ENABLE);
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_MODE_SELECT) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return;
         }
@@ -147,13 +148,13 @@ static void drv_i2c_bus_start(struct mr_i2c_bus *i2c_bus)
 static void drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     I2C_SendData(i2c_bus_data->instance, addr);
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return;
         }
@@ -166,7 +167,7 @@ static void drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr
         while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
         {
             i++;
-            if (i > INT16_MAX)
+            if (i > UINT16_MAX)
             {
                 return;
             }
@@ -184,7 +185,7 @@ static void drv_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
 static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     /* Control ack */
     I2C_AcknowledgeConfig(i2c_bus_data->instance, ack_state);
@@ -193,7 +194,7 @@ static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_RECEIVED) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return 0;
         }
@@ -204,14 +205,14 @@ static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
 static void drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     /* Write data */
     I2C_SendData(i2c_bus_data->instance, data);
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return;
         }
@@ -273,13 +274,11 @@ static struct mr_drv i2c_bus_drv[] =
 #endif /* MR_USING_I2C2 */
     };
 
-int drv_i2c_bus_init(void)
+static int drv_i2c_bus_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(i2c_bus_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(i2c_bus_dev); i++)
     {
-        mr_i2c_bus_register(&i2c_bus_dev[index], i2c_bus_name[index], &i2c_bus_drv[index]);
+        mr_i2c_bus_register(&i2c_bus_dev[i], i2c_bus_name[i], &i2c_bus_drv[i]);
     }
     return MR_EOK;
 }

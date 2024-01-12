@@ -42,6 +42,7 @@ enum drv_timer_index
 #ifdef MR_USING_TIMER10
     DRV_INDEX_TIMER10,
 #endif /* MR_USING_TIMER10 */
+    DRV_INDEX_TIMER_MAX
 };
 
 static const char *timer_name[] =
@@ -173,8 +174,9 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
 
     /* Configure timer */
     TIM_TimeBaseInitStructure.TIM_Period = 0;
-    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseInitStructure.TIM_Prescaler = 0;
     TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(timer_data->instance, &TIM_TimeBaseInitStructure);
 
@@ -184,8 +186,10 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = state;
     NVIC_Init(&NVIC_InitStructure);
-    TIM_ITConfig(timer_data->instance, TIM_IT_Update, state);
-    TIM_ClearITPendingBit(timer_data->instance, TIM_IT_Update);
+    if (state == DISABLE)
+    {
+        TIM_Cmd(timer_data->instance, DISABLE);
+    }
     return MR_EOK;
 }
 
@@ -194,9 +198,11 @@ static void drv_timer_start(struct mr_timer *timer, uint32_t prescaler, uint32_t
     struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->dev.drv->data;
 
     /* Set the PSC and ARR, and enable the timer */
-    timer_data->instance->CNT = 0;
-    timer_data->instance->PSC = prescaler - 1;
-    timer_data->instance->ATRLR = period - 1;
+    TIM_SetCounter(timer_data->instance, 0);
+    TIM_SetAutoreload(timer_data->instance, period - 1);
+    TIM_PrescalerConfig(timer_data->instance, prescaler - 1, TIM_PSCReloadMode_Immediate);
+    TIM_ClearITPendingBit(timer_data->instance, TIM_IT_Update);
+    TIM_ITConfig(timer_data->instance, TIM_IT_Update, state);
     TIM_Cmd(timer_data->instance, ENABLE);
 }
 
@@ -212,7 +218,7 @@ static uint32_t drv_timer_get_count(struct mr_timer *timer)
 {
     struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->dev.drv->data;
 
-    return timer_data->instance->CNT;
+    return TIM_GetCounter(timer_data->instance);
 }
 
 static void drv_timer_isr(struct mr_timer *timer)
@@ -388,13 +394,11 @@ static struct mr_drv timer_drv[] =
 #endif /* MR_USING_TIMER10 */
     };
 
-int drv_timer_init(void)
+static int drv_timer_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(timer_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(timer_dev); i++)
     {
-        mr_timer_register(&timer_dev[index], timer_name[index], &timer_drv[index], &timer_info[index]);
+        mr_timer_register(&timer_dev[i], timer_name[i], &timer_drv[i], &timer_info[i]);
     }
     return MR_EOK;
 }

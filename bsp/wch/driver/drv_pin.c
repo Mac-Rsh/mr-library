@@ -447,7 +447,7 @@ static struct mr_drv pin_drv =
         MR_NULL
     };
 
-int drv_pin_init(void)
+static int drv_pin_init(void)
 {
     return mr_pin_register(&pin_dev, "pin", &pin_drv);
 }

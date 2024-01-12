@@ -149,7 +149,7 @@ static struct mr_drv dac_drv =
         &dac_drv_data,
     };
 
-int drv_dac_init(void)
+static int drv_dac_init(void)
 {
     return mr_dac_register(&dac_dev, "dac1", &dac_drv);
 }

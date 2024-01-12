@@ -21,6 +21,7 @@ enum drv_spi_bus_index
 #ifdef MR_USING_SPI3
     DRV_INDEX_SPI3,
 #endif /* MR_USING_SPI3 */
+    DRV_INDEX_SPI_MAX
 };
 
 static const char *spi_bus_name[] =
@@ -257,21 +258,21 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         SPI_I2S_ITConfig(spi_bus_data->instance, SPI_I2S_IT_RXNE, DISABLE);
     } else
     {
+        SPI_I2S_ClearITPendingBit(spi_bus_data->instance, SPI_I2S_IT_RXNE);
         SPI_I2S_ITConfig(spi_bus_data->instance, SPI_I2S_IT_RXNE, state);
     }
-    SPI_I2S_ClearITPendingBit(spi_bus_data->instance, SPI_I2S_IT_RXNE);
     return MR_EOK;
 }
 
 static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_RXNE) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return 0;
         }
@@ -282,13 +283,13 @@ static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
 static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     SPI_I2S_SendData(spi_bus_data->instance, data);
     while (SPI_I2S_GetFlagStatus(spi_bus_data->instance, SPI_I2S_FLAG_TXE) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return;
         }
@@ -362,13 +363,11 @@ static struct mr_drv spi_bus_drv[] =
 #endif /* MR_USING_SPI3 */
     };
 
-int drv_spi_bus_init(void)
+static int drv_spi_bus_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(spi_bus_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(spi_bus_dev); i++)
     {
-        mr_spi_bus_register(&spi_bus_dev[index], spi_bus_name[index], &spi_bus_drv[index]);
+        mr_spi_bus_register(&spi_bus_dev[i], spi_bus_name[i], &spi_bus_drv[i]);
     }
     return MR_EOK;
 }
