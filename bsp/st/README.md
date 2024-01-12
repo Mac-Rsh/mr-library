@@ -13,4 +13,12 @@
 
 注：禁止使能中断，否则会报重复定义错误（`MR`框架已接管中断）。
 
-## 参考仓库目录下的`README`，添加 mr-library
+## 将项目导入工程（2.添加驱动）
+
+复制`bsp/st/driver`和`stm32xxx/driver`文件至`driver`。
+
+## 移植驱动
+
+参考上一步中`stm32xxx/driver`路径下`Kconfig`和`mr_board.h`，修改参数，完成移植与裁剪。
+
+## 继续按仓库目录下`README`，添加 mr-library
