@@ -202,7 +202,7 @@ static void drv_timer_start(struct mr_timer *timer, uint32_t prescaler, uint32_t
     TIM_SetAutoreload(timer_data->instance, period - 1);
     TIM_PrescalerConfig(timer_data->instance, prescaler - 1, TIM_PSCReloadMode_Immediate);
     TIM_ClearITPendingBit(timer_data->instance, TIM_IT_Update);
-    TIM_ITConfig(timer_data->instance, TIM_IT_Update, state);
+    TIM_ITConfig(timer_data->instance, TIM_IT_Update, ENABLE);
     TIM_Cmd(timer_data->instance, ENABLE);
 }
 
@@ -212,6 +212,7 @@ static void drv_timer_stop(struct mr_timer *timer)
 
     /* Disable the timer */
     TIM_Cmd(timer_data->instance, DISABLE);
+    TIM_ITConfig(timer_data->instance, TIM_IT_Update, DISABLE);
 }
 
 static uint32_t drv_timer_get_count(struct mr_timer *timer)
