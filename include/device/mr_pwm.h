@@ -52,7 +52,7 @@ struct mr_pwm_config
 /**
  * @brief PWM data type.
  */
-typedef uint32_t mr_pwm_data_t;                                     /**< PWM read/write data type */
+typedef float mr_pwm_data_t;                                        /**< PWM read/write data type */
 
 /**
  * @brief PWM information structure.
@@ -88,7 +88,7 @@ struct mr_pwm_ops
     int (*configure)(struct mr_pwm *pwm, int state);
     int (*channel_configure)(struct mr_pwm *pwm, int channel, int state, int polarity);
     void (*start)(struct mr_pwm *pwm, uint32_t prescaler, uint32_t period);
-    void (*write)(struct mr_pwm *pwm, int channel, uint32_t duty);
+    void (*write)(struct mr_pwm *pwm, int channel, uint32_t compare_value);
     uint32_t (*read)(struct mr_pwm *pwm, int channel);
 };
 

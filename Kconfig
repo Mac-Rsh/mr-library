@@ -206,6 +206,18 @@ menu "Device configure"
             "Use this option allows for the use of PWM devices."
     menu "PWM configure"
         depends on MR_USING_PWM
+
+        config MR_USING_PWM_AUTO_DISABLE
+            bool "Use auto disable channel"
+            default y
+            help
+                "Use this option to allow the channel to be automatically disabled when the device is turned off."
+
+        config MR_USING_PWM_CHANNEL_CHECK
+            bool "Use channel available check"
+            default y
+            help
+                "Use this option to allow you to check whether the channel is available."
     endmenu
 
     # Serial

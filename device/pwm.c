@@ -150,6 +150,7 @@ static int mr_pwm_close(struct mr_dev *dev)
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
 
+#ifdef MR_USING_PWM_AUTO_DISABLE
     /* Disable all channels */
     for (size_t i = 0; i < 32; i++)
     {
@@ -159,6 +160,7 @@ static int mr_pwm_close(struct mr_dev *dev)
             MR_BIT_CLR(pwm->channel, (1 << i));
         }
     }
+#endif /* MR_USING_PWM_AUTO_DISABLE */
 
     return ops->configure(pwm, MR_DISABLE);
 }
@@ -167,19 +169,23 @@ static ssize_t mr_pwm_read(struct mr_dev *dev, int off, void *buf, size_t size, 
 {
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
-    uint32_t *rd_buf = (uint32_t *)buf;
+    float *rd_buf = (float *)buf;
     ssize_t rd_size;
 
+#ifdef MR_USING_PWM_CHANNEL_CHECK
     /* Check if the channel is enabled */
     if (MR_BIT_IS_SET(pwm->channel, (1 << off)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
+#endif /* MR_USING_PWM_CHANNEL_CHECK */
 
     MR_BIT_CLR(size, sizeof(*rd_buf) - 1);
     for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
     {
-        *rd_buf = ops->read(pwm, off);
+        /* Calculate the duty */
+        uint32_t compare_value = ops->read(pwm, off);
+        *rd_buf = ((float)compare_value / (float)pwm->period) * 100.0f;
         rd_buf++;
     }
     return rd_size;
@@ -189,19 +195,24 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
 {
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
-    uint32_t *wr_buf = (uint32_t *)buf;
+    float *wr_buf = (float *)buf;
     ssize_t wr_size;
 
+#ifdef MR_USING_PWM_CHANNEL_CHECK
     /* Check if the channel is enabled */
     if (MR_BIT_IS_SET(pwm->channel, (1 << off)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
+#endif /* MR_USING_PWM_CHANNEL_CHECK */
 
     MR_BIT_CLR(size, sizeof(*wr_buf) - 1);
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
-        ops->write(pwm, off, *wr_buf);
+        /* Calculate the compare value */
+        uint32_t compare_value = (uint32_t)((*wr_buf / 100.0f) * (float)(pwm->period));
+        MR_BOUND(compare_value, 0, pwm->period);
+        ops->write(pwm, off, compare_value);
         wr_buf++;
     }
     return wr_size;
@@ -229,6 +240,7 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             if (args != MR_NULL)
             {
                 uint32_t freq = *((uint32_t *)args);
+                uint32_t old_period = pwm->period;
 
                 /* Calculate prescaler and period */
                 int ret = pwm_calculate(pwm, freq);
@@ -239,6 +251,21 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 /* Start pwm */
                 ops->start(pwm, pwm->prescaler, pwm->period);
+
+                /* Refresh all channels compare value */
+                for (size_t i = 0; i < 32; i++)
+                {
+                    if (MR_BIT_IS_SET(pwm->channel, (1 << i)) == MR_ENABLE)
+                    {
+                        /* Get old duty */
+                        uint32_t compare_value = ops->read(pwm, (int)i);
+                        float duty = ((float)compare_value / (float)old_period) * 100.0f;
+
+                        /* Calculate new compare value */
+                        compare_value = (uint32_t)((duty / 100.0f) * (float)(pwm->period));
+                        ops->write(pwm, (int)i, compare_value);
+                    }
+                }
                 return MR_EOK;
             }
             return MR_EINVAL;
