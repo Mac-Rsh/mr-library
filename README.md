@@ -154,7 +154,7 @@ int main(void)
 
 ## 验证Python环境
 
-验证系统是否安装Python环境。在命令行中运行 `python --version` 检查Python版本（`MR` 脚本工具依赖Python ，若无Python环境请自行安装）。
+验证系统是否安装Python环境。在命令行中运行 `python --version` 检查Python版本（`MR` 脚本工具依赖Python ，若无Python环境请自行安装，暂不支持`3.11.7`以上的版本）。
 
 ## 将项目导入工程
 
@@ -163,7 +163,7 @@ int main(void)
 
    ![CubeMX工程](document/picture/readme/cubemx_project.png)
 
-3. 将 `bsp` 目录中对应芯片的驱动复制到 `driver`：
+3. 将 `bsp` 目录中对应芯片的驱动复制到 `driver`（请仔细阅读`bsp`中的文档）：
 
    ![Driver目录](document/picture/readme/driver.png)
 

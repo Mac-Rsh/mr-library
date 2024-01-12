@@ -165,7 +165,8 @@ the `Python` script automatically generates the configuration file.
 ## Verifying Python environment
 
 Verify that the Python environment is installed. Run `python --version` on the command line to check the Python
-version (the `MR` scripting tool relies on Python, install it yourself if there is no Python environment).
+version (the `MR` scripting tool relies on Python, install it yourself if there is no Python environment, 
+Versions later than `3.11.7` are not supported).
 
 ## Import the project into the workspace
 
@@ -175,12 +176,13 @@ version (the `MR` scripting tool relies on Python, install it yourself if there 
 
    ![CubeMX project](document/picture/readme/cubemx_project.png)
 
-3. Copy the driver of the corresponding chip in the `bsp` directory to `driver`:
+3. Copy the driver of the corresponding chip in the `bsp` directory to `driver`
+   (Please read the documentation in `bsp` carefully):
 
    ![Driver directory](document/picture/readme/driver.png)
 
-4. Remove unnecessary files` bsp `, `document`directories (you can also remove `.git `files if you don`t
-   need` git `). When complete, the directory structure looks like this:
+4. Remove unnecessary files`bsp`, `document`directories (you can also remove `.git `files if you don't
+   need`git`). When complete, the directory structure looks like this:
 
    ![project directory](document/picture/readme/project.png)
 
@@ -209,7 +211,7 @@ version (the `MR` scripting tool relies on Python, install it yourself if there 
 
    ![Automatic configuration tool](document/picture/readme/build_m.png)
 
-4. In the project, introduce `#include` include/mr_lib.h `and add` mr_auto_init() `to` main `function; `
+4. In the project, introduce `#include include/mr_lib.h`and add`mr_auto_init()`to`main`function;
    Automatically initialize the function and start using it.
 
 Note: More commands can be entered: `python build.py -h` to view.
