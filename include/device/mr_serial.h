@@ -71,12 +71,11 @@ extern "C" {
 struct mr_serial_config
 {
     uint32_t baud_rate;                                             /**< Baud rate */
-    uint32_t data_bits: 4;                                          /**< Data bits */
-    uint32_t stop_bits: 3;                                          /**< Stop bits */
-    uint32_t parity: 2;                                             /**< Parity */
-    uint32_t bit_order: 1;                                          /**< Bit order */
-    uint32_t polarity: 1;                                           /**< Polarity */
-    uint32_t reserved: 21;
+    int data_bits;                                                  /**< Data bits */
+    int stop_bits;                                                  /**< Stop bits */
+    int parity;                                                     /**< Parity */
+    int bit_order;                                                  /**< Bit order */
+    int polarity;                                                   /**< Polarity */
 };
 
 /**

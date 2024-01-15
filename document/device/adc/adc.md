@@ -8,7 +8,7 @@
   * [关闭ADC设备](#关闭adc设备)
   * [控制ADC设备](#控制adc设备)
     * [设置/获取通道编号](#设置获取通道编号)
-    * [设置/获取通道状态](#设置获取通道状态)
+    * [设置/获取通道配置](#设置获取通道配置)
   * [读取ADC设备通道值](#读取adc设备通道值)
   * [使用示例：](#使用示例)
 <!-- TOC -->
@@ -45,7 +45,7 @@ int mr_dev_close(int desc);
 | `=0`    | 关闭成功  |
 | `<0`    | 错误码   |
 
-注：关闭设备时所有的通道都将被自动恢复到默认状态，重新打开后需要重新配置通道。
+注：关闭设备时所有的通道都将被自动恢复到默认配置，重新打开后需要重新配置通道（可关闭此功能）。
 
 ## 控制ADC设备
 
@@ -64,9 +64,9 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 
 - `cmd`：命令码，支持以下命令：
     - `MR_CTL_ADC_SET_CHANNEL`：设置通道编号。
-    - `MR_CTL_ADC_SET_CHANNEL_STATE`：设置通道状态。
+    - `MR_CTL_ADC_SET_CHANNEL_CONFIG`：设置通道配置。
     - `MR_CTL_ADC_GET_CHANNEL`：获取通道编号。
-    - `MR_CTL_ADC_GET_CHANNEL_STATE`：获取通道状态。
+    - `MR_CTL_ADC_GET_CHANNEL_CONFIG`：获取通道配置。
 
 ### 设置/获取通道编号
 
@@ -84,20 +84,20 @@ int number;
 mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL, &number);
 ```
 
-### 设置/获取通道状态
+### 设置/获取通道配置
 
-通道状态：
+通道配置：
 
-- `MR_ADC_STATE_DISABLE`：禁用通道。
-- `MR_ADC_STATE_ENABLE`：启用通道。
+- `MR_DISABLE`：禁用通道。
+- `MR_ENABLE`：启用通道。
 
 ```c
-/* 设置通道状态 */
-mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_ADC_STATE_ENABLE));
+/* 设置通道配置 */
+mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
-/* 获取通道状态 */
+/* 获取通道配置 */
 int state;
-mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL_STATE, &state);
+mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL_CONFIG, &state);
 ```
 
 ## 读取ADC设备通道值
@@ -155,7 +155,7 @@ int adc_init(void)
     /* 设置到通道5 */
     mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
     /* 设置通道使能 */
-    ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_ADC_STATE_ENABLE));
+    ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
     if (ret < 0)
     {
         mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));

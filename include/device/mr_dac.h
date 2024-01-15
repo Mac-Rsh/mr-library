@@ -18,28 +18,21 @@ extern "C" {
 #ifdef MR_USING_DAC
 
 /**
- * @brief DAC channel state.
- */
-#define MR_DAC_STATE_DISABLE            MR_DISABLE                  /**< DAC disabled */
-#define MR_DAC_STATE_ENABLE             MR_ENABLE                   /**< DAC enabled */
-
-/**
  * @brief DAC configuration structure.
  */
 struct mr_dac_config
 {
-    uint32_t state: 1;                                              /**< Channel state */
-    uint32_t reserved: 31;                                          /**< Reserved */
+    int state;                                                      /**< Channel state */
 };
 
 /**
  * @brief DAC control command.
  */
 #define MR_CTL_DAC_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
-#define MR_CTL_DAC_SET_CHANNEL_STATE    MR_CTL_SET_CONFIG           /**< Set channel state */
+#define MR_CTL_DAC_SET_CHANNEL_CONFIG   MR_CTL_SET_CONFIG           /**< Set channel config */
 
 #define MR_CTL_DAC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
-#define MR_CTL_DAC_GET_CHANNEL_STATE    MR_CTL_GET_CONFIG           /**< Get channel state */
+#define MR_CTL_DAC_GET_CHANNEL_CONFIG   MR_CTL_GET_CONFIG           /**< Get channel config */
 
 /**
  * @brief DAC data type.

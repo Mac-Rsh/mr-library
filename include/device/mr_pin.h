@@ -18,12 +18,6 @@ extern "C" {
 #ifdef MR_USING_PIN
 
 /**
- * @brief PIN level.
- */
-#define MR_PIN_LOW_LEVEL                (0)                         /* Low level */
-#define MR_PIN_HIGH_LEVEL               (1)                         /* High level */
-
-/**
  * @brief PIN mode.
  */
 #define MR_PIN_MODE_NONE                (0)                         /* No mode */
@@ -47,8 +41,7 @@ extern "C" {
  */
 struct mr_pin_config
 {
-    uint32_t mode: 4;                                               /**< Mode */
-    uint32_t reserved: 28;                                          /**< Reserved */
+    int mode;                                                       /**< Mode */
 };
 
 /**

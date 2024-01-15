@@ -26,7 +26,6 @@ static int mr_spi_bus_open(struct mr_dev *dev)
 #ifdef MR_USING_PIN
     spi_bus->cs_desc = mr_dev_open("pin", MR_OFLAG_RDWR);
 #endif /* MR_USING_PIN */
-
     return ops->configure(spi_bus, &spi_bus->config);
 }
 
@@ -43,7 +42,6 @@ static int mr_spi_bus_close(struct mr_dev *dev)
         spi_bus->cs_desc = -1;
     }
 #endif /* MR_USING_PIN */
-
     return ops->configure(spi_bus, &close_config);
 }
 
@@ -91,7 +89,6 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
             }
             return MR_EOK;
         }
-
         default:
         {
             return MR_ENOTSUP;
@@ -220,7 +217,7 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
             || spi_dev->config.bit_order != spi_bus->config.bit_order)
         {
             int ret = ops->configure(spi_bus, &spi_dev->config);
-            if (ret != MR_EOK)
+            if (ret < 0)
             {
                 return ret;
             }
@@ -305,7 +302,6 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
                 }
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -351,7 +347,6 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
                 }
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -403,7 +398,6 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
                 }
                 break;
             }
-
             default:
             {
                 return MR_EINVAL;
@@ -443,7 +437,7 @@ static ssize_t mr_spi_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
     ssize_t ret = spi_dev_take_bus(spi_dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -479,7 +473,7 @@ static ssize_t mr_spi_dev_write(struct mr_dev *dev, int off, const void *buf, si
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
     ssize_t ret = spi_dev_take_bus(spi_dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -504,7 +498,7 @@ static ssize_t mr_spi_dev_write(struct mr_dev *dev, int off, const void *buf, si
     return ret;
 }
 
-static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
@@ -538,12 +532,12 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 if (config.host_slave == MR_SPI_SLAVE)
                 {
                     int ret = spi_dev_take_bus(spi_dev);
-                    if (ret != MR_EOK)
+                    if (ret < 0)
                     {
                         return ret;
                     }
                 }
-                return MR_EOK;
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
@@ -555,11 +549,12 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 int ret = mr_ringbuf_allocate(&spi_dev->rd_fifo, bufsz);
                 spi_dev->rd_bufsz = 0;
-                if (ret == MR_EOK)
+                if (ret < 0)
                 {
-                    spi_dev->rd_bufsz = bufsz;
+                    return ret;
                 }
-                return ret;
+                spi_dev->rd_bufsz = bufsz;
+                return sizeof(bufsz);
             }
             return MR_EINVAL;
         }
@@ -575,7 +570,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_spi_transfer transfer = *(struct mr_spi_transfer *)args;
 
                 int ret = spi_dev_take_bus(spi_dev);
-                if (ret != MR_EOK)
+                if (ret < 0)
                 {
                     return ret;
                 }
@@ -603,7 +598,6 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-
         case MR_CTL_SPI_GET_CONFIG:
         {
             if (args != MR_NULL)
@@ -611,7 +605,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_spi_config *config = (struct mr_spi_config *)args;
 
                 *config = spi_dev->config;
-                return MR_EOK;
+                return sizeof(*config);
             }
             return MR_EINVAL;
         }
@@ -619,8 +613,10 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                *(size_t *)args = spi_dev->rd_bufsz;
-                return MR_EOK;
+                size_t *bufsz = (size_t *)args;
+
+                *bufsz = spi_dev->rd_bufsz;
+                return sizeof(*bufsz);
             }
             return MR_EINVAL;
         }
@@ -631,11 +627,10 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 size_t *datasz = (size_t *)args;
 
                 *datasz = mr_ringbuf_get_data_size(&spi_dev->rd_fifo);
-                return MR_EOK;
+                return sizeof(*datasz);
             }
             return MR_EINVAL;
         }
-
         default:
         {
             return MR_ENOTSUP;

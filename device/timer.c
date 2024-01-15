@@ -166,7 +166,7 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
     {
         /* Calculate prescaler and period */
         int ret = timer_calculate(timer, timeout);
-        if (ret != MR_EOK)
+        if (ret < 0)
         {
             return ret;
         }
@@ -177,7 +177,7 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
     return wr_size;
 }
 
-static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_timer *timer = (struct mr_timer *)dev;
 
@@ -190,11 +190,10 @@ static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_timer_config config = *(struct mr_timer_config *)args;
 
                 timer->config = config;
-                return MR_EOK;
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
-
         case MR_CTL_TIMER_GET_MODE:
         {
             if (args != MR_NULL)
@@ -202,11 +201,10 @@ static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_timer_config *config = (struct mr_timer_config *)args;
 
                 *config = timer->config;
-                return MR_EOK;
+                return sizeof(*config);
             }
             return MR_EINVAL;
         }
-
         default:
         {
             return MR_ENOTSUP;
@@ -237,7 +235,6 @@ static ssize_t mr_timer_isr(struct mr_dev *dev, int event, void *args)
             }
             return MR_EBUSY;
         }
-
         default:
         {
             return MR_ENOTSUP;

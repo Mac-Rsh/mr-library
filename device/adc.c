@@ -10,7 +10,7 @@
 
 #ifdef MR_USING_ADC
 
-static int adc_channel_set_state(struct mr_adc *adc, int channel, int state)
+static int adc_channel_set_configure(struct mr_adc *adc, int channel, struct mr_adc_config config)
 {
     struct mr_adc_ops *ops = (struct mr_adc_ops *)adc->dev.drv->ops;
 
@@ -21,14 +21,14 @@ static int adc_channel_set_state(struct mr_adc *adc, int channel, int state)
     }
 
     /* Configure the channel */
-    int ret = ops->channel_configure(adc, channel, state);
-    if (ret != MR_EOK)
+    int ret = ops->channel_configure(adc, channel, config.state);
+    if (ret < 0)
     {
         return ret;
     }
 
     /* Enable or disable the channel */
-    if (state == MR_ADC_STATE_ENABLE)
+    if (config.state == MR_ENABLE)
     {
         MR_BIT_SET(adc->channel, (1 << channel));
     } else
@@ -38,7 +38,7 @@ static int adc_channel_set_state(struct mr_adc *adc, int channel, int state)
     return MR_EOK;
 }
 
-static int adc_channel_get_state(struct mr_adc *adc, int channel)
+static int adc_channel_get_configure(struct mr_adc *adc, int channel, struct mr_adc_config *config)
 {
     /* Check channel is valid */
     if (channel < 0 || channel >= 32)
@@ -46,8 +46,9 @@ static int adc_channel_get_state(struct mr_adc *adc, int channel)
         return MR_EINVAL;
     }
 
-    /* Check if the channel is enabled */
-    return MR_BIT_IS_SET(adc->channel, (1 << channel));
+    /* Get configure */
+    config->state = MR_BIT_IS_SET(adc->channel, (1 << channel));
+    return MR_EOK;
 }
 
 static int mr_adc_open(struct mr_dev *dev)
@@ -102,39 +103,41 @@ static ssize_t mr_adc_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     return rd_size;
 }
 
-static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_adc *adc = (struct mr_adc *)dev;
 
     switch (cmd)
     {
-        case MR_CTL_ADC_SET_CHANNEL_STATE:
+        case MR_CTL_ADC_SET_CHANNEL_CONFIG:
         {
             if (args != MR_NULL)
             {
                 struct mr_adc_config config = *((struct mr_adc_config *)args);
 
-                return adc_channel_set_state(adc, off, config.state);
+                int ret = adc_channel_set_configure(adc, off, config);
+                if (ret < 0)
+                {
+                    return ret;
+                }
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
-
-        case MR_CTL_ADC_GET_CHANNEL_STATE:
+        case MR_CTL_ADC_GET_CHANNEL_CONFIG:
         {
             if (args != MR_NULL)
             {
                 struct mr_adc_config *config = (struct mr_adc_config *)args;
 
-                int ret = adc_channel_get_state(adc, off);
+                int ret = adc_channel_get_configure(adc, off, config);
                 if (ret < 0)
                 {
                     return ret;
                 }
-                config->state = ret;
-                return MR_EOK;
+                return sizeof(*config);
             }
         }
-
         default:
         {
             return MR_ENOTSUP;

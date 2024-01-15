@@ -8,7 +8,7 @@
   * [Close ADC Device](#close-adc-device)
   * [Control ADC Device](#control-adc-device)
     * [Set/Get Channel Number](#setget-channel-number)
-    * [Set/Get Channel Status](#setget-channel-status)
+    * [Set/Get Channel configure](#setget-channel-configure)
   * [Read ADC Device Channel Value](#read-adc-device-channel-value)
   * [Usage Example:](#usage-example)
 <!-- TOC -->
@@ -30,7 +30,9 @@ int mr_dev_open(const char *name, int oflags);
 - `name`: ADC device name usually is: `adcx`, `adc1`, `adc2`.
 - `oflags`: Open device flags, support `MR_OFLAG_RDONLY`.
 
-Note: When using, the ADC device should be opened separately for different tasks according to actual situations, and the appropriate `oflags` should be used for management and permission control to ensure they will not interfere with each other.
+Note: When using, the ADC device should be opened separately for different tasks according to actual situations, and the
+appropriate `oflags` should be used for management and permission control to ensure they will not interfere with each
+other.
 
 ## Close ADC Device
 
@@ -45,7 +47,8 @@ int mr_dev_close(int desc);
 | `=0`             | Close successfully |  
 | `<0`             | Error code         |
 
-Note: When closing the device, all channels will be automatically restored to the default state. The channel needs to be reconfigured after reopening.
+Note: When closing the device, all channels will be automatically restored to the default state. The channel needs to be
+reconfigured after reopening(This feature can be turned off).
 
 ## Control ADC Device
 
@@ -64,9 +67,9 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 
 - `cmd`: Command code, supports the following commands:
     - `MR_CTL_ADC_SET_CHANNEL`: Set channel number.
-    - `MR_CTL_ADC_SET_CHANNEL_STATE`: Set channel state.
+    - `MR_CTL_ADC_SET_CHANNEL_CONFIG`: Set channel configure.
     - `MR_CTL_ADC_GET_CHANNEL`: Get channel number.
-    - `MR_CTL_ADC_GET_CHANNEL_STATE`: Get channel state.
+    - `MR_CTL_ADC_GET_CHANNEL_CONFIG`: Get channel configure.
 
 ### Set/Get Channel Number
 
@@ -84,20 +87,20 @@ int number;
 mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL, &number);
 ```
 
-### Set/Get Channel Status
+### Set/Get Channel Configure
 
-Channel status:
+Channel configure:
 
-- `MR_ADC_STATE_DISABLE`: Disable channel.
-- `MR_ADC_STATE_ENABLE`: Enable channel.
+- `MR_DISABLE`: Disable channel.
+- `MR_ENABLE`: Enable channel.
 
 ```c
-/* Set channel status */
-mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_ADC_STATE_ENABLE)); 
+/* Set channel configure */
+mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE)); 
 
-/* Get channel status */  
+/* Get channel configure */  
 int state;
-mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL_STATE, &state);
+mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL_CONFIG, &state);
 ```
 
 ## Read ADC Device Channel Value
@@ -156,7 +159,7 @@ int adc_init(void)
    /* Set to channel 5 */
    mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
    /* Set channel enable */
-   ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_STATE, MR_MAKE_LOCAL(int, MR_ADC_STATE_ENABLE));
+   ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
    if (ret < 0)
    {
        mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));

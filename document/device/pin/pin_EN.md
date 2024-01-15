@@ -34,7 +34,8 @@ int mr_dev_open(const char *name, int oflags);
 - `name`: The PIN device name is usually `"pin"`.
 - `oflags`: Open device flags, supports `MR_OFLAG_RDONLY`, `MR_OFLAG_WRONLY`, `MR_OFLAG_RDWR`.
 
-Note: When using, different tasks should open the PIN device separately according to actual situations and use appropriate `oflags` for management and permission control to ensure they won't interfere with each other.
+Note: When using, different tasks should open the PIN device separately according to actual situations and use
+appropriate `oflags` for management and permission control to ensure they won't interfere with each other.
 
 ## Close PIN Device
 
@@ -49,7 +50,8 @@ int mr_dev_close(int desc);
 | `=0`             | Close successfully |  
 | `<0`             | Error code         |
 
-Note: Closing the device will not restore the previous configuration by default. The user needs to restore it according to the actual situation.
+Note: Closing the device will not restore the previous configuration by default. The user needs to restore it according
+to the actual situation.
 
 ## Control PIN Device
 
@@ -77,9 +79,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 
 #### Pin Number
 
-Different MCUs have different GPIO quantities, functions, naming rules, etc. So MR uses digital numbers to define GPIO pins for unified interfaces on different MCUs.
+Different MCUs have different GPIO quantities, functions, naming rules, etc. So MR uses digital numbers to define GPIO
+pins for unified interfaces on different MCUs.
 
-The default calculation formula is: `Number = Port * 16 + Pin`, where `Port` is the GPIO port number and `Pin` is the GPIO pin number.
+The default calculation formula is: `Number = Port * 16 + Pin`, where `Port` is the GPIO port number and `Pin` is the
+GPIO pin number.
 For example, `PC13` corresponds to `Port` C, `Pin` 13, then `Number = (C - A) * 16 + 13 = 32 + 13 = 45`.
 
 Note: This rule may not apply to all MCUs. Special requirements need to check the low-level driver settings.
@@ -144,14 +148,16 @@ int call(int desc, void *args)
 mr_dev_ioctl(ds, MR_CTL_PIN_SET_EXTI_CALL, call);
 
 /* Get external interrupt callback function */
-int (*callback)(int, void *args);
+int (*callback)(int desc, void *args);
 mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
 ```
 
 Note:
 
-- Before setting the external interrupt mode, you need to configure the callback function, otherwise, it becomes a callback-free interrupt.
-- Even if the PIN device is closed, the callback function will not be invalid until the pin is set to a common mode (external interrupts will be ignored when the PIN device is closed).
+- Before setting the external interrupt mode, you need to configure the callback function, otherwise, it becomes a
+  callback-free interrupt.
+- Even if the PIN device is closed, the callback function will not be invalid until the pin is set to a common mode (
+  external interrupts will be ignored when the PIN device is closed).
 
 ## Read PIN Device Pin Level
 
@@ -194,11 +200,11 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size);
 | `>=0`            | Write data size   |
 | `<0`             | Error code        |
 
-- Level: `0`: Low level; `1`: High level, recommended to use macros:`MR_PIN_LOW_LEVEL`, `MR_PIN_HIGH_LEVEL`.
+- Level: `0`: Low level; `1`: High level.
 
 ```c
 /* Write pin level */
-uint8_t pin_level = MR_PIN_HIGH_LEVEL;
+uint8_t pin_level = 1;
 int ret = mr_dev_write(ds, &pin_level, sizeof(pin_level));
 /* Check if write successfully */  
 if (ret != sizeof(pin_level))
@@ -295,6 +301,8 @@ int main(void)
 ```
 
 After pressing the KEY, the LED will flip.
-Observe the serial port print, you can see the LED and KEY descriptors. Although the external interrupt of the KEY pin is configured by the KEY, 
-no callback function is configured. Therefore, the KEY pin callback function inherits the previous configuration, that is, the callback function of the LED configuration, 
+Observe the serial port print, you can see the LED and KEY descriptors. Although the external interrupt of the KEY pin
+is configured by the KEY,
+no callback function is configured. Therefore, the KEY pin callback function inherits the previous configuration, that
+is, the callback function of the LED configuration,
 so the descriptor printed in the KEY callback function is the descriptor of the LED.

@@ -67,11 +67,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-  - `MR_CTL_PIN_SET_NUMBER`：设置引脚编号。
-  - `MR_CTL_PIN_SET_MODE`：设置引脚模式。
-  - `MR_CTL_PIN_SET_EXTI_CALL`：设置外部中断回调函数。
-  - `MR_CTL_PIN_GET_NUMBER`：获取引脚编号。
-  - `MR_CTL_PIN_GET_EXTI_CALL`：获取外部中断回调函数。
+    - `MR_CTL_PIN_SET_NUMBER`：设置引脚编号。
+    - `MR_CTL_PIN_SET_MODE`：设置引脚模式。
+    - `MR_CTL_PIN_SET_EXTI_CALL`：设置外部中断回调函数。
+    - `MR_CTL_PIN_GET_NUMBER`：获取引脚编号。
+    - `MR_CTL_PIN_GET_EXTI_CALL`：获取外部中断回调函数。
 
 ### 设置/获取引脚编号
 
@@ -144,7 +144,7 @@ int call(int desc, void *args)
 mr_dev_ioctl(ds, MR_CTL_PIN_SET_EXTI_CALL, call);
 
 /* 获取外部中断回调函数 */
-int (*callback)(int, void *args);
+int (*callback)(int desc, void *args);
 mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
 ```
 
@@ -194,11 +194,11 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size);
 | `>=0`   | 写入数据大小  |
 | `<0`    | 错误码     |
 
-- 电平：`0`：低电平；`1`：高电平，推荐使用宏：`MR_PIN_LOW_LEVEL`、`MR_PIN_HIGH_LEVEL`。
+- 电平：`0`：低电平；`1`：高电平。
 
 ```c
 /* 写入引脚电平 */
-uint8_t pin_level = MR_PIN_HIGH_LEVEL;
+uint8_t pin_level = 1;
 int ret = mr_dev_write(ds, &pin_level, sizeof(pin_level));
 /* 是否写入成功 */
 if (ret != sizeof(pin_level))

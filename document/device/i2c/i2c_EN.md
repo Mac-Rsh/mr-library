@@ -37,11 +37,12 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
 | `=0`             | Registration succeeds        |
 | `<0`             | Error code                   |
 
-- `name`: The I2C device needs to bind to the specified I2C bus, and the name needs to add the bus name, such as: `i2c1/dev-name`.
+- `name`: The I2C device needs to bind to the specified I2C bus, and the name needs to add the bus name, such
+  as: `i2c1/dev-name`.
 - `addr`: Device address (the lowest bit is read/write bit, please pass the address shifted to the left).
 - `addr_bits`: Device address bits:
-  - `MR_I2C_ADDR_BITS_7`: 7-bit address.
-  - `MR_I2C_ADDR_BITS_10`: 10-bit address.
+    - `MR_I2C_ADDR_BITS_7`: 7-bit address.
+    - `MR_I2C_ADDR_BITS_10`: 10-bit address.
 
 ## Open I2C Device
 
@@ -57,10 +58,13 @@ int mr_dev_open(const char *name, int oflags);
 | `>=0`            | Device descriptor |
 | `<0`             | Error code        |
 
-- `name`: The I2C device is bound to the I2C bus and needs to add the bus name, such as: `i2cx/dev-name`,`i2c1/dev-name`.
+- `name`: The I2C device is bound to the I2C bus and needs to add the bus name, such
+  as: `i2cx/dev-name`,`i2c1/dev-name`.
 - `oflags`: Open device flags, support `MR_OFLAG_RDONLY`, `MR_OFLAG_WRONLY`, `MR_OFLAG_RDWR`.
 
-Note: When using, the I2C device should be opened separately for different tasks according to the actual situation, and the appropriate `oflags` should be used for management and permission control to ensure that they will not interfere with each other.
+Note: When using, the I2C device should be opened separately for different tasks according to the actual situation, and
+the appropriate `oflags` should be used for management and permission control to ensure that they will not interfere
+with each other.
 
 ## Close I2C Device
 
@@ -91,16 +95,16 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code         |
 
 - `cmd`: Command code, supports the following commands:
-  - `MR_CTL_I2C_SET_CONFIG`: Set I2C device configuration.
-  - `MR_CTL_I2C_SET_REG`: Set register value.
-  - `MR_CTL_I2C_SET_RD_BUFSZ`: Set read buffer size.
-  - `MR_CTL_I2C_CLR_RD_BUF`: Clear read buffer.
-  - `MR_CTL_I2C_SET_RD_CALL`:Set read callback function.
-  - `MR_CTL_I2C_GET_CONFIG`: Get I2C device configuration.
-  - `MR_CTL_I2C_GET_REG`: Get register value.
-  - `MR_CTL_I2C_GET_RD_BUFSZ`: Get read buffer size.
-  - `MR_CTL_I2C_GET_RD_DATASZ`: Get read buffer data size.
-  - `MR_CTL_I2C_GET_RD_CALL`:Get read callback function.
+    - `MR_CTL_I2C_SET_CONFIG`: Set I2C device configuration.
+    - `MR_CTL_I2C_SET_REG`: Set register value.
+    - `MR_CTL_I2C_SET_RD_BUFSZ`: Set read buffer size.
+    - `MR_CTL_I2C_CLR_RD_BUF`: Clear read buffer.
+    - `MR_CTL_I2C_SET_RD_CALL`:Set read callback function.
+    - `MR_CTL_I2C_GET_CONFIG`: Get I2C device configuration.
+    - `MR_CTL_I2C_GET_REG`: Get register value.
+    - `MR_CTL_I2C_GET_RD_BUFSZ`: Get read buffer size.
+    - `MR_CTL_I2C_GET_RD_DATASZ`: Get read buffer data size.
+    - `MR_CTL_I2C_GET_RD_CALL`:Get read callback function.
 
 ### Set/Get I2C Device Configuration
 
@@ -123,10 +127,12 @@ mr_dev_ioctl(ds, MR_CTL_I2C_GET_CONFIG, &config);
 Note:
 
 - If not manually configured, the default configuration is:
-  - Baud rate: `100000`
-  - Master/slave mode: `MR_I2C_HOST`
-  - Register bits: `MR_I2C_REG_BITS_8`
-- When an I2C device on the I2C bus is configured to slave mode, it will continuously occupy the I2C bus. At this point, other I2C devices cannot perform read/write operations until the I2C device in slave mode is reconfigured to master mode.
+    - Baud rate: `100000`
+    - Master/slave mode: `MR_I2C_HOST`
+    - Register bits: `MR_I2C_REG_BITS_8`
+- When an I2C device on the I2C bus is configured to slave mode, it will continuously occupy the I2C bus. At this point,
+  other I2C devices cannot perform read/write operations until the I2C device in slave mode is reconfigured to master
+  mode.
 
 ### Set/Get Register Value
 
@@ -158,7 +164,8 @@ mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_BUFSZ, &size);
 mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
 ```
 
-Note: If not manually configured, it will use the size configured in `Kconfig` (default 32Byte). The read buffer is only used in slave mode.
+Note: If not manually configured, it will use the size configured in `Kconfig` (default 32Byte). The read buffer is only
+used in slave mode.
 
 ### Clear Read Buffer
 
@@ -225,8 +232,11 @@ if (size < 0)
 
 Note:
 
-- In host mode, data is read synchronously in polling mode. In slave mode, if the read buffer is not set, the data is read synchronously in polling mode. After the read buffer is set, the specified amount of data is read from the read buffer (the size of the actual read data is returned).
-- When the register parameter is not negative, the write operation of the register value is inserted before the read operation.
+- In host mode, data is read synchronously in polling mode. In slave mode, if the read buffer is not set, the data is
+  read synchronously in polling mode. After the read buffer is set, the specified amount of data is read from the read
+  buffer (the size of the actual read data is returned).
+- When the register parameter is not negative, the write operation of the register value is inserted before the read
+  operation.
 
 ## Write I2C Device Data
 
@@ -254,7 +264,8 @@ if (size < 0)
 } 
 ```
 
-Note: When the register parameter is not negative, a register value write operation will be inserted before the write operation.
+Note: When the register parameter is not negative, a register value write operation will be inserted before the write
+operation.
 
 ## Usage Example:
 
@@ -351,7 +362,8 @@ int main(void)
 }
 ```
 
-Connect I2C1 and I2C2 and perform sending and receiving test. I2C1 works as master and I2C2 works as slave. I2C2 will compare the received data with the sent data.
+Connect I2C1 and I2C2 and perform sending and receiving test. I2C1 works as master and I2C2 works as slave. I2C2 will
+compare the received data with the sent data.
 Since the register value is set, the register value will be received first before the data writing.
 
 ## Software I2C

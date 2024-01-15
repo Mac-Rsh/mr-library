@@ -16,12 +16,12 @@ static int mr_serial_open(struct mr_dev *dev)
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
 
     int ret = mr_ringbuf_allocate(&serial->rd_fifo, serial->rd_bufsz);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
     ret = mr_ringbuf_allocate(&serial->wr_fifo, serial->wr_bufsz);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -88,7 +88,7 @@ static ssize_t mr_serial_write(struct mr_dev *dev, int off, const void *buf, siz
     return wr_size;
 }
 
-static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;
@@ -102,11 +102,12 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_serial_config config = *(struct mr_serial_config *)args;
 
                 int ret = ops->configure(serial, &config);
-                if (ret == MR_EOK)
+                if (ret < 0)
                 {
-                    serial->config = config;
+                    return ret;
                 }
-                return ret;
+                serial->config = config;
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
@@ -118,11 +119,12 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 int ret = mr_ringbuf_allocate(&serial->rd_fifo, bufsz);
                 serial->rd_bufsz = 0;
-                if (ret == MR_EOK)
+                if (ret < 0)
                 {
-                    serial->rd_bufsz = bufsz;
+                    return ret;
                 }
-                return ret;
+                serial->rd_bufsz = bufsz;
+                return sizeof(bufsz);
             }
             return MR_EINVAL;
         }
@@ -134,11 +136,12 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 int ret = mr_ringbuf_allocate(&serial->wr_fifo, bufsz);
                 serial->wr_bufsz = 0;
-                if (ret == MR_EOK)
+                if (ret < 0)
                 {
-                    serial->wr_bufsz = bufsz;
+                    return ret;
                 }
-                return ret;
+                serial->wr_bufsz = bufsz;
+                return sizeof(bufsz);
             }
             return MR_EINVAL;
         }
@@ -152,7 +155,6 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             mr_ringbuf_reset(&serial->wr_fifo);
             return MR_EOK;
         }
-
         case MR_CTL_SERIAL_GET_CONFIG:
         {
             if (args != MR_NULL)
@@ -160,7 +162,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_serial_config *config = (struct mr_serial_config *)args;
 
                 *config = serial->config;
-                return MR_EOK;
+                return sizeof(*config);
             }
             return MR_EINVAL;
         }
@@ -168,8 +170,10 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                *(size_t *)args = serial->rd_bufsz;
-                return MR_EOK;
+                size_t *bufsz = (size_t *)args;
+
+                *bufsz = serial->rd_bufsz;
+                return sizeof(*bufsz);
             }
             return MR_EINVAL;
         }
@@ -177,8 +181,10 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                *(size_t *)args = serial->wr_bufsz;
-                return MR_EOK;
+                size_t *bufsz = (size_t *)args;
+
+                *bufsz = serial->wr_bufsz;
+                return sizeof(*bufsz);
             }
             return MR_EINVAL;
         }
@@ -189,7 +195,7 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 size_t *datasz = (size_t *)args;
 
                 *datasz = mr_ringbuf_get_data_size(&serial->rd_fifo);
-                return MR_EOK;
+                return sizeof(*datasz);
             }
             return MR_EINVAL;
         }
@@ -200,11 +206,10 @@ static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 size_t *datasz = (size_t *)args;
 
                 *datasz = mr_ringbuf_get_data_size(&serial->wr_fifo);
-                return MR_EOK;
+                return sizeof(*datasz);
             }
             return MR_EINVAL;
         }
-
         default:
         {
             return MR_ENOTSUP;
@@ -227,7 +232,6 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
 
             return (ssize_t)mr_ringbuf_get_data_size(&serial->rd_fifo);
         }
-
         case MR_ISR_SERIAL_WR_INT:
         {
             /* Write data from FIFO, if FIFO is empty, stop transmit */
@@ -242,7 +246,6 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
 
             return (ssize_t)mr_ringbuf_get_data_size(&serial->wr_fifo);
         }
-
         default:
         {
             return MR_ENOTSUP;

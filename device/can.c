@@ -74,7 +74,6 @@ static ssize_t mr_can_bus_isr(struct mr_dev *dev, int event, void *args)
             }
             return MR_EOK;
         }
-
         default:
         {
             return MR_ENOTSUP;
@@ -140,7 +139,7 @@ MR_INLINE int can_dev_take_bus(struct mr_can_dev *can_dev)
         if (can_dev->config.baud_rate != can_bus->config.baud_rate)
         {
             int ret = ops->configure(can_bus, &can_dev->config);
-            if (ret != MR_EOK)
+            if (ret < 0)
             {
                 return ret;
             }
@@ -203,7 +202,7 @@ static int mr_can_dev_open(struct mr_dev *dev)
 
     /* Allocate FIFO buffers */
     int ret = mr_ringbuf_allocate(&can_dev->rd_fifo, can_dev->rd_bufsz);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -226,7 +225,7 @@ static ssize_t mr_can_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
     struct mr_can_dev *can_dev = (struct mr_can_dev *)dev;
 
     ssize_t ret = can_dev_take_bus(can_dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -254,7 +253,7 @@ static ssize_t mr_can_dev_write(struct mr_dev *dev, int off, const void *buf, si
     }
 
     ssize_t ret = can_dev_take_bus(can_dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -270,7 +269,7 @@ static ssize_t mr_can_dev_write(struct mr_dev *dev, int off, const void *buf, si
     return ret;
 }
 
-static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_can_dev *can_dev = (struct mr_can_dev *)dev;
 
@@ -289,9 +288,8 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     can_bus->hold = MR_FALSE;
                     can_bus->owner = MR_NULL;
                 }
-
                 can_dev->config = config;
-                return MR_EOK;
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
@@ -303,15 +301,15 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 int ret = mr_ringbuf_allocate(&can_dev->rd_fifo, bufsz);
                 can_dev->rd_bufsz = 0;
-                if (ret == MR_EOK)
+                if (ret < 0)
                 {
-                    can_dev->rd_bufsz = bufsz;
+                    return ret;
                 }
-                return ret;
+                can_dev->rd_bufsz = bufsz;
+                return sizeof(bufsz);
             }
             return MR_EINVAL;
         }
-
         case MR_CTL_GET_CONFIG:
         {
             if (args != MR_NULL)
@@ -319,7 +317,7 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_can_config *config = (struct mr_can_config *)args;
 
                 *config = can_dev->config;
-                return MR_EOK;
+                return sizeof(*config);
             }
             return MR_EINVAL;
         }
@@ -327,12 +325,13 @@ static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                *(size_t *)args = can_dev->rd_bufsz;
-                return MR_EOK;
+                size_t *bufsz = (size_t *)args;
+
+                *bufsz = can_dev->rd_bufsz;
+                return sizeof(*bufsz);
             }
             return MR_EINVAL;
         }
-
         default:
         {
             return MR_ENOTSUP;

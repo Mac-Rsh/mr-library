@@ -46,9 +46,8 @@ extern "C" {
 struct mr_i2c_config
 {
     uint32_t baud_rate;                                             /**< Baud rate */
-    uint32_t host_slave: 1;                                         /**< Host/slave */
-    uint32_t reg_bits: 6;                                           /**< Register bits */
-    uint32_t reserved: 25;
+    int host_slave;                                                 /**< Host/slave */
+    int reg_bits;                                                   /**< Register bits */
 };
 
 /**

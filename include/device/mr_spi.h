@@ -70,12 +70,11 @@ extern "C" {
 struct mr_spi_config
 {
     uint32_t baud_rate;                                             /**< Baud rate */
-    uint32_t host_slave: 1;                                         /**< Host/slave */
-    uint32_t mode: 2;                                               /**< Mode */
-    uint32_t data_bits: 6;                                          /**< Data bits */
-    uint32_t bit_order: 1;                                          /**< Bit order */
-    uint32_t reg_bits: 6;                                           /**< Register bits */
-    uint32_t reserved: 16;
+    int host_slave;                                                 /**< Host/slave */
+    int mode;                                                       /**< Mode */
+    int data_bits;                                                  /**< Data bits */
+    int bit_order;                                                  /**< Bit order */
+    int reg_bits;                                                   /**< Register bits */
 };
 
 /**

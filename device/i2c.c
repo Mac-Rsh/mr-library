@@ -62,7 +62,6 @@ static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
             }
             return MR_EOK;
         }
-
         default:
         {
             return MR_ENOTSUP;
@@ -126,7 +125,7 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
         {
             int addr = (i2c_dev->config.host_slave == MR_I2C_SLAVE) ? i2c_dev->addr : 0x00;
             int ret = ops->configure(i2c_bus, &i2c_dev->config, addr, i2c_dev->addr_bits);
-            if (ret != MR_EOK)
+            if (ret < 0)
             {
                 return ret;
             }
@@ -165,11 +164,8 @@ MR_INLINE void i2c_dev_send_addr(struct mr_i2c_dev *i2c_dev, int rdwr)
     int addr = 0, addr_bits = MR_I2C_ADDR_BITS_7;
 
     /* Get the address, otherwise use the 0x00 */
-    if (i2c_dev != MR_NULL)
-    {
-        addr = i2c_dev->addr;
-        addr_bits = i2c_dev->addr_bits;
-    }
+    addr = i2c_dev->addr;
+    addr_bits = i2c_dev->addr_bits;
 
     /* Set the read command */
     if (rdwr == MR_I2C_RD)
@@ -239,7 +235,7 @@ static ssize_t mr_i2c_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
     ssize_t ret = i2c_dev_take_bus(i2c_dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -276,7 +272,7 @@ static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, si
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
     ssize_t ret = i2c_dev_take_bus(i2c_dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -302,7 +298,7 @@ static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, si
     return ret;
 }
 
-static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
@@ -327,12 +323,12 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 if (config.host_slave == MR_I2C_SLAVE)
                 {
                     int ret = i2c_dev_take_bus(i2c_dev);
-                    if (ret != MR_EOK)
+                    if (ret < 0)
                     {
                         return ret;
                     }
                 }
-                return MR_EOK;
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
@@ -344,11 +340,12 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 int ret = mr_ringbuf_allocate(&i2c_dev->rd_fifo, bufsz);
                 i2c_dev->rd_bufsz = 0;
-                if (ret == MR_EOK)
+                if (ret < 0)
                 {
-                    i2c_dev->rd_bufsz = bufsz;
+                    return ret;
                 }
-                return ret;
+                i2c_dev->rd_bufsz = bufsz;
+                return sizeof(bufsz);
             }
             return MR_EINVAL;
         }
@@ -357,7 +354,6 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             mr_ringbuf_reset(&i2c_dev->rd_fifo);
             return MR_EOK;
         }
-
         case MR_CTL_I2C_GET_CONFIG:
         {
             if (args != MR_NULL)
@@ -365,7 +361,7 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 struct mr_i2c_config *config = (struct mr_i2c_config *)args;
 
                 *config = i2c_dev->config;
-                return MR_EOK;
+                return sizeof(*config);
             }
             return MR_EINVAL;
         }
@@ -373,8 +369,10 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                *(size_t *)args = i2c_dev->rd_bufsz;
-                return MR_EOK;
+                size_t *bufsz = (size_t *)args;
+
+                *bufsz = i2c_dev->rd_bufsz;
+                return sizeof(*bufsz);
             }
             return MR_EINVAL;
         }
@@ -382,13 +380,12 @@ static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                size_t *size = (size_t *)args;
+                size_t *datasz = (size_t *)args;
 
-                *size = mr_ringbuf_get_bufsz(&i2c_dev->rd_fifo);
-                return MR_EOK;
+                *datasz = mr_ringbuf_get_bufsz(&i2c_dev->rd_fifo);
+                return sizeof(*datasz);
             }
         }
-
         default:
         {
             return MR_ENOTSUP;
