@@ -193,6 +193,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch1_port, &GPIO_InitStructure);
             TIM_OC1Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC1PreloadConfig(pwm_data->instance, state ? TIM_OCPreload_Enable : TIM_OCPreload_Disable);
+            TIM_SetCompare1(pwm_data->instance, 0);
             return MR_EOK;
         }
         case 2:
@@ -201,6 +202,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch2_port, &GPIO_InitStructure);
             TIM_OC2Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC2PreloadConfig(pwm_data->instance, state ? TIM_OCPreload_Enable : TIM_OCPreload_Disable);
+            TIM_SetCompare2(pwm_data->instance, 0);
             return MR_EOK;
         }
         case 3:
@@ -209,6 +211,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch3_port, &GPIO_InitStructure);
             TIM_OC3Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC3PreloadConfig(pwm_data->instance, state ? TIM_OCPreload_Enable : TIM_OCPreload_Disable);
+            TIM_SetCompare3(pwm_data->instance, 0);
             return MR_EOK;
         }
         case 4:
@@ -217,6 +220,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch4_port, &GPIO_InitStructure);
             TIM_OC4Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC4PreloadConfig(pwm_data->instance, state ? TIM_OCPreload_Enable : TIM_OCPreload_Disable);
+            TIM_SetCompare4(pwm_data->instance, 0);
             return MR_EOK;
         }
 
