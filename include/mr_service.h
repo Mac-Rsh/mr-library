@@ -219,16 +219,19 @@ extern "C" {
  */
 #ifdef MR_USING_ASSERT
 #define MR_ASSERT(ex)                   \
-    do{                                 \
+    do                                  \
+    {                                   \
         if (!(ex))                      \
         {                               \
             mr_printf("%-8s "           \
                       "failed: %s, "    \
+                      "function: %s, "  \
                       "file: %s, "      \
                       "line: %d.\r\n",  \
                       "ASSERT:",        \
                       #ex,              \
                       (__FUNCTION__),   \
+                      (__FILE__),       \
                       (__LINE__));      \
             while(1);                   \
         }                               \
@@ -236,6 +239,13 @@ extern "C" {
 #else
 #define MR_ASSERT(ex)
 #endif /* MR_USING_ASSERT */
+
+/**
+ * @brief This macro function initializes a list.
+ *
+ * @param list The list to initialize.
+ */
+#define MR_LIST_INIT(list)              {&(list), &(list)}
 
 /**
  * @brief This function checks if a list is empty.

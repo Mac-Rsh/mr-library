@@ -92,6 +92,12 @@ menu "Device configure"
 		help
 			"This option sets the max number of descriptors."
 
+    config MR_USING_DESC_CHECK
+        bool "Use descriptor available check"
+        default y
+        help
+            "Use this option to allow you to check whether the descriptor is available."
+
 	config MR_USING_RDWR_CTL
 		bool "Use read/write control"
 		default y

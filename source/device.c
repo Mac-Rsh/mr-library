@@ -91,7 +91,7 @@ MR_INLINE int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, co
         struct mr_dev *child = dev_find_child(parent, child_name);
         if (child == MR_NULL)
         {
-            return MR_EINVAL;
+            return MR_ENOTFOUND;
         }
 
         /* Continue iterating */
@@ -142,7 +142,7 @@ MR_INLINE int dev_lock_take(struct mr_dev *dev, int take, int set)
     if (dev_is_root(dev->parent) != MR_TRUE)
     {
         int ret = dev_lock_take(dev->parent, take, set);
-        if (ret != MR_EOK)
+        if (ret < 0)
         {
             return ret;
         }
@@ -171,6 +171,29 @@ MR_INLINE void dev_lock_release(struct mr_dev *dev, int release)
     MR_BIT_CLR(dev->lflags, release);
 }
 #endif /* MR_USING_RDWR_CTL */
+
+MR_INLINE int dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz)
+{
+    int ret = 0;
+
+    /* Continue to get the path of the parent device */
+    if (dev->parent != MR_NULL)
+    {
+        ret = dev_get_path(dev->parent, buf, bufsz);
+        if (ret < 0)
+        {
+            return ret;
+        }
+    }
+
+    /* Check whether the buffer is enough */
+    if ((bufsz - ret) <= (strlen(dev->name) + 1))
+    {
+        return ret;
+    }
+    ret += snprintf(buf + ret, bufsz - ret, "/%s", dev->name);
+    return ret;
+}
 
 MR_INLINE int dev_register(struct mr_dev *dev, const char *path)
 {
@@ -207,7 +230,7 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
         if (dev_is_root(dev->parent) != MR_TRUE)
         {
             int ret = dev_open(dev->parent, oflags);
-            if (ret != MR_EOK)
+            if (ret < 0)
             {
                 return ret;
             }
@@ -217,7 +240,7 @@ MR_INLINE int dev_open(struct mr_dev *dev, int oflags)
         if (dev->ops->open != MR_NULL)
         {
             int ret = dev->ops->open(dev);
-            if (ret != MR_EOK)
+            if (ret < 0)
             {
                 return ret;
             }
@@ -247,7 +270,7 @@ MR_INLINE int dev_close(struct mr_dev *dev)
         if (dev_is_root(dev->parent) != MR_TRUE)
         {
             int ret = dev_close(dev->parent);
-            if (ret != MR_EOK)
+            if (ret < 0)
             {
                 return ret;
             }
@@ -270,7 +293,7 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int off, void *buf, size_t size, 
         /* Disable interrupt */
         mr_interrupt_disable();
         int ret = dev_lock_take(dev, (MR_LFLAG_RD | MR_LFLAG_SLEEP), MR_LFLAG_RD);
-        if (ret != MR_EOK)
+        if (ret < 0)
         {
             /* Enable interrupt */
             mr_interrupt_enable();
@@ -300,7 +323,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
         int ret = dev_lock_take(dev,
                                 (MR_LFLAG_WR | MR_LFLAG_SLEEP | (async == MR_SYNC ? MR_LFLAG_NONBLOCK : 0)),
                                 MR_LFLAG_WR);
-        if (ret != MR_EOK)
+        if (ret < 0)
         {
             /* Enable interrupt */
             mr_interrupt_enable();
@@ -316,7 +339,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
 
 #ifdef MR_USING_RDWR_CTL
     dev_lock_release(dev, MR_LFLAG_WR);
-    if ((async == MR_ASYNC) && (ret != 0))
+    if ((async == MR_ASYNC) && (ret > 0))
     {
         /* Disable interrupt */
         mr_interrupt_disable();
@@ -328,7 +351,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
     return ret;
 }
 
-MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
+MR_INLINE ssize_t dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 {
     /* Check whether the device has an ioctl function */
     if (dev->ops->ioctl == MR_NULL)
@@ -342,21 +365,54 @@ MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *ar
         {
             dev->rd_call.desc = desc;
             dev->rd_call.call = (int (*)(int desc, void *args))args;
-            return MR_EOK;
+            return sizeof(dev->rd_call);
         }
         case MR_CTL_SET_WR_CALL:
         {
             dev->wr_call.desc = desc;
             dev->wr_call.call = (int (*)(int desc, void *args))args;
-            return MR_EOK;
+            return sizeof(dev->wr_call);
         }
+        case MR_CTL_GET_SFLAGS:
+        {
+            if (args != MR_NULL)
+            {
+                int *sflags = (int *)args;
 
+                *sflags = dev->sflags;
+                return sizeof(sflags);
+            }
+            return MR_EINVAL;
+        }
+        case MR_CTL_GET_PATH:
+        {
+            if (args != MR_NULL)
+            {
+                int *path = (int *)args;
+                char *buf = (char *)path[0];
+                size_t bufsz = (size_t)path[1];
+
+                return dev_get_path(dev, buf, bufsz);
+            }
+            return MR_EINVAL;
+        }
+        case MR_CTL_GET_NAME:
+        {
+            if (args != MR_NULL)
+            {
+                char **name = (char **)args;
+
+                *name = dev->name;
+                return sizeof(name);
+            }
+            return MR_EINVAL;
+        }
         case MR_CTL_GET_RD_CALL:
         {
             if (args != MR_NULL)
             {
                 *(int (**)(int desc, void *args))args = dev->rd_call.call;
-                return MR_EOK;
+                return sizeof(dev->rd_call.call);
             }
             return MR_EINVAL;
         }
@@ -365,11 +421,10 @@ MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *ar
             if (args != MR_NULL)
             {
                 *(int (**)(int desc, void *args))args = dev->wr_call.call;
-                return MR_EOK;
+                return sizeof(dev->wr_call.call);
             }
             return MR_EINVAL;
         }
-
         default:
         {
 #ifdef MR_USING_RDWR_CTL
@@ -378,7 +433,7 @@ MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *ar
                 /* Disable interrupt */
                 mr_interrupt_disable();
                 int ret = dev_lock_take(dev, (MR_LFLAG_RDWR | MR_LFLAG_SLEEP | MR_LFLAG_NONBLOCK), MR_LFLAG_RDWR);
-                if (ret != MR_EOK)
+                if (ret < 0)
                 {
                     /* Enable interrupt */
                     mr_interrupt_enable();
@@ -390,7 +445,7 @@ MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *ar
 #endif /* MR_USING_RDWR_CTL */
 
             /* I/O control to the device */
-            int ret = dev->ops->ioctl(dev, off, cmd, args);
+            ssize_t ret = dev->ops->ioctl(dev, off, cmd, args);
 
 #ifdef MR_USING_RDWR_CTL
             dev_lock_release(dev, MR_LFLAG_RDWR);
@@ -498,10 +553,6 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 
         case MR_ISR_WR:
         {
-            if (ret != MR_EOK)
-            {
-                return MR_EBUSY;
-            }
 #ifdef MR_USING_RDWR_CTL
             dev_lock_release(dev, MR_LFLAG_NONBLOCK);
 #endif /* MR_USING_RDWR_CTL */
@@ -520,41 +571,6 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
 }
 
 /**
- * @brief This function get the path of the device.
- *
- * @param dev The device.
- * @param buf The buffer to store the path.
- * @param bufsz The size of the buffer.
- *
- * @return The length of the path on success, otherwise an error code.
- */
-int mr_dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz)
-{
-    int ret = 0;
-
-    MR_ASSERT(dev != MR_NULL);
-    MR_ASSERT((buf != MR_NULL) || (bufsz == 0));
-
-    /* Continue to get the path of the parent device */
-    if (dev->parent != MR_NULL)
-    {
-        ret = mr_dev_get_path(dev->parent, buf, bufsz);
-        if (ret < 0)
-        {
-            return ret;
-        }
-    }
-
-    /* Check whether the buffer is enough */
-    if ((bufsz - ret) <= (strlen(dev->name) + 1))
-    {
-        return MR_ENOMEM;
-    }
-    ret += snprintf(buf + ret, bufsz - ret, "/%s", dev->name);
-    return ret;
-}
-
-/**
  * @brief Device descriptor structure.
  */
 static struct mr_desc
@@ -569,6 +585,12 @@ static struct mr_desc
 
 #define DESC_OF(desc)                   (desc_map[(desc)])
 #define DESC_IS_VALID(desc)             (((desc) >= 0 && (desc) < MR_CFG_DESC_MAX) && ((DESC_OF(desc).dev) != MR_NULL))
+
+#ifdef MR_USING_DESC_CHECK
+#define MR_DESC_CHECK(desc)             if (DESC_IS_VALID(desc) == MR_FALSE) { return MR_EINVAL; }
+#else
+#define MR_DESC_CHECK(desc)
+#endif /* MR_USING_DESC_CHECK */
 
 static int desc_allocate(const char *path)
 {
@@ -634,7 +656,7 @@ int mr_dev_open(const char *path, int oflags)
 
     /* Open the device */
     int ret = dev_open(DESC_OF(desc).dev, oflags);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         desc_free(desc);
         return ret;
@@ -654,11 +676,11 @@ int mr_dev_open(const char *path, int oflags)
  */
 int mr_dev_close(int desc)
 {
-    MR_ASSERT(DESC_IS_VALID(desc));
+    MR_DESC_CHECK(desc);
 
     /* Close the device */
     int ret = dev_close(DESC_OF(desc).dev);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
@@ -679,8 +701,8 @@ int mr_dev_close(int desc)
  */
 ssize_t mr_dev_read(int desc, void *buf, size_t size)
 {
-    MR_ASSERT(DESC_IS_VALID(desc));
-    MR_ASSERT(buf != MR_NULL || size == 0);
+    MR_ASSERT((buf != MR_NULL) || (size == 0));
+    MR_DESC_CHECK(desc);
 
 #ifdef MR_USING_RDWR_CTL
     if (MR_BIT_IS_SET(DESC_OF(desc).oflags, MR_OFLAG_RDONLY) == MR_DISABLE)
@@ -708,8 +730,8 @@ ssize_t mr_dev_read(int desc, void *buf, size_t size)
  */
 ssize_t mr_dev_write(int desc, const void *buf, size_t size)
 {
-    MR_ASSERT(DESC_IS_VALID(desc));
-    MR_ASSERT(buf != MR_NULL || size == 0);
+    MR_ASSERT((buf != MR_NULL) || (size == 0));
+    MR_DESC_CHECK(desc);
 
 #ifdef MR_USING_RDWR_CTL
     if (MR_BIT_IS_SET(DESC_OF(desc).oflags, MR_OFLAG_WRONLY) == MR_DISABLE)
@@ -735,9 +757,9 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size)
  *
  * @return The arguments of the device, otherwise an error code.
  */
-int mr_dev_ioctl(int desc, int cmd, void *args)
+ssize_t mr_dev_ioctl(int desc, int cmd, void *args)
 {
-    MR_ASSERT(DESC_IS_VALID(desc));
+    MR_DESC_CHECK(desc);
 
     switch (cmd)
     {
@@ -745,22 +767,34 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
         {
             if (args != MR_NULL)
             {
-                DESC_OF(desc).offset = *(int *)args;
-                return MR_EOK;
+                int offset = *(int *)args;
+
+                DESC_OF(desc).offset = offset;
+                return sizeof(offset);
             }
             return MR_EINVAL;
         }
-
         case MR_CTL_GET_OFFSET:
         {
             if (args != MR_NULL)
             {
-                *(int *)args = DESC_OF(desc).offset;
-                return MR_EOK;
+                int *offset = (int *)args;
+
+                *offset = DESC_OF(desc).offset;
+                return sizeof(offset);
             }
             return MR_EINVAL;
         }
+        case MR_CTL_GET_OFLAGS:
+        {
+            if (args != MR_NULL)
+            {
+                int *oflags = (int *)args;
 
+                *oflags = DESC_OF(desc).oflags;
+            }
+            return MR_EINVAL;
+        }
         default:
         {
             /* I/O control to the device */
@@ -770,21 +804,20 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
 }
 
 /**
- * @brief Get the name of the device.
+ * @brief This function check if the descriptor is valid.
  *
  * @param desc The descriptor of the device.
  *
- * @return The name of the device.
+ * @return MR_TRUE if the descriptor is valid, otherwise MR_FALSE.
  */
-const char *mr_dev_get_name(int desc)
+int mr_dev_is_valid(int desc)
 {
-    MR_ASSERT(DESC_IS_VALID(desc));
-
-    return DESC_OF(desc).dev->name;
+    return DESC_IS_VALID(desc);
 }
 
 #ifdef MR_USING_MSH
 #include "include/components/mr_msh.h"
+
 static void msh_list_tree(struct mr_dev *parent, int level)
 {
     if (level == 0)
@@ -808,10 +841,16 @@ static void msh_list_tree(struct mr_dev *parent, int level)
         msh_list_tree(dev, level + 4);
     }
 }
-static int msh_list_dev(int argc, void *argv)
+
+static int msh_cmd_dlist(int argc, void *argv)
 {
     msh_list_tree(&root_dev, 0);
     return MR_EOK;
 }
-MR_MSH_CMD_EXPORT(lsdev, msh_list_dev, "List all devices.");
+
+/**
+ * @brief Exports device MSH commands.
+ */
+MR_MSH_CMD_EXPORT(dlist, msh_cmd_dlist, "list all devices.");
+
 #endif /* MR_USING_MSH */
