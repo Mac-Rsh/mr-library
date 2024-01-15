@@ -98,7 +98,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 {
     static int desc = -1;
 
-    if (desc < 0)
+    if (mr_dev_is_valid(desc) == MR_FALSE)
     {
 #ifndef MR_CFG_PRINTF_DEV_NAME
 #define MR_CFG_PRINTF_DEV_NAME          "serial1"
@@ -108,7 +108,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 #else
         console = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
 #endif /* MR_USING_PRINTF_NONBLOCKING */
-        if (desc < 0)
+        if (mr_dev_is_valid(desc) == MR_FALSE)
         {
             return desc;
         }
