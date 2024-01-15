@@ -19,13 +19,18 @@ static struct
 #define MR_CFG_MSH_BUFSZ                (32)
 #endif /* MR_CFG_MSHELL_BUFSZ */
     char buf[MR_CFG_MSH_BUFSZ];                                     /**< Buffer for reading */
-    size_t cursor;                                                  /**< Cursor position */
-    size_t bytes;                                                   /**< Bytes in the buffer */
+    uint32_t cursor: 16;                                            /**< Cursor position */
+    uint32_t bytes: 16;                                             /**< Bytes in the buffer */
     char key_buf[8];                                                /**< Buffer for keys */
-    size_t key_bytes;                                               /**< Bytes in the key buffer */
-    int echo;                                                       /**< Echo or not */
+    uint32_t key_bytes: 4;                                          /**< Bytes in the key buffer */
+    uint32_t echo: 1;                                               /**< Echo or not */
+    uint32_t reserved: 27;                                          /**< Reserved */
+    char *prompt;                                                   /**< Prompt string */
     int desc;                                                       /**< Device descriptor */
 } msh;
+
+#define MR_MSH_EXPORT(name, fn, help, level) \
+    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION(".mr_msh_cmd."level) = {#name, fn, help};
 
 MR_MSH_EXPORT(start, MR_NULL, MR_NULL, "0");
 MR_MSH_EXPORT(end, MR_NULL, MR_NULL, "1.end");
@@ -42,9 +47,14 @@ static void msh_refresh_line(void)
     if (msh.echo == MR_ENABLE)
     {
 #ifndef MR_CFG_MSH_PROMPT
-#define MR_CFG_MSH_PROMPT               "msh>"
+#define MR_CFG_MSH_PROMPT               "msh"
 #endif /* MR_CFG_MSH_PROMPT */
-        mr_msh_printf(MR_CFG_MSH_PROMPT" ");
+#ifdef MR_USING_MSH_PRINTF_COLOR
+#define MR_MSH_COLOR_CYAN(str)          "\033[36m"str"\033[0m"
+#else
+#define MR_MSH_COLOR_CYAN(str)          str
+#endif /* MR_USING_MSH_PRINTF_COLOR */
+        mr_msh_printf(MR_MSH_COLOR_CYAN("%s ")MR_MSH_COLOR_YELLOW("%s> "), MR_CFG_MSH_PROMPT, msh.prompt);
     }
     msh.cursor = 0;
     msh.bytes = 0;
@@ -56,10 +66,7 @@ static void msh_new_line(void)
     /* Move the cursor to the beginning of the line and print a new line */
     if (msh.echo == MR_ENABLE)
     {
-#ifndef MR_CFG_MSH_PROMPT
-#define MR_CFG_MSH_PROMPT               "msh>"
-#endif /* MR_CFG_MSH_PROMPT */
-        mr_msh_printf("\r\n"MR_CFG_MSH_PROMPT" ");
+        mr_msh_printf("\r\n"MR_MSH_COLOR_CYAN("%s ")MR_MSH_COLOR_YELLOW("%s> "), MR_CFG_MSH_PROMPT, msh.prompt);
     }
     msh.cursor = 0;
     msh.bytes = 0;
@@ -179,7 +186,7 @@ static int msh_parse_cmd(void)
         for (argc = 0; argc < MR_CFG_MSH_ARGS_MAX; argc++)
         {
             char *arg = strchr(old_arg, ' ');
-            if (arg == MR_NULL)
+            if ((arg == MR_NULL) || (*(arg + 1) == '\0') || (*(arg + 1) == ' '))
             {
                 break;
             }
@@ -273,6 +280,9 @@ static void msh_key_table(void)
     /* Complete the command */
     if (msh_comp != MR_NULL)
     {
+#ifndef MR_CFG_MSH_NAME_MAX
+#define MR_CFG_MSH_NAME_MAX             (8)
+#endif /* MR_CFG_MSH_NAME_MAX */
         for (size_t i = msh.cursor; i < msh_strnlen(msh_comp->name, MR_CFG_MSH_NAME_MAX); i++)
         {
             msh_insert_char(msh_comp->name[i]);
@@ -301,7 +311,7 @@ static void msh_parse_key(char c)
 {
     int parse_flag = MR_DISABLE;
 
-    /* key-bytes: 0 -> short character key, 1 -> long character key */
+    /* key-bytes: (0) -> short character key, (!0) -> long character key */
     if (msh.key_bytes == 0)
     {
         if (MSH_IS_ESC_KEY(c))
@@ -389,12 +399,12 @@ static int msh_cmd_echo(int argc, void *argv)
     /* Check the arguments */
     if (argc == 1)
     {
-        if (strncmp(MR_MSH_GET_ARG(0), "on", 2) == 0)
+        if (strncmp(MR_MSH_GET_ARG(1), "on", 2) == 0)
         {
             msh.echo = MR_ENABLE;
             mr_msh_printf("Echo is on.\r\n");
             return MR_EOK;
-        } else if (strncmp(MR_MSH_GET_ARG(0), "off", 3) == 0)
+        } else if (strncmp(MR_MSH_GET_ARG(1), "off", 3) == 0)
         {
             msh.echo = MR_DISABLE;
             mr_msh_printf("Echo is off.\r\n");
@@ -412,9 +422,13 @@ static int msh_cmd_echo(int argc, void *argv)
  */
 static int mr_msh_init(void)
 {
+    msh.cursor = 0;
+    msh.bytes = 0;
+    msh.key_bytes = 0;
 #ifdef MR_USING_MSH_ECHO
     msh.echo = MR_ENABLE;
 #endif /* MR_USING_MSH_ECHO */
+    msh.prompt = "/";
     msh.desc = -1;
     /* Print the prompt */
     mr_msh_printf(MSH_CLEAR);
@@ -426,10 +440,10 @@ MR_INIT_DEV_EXPORT(mr_msh_init);
 /**
  * @brief Exports default MSH commands.
  */
-MR_MSH_CMD_EXPORT(help, msh_cmd_help, "Show help information.");
-MR_MSH_CMD_EXPORT(clear, msh_cmd_clear, "Clear the screen.");
-MR_MSH_CMD_EXPORT(logo, msh_cmd_logo, "Show the logo.");
-MR_MSH_CMD_EXPORT(echo, msh_cmd_echo, "Enable or disable echo.");
+MR_MSH_CMD_EXPORT(help, msh_cmd_help, "show help information.");
+MR_MSH_CMD_EXPORT(clear, msh_cmd_clear, "clear the screen.");
+MR_MSH_CMD_EXPORT(logo, msh_cmd_logo, "show the logo.");
+MR_MSH_CMD_EXPORT(echo, msh_cmd_echo, "enable or disable echo.");
 
 /**
  * @brief This function printf output to the msh.
@@ -440,14 +454,17 @@ MR_MSH_CMD_EXPORT(echo, msh_cmd_echo, "Enable or disable echo.");
  */
 MR_WEAK int mr_msh_printf_output(const char *buf, size_t size)
 {
-    if (msh.desc < 0)
+    if (mr_dev_is_valid(msh.desc) == MR_FALSE)
     {
+#ifndef MR_CFG_MSH_DEV_NAME
+#define MR_CFG_MSH_DEV_NAME              "serial1"
+#endif /* MR_CFG_MSH_DEV_NAME */
 #ifndef MR_CFG_MSH_NONBLOCKING
         msh.desc = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR);
 #else
-        console = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+        msh.desc = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
 #endif /* MR_CFG_MSH_NONBLOCKING */
-        if (msh.desc < 0)
+        if (mr_dev_is_valid(msh.desc) == MR_FALSE)
         {
             return msh.desc;
         }
@@ -464,14 +481,14 @@ MR_WEAK int mr_msh_printf_output(const char *buf, size_t size)
  */
 MR_WEAK int mr_msh_input(char *c)
 {
-    if (msh.desc < 0)
+    if (mr_dev_is_valid(msh.desc) == MR_FALSE)
     {
 #ifndef MR_CFG_MSH_NONBLOCKING
         msh.desc = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR);
 #else
-        console = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+        msh.desc = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
 #endif /* MR_CFG_MSH_NONBLOCKING */
-        if (msh.desc < 0)
+        if (mr_dev_is_valid(msh.desc) == MR_FALSE)
         {
             return 0;
         }
@@ -503,12 +520,21 @@ int mr_msh_printf(const char *fmt, ...)
 }
 
 /**
+ * @brief This function sets the msh prompt.
+ *
+ * @param prompt The prompt string.
+ */
+void mr_msh_set_prompt(char *prompt)
+{
+    msh.prompt = prompt;
+}
+
+/**
  * @brief This function handles the msh.
  */
 void mr_msh_handle(void)
 {
     char c;
-
     while (mr_msh_input(&c) > 0)
     {
         mr_msh_recv_char(c);

@@ -25,8 +25,8 @@ menu "Components configure"
 
         config MR_CFG_MSH_ARGS_MAX
             int "Msh argument max number"
-            default 4
-            range 1 16
+            default 16
+            range 1 64
             help
                 "This option sets the max number of arguments."
 
@@ -51,9 +51,15 @@ menu "Components configure"
 
         config MR_CFG_MSH_PROMPT
             string "Msh prompt"
-            default "msh>"
+            default "msh"
             help
                 "This option sets the prompt of the shell."
+
+        config MR_USING_MSH_PRINTF_COLOR
+            bool "Use msh printf color"
+            default n
+            help
+                "This option allows for the use of the printf color in the msh."
 
         config MR_USING_MSH_ECHO
             bool "Use msh echo"
