@@ -18,12 +18,6 @@ extern "C" {
 #ifdef MR_USING_PWM
 
 /**
- * @brief PWM channel state.
- */
-#define MR_PWM_DISABLE                  MR_DISABLE                  /**< PWM disable */
-#define MR_PWM_ENABLE                   MR_ENABLE                   /**< PWM enable */
-
-/**
  * @brief PWM channel polarity.
  */
 #define MR_PWM_POLARITY_NORMAL          (0)                         /**< PWM normal polarity */
@@ -34,8 +28,8 @@ extern "C" {
  */
 struct mr_pwm_config
 {
-    uint32_t state: 1;                                              /**< Channel state */
-    uint32_t polarity: 1;                                           /**< Channel polarity */
+    int state;                                                      /**< Channel state */
+    int polarity;                                                   /**< Channel polarity */
 };
 
 /**
@@ -52,7 +46,7 @@ struct mr_pwm_config
 /**
  * @brief PWM data type.
  */
-typedef float mr_pwm_data_t;                                        /**< PWM read/write data type */
+typedef uint32_t mr_pwm_data_t;                                     /**< PWM read/write data type */
 
 /**
  * @brief PWM information structure.

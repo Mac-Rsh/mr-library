@@ -22,13 +22,13 @@ static int pwm_channel_set_configure(struct mr_pwm *pwm, int channel, struct mr_
 
     /* Configure the channel */
     int ret = ops->channel_configure(pwm, channel, config.state, config.polarity);
-    if (ret != MR_EOK)
+    if (ret < 0)
     {
         return ret;
     }
 
     /* Enable or disable the channel */
-    if (config.state == MR_PWM_ENABLE)
+    if (config.state == MR_ENABLE)
     {
         MR_BIT_SET(pwm->channel, (1 << channel));
 
@@ -59,8 +59,7 @@ static int pwm_channel_get_configure(struct mr_pwm *pwm, int channel, struct mr_
     /* Get configure */
     config->state = MR_BIT_IS_SET(pwm->channel, (1 << channel));
     config->polarity = MR_BIT_IS_SET(pwm->channel_polarity, (1 << channel));
-
-    return config->state;
+    return MR_EOK;
 }
 
 static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
@@ -133,7 +132,7 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
 
     pwm->prescaler = psc_best;
     pwm->period = per_best;
-    pwm->freq = clk / psc_best / per_best;
+    pwm->freq = (clk * 1000000) / psc_best / per_best;
     return MR_EOK;
 }
 
@@ -169,7 +168,7 @@ static ssize_t mr_pwm_read(struct mr_dev *dev, int off, void *buf, size_t size, 
 {
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
-    float *rd_buf = (float *)buf;
+    uint32_t *rd_buf = (uint32_t *)buf;
     ssize_t rd_size;
 
 #ifdef MR_USING_PWM_CHANNEL_CHECK
@@ -185,7 +184,7 @@ static ssize_t mr_pwm_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     {
         /* Calculate the duty */
         uint32_t compare_value = ops->read(pwm, off);
-        *rd_buf = ((float)compare_value / (float)pwm->period) * 100.0f;
+        *rd_buf = (uint32_t)(((float)compare_value / (float)pwm->period) * 1000000.0f);
         rd_buf++;
     }
     return rd_size;
@@ -195,7 +194,7 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
 {
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
-    float *wr_buf = (float *)buf;
+    uint32_t *wr_buf = (uint32_t *)buf;
     ssize_t wr_size;
 
 #ifdef MR_USING_PWM_CHANNEL_CHECK
@@ -210,7 +209,7 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
         /* Calculate the compare value */
-        uint32_t compare_value = (uint32_t)((*wr_buf / 100.0f) * (float)(pwm->period));
+        uint32_t compare_value = (uint32_t)(((float)*wr_buf / 1000000.0f) * (float)(pwm->period));
         MR_BOUND(compare_value, 0, pwm->period);
         ops->write(pwm, off, compare_value);
         wr_buf++;
@@ -218,7 +217,7 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
     return wr_size;
 }
 
-static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static ssize_t mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;
@@ -231,7 +230,12 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             {
                 struct mr_pwm_config config = *((struct mr_pwm_config *)args);
 
-                return pwm_channel_set_configure(pwm, off, config);
+                int ret = pwm_channel_set_configure(pwm, off, config);
+                if (ret < 0)
+                {
+                    return ret;
+                }
+                return sizeof(config);
             }
             return MR_EINVAL;
         }
@@ -244,7 +248,7 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
                 /* Calculate prescaler and period */
                 int ret = pwm_calculate(pwm, freq);
-                if (ret != MR_EOK)
+                if (ret < 0)
                 {
                     return ret;
                 }
@@ -259,14 +263,13 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                     {
                         /* Get old duty */
                         uint32_t compare_value = ops->read(pwm, (int)i);
-                        float duty = ((float)compare_value / (float)old_period) * 100.0f;
 
                         /* Calculate new compare value */
-                        compare_value = (uint32_t)((duty / 100.0f) * (float)(pwm->period));
+                        compare_value = (uint32_t)(((float)compare_value / (float)old_period) * (float)(pwm->period));
                         ops->write(pwm, (int)i, compare_value);
                     }
                 }
-                return MR_EOK;
+                return sizeof(freq);
             }
             return MR_EINVAL;
         }
@@ -282,7 +285,7 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 {
                     return ret;
                 }
-                return MR_EOK;
+                return sizeof(*config);
             }
             return MR_EINVAL;
         }
@@ -293,11 +296,10 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
                 uint32_t *freq = (uint32_t *)args;
 
                 *freq = pwm->freq;
-                return MR_EOK;
+                return sizeof(*freq);
             }
             return MR_EINVAL;
         }
-
         default:
         {
             return MR_ENOTSUP;
@@ -336,7 +338,7 @@ int mr_pwm_register(struct mr_pwm *pwm, const char *name, struct mr_drv *drv, st
     /* Initialize the fields */
     pwm->freq = 0;
     pwm->prescaler = 0;
-    pwm->period = 0;
+    pwm->period = 1;
     pwm->channel = 0;
     pwm->channel_polarity = 0;
     pwm->info = info;
