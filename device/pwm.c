@@ -209,8 +209,9 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
     for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
     {
         /* Calculate the compare value */
-        uint32_t compare_value = (uint32_t)(((float)*wr_buf / 1000000.0f) * (float)(pwm->period));
-        MR_BOUND(compare_value, 0, pwm->period);
+        uint32_t compare_value = MR_BOUND((uint32_t)(((float)*wr_buf / 1000000.0f) * (float)(pwm->period)),
+                                          0,
+                                          pwm->period);
         ops->write(pwm, off, compare_value);
         wr_buf++;
     }

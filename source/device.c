@@ -388,11 +388,13 @@ MR_INLINE ssize_t dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void
         {
             if (args != MR_NULL)
             {
-                int *path = (int *)args;
-                char *buf = (char *)path[0];
-                size_t bufsz = (size_t)path[1];
+                struct
+                {
+                    char *buf;
+                    size_t bufsz;
+                } *path = args;
 
-                return dev_get_path(dev, buf, bufsz);
+                return dev_get_path(dev, path->buf, path->bufsz);
             }
             return MR_EINVAL;
         }
