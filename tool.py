@@ -70,13 +70,13 @@ class MDK5:
                 break
         # Check mdk file, init self
         if mdk_file:
+            self.state = "ok"
             self.path = os.path.dirname(mdk_file)
             self.file = mdk_file
             self.tree = etree.parse(mdk_file)
             self.root = self.tree.getroot()
         else:
-            log_print('error', "MDK build failed, '.uvprojx' file not found")
-            exit(1)
+            self.state = "not found"
 
     def add_include_path(self, path):
         # Fix path
@@ -92,14 +92,13 @@ class MDK5:
         for path in paths:
             self.add_include_path(path)
 
-    def add_files_new_group(self, name, files):
+    def add_file_to_group(self, name, file):
         # Fix name and files
         name = name.replace('\\', '/')
-        fix_files = []
-        for file in files:
-            file = os.path.relpath(file, self.path).replace('\\', '/')
-            fix_files.append(file)
-        files = fix_files
+        file = os.path.relpath(file, self.path).replace('\\', '/')
+        # Check name and file
+        if name is None or file is None:
+            return
         # Add group
         groups_node = self.tree.find('//Groups')
         group_node = groups_node.find(f"./Group[GroupName='{name}']")
@@ -107,14 +106,10 @@ class MDK5:
             group_node = etree.SubElement(groups_node, "Group")
             group_name_node = etree.SubElement(group_node, "GroupName")
             group_name_node.text = name
-        # Check files
-        if files is None:
-            return
         # Add files
         files_node = group_node.find("Files")
         if files_node is None:
             files_node = etree.SubElement(group_node, "Files")
-        for file in files:
             # Add file
             file_node = files_node.find(f"./File[FileName='{os.path.basename(file)}']")
             if file_node is None:
@@ -141,29 +136,15 @@ class MDK5:
             file_extension = os.path.splitext(file_name_node.text)[1]
             file_type = file_type_map.get(file_extension, '9')
             file_type_node.text = file_type
-        log_print('info', "add %s" % name)
+        log_print('info', "add %s" % file)
 
-    def add_path_files(self, path):
-        files = []
-        for root, dirs, fs in os.walk(path):
-            for f in fs:
-                files.append(os.path.relpath(os.path.join(root, f), self.path))
-        self.add_files_new_group(path, files)
+    def add_file(self, file):
+        name = os.path.dirname(os.path.relpath(file, self.path).replace('\\', '/')).replace('../', '')
+        self.add_file_to_group(name, file)
 
-    def add_path_c_files(self, path):
-        # Get c files
-        files = []
-        for root, dirs, fs in os.walk(path):
-            if root == path:
-                for f in fs:
-                    if f.endswith(".c") or f.endswith(".cpp") or f.endswith(".cxx"):
-                        file = os.path.relpath(os.path.join(root, f), self.path)
-                        files.append(file)
-        # Fix name
-        name = os.path.relpath(path, self.path).replace('\\', '/').replace("../", "")
-        # Add group
-        if files:
-            self.add_files_new_group(name, files)
+    def add_files(self, files):
+        for file in files:
+            self.add_file(file)
 
     def use_gnu(self, enable=True):
         # Check uAC6
@@ -204,13 +185,13 @@ class Eclipse:
                 break
         # Check eclipse file, init self
         if eclipse_file:
+            self.state = "ok"
             self.path = os.path.dirname(eclipse_file)
             self.file = eclipse_file
             self.tree = etree.parse(eclipse_file)
             self.root = self.tree.getroot()
         else:
-            log_print('error', "eclipse build failed, '.cproject' not found")
-            exit(1)
+            self.state = "not found"
 
     def add_include_path(self, path):
         # Fix path
@@ -281,18 +262,19 @@ class Eclipse:
         log_print('success', "project build success")
 
 
-class MR:
+class MrLib:
 
     def __init__(self):
         self.path = os.getcwd()
-        self.files_paths = []
+        self.c_files = []
+        self.h_files = []
         for root, dirs, files in os.walk(self.path):
-            if root == self.path:
-                for path in dirs:
-                    file_path = os.path.join(root, path)
-                    self.files_paths.append(file_path)
-            break
-        self.project_path = os.path.dirname(self.path)
+            for f in files:
+                if f.endswith(".c") or f.endswith(".cpp"):
+                    self.c_files.append(os.path.join(root, f))
+                elif f.endswith(".h"):
+                    self.h_files.append(os.path.join(root, f))
+        self.proj_path = os.path.dirname(self.path)
 
     def generate_include_file(self):
         header_out = os.path.join(self.path, "include/mr_lib.h").replace('\\', '/')
@@ -336,7 +318,7 @@ class MR:
             header_file.write("#endif /* _MR_LIB_H_ */\n")
 
             header_file.close()
-            log_print('success', "library include file make success")
+            log_print('success', "mr-library include file make success")
 
 
 def show_logo():
@@ -367,35 +349,28 @@ def show_license():
                   "查看。建议您在使用前全面复核许可证内容, 以确保完全理解并同意接受其中的所有规定。")
 
 
-def build_mdk():
-    mr = MR()
+def build_mdk(mr_proj_path, include_path, c_files):
     # MDK project
-    mdk_proj = MDK5(mr.project_path)
+    mdk_proj = MDK5(mr_proj_path)
     # Include path
-    mdk_proj.add_include_path(mr.path)
+    mdk_proj.add_include_path(include_path)
     # Add all c files
-    for files_path in mr.files_paths:
-        mdk_proj.add_path_c_files(files_path)
+    mdk_proj.add_files(c_files)
     # Use gnu
     mdk_proj.use_gnu(True)
     # Save
     mdk_proj.save()
-    # Generate include file
-    mr.generate_include_file()
 
 
-def build_eclipse():
-    mr = MR()
+def build_eclipse(mr_proj_path, path):
     # Eclipse project
-    eclipse_proj = Eclipse(mr.project_path)
+    eclipse_proj = Eclipse(mr_proj_path)
     # Include path
-    eclipse_proj.add_include_path(mr.path)
+    eclipse_proj.add_include_path(path)
     # Use auto init
     eclipse_proj.use_auto_init()
     # Save
     eclipse_proj.save()
-    # Generate include file
-    mr.generate_include_file()
 
 
 def menuconfig():
@@ -416,6 +391,24 @@ def menuconfig():
         exit(1)
 
 
+def build():
+    mr_lib = MrLib()
+
+    # Build project
+    mdk5 = MDK5(mr_lib.proj_path)
+    eclipse = Eclipse(mr_lib.proj_path)
+    if mdk5.state == "ok":
+        build_mdk(mr_lib.proj_path, mr_lib.path, mr_lib.c_files)
+    elif eclipse.state == "ok":
+        build_eclipse(mr_lib.proj_path, mr_lib.path)
+    else:
+        log_print('error', "Project not found(MDK5 or Eclipse)")
+        exit(1)
+
+    # Generate include file
+    mr_lib.generate_include_file()
+
+
 if __name__ == '__main__':
     # Show logo
     show_logo()
@@ -423,14 +416,15 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--menuconfig", action="store_true", help="Run menuconfig")
+    parser.add_argument("-b", "--build", action="store_true", help="Build project")
     parser.add_argument("-lic", "--license", action="store_true", help="Show license")
     parser.add_argument("-gli", "--generate_lib_include_file", action="store_true",
                         help="Generate library include file")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-mdk", "--mdk", action="store_true", help="Build with MDK")
-    group.add_argument("-ecl", "--eclipse", action="store_true", help="Build with Eclipse")
     args = parser.parse_args()
 
+    # Build
+    if args.build:
+        build()
     # Menuconfig
     if args.menuconfig:
         menuconfig()
@@ -439,11 +433,5 @@ if __name__ == '__main__':
         show_license()
     # Generate library include file
     if args.generate_lib_include_file:
-        mr = MR()
+        mr = MrLib()
         mr.generate_include_file()
-
-    # Build
-    if args.mdk:
-        build_mdk()
-    elif args.eclipse:
-        build_eclipse()

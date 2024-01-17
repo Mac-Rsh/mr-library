@@ -11,7 +11,7 @@
 import re
 
 try:
-    from build import install_package
+    from tool import install_package
 except ImportError:
     exit(1)
 
@@ -28,7 +28,7 @@ except ImportError:
     import curses
 
 try:
-    from build import log_print
+    from tool import log_print
 except ImportError:
     exit(1)
 
@@ -68,7 +68,7 @@ def generate_config_file(kconfig_file, config_in, config_out, header_out):
         header_file.write("#endif /* _MR_CONFIG_H_ */\n")
 
         header_file.close()
-        log_print('success', "config file make success")
+        log_print('success', "mr-library config file make success")
 
 
 def main():
