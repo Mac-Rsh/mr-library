@@ -133,10 +133,10 @@ the `Python` script automatically generates the configuration file.
 | driver     | Driver file                    |
 | include    | Library header file            |
 | source     | Library source file            |
-| build.py   | Automatic build script         |
 | Kconfig    | Configuration files            |
 | kconfig.py | Automatic configuration script |
 | LICENSE    | Open-source license            |
+| tool.py    | Automatic build script         |
 
  ----------
 
@@ -186,20 +186,25 @@ Versions later than `3.11.7` are not supported).
 
    ![project directory](document/picture/readme/project.png)
 
-5. Use the automatic build script to complete the automatic build. In the `mr-library` path, open the command line tool and run:
-
-   - `MDK`：`python build.py -mdk`
-   - `Eclipse`：`python build.py -ecl`
+5. Use the automatic build script to complete the automatic build. In the `mr-library` path, open the command line tool and run `python tool.py -b`
 
    Take `MDK` as an example:
 
    ![MDK auto build](document/picture/readme/build_mdk.png)
 
+   Note:
+   - Supports `MDK5` and `Eclipse`.
+   - If the `MDK` version is too early, the `GNU` configuration may fail.
+
 ## Configure Menu Options
 
-1. Open the command line tool in the `mr-library` directory and run `python build.py -m` for menu configuration.
+1. Open the command line tool in the `mr-library` directory and run `python tool.py -m` for menu configuration.
 
    ![Tool1](document/picture/readme/kconfig_main1.png)
+
+   Run failed:
+   - Check the `Python` version (versions above `3.11.7` are not currently supported, reinstall and remove the installed modules).
+   - Command line tools are not supported, recommended to use `powershell(win10 and above)`, `git bash(newer version)` and so on.
 
 2. Enter the menu by pressing the Enter key on `Device configure`, and configure the desired functions according to
    needs.
@@ -214,7 +219,7 @@ Versions later than `3.11.7` are not supported).
 4. In the project, introduce `#include include/mr_lib.h`and add`mr_auto_init()`to`main`function;
    Automatically initialize the function and start using it.
 
-Note: More commands can be entered: `python build.py -h` to view.
+Note: More commands can be entered: `python tool.py -h` to view.
 
  ----------
 

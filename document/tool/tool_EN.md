@@ -1,6 +1,6 @@
 # Automated Build Tool
 
-[中文](build.md)
+[中文](tool)
 
 <!-- TOC -->
 * [Automated Build Tool](#automated-build-tool)
@@ -14,12 +14,12 @@ framework and the difficulty of integration with different environments.
 
 ## Build Process
 
-1. Run `python build.py` in the command line to automatically install the required environment for the tool.
+1. Run `python tool.py` in the command line to automatically install the required environment for the tool.
 
-2. Run `python build.py -m` to complete the configuration of the MR framework in a graphical interface. After the
-   configuration is completed, it will automatically generate the `mr_config.h` header file.
+2. Run `python tool.py -m` to complete the configuration of the MR framework in a graphical interface. After the
+   configuration is completed, automatically generate the `mr_config.h` header file.
 
-3. Run `python build.py -ide` according to the IDE type (`-mdk` or `-ecl`) to complete the automatic configuration.
+3. Run `python tool.py -b` automated build projects.
 
 The automated build tool will complete:
 
@@ -29,10 +29,9 @@ The automated build tool will complete:
 
 ## Supported Commands
 
-- `m`: Launches the graphical configuration interface
+- `-b`：Build projects for the development environment (MDK5, Eclipse support)
+- `-m`: Launches the graphical configuration interface
 - `lic`: Displays license information
-- `mdk`: Configures the project for MDK (Keil)
-- `ecl`: Configures the project for Eclipse
 
 The build script greatly simplifies the configuration and integration process, allowing developers to quickly start
 development without needing to understand the internal workings of the project.

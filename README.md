@@ -123,10 +123,10 @@ int main(void)
 | driver     | 驱动文件   |
 | include    | 库头文件   |
 | source     | 库源文件   |
-| build.py   | 自动构建脚本 |
 | Kconfig    | 配置文件   |
 | kconfig.py | 自动配置脚本 |
 | LICENSE    | 许可证    |
+| tool.py    | 自动构建脚本 |
 
  ----------
 
@@ -171,22 +171,27 @@ int main(void)
 
    ![工程目录](document/picture/readme/project.png)
 
-5. 使用自动构建脚本，完成自动构建。在 `mr-library` 路径下，打开命令行工具，运行：
-
-   - `MDK`：`python build.py -mdk`
-   - `Eclipse`：`python build.py -ecl`
+5. 使用自动构建脚本，完成自动构建。在 `mr-library` 路径下，打开命令行工具，运行 `python tool.py -b`
 
     以`MDK`为例：
     
     ![MDK自动构建](document/picture/readme/build_mdk.png)
 
+    注：
+    - 支持`MDK5`、`Eclipse`。
+    - `MDK`版本过低可能导致`GNU`配置失败。
+
 ## 配置菜单选项
 
-1. 在 `mr-library` 目录下打开命令行工具，运行 `python build.py -m` 进行菜单配置。
+1. 在 `mr-library` 目录下打开命令行工具，运行 `python tool.py -m` 进行菜单配置。
 
    ![配置工具1](document/picture/readme/kconfig_main1.png)
 
-2. 选中 `Device configure` 回车进入菜单，按照需要配置功能。
+    运行失败：
+    - 检查`Python`版本（暂不支持`3.11.7`以上的版本，重新安装并删除已安装的模块）。
+    - 命令行工具不支持，推荐使用`powershell(win10及以上)`、`git bash(较新版本)`等。
+
+2. 选中 `Device configure` 回车进入菜单，配置功能。
 
    ![配置工具2](document/picture/readme/kconfig_main2.png)
 
@@ -196,7 +201,7 @@ int main(void)
 
 4. 工程中引入 `#include "include/mr_lib.h"` 并在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数，即可开始使用。
 
-注：更多命令可输入：`python build.py -h` 查看。
+注：更多命令可输入：`python tool.py -h` 查看。
 
  ----------
 
