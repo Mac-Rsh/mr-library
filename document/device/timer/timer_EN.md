@@ -87,6 +87,20 @@ int mode;
 mr_dev_ioctl(ds, MR_CTL_TIMER_GET_MODE, &mode);
 ```
 
+Independent of TIMER interface:
+
+```c
+/* Define TIMER device mode */
+#define TIMER_MODE                      1
+
+/* Set TIMER device mode */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, TIMER_MODE));
+
+/* Get TIMER device mode */
+int mode;
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &mode);
+```
+
 Note: The default configuration is:
 
 - Mode: `MR_TIMER_MODE_PERIOD` if not manually configured.
@@ -107,6 +121,24 @@ int (*callback)(int, void *args);
 mr_dev_ioctl(ds, MR_CTL_TIMER_SET_TIMEOUT_CALL, &call);
 /* Get timeout callback function */
 mr_dev_ioctl(ds, MR_CTL_TIMER_GET_TIMEOUT_CALL, &callback);
+```
+
+Independent of TIMER interface:
+
+```c
+/* Define callback function */
+int call(int desc, void *args)
+{
+    /* Handle interrupt */
+    
+    return MR_EOK;
+}
+int (*callback)(int, void *args);
+
+/* Set timeout callback function */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+/* Get timeout callback function */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
 ```
 
 ## Read Running Time of TIMER Device

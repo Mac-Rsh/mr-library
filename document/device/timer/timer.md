@@ -85,6 +85,20 @@ int mode;
 mr_dev_ioctl(ds, MR_CTL_TIMER_GET_MODE, &mode);
 ```
 
+不依赖TIMER接口：
+
+```c
+/* 定义TIMER设备模式 */
+#define TIMER_MODE                      1
+
+/* 设置TIMER设备模式 */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, TIMER_MODE));
+
+/* 获取TIMER设备模式 */
+int mode;
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &mode);
+```
+
 注：如未手动配置，默认配置为：
 
 - 模式：`MR_TIMER_MODE_PERIOD`
@@ -105,6 +119,24 @@ int (*callback)(int, void *args);
 mr_dev_ioctl(ds, MR_CTL_TIMER_SET_TIMEOUT_CALL, &call);
 /* 获取超时回调函数 */
 mr_dev_ioctl(ds, MR_CTL_TIMER_GET_TIMEOUT_CALL, &callback);
+```
+
+不依赖TIMER接口：
+
+```c
+/* 定义回调函数 */
+int call(int desc, void *args)
+{
+    /* 处理中断 */
+    
+    return MR_EOK;
+}
+int (*callback)(int, void *args);
+    
+/* 设置超时回调函数 */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+/* 获取超时回调函数 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
 ```
 
 ## 读取TIMER设备运行时间

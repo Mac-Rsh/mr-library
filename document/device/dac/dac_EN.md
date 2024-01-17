@@ -87,6 +87,20 @@ int number;
 mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL, &number);
 ```
 
+Independent of DAC interface:
+
+```c
+/* Define channel number */
+#define CHANNEL_NUMBER                  5
+
+/* Set channel number */   
+mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+
+/* Get channel number */
+int number;  
+mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+```
+
 ### Set/Get Channel Configure
 
 Channel configure:
@@ -101,6 +115,17 @@ mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
 /* Get channel status */   
 int state;
 mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL_CONFIG, &state);
+```
+
+Independent of DAC interface:
+
+```c
+/* Set channel status */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+
+/* Get channel status */   
+int state;
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &state);
 ```
 
 ## Write DAC Device Channel Value

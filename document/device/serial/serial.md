@@ -101,6 +101,18 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_CONFIG, &config);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_CONFIG, &config);
 ```
 
+不依赖SERIAL接口：
+
+```c
+/* 设置默认配置 */
+int config[] = {115200, 8, 1, 0, 0, 0};
+
+/* 设置SERIAL设备配置 */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+/* 获取SERIAL设备配置 */
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+```
+
 注：如未手动配置，默认配置为：
 
 - 波特率：`115200`
@@ -126,6 +138,22 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_BUFSZ, &size);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
 ```
 
+不依赖SERIAL接口：
+
+```c
+size_t size = 256;
+
+/* 设置读缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+/* 获取读缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+
+/* 设置写缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_SET_WR_BUFSZ, &size);
+/* 获取写缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_GET_WR_BUFSZ, &size);
+```
+
 注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。
 
 ### 清空读/写缓冲区
@@ -133,6 +161,13 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
 ```c
 mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_RD_BUF, MR_NULL);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_WR_BUF, MR_NULL);
+```
+
+不依赖SERIAL接口：
+
+```c
+mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_CTL_CLR_WR_BUF, MR_NULL);
 ```
 
 ### 获取读/写缓冲区数据大小
@@ -145,6 +180,18 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_DATASZ, &size);
 
 /* 获取写缓冲区数据大小 */
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
+```
+
+不依赖SERIAL接口：
+
+```c
+size_t size = 0;
+
+/* 获取读缓冲区数据大小 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+
+/* 获取写缓冲区数据大小 */
+mr_dev_ioctl(ds, MR_CTL_GET_WR_DATASZ, &size);
 ```
 
 ### 设置/获取读/写回调函数
@@ -171,6 +218,32 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_CALL, &callback);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_CALL, &call);
 /* 获取写回调函数 */
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_CALL, &callback);
+```
+
+不依赖SERIAL接口：
+
+```c
+/* 定义回调函数 */
+int call(int desc, void *args)
+{
+    /* 获取缓冲区数据大小 */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* 处理中断 */
+    
+    return MR_EOK;
+}
+int (*callback)(int, void *args);
+
+/* 设置读回调函数 */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+/* 获取读回调函数 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+
+/* 设置写回调函数 */
+mr_dev_ioctl(ds, MR_CTL_SET_WR_CALL, &call);
+/* 获取写回调函数 */
+mr_dev_ioctl(ds, MR_CTL_GET_WR_CALL, &callback);
 ```
 
 ## 读取SERIAL设备数据

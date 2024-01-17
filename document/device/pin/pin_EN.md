@@ -100,6 +100,20 @@ int number;
 mr_dev_ioctl(ds, MR_CTL_PIN_GET_NUMBER, &number);
 ```
 
+Independent of PIN interface:
+
+```c
+/* Define pin number */
+#define PIN_NUMBER                      45
+
+/* Set pin number */  
+mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, PIN_NUMBER));
+
+/* Get pin number */
+int number;
+mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+```
+
 ### Set Pin Mode
 
 #### Pin Mode
@@ -129,6 +143,16 @@ And 5 external interrupt modes:
 mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE)); 
 ```
 
+Independent of PIN interface:
+
+```c
+/* Define pin mode */
+#define PIN_MODE                        1
+
+/* Set pin mode */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, PIN_MODE)); 
+```
+
 ### Set/Get External Interrupt Callback Function
 
 ```c
@@ -150,6 +174,29 @@ mr_dev_ioctl(ds, MR_CTL_PIN_SET_EXTI_CALL, call);
 /* Get external interrupt callback function */
 int (*callback)(int desc, void *args);
 mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
+```
+
+Independent of PIN interface:
+
+```c
+#define PIN_NUMBER                      45
+/* Define external interrupt callback function */
+int call(int desc, void *args)
+{
+  /* Get pin number */
+  ssize_t number = *(ssize_t *)args;  
+
+  /* Handle external interrupt event */
+
+  return MR_EOK;
+}
+
+/* Set external interrupt callback function */ 
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, call);
+
+/* Get external interrupt callback function */
+int (*callback)(int desc, void *args);
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
 ```
 
 Note:

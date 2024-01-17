@@ -124,6 +124,18 @@ mr_dev_ioctl(ds, MR_CTL_I2C_SET_CONFIG, &config);
 mr_dev_ioctl(ds, MR_CTL_I2C_GET_CONFIG, &config);
 ```
 
+Independent of I2C interface:
+
+```c
+/* Set default configuration */
+int config[] = {100000, 0, 8};
+
+/* Set I2C device configuration */  
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+/* Get I2C device configuration */
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+```
+
 Note:
 
 - If not manually configured, the default configuration is:
@@ -147,6 +159,17 @@ uint8_t reg;
 mr_dev_ioctl(ds, MR_CTL_I2C_GET_REG, &reg);
 ```
 
+Independent of I2C interface:
+
+```c
+/* Set register value */
+mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, 0x12));
+
+/* Get register value */  
+uint8_t reg;
+mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
+```
+
 Note:
 
 - The register value only takes effect in master mode.
@@ -164,6 +187,17 @@ mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_BUFSZ, &size);
 mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
 ```
 
+Independent of I2C interface:
+
+```c
+size_t size = 256;
+
+/* Set read buffer size */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+/* Get read buffer size */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+```
+
 Note: If not manually configured, it will use the size configured in `Kconfig` (default 32Byte). The read buffer is only
 used in slave mode.
 
@@ -173,6 +207,12 @@ used in slave mode.
 mr_dev_ioctl(ds, MR_CTL_I2C_CLR_RD_BUF, MR_NULL);
 ```
 
+Independent of I2C interface:
+
+```c
+mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+```
+
 ### Get Read Buffer Data Size
 
 ```c  
@@ -180,6 +220,15 @@ size_t size = 0;
 
 /* Get read buffer data size */
 mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_DATASZ, &size);
+```
+
+Independent of I2C interface:
+
+```c  
+size_t size = 0;
+
+/* Get read buffer data size */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
 ```
 
 ### Set/Get Read Callback Function
@@ -201,6 +250,27 @@ int (*callback)(int, void *args);
 mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_CALL, &call);
 /* Get read callback function */  
 mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_CALL, &callback);
+```
+
+Independent of I2C interface:
+
+```c
+/* Define callback function */
+int call(int desc, void *args)
+{
+    /* Get buffer data size */
+    ssize_t data_size = *(ssize_t *)args;  
+    
+    /* Handle interrupt */
+    
+    return MR_EOK;
+}
+int (*callback)(int, void *args);
+
+/* Set read callback function */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+/* Get read callback function */  
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
 ```
 
 ## Read I2C Device Data

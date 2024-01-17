@@ -84,6 +84,20 @@ int number;
 mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL, &number);
 ```
 
+不依赖DAC接口：
+
+```c
+/* 定义通道编号 */
+#define CHANNEL_NUMBER                  5
+
+/* 设置通道编号 */
+mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+
+/* 获取通道编号 */
+int number;
+mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+```
+
 ### 设置/获取通道配置
 
 通道配置：
@@ -98,6 +112,17 @@ mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
 /* 获取通道配置 */
 int state;
 mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL_CONFIG, &state);
+```
+
+不依赖DAC接口：
+
+```c
+/* 设置通道配置 */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+
+/* 获取通道配置 */
+int state;
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &state);
 ```
 
 ## 写入DAC设备通道值

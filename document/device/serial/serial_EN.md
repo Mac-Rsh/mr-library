@@ -104,6 +104,19 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_CONFIG, &config);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_CONFIG, &config);
 ```
 
+Independent of SERIAL interface:
+
+```c
+/* Set default configuration */
+int config[] = {115200, 8, 1, 0, 0, 0};
+
+/* Set SERIAL device configuration */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+
+/* Get SERIAL device configuration */
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+```
+
 Note: If not configured manually, the default configuration is:
 
 - Baud rate: `115200`
@@ -131,6 +144,24 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_BUFSZ, &size);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
 ```
 
+Independent of SERIAL interface:
+
+```c
+size_t size = 256;
+
+/* Set read buffer size */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+
+/* Get read buffer size */  
+mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+
+/* Set write buffer size */
+mr_dev_ioctl(ds, MR_CTL_SET_WR_BUFSZ, &size);
+
+/* Get write buffer size */
+mr_dev_ioctl(ds, MR_CTL_GET_WR_BUFSZ, &size);
+```
+
 Note: If not configured manually, the size configured in `Kconfig` will be used (default is 32Byte).
 
 ### Clear Read/Write Buffer
@@ -138,6 +169,13 @@ Note: If not configured manually, the size configured in `Kconfig` will be used 
 ```c
 mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_RD_BUF, MR_NULL);
 mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_WR_BUF, MR_NULL);
+```
+
+Independent of SERIAL interface:
+
+```c
+mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_CTL_CLR_WR_BUF, MR_NULL);
 ```
 
 ### Get Read/Write Buffer Data Size
@@ -150,6 +188,18 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_DATASZ, &size);
 
 /* Get write buffer data size */  
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
+```
+
+Independent of SERIAL interface:
+
+```c
+size_t size = 0;
+
+/* Get read buffer data size */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+
+/* Get write buffer data size */  
+mr_dev_ioctl(ds, MR_CTL_GET_WR_DATASZ, &size);
 ```
 
 ### Set/Get Read/Write Callback Function
@@ -178,6 +228,34 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_CALL, &call);
 
 /* Get write callback function */
 mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_CALL, &callback);
+```
+
+Independent of SERIAL interface:
+
+```c
+/* Define callback function */
+int call(int desc, void *args)
+{
+    /* Get buffer data size */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* Handle interrupt */
+    
+    return MR_EOK;
+}
+int (*callback)(int, void *args);
+
+/* Set read callback function */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+
+/* Get read callback function */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+
+/* Set write callback function */
+mr_dev_ioctl(ds, MR_CTL_SET_WR_CALL, &call);
+
+/* Get write callback function */
+mr_dev_ioctl(ds, MR_CTL_GET_WR_CALL, &callback);
 ```
 
 ## Read Data from SERIAL Device

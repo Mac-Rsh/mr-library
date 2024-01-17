@@ -130,6 +130,19 @@ mr_dev_ioctl(ds, MR_CTL_SPI_SET_CONFIG, &config);
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_CONFIG, &config);
 ```
 
+Independent of SPI interface:
+
+```c
+/* Set default configuration */
+int config[] = {3000000, 0, 0, 8, 1, 8};
+
+/* Set SPI device configuration */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+
+/* Get SPI device configuration */
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+```
+
 Note:
 
 - If not configured manually, the default configuration is:
@@ -146,6 +159,17 @@ Note:
 ### Set/Get Register Value
 
 The register value will be written first (range: `0` ~ `INT32_MAX`) before reading and writing data.
+
+```c
+/* Set register value */
+mr_dev_ioctl(ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+
+/* Get register value */
+uint8_t reg;
+mr_dev_ioctl(ds, MR_CTL_SPI_GET_REG, &reg);
+```
+
+Independent of SPI interface:
 
 ```c
 /* Set register value */
@@ -174,6 +198,18 @@ mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_BUFSZ, &size);
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_BUFSZ, &size);
 ```
 
+Independent of SPI interface:
+
+```c
+size_t size = 256;
+
+/* Set read buffer size */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+
+/* Get read buffer size */  
+mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+```
+
 Note: If not set manually, it will use the size configured in `Kconfig` (default 32Byte). The read buffer is only used
 in slave mode.
 
@@ -183,6 +219,12 @@ in slave mode.
 mr_dev_ioctl(ds, MR_CTL_SPI_CLR_RD_BUF, MR_NULL);
 ```
 
+Independent of SPI interface:
+
+```c
+mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+```
+
 ### Get Read Buffer Data Size
 
 ```c
@@ -190,6 +232,15 @@ size_t size = 0;
 
 /* Get read buffer data size */
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_DATASZ, &size);
+```
+
+Independent of SPI interface:
+
+```c
+size_t size = 0;
+
+/* Get read buffer data size */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
 ```
 
 ### Set/Get Read Callback Function
@@ -214,6 +265,28 @@ mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_CALL, &call);
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_CALL, &callback); 
 ```
 
+Independent of SPI interface:
+
+```c
+/* Define callback function */
+int call(int desc, void *args)
+{
+    /* Get buffer data size */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* Handle interrupt */
+    
+    return MR_EOK;
+}
+int (*callback)(int, void *args);
+
+/* Set read callback function */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+
+/* Get read callback function */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback); 
+```
+
 ### Full-Duplex Transmission
 
 ```c
@@ -228,6 +301,28 @@ struct mr_spi_transfer transfer =
 
 /* Full-duplex transmission */
 ssize_t size = mr_dev_ioctl(ds, MR_CTL_SPI_TRANSFER, &transfer);
+
+/* Check if transmission succeeded */
+if (size < 0)
+{
+
+}
+```
+
+Independent of SPI interface:
+
+```c
+/* Define transfer structure */
+uint8_t buf[] = {0x01, 0x02, 0x03, 0x04};
+struct
+{
+    void *rd_buf;
+    const void *wr_buf;
+    size_t size;
+} transfer = {buf, buf, sizeof(buf)};
+
+/* Full-duplex transmission */
+ssize_t size = mr_dev_ioctl(ds, (0x01 << 8), &transfer);
 
 /* Check if transmission succeeded */
 if (size < 0)

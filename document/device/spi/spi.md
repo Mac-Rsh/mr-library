@@ -126,6 +126,18 @@ mr_dev_ioctl(ds, MR_CTL_SPI_SET_CONFIG, &config);
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_CONFIG, &config);
 ```
 
+不依赖SPI接口：
+
+```c
+/* 设置默认配置 */
+int config[] = {3000000, 0, 0, 8, 1, 8};
+
+/* 设置SPI设备配置 */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+/* 获取SPI设备配置 */
+mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+```
+
 注：
 
 - 如未手动配置，默认配置为：
@@ -150,6 +162,17 @@ uint8_t reg;
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_REG, &reg);
 ```
 
+不依赖SPI接口：
+
+```c
+/* 设置寄存器值 */
+mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, 0x12));
+
+/* 获取寄存器值 */
+uint8_t reg;
+mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
+```
+
 注：
 
 - 寄存器值仅在主机模式下生效。
@@ -167,12 +190,29 @@ mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_BUFSZ, &size);
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_BUFSZ, &size);
 ```
 
+不依赖SPI接口：
+
+```c
+size_t size = 256;
+
+/* 设置读缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+/* 获取读缓冲区大小 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+```
+
 注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。只有在从机模式下才使用读缓冲区。
 
 ### 清空读缓冲区
 
 ```c
 mr_dev_ioctl(ds, MR_CTL_SPI_CLR_RD_BUF, MR_NULL);
+```
+
+不依赖SPI接口：
+
+```c
+mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
 ```
 
 ### 获取读缓冲区数据大小
@@ -182,6 +222,15 @@ size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_DATASZ, &size);
+```
+
+不依赖SPI接口：
+
+```c
+size_t size = 0;
+
+/* 获取读缓冲区数据大小 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
 ```
 
 ### 设置/获取读回调函数
@@ -205,6 +254,27 @@ mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_CALL, &call);
 mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_CALL, &callback);
 ```
 
+不依赖SPI接口：
+
+```c
+/* 定义回调函数 */
+int call(int desc, void *args)
+{
+  /* 获取缓冲区数据大小 */
+  ssize_t data_size = *(ssize_t *)args;
+  
+  /* 处理中断 */
+  
+  return MR_EOK;
+}
+int (*callback)(int, void *args);
+
+/* 设置读回调函数 */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+/* 获取读回调函数 */
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+```
+
 ### 全双工传输
 
 ```c
@@ -219,6 +289,27 @@ struct mr_spi_transfer transfer =
 
 /* 全双工传输 */
 ssize_t size = mr_dev_ioctl(ds, MR_CTL_SPI_TRANSFER, &transfer);
+/* 是否传输成功 */
+if (size < 0)
+{
+
+}
+```
+
+不依赖SPI接口：
+
+```c
+/* 定义传输结构体 */
+uint8_t buf[] = {0x01, 0x02, 0x03, 0x04};
+struct
+{
+    void *rd_buf;
+    const void *wr_buf;
+    size_t size;
+} transfer = {buf, buf, sizeof(buf)};
+
+/* 全双工传输 */
+ssize_t size = mr_dev_ioctl(ds, (0x01 << 8), &transfer);
 /* 是否传输成功 */
 if (size < 0)
 {

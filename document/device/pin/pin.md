@@ -96,6 +96,20 @@ int number;
 mr_dev_ioctl(ds, MR_CTL_PIN_GET_NUMBER, &number);
 ```
 
+不依赖PIN接口：
+
+```c
+/* 定义引脚编号 */
+#define PIN_NUMBER                      45
+
+/* 设置引脚编号 */
+mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, PIN_NUMBER));
+
+/* 获取引脚编号 */
+int number;
+mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+```
+
 ### 设置引脚模式
 
 #### 引脚模式
@@ -125,6 +139,16 @@ mr_dev_ioctl(ds, MR_CTL_PIN_GET_NUMBER, &number);
 mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE));
 ```
 
+不依赖PIN接口：
+
+```c
+/* 定义引脚模式 */
+#define PIN_MODE                        1
+
+/* 设置引脚模式 */
+mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, PIN_MODE));
+```
+
 ### 设置/获取外部中断回调函数
 
 ```c
@@ -146,6 +170,29 @@ mr_dev_ioctl(ds, MR_CTL_PIN_SET_EXTI_CALL, call);
 /* 获取外部中断回调函数 */
 int (*callback)(int desc, void *args);
 mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
+```
+
+不依赖PIN接口：
+
+```c
+#define PIN_NUMBER                      45
+/* 定义外部中断回调函数 */
+int call(int desc, void *args)
+{
+  /* 获取引脚编号 */
+  ssize_t number = *(ssize_t *)args;
+  
+  /* 处理外部中断事件 */
+  
+  return MR_EOK;
+}
+
+/* 设置外部中断回调函数 */
+mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, call);
+
+/* 获取外部中断回调函数 */
+int (*callback)(int desc, void *args);
+mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
 ```
 
 注：
