@@ -1,42 +1,20 @@
 mainmenu "mr-library"
 
-menu "Device configure"
-    # Heap
-	config MR_CFG_HEAP_SIZE
-		int "Heap size (Bytes)"
-		default 4096
-		range 32 2147483647
-		help
-			"This option sets the size of the heap used by the library."
-
+menu "System configure"
     # Assert
     config MR_USING_ASSERT
-    	bool "Use assert"
-    	default y
-    	help
-    		"Use this option allows the use of assert statements in the code."
+        bool "Use assert"
+        default y
+        help
+            "Use this option allows the use of assert statements in the code."
 
-    # Printf
-    menu "Printf configure"
-        config MR_CFG_PRINTF_BUFSZ
-            int "Printf buffer size"
-            default 128
-            range 32 2147483647
-            help
-                "This option sets the buffer size used by the printf function."
-
-        config MR_CFG_PRINTF_DEV_NAME
-            string "Printf device name"
-            default "serial1"
-            help
-                "This option sets the name of the device used by the printf function."
-
-        config MR_USING_PRINTF_NONBLOCKING
-            bool "Use printf non-blocking"
-            default n
-            help
-                "Use this option allows for the use of the printf device non-blocking."
-    endmenu
+    # Heap
+    config MR_CFG_HEAP_SIZE
+        int "Heap size (Bytes)"
+        default 4096
+        range 32 2147483647
+        help
+            "This option sets the size of the heap used by the library."
 
     # Log
     menu "Log configure"
@@ -77,206 +55,31 @@ menu "Device configure"
                 "Use this option allows for the use of print color log."
     endmenu
 
-    # Device
-	config MR_CFG_DEV_NAME_MAX
-		int "Name max length"
-		range 4 1024
-		default 12
-		help
-			"This option sets the max length of the name."
-
-	config MR_CFG_DESC_MAX
-		int "Descriptors max number"
-		range 16 1024
-		default 64
-		help
-			"This option sets the max number of descriptors."
-
-    config MR_USING_DESC_CHECK
-        bool "Use descriptor available check"
-        default y
-        help
-            "Use this option to allow you to check whether the descriptor is available."
-
-	config MR_USING_RDWR_CTL
-		bool "Use read/write control"
-		default y
-		help
-			"Use this option allows for read and write control of devices."
-
-    # ADC
-    config MR_USING_ADC
-        bool "Use ADC device"
-        default n
-        help
-            "Use this option allows for the use of ADC (Analog-to-Digital Converter) devices."
-    menu "ADC configure"
-        depends on MR_USING_ADC
-
-        config MR_USING_ADC_CHANNEL_CHECK
-            bool "Use channel available check"
-            default y
+    # Printf
+    menu "Printf configure"
+        config MR_CFG_PRINTF_BUFSZ
+            int "Printf buffer size"
+            default 128
+            range 32 2147483647
             help
-                "Use this option to allow you to check whether the channel is available."
+                "This option sets the buffer size used by the printf function."
 
-        config MR_USING_ADC_AUTO_DISABLE
-            bool "Use auto disable channel"
-            default y
+        config MR_CFG_PRINTF_DEV_NAME
+            string "Printf device name"
+            default "serial1"
             help
-                "Use this option to allow the channel to be automatically disabled when the device is turned off."
-    endmenu
+                "This option sets the name of the device used by the printf function."
 
-    # CAN
-    config MR_USING_CAN
-        bool "Use CAN device"
-        default n
-        help
-            "Use this option allows for the use of CAN (Controller Area Network) devices."
-	menu "CAN configure"
-        depends on MR_USING_CAN
-
-		config MR_CFG_CAN_RD_BUFSZ
-			int "RX buffer size"
-			range 0 MR_CFG_HEAP_SIZE
-			default 32
-			help
-				"This option sets the size of the RX (receive) buffer used by the CAN device."
-	endmenu
-
-    # DAC
-    config MR_USING_DAC
-        bool "Use DAC device"
-        default n
-        help
-            "Use this option allows for the use of DAC (Digital-to-Analog Converter) devices."
-    menu "DAC configure"
-        depends on MR_USING_DAC
-
-        config MR_USING_DAC_AUTO_DISABLE
-            bool "Use auto disable channel"
-            default y
+        config MR_USING_PRINTF_NONBLOCKING
+            bool "Use printf non-blocking"
+            default n
             help
-                "Use this option to allow the channel to be automatically disabled when the device is turned off."
-
-        config MR_USING_DAC_CHANNEL_CHECK
-            bool "Use channel available check"
-            default y
-            help
-                "Use this option to allow you to check whether the channel is available."
-    endmenu
-
-    # I2C
-    config MR_USING_I2C
-        bool "Use I2C device"
-        default n
-        help
-            "Use this option allows for the use of I2C devices."
-	menu "I2C configure"
-        depends on MR_USING_I2C
-
-        config MR_CFG_I2C_RD_BUFSZ
-            int "RX buffer size"
-            range 0 MR_CFG_HEAP_SIZE
-            default 32
-            help
-                "This option sets the size of the RX (receive) buffer used by the I2C device."
-
-        config MR_USING_SOFT_I2C
-            bool "Use Soft I2C"
-            default y
-            help
-                "Use this option allows for the use of soft I2C."
-	endmenu
-
-    # Pin
-    config MR_USING_PIN
-        bool "Use Pin device"
-        default n
-        help
-            "Use this option allows for the use of Pin devices."
-    menu "Pin configure"
-        depends on MR_USING_PIN
-
-        config MR_USING_PIN_CHECK
-            bool "Use pin available check"
-            default y
-            help
-                "Use this option to allow you to check whether the pin is available."
-    endmenu
-
-    # PWM
-    config MR_USING_PWM
-        bool "Use PWM device"
-        default n
-        help
-            "Use this option allows for the use of PWM devices."
-    menu "PWM configure"
-        depends on MR_USING_PWM
-
-        config MR_USING_PWM_AUTO_DISABLE
-            bool "Use auto disable channel"
-            default y
-            help
-                "Use this option to allow the channel to be automatically disabled when the device is turned off."
-
-        config MR_USING_PWM_CHANNEL_CHECK
-            bool "Use channel available check"
-            default y
-            help
-                "Use this option to allow you to check whether the channel is available."
-    endmenu
-
-    # Serial
-    config MR_USING_SERIAL
-        bool "Use Serial device"
-        default n
-        help
-            "Use this option allows for the use of Serial devices."
-	menu "Serial configure"
-        depends on MR_USING_SERIAL
-
-        config MR_CFG_SERIAL_RD_BUFSZ
-            int "RX buffer size"
-            range 0 MR_CFG_HEAP_SIZE
-            default 32
-            help
-                "This option sets the size of the RX (receive) buffer used by the Serial device."
-
-        config MR_CFG_SERIAL_WR_BUFSZ
-            int "TX buffer size"
-            range 0 MR_CFG_HEAP_SIZE
-            default 0
-            help
-                "This option sets the size of the TX (transmit) buffer used by the Serial device."
-	endmenu
-
-    # SPI
-    config MR_USING_SPI
-        bool "Use SPI device"
-        default n
-        help
-            "Use this option allows for the use of SPI (Serial Peripheral Interface) devices."
-	menu "SPI configure"
-        depends on MR_USING_SPI
-
-        config MR_CFG_SPI_RD_BUFSZ
-            int "RX buffer size"
-            range 0 MR_CFG_HEAP_SIZE
-            default 32
-            help
-                "This option sets the size of the RX (receive) buffer used by the SPI device."
-	endmenu
-
-    # Timer
-    config MR_USING_TIMER
-        bool "Use Timer device"
-        default n
-        help
-            "Use this option allows for the use of Timer devices."
-    menu "Timer configure"
-        depends on MR_USING_TIMER
+                "Use this option allows for the use of the printf device non-blocking."
     endmenu
 endmenu
+
+# Device
+source "device/Kconfig"
 
 # Driver
 source "driver/Kconfig"
