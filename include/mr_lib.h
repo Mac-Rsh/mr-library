@@ -8,7 +8,6 @@ extern "C" {
 #include "mr_api.h"
 #include "mr_config.h"
 #include "mr_def.h"
-#include "mr_lib.h"
 #include "mr_service.h"
 #include "components/mr_msh.h"
 #include "device/mr_adc.h"

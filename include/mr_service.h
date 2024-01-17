@@ -144,10 +144,8 @@ extern "C" {
  * @param value The value.
  * @param min The minimum value.
  * @param max The maximum value.
- *
- * @return The value within the specified range.
  */
-#define MR_LIMIT(value, min, max)       MR_BOUND(value, min, max)
+#define MR_LIMIT(value, min, max)       (value) = MR_BOUND(value, min, max)
 
 /**
  * @brief This macro function swaps two values.
