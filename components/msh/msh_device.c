@@ -8,7 +8,7 @@
 
 #include "include/components/mr_msh.h"
 
-#ifdef MR_USING_MSH
+#if defined(MR_USING_MSH) && defined(MR_USING_MSH_DEV_CMD)
 
 static int msh_desc = -1;
 
@@ -18,7 +18,11 @@ static int msh_desc = -1;
 static int msh_update_path(int desc)
 {
     static char msh_path[MR_CFG_DEV_NAME_MAX * 6];
-    int path[2] = {(int)msh_path, (int)sizeof(msh_path)};
+    struct
+    {
+        char *buf;
+        size_t bufsz;
+    } path = {msh_path, sizeof(msh_path)};
     int offset;
 
     /* Update the path */
@@ -40,7 +44,9 @@ static int msh_update_path(int desc)
 
 static int msh_cmd_dopen(int argc, void *argv)
 {
+    const char *path;
     int oflags = MR_OFLAG_CLOSED;
+    int desc;
 
     /* Check the arguments and print usage */
     if (argc < 2)
@@ -68,8 +74,8 @@ static int msh_cmd_dopen(int argc, void *argv)
     }
 
     /* Open the new device */
-    const char *path = MR_MSH_GET_ARG(1);
-    int desc = mr_dev_open(path, oflags);
+    path = MR_MSH_GET_ARG(1);
+    desc = mr_dev_open(path, oflags);
     if (desc < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(desc));
@@ -87,6 +93,7 @@ static int msh_cmd_dopen(int argc, void *argv)
 static int msh_cmd_dclose(int argc, void *argv)
 {
     int desc;
+    int ret;
 
     /* Check the arguments and print usage */
     if ((MR_MSH_GET_ARG(1) != MR_NULL) && (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0))
@@ -97,7 +104,7 @@ static int msh_cmd_dclose(int argc, void *argv)
     /* Parse [desc (>=0)] */
     if (MR_MSH_GET_ARG(1) != MR_NULL)
     {
-        int ret = sscanf(MR_MSH_GET_ARG(1), "%d", &desc);
+        ret = sscanf(MR_MSH_GET_ARG(1), "%d", &desc);
         if ((ret < 1) || (desc < 0))
         {
             goto usage;
@@ -109,7 +116,7 @@ static int msh_cmd_dclose(int argc, void *argv)
     }
 
     /* Close the device */
-    int ret = mr_dev_close(desc);
+    ret = mr_dev_close(desc);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -132,6 +139,7 @@ static int msh_cmd_dclose(int argc, void *argv)
 static int msh_cmd_dselect(int argc, void *argv)
 {
     int desc;
+    int ret;
 
     /* Check the arguments and print usage */
     if ((argc < 1) || (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0))
@@ -140,7 +148,7 @@ static int msh_cmd_dselect(int argc, void *argv)
     }
 
     /* Parse <desc (>=0)> */
-    int ret = sscanf(MR_MSH_GET_ARG(1), "%d", &desc);
+    ret = sscanf(MR_MSH_GET_ARG(1), "%d", &desc);
     if ((ret < 1) || (desc < 0))
     {
         goto usage;
@@ -158,6 +166,7 @@ static int msh_dioctl_offset(int argc, void *argv)
 {
     int cmd = MR_CTL_SET_OFFSET;
     int offset;
+    int ret;
 
     /* Check the arguments and print usage */
     if (argc < 2)
@@ -171,7 +180,7 @@ static int msh_dioctl_offset(int argc, void *argv)
         cmd = -cmd;
     } else
     {
-        int ret = sscanf(MR_MSH_GET_ARG(2), "%d", &offset);
+        ret = sscanf(MR_MSH_GET_ARG(2), "%d", &offset);
         if (ret < 1)
         {
             goto usage;
@@ -199,6 +208,7 @@ static int msh_dioctl_bufsz(int argc, void *argv)
 {
     int cmd;
     int bufsz;
+    int ret;
 
     /* Check the arguments and print usage */
     if (argc < 3)
@@ -224,7 +234,7 @@ static int msh_dioctl_bufsz(int argc, void *argv)
         cmd = -cmd;
     } else
     {
-        int ret = sscanf(MR_MSH_GET_ARG(2), "%d", &bufsz);
+        ret = sscanf(MR_MSH_GET_ARG(2), "%d", &bufsz);
         if ((ret < 1) || (bufsz < 0))
         {
             goto usage;
@@ -232,7 +242,7 @@ static int msh_dioctl_bufsz(int argc, void *argv)
     }
 
     /* Set/get the buffer size */
-    int ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, &bufsz);
+    ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, &bufsz);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -255,6 +265,7 @@ static int msh_dioctl_datasz(int argc, void *argv)
 {
     int cmd = MR_CTL_SET_RD_BUFSZ;
     int datasz;
+    int ret;
 
     /* Check the arguments and print usage */
     if (argc < 3)
@@ -284,7 +295,7 @@ static int msh_dioctl_datasz(int argc, void *argv)
     }
 
     /* Set/get the buffer size */
-    int ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, &datasz);
+    ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, &datasz);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -305,6 +316,9 @@ static int msh_dioctl_datasz(int argc, void *argv)
 
 static int msh_cmd_dioctl_cfg(int argc, void *argv)
 {
+    int cfg[32];
+    int ret;
+
     /* Check the arguments and print usage */
     if ((argc < 2) || (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0))
     {
@@ -312,12 +326,11 @@ static int msh_cmd_dioctl_cfg(int argc, void *argv)
     }
 
     /* Parse <-g> */
-    int cfg[32];
     memset(cfg, 0, sizeof(cfg));
     if (strncmp(MR_MSH_GET_ARG(2), "-g", 2) == 0)
     {
         /* Get the config */
-        int ret = (int)mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_GET_CONFIG, cfg);
+        ret = (int)mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_GET_CONFIG, cfg);
         if (ret < 0)
         {
             mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -334,7 +347,7 @@ static int msh_cmd_dioctl_cfg(int argc, void *argv)
     /* Parse <args> */
     for (size_t i = 2; i <= argc; i++)
     {
-        int ret = sscanf(MR_MSH_GET_ARG(i), "%d", &cfg[i - 2]);
+        ret = sscanf(MR_MSH_GET_ARG(i), "%d", &cfg[i - 2]);
         if (ret < 1)
         {
             goto usage;
@@ -342,7 +355,7 @@ static int msh_cmd_dioctl_cfg(int argc, void *argv)
     }
 
     /* Set the config */
-    int ret = (int)mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_SET_CONFIG, cfg);
+    ret = (int)mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_SET_CONFIG, cfg);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -409,6 +422,8 @@ static int msh_dioctl_flags(int argc, void *argv)
 static int msh_dioctl_cmd(int argc, void *argv)
 {
     int cmd;
+    int args[32];
+    int ret;
 
     /* Check the arguments and print usage */
     if ((argc < 2) || (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0))
@@ -417,7 +432,7 @@ static int msh_dioctl_cmd(int argc, void *argv)
     }
 
     /* Parse <other> */
-    int ret = sscanf(MR_MSH_GET_ARG(1), "%x", &cmd);
+    ret = sscanf(MR_MSH_GET_ARG(1), "%x", &cmd);
     if (ret < 1)
     {
         goto usage;
@@ -439,7 +454,6 @@ static int msh_dioctl_cmd(int argc, void *argv)
     }
 
     /* Parse <args> */
-    int args[32];
     memset(args, 0, sizeof(args));
     if (cmd < 0)
     {
@@ -587,9 +601,11 @@ static void (*msh_printf_fn[])(void *buf, size_t size, char format) =
 static int msh_cmd_dread(int argc, void *argv)
 {
     int printf_index = 0;
-    char format = 'x';
     int itemsz = 1;
+    char format = 'x';
     int size;
+    uint8_t buf[128];
+    int ret;
 
     /* Check the arguments and print usage */
     if ((argc < 1) || (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0))
@@ -598,7 +614,7 @@ static int msh_cmd_dread(int argc, void *argv)
     }
 
     /* Parse <size> */
-    int ret = sscanf(MR_MSH_GET_ARG(1), "%d", &size);
+    ret = sscanf(MR_MSH_GET_ARG(1), "%d", &size);
     if ((ret < 1) || (size < 0))
     {
         goto usage;
@@ -653,9 +669,7 @@ static int msh_cmd_dread(int argc, void *argv)
     }
 
     /* Read data */
-    uint8_t buf[128];
-    size *= itemsz;
-    MR_BOUND(size, 0, sizeof(buf));
+    size = MR_BOUND(size *itemsz, 0, sizeof(buf));
     ret = (int)mr_dev_read(MSH_GET_DESC(), buf, size);
     if (ret < 0)
     {
@@ -681,7 +695,9 @@ static int msh_cmd_dwrite(int argc, void *argv)
     int data_index = 1;
     int itemsz = 1;
     char format = 'x';
-    int size = 1;
+    int size;
+    uint8_t buf[128];
+    int ret;
 
     /* Check the arguments and print usage */
     if ((argc < 1) || (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0))
@@ -736,15 +752,13 @@ static int msh_cmd_dwrite(int argc, void *argv)
         }
     }
 
-    uint8_t buf[128];
-    size = (argc - data_index + 1) * itemsz;
-    MR_BOUND(size, 0, sizeof(buf));
+    /* Parse data and write */
+    size = MR_BOUND((argc - data_index + 1) * itemsz, 0, sizeof(buf));
     for (size_t i = data_index;
          i <= (argc < (sizeof(buf) / itemsz + data_index) ? argc : (sizeof(buf) / itemsz + data_index));
          i++)
     {
         int arg;
-        int ret = 0;
 
         if (format == 'd')
         {
@@ -765,7 +779,7 @@ static int msh_cmd_dwrite(int argc, void *argv)
             goto usage;
         }
     }
-    int ret = (int)mr_dev_write(MSH_GET_DESC(), buf, size);
+    ret = (int)mr_dev_write(MSH_GET_DESC(), buf, size);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -787,4 +801,4 @@ MR_MSH_CMD_EXPORT(dioctl, msh_cmd_dioctl, "ioctl a device.");
 MR_MSH_CMD_EXPORT(dread, msh_cmd_dread, "read from a device.");
 MR_MSH_CMD_EXPORT(dwrite, msh_cmd_dwrite, "write to a device.");
 
-#endif /* MR_USING_MSH */
+#endif /* defined(MR_USING_MSH) && defined(MR_USING_MSH_DEV_CMD) */
