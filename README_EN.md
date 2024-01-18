@@ -152,13 +152,13 @@ the `Python` script automatically generates the configuration file.
 | `I2C`            |      |         | [√]    | [√]      |
 | `Soft-I2C`       |      |         | [√]    | [√]      |
 | `Pin`            |      |         | [√]    | [√]      |
-| `PWM`            |      | [√]     |        |          |
+| `PWM`            |      |         | [√]    | [√]      |
 | `Serial`         |      |         | [√]    | [√]      |
 | `SPI`            |      |         | [√]    | [√]      |
 | `Timer`          |      |         | [√]    | [√]      |
+| `msh`            |      |         | [√]    | [√]      |
 | `LCD`            | [√]  |         |        |          |
 | `Senser`         | [√]  |         |        |          |
-| `msh`            |      |         | [√]    | [√]      |
 
  ----------
 
