@@ -229,9 +229,9 @@ int main(void)
     while(1)
     {
         /* 点亮LED */
-        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, MR_PIN_HIGH_LEVEL), sizeof(uint8_t));
+        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, 1), sizeof(uint8_t));
         mr_delay_ms(500);
-        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, MR_PIN_LOW_LEVEL), sizeof(uint8_t));
+        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, 0), sizeof(uint8_t));
         mr_delay_ms(500);
     }
 }
