@@ -36,6 +36,7 @@ enum drv_serial_index
 #ifdef MR_USING_UART8
     DRV_INDEX_UART8,
 #endif /* MR_USING_UART8 */
+    DRV_INDEX_UART_MAX
 };
 
 static const char *serial_name[] =

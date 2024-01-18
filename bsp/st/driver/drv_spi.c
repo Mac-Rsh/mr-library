@@ -30,6 +30,7 @@ enum drv_spi_bus_index
 #ifdef MR_USING_SPI6
     DRV_INDEX_SPI6,
 #endif /* MR_USING_SPI6 */
+    DRV_INDEX_SPI_MAX
 };
 
 static const char *spi_bus_name[] =

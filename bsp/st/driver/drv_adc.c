@@ -21,6 +21,7 @@ enum drv_adc_index
 #ifdef MR_USING_ADC3
     DRV_INDEX_ADC3,
 #endif /* MR_USING_ADC3 */
+    DRV_INDEX_ADC_MAX
 };
 
 static const char *adc_name[] =

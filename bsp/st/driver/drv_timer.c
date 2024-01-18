@@ -54,6 +54,7 @@ enum drv_timer_index
 #ifdef MR_USING_TIMER14
     DRV_INDEX_TIMER14,
 #endif /* MR_USING_TIMER14 */
+    DRV_INDEX_TIMER_MAX
 };
 
 static const char *timer_name[] =
