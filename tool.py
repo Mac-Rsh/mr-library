@@ -110,32 +110,32 @@ class MDK5:
         files_node = group_node.find("Files")
         if files_node is None:
             files_node = etree.SubElement(group_node, "Files")
-            # Add file
-            file_node = files_node.find(f"./File[FileName='{os.path.basename(file)}']")
-            if file_node is None:
-                file_node = etree.SubElement(files_node, "File")
-            file_name_node = file_node.find(f"./FileName")
-            if file_name_node is None:
-                file_name_node = etree.SubElement(file_node, "FileName")
-            file_type_node = file_node.find(f"./FileType")
-            if file_type_node is None:
-                file_type_node = etree.SubElement(file_node, "FileType")
-            file_path_node = file_node.find(f"./FilePath")
-            if file_path_node is None:
-                file_path_node = etree.SubElement(file_node, "FilePath")
-            file_name_node.text = os.path.basename(file)
-            file_path_node.text = file
-            file_type_map = {
-                '.c': '1',
-                '.s': '2',
-                '.o': '3',
-                '.lib': '4',
-                '.h': '5',
-                '.cpp': '8'
-            }
-            file_extension = os.path.splitext(file_name_node.text)[1]
-            file_type = file_type_map.get(file_extension, '9')
-            file_type_node.text = file_type
+        # Add file
+        file_node = files_node.find(f"./File[FileName='{os.path.basename(file)}']")
+        if file_node is None:
+            file_node = etree.SubElement(files_node, "File")
+        file_name_node = file_node.find(f"./FileName")
+        if file_name_node is None:
+            file_name_node = etree.SubElement(file_node, "FileName")
+        file_type_node = file_node.find(f"./FileType")
+        if file_type_node is None:
+            file_type_node = etree.SubElement(file_node, "FileType")
+        file_path_node = file_node.find(f"./FilePath")
+        if file_path_node is None:
+            file_path_node = etree.SubElement(file_node, "FilePath")
+        file_name_node.text = os.path.basename(file)
+        file_path_node.text = file
+        file_type_map = {
+            '.c': '1',
+            '.s': '2',
+            '.o': '3',
+            '.lib': '4',
+            '.h': '5',
+            '.cpp': '8'
+        }
+        file_extension = os.path.splitext(file_name_node.text)[1]
+        file_type = file_type_map.get(file_extension, '9')
+        file_type_node.text = file_type
         log_print('info', "add %s" % file)
 
     def add_file(self, file):
