@@ -80,13 +80,8 @@ All operations of the device can be implemented through the following interfaces
 Example:
 
 ```c
-struct mr_spi_dev spi_dev;
-
 int main(void)
 {
-    /* Register SPI10 device (CS low active) to SPI1 bus */
-    mr_spi_dev_register(&spi_dev, "spi1/spi10", 0, MR_SPI_CS_ACTIVE_LOW);
-
     /* Open SPI10 device under SPI1 bus line */
     int ds = mr_dev_open("spi1/spi10", MR_OFLAG_RDWR);
     
@@ -102,6 +97,13 @@ int main(void)
     mr_dev_close(ds);
 }
 ```
+
+Thanks to the standardized device interface, all devices automatically support the `msh` device command, 
+and all device operations can be completed through the command line.
+
+![Device command1](document/picture/readme/msh_device1.png)
+
+![Device command2](document/picture/readme/msh_device2.png)
 
  ----------
 
@@ -134,8 +136,8 @@ the `Python` script automatically generates the configuration file.
 | include    | Library header file            |
 | source     | Library source file            |
 | Kconfig    | Configuration files            |
-| kconfig.py | Automatic configuration script |
 | LICENSE    | Open-source license            |
+| kconfig.py | Automatic configuration script |
 | tool.py    | Automatic build script         |
 
  ----------

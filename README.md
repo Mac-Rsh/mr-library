@@ -73,13 +73,8 @@
 示例：
 
 ```c
-struct mr_spi_dev spi_dev;
-
 int main(void)
 {
-    /* 注册SPI10设备（CS低电平有效）到SPI1总线上 */
-    mr_spi_dev_register(&spi_dev, "spi1/spi10", 0, MR_SPI_CS_ACTIVE_LOW);
-
     /* 打开SPI1总线下的SPI10设备 */
     int ds = mr_dev_open("spi1/spi10", MR_OFLAG_RDWR);
     
@@ -95,6 +90,12 @@ int main(void)
     mr_dev_close(ds);
 }
 ```
+
+得益于标准化设备接口，所有设备自动支持 `msh` 设备命令，通过命令行可完成所有设备操作。
+
+![设备命令1](document/picture/readme/msh_device1.png)
+
+![设备命令2](document/picture/readme/msh_device2.png)
 
  ----------
 
@@ -124,8 +125,8 @@ int main(void)
 | include    | 库头文件   |
 | source     | 库源文件   |
 | Kconfig    | 配置文件   |
-| kconfig.py | 自动配置脚本 |
 | LICENSE    | 许可证    |
+| kconfig.py | 自动配置脚本 |
 | tool.py    | 自动构建脚本 |
 
  ----------
