@@ -88,7 +88,7 @@ static ssize_t mr_serial_write(struct mr_dev *dev, int off, const void *buf, siz
     return wr_size;
 }
 
-static ssize_t mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_serial_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_serial *serial = (struct mr_serial *)dev;
     struct mr_serial_ops *ops = (struct mr_serial_ops *)dev->drv->ops;

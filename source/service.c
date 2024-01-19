@@ -12,13 +12,13 @@ static int start(void)
 {
     return 0;
 }
-MR_INIT_EXPORT(start, "0");
+_MR_INIT_EXPORT(start, "0");
 
 static int end(void)
 {
     return 0;
 }
-MR_INIT_EXPORT(end, "5.end");
+_MR_INIT_EXPORT(end, "5.end");
 
 /**
  * @brief This function is auto initialized.
@@ -106,7 +106,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 #ifndef MR_USING_PRINTF_NONBLOCKING
         desc = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR);
 #else
-        console = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+        desc = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
 #endif /* MR_USING_PRINTF_NONBLOCKING */
         if (mr_dev_is_valid(desc) == MR_FALSE)
         {

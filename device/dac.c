@@ -103,7 +103,7 @@ static ssize_t mr_dac_write(struct mr_dev *dev, int off, const void *buf, size_t
     return wr_size;
 }
 
-static ssize_t mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_dac *dac = (struct mr_dac *)dev;
 

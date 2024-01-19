@@ -26,7 +26,7 @@ static int msh_update_path(int desc)
     int offset;
 
     /* Update the path */
-    int ret = (int)mr_dev_ioctl(desc, MR_CTL_GET_PATH, &path);
+    int ret = mr_dev_ioctl(desc, MR_CTL_GET_PATH, &path);
     if (ret < 0)
     {
         return ret;
@@ -242,7 +242,7 @@ static int msh_dioctl_bufsz(int argc, void *argv)
     }
 
     /* Set/get the buffer size */
-    ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, &bufsz);
+    ret = mr_dev_ioctl(MSH_GET_DESC(), cmd, &bufsz);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -295,7 +295,7 @@ static int msh_dioctl_datasz(int argc, void *argv)
     }
 
     /* Set/get the buffer size */
-    ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, &datasz);
+    ret = mr_dev_ioctl(MSH_GET_DESC(), cmd, &datasz);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -330,7 +330,7 @@ static int msh_cmd_dioctl_cfg(int argc, void *argv)
     if (strncmp(MR_MSH_GET_ARG(2), "-g", 2) == 0)
     {
         /* Get the config */
-        ret = (int)mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_GET_CONFIG, cfg);
+        ret = mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_GET_CONFIG, cfg);
         if (ret < 0)
         {
             mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -355,7 +355,7 @@ static int msh_cmd_dioctl_cfg(int argc, void *argv)
     }
 
     /* Set the config */
-    ret = (int)mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_SET_CONFIG, cfg);
+    ret = mr_dev_ioctl(MSH_GET_DESC(), MR_CTL_SET_CONFIG, cfg);
     if (ret < 0)
     {
         mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -458,7 +458,7 @@ static int msh_dioctl_cmd(int argc, void *argv)
     if (cmd < 0)
     {
         /* Get the arguments */
-        ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, args);
+        ret = mr_dev_ioctl(MSH_GET_DESC(), cmd, args);
         if (ret < 0)
         {
             mr_msh_printf("error: %s\r\n", mr_strerror(ret));
@@ -481,7 +481,7 @@ static int msh_dioctl_cmd(int argc, void *argv)
                 goto usage;
             }
         }
-        ret = (int)mr_dev_ioctl(MSH_GET_DESC(), cmd, args);
+        ret = mr_dev_ioctl(MSH_GET_DESC(), cmd, args);
         if (ret < 0)
         {
             mr_msh_printf("error: %s\r\n", mr_strerror(ret));

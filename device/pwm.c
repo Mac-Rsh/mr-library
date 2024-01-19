@@ -218,7 +218,7 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, int off, const void *buf, size_t
     return wr_size;
 }
 
-static ssize_t mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_pwm_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_pwm *pwm = (struct mr_pwm *)dev;
     struct mr_pwm_ops *ops = (struct mr_pwm_ops *)dev->drv->ops;

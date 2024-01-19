@@ -103,7 +103,7 @@ static ssize_t mr_adc_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     return rd_size;
 }
 
-static ssize_t mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_adc *adc = (struct mr_adc *)dev;
 

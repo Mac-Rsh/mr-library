@@ -351,7 +351,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int offset, const void *buf, siz
     return ret;
 }
 
-MR_INLINE ssize_t dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
+MR_INLINE int dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void *args)
 {
     /* Check whether the device has an ioctl function */
     if (dev->ops->ioctl == MR_NULL)
@@ -447,7 +447,7 @@ MR_INLINE ssize_t dev_ioctl(struct mr_dev *dev, int desc, int off, int cmd, void
 #endif /* MR_USING_RDWR_CTL */
 
             /* I/O control to the device */
-            ssize_t ret = dev->ops->ioctl(dev, off, cmd, args);
+            int ret = dev->ops->ioctl(dev, off, cmd, args);
 
 #ifdef MR_USING_RDWR_CTL
             dev_lock_release(dev, MR_LFLAG_RDWR);
@@ -759,7 +759,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size)
  *
  * @return The arguments of the device, otherwise an error code.
  */
-ssize_t mr_dev_ioctl(int desc, int cmd, void *args)
+int mr_dev_ioctl(int desc, int cmd, void *args)
 {
     MR_DESC_CHECK(desc);
 

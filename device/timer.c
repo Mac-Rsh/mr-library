@@ -177,7 +177,7 @@ static ssize_t mr_timer_write(struct mr_dev *dev, int off, const void *buf, size
     return wr_size;
 }
 
-static ssize_t mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_timer_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_timer *timer = (struct mr_timer *)dev;
 

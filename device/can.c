@@ -269,7 +269,7 @@ static ssize_t mr_can_dev_write(struct mr_dev *dev, int off, const void *buf, si
     return ret;
 }
 
-static ssize_t mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_can_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_can_dev *can_dev = (struct mr_can_dev *)dev;
 

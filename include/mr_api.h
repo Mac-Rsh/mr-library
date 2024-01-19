@@ -107,7 +107,7 @@ int mr_dev_open(const char *path, int oflags);
 int mr_dev_close(int desc);
 ssize_t mr_dev_read(int desc, void *buf, size_t size);
 ssize_t mr_dev_write(int desc, const void *buf, size_t size);
-ssize_t mr_dev_ioctl(int desc, int cmd, void *args);
+int mr_dev_ioctl(int desc, int cmd, void *args);
 int mr_dev_is_valid(int desc);
 /** @} */
 

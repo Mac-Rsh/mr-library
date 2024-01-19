@@ -298,7 +298,7 @@ static ssize_t mr_i2c_dev_write(struct mr_dev *dev, int off, const void *buf, si
     return ret;
 }
 
-static ssize_t mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_i2c_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 {
     struct mr_i2c_dev *i2c_dev = (struct mr_i2c_dev *)dev;
 
