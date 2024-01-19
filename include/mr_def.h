@@ -20,9 +20,15 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
- * @brief MR version.
+ * @brief Mr-library version.
  */
-#define MR_VERSION                      "0.0.7"
+#define _MR_VERSION_MAJOR               0                           /**< Major version */
+#define _MR_VERSION_MINOR               0                           /**< Minor version */
+#define _MR_VERSION_PATCH               8                           /**< Patch version */
+#define _MR_VERSION_STR(major, minor, patch) \
+    MR_STR(major) "." MR_STR(minor) "." MR_STR(patch)
+#define MR_VERSION                      (_MR_VERSION_MAJOR << 16 | _MR_VERSION_MINOR << 8 | _MR_VERSION_PATCH)
+#define MR_VERSION_STR                  _MR_VERSION_STR(_MR_VERSION_MAJOR, _MR_VERSION_MINOR, _MR_VERSION_PATCH)
 
 /**
  * @brief Compiler related.
@@ -65,28 +71,28 @@ typedef int (*mr_init_fn_t)(void);
 /**
  * @brief Exports an auto initialization function with level.
  */
-#define MR_INIT_EXPORT(fn, level) \
+#define _MR_INIT_EXPORT(fn, level) \
     MR_USED const mr_init_fn_t _mr_auto_init_##fn MR_SECTION(".mr_auto_init."level) = fn
 
 /**
  * @brief Exports a board auto initialization function.
  */
-#define MR_INIT_BOARD_EXPORT(fn)        MR_INIT_EXPORT(fn, "1")
+#define MR_INIT_BOARD_EXPORT(fn)        _MR_INIT_EXPORT(fn, "1")
 
 /**
  * @brief Exports a driver auto initialization function.
  */
-#define MR_INIT_DRV_EXPORT(fn)          MR_INIT_EXPORT(fn, "2")
+#define MR_INIT_DRV_EXPORT(fn)          _MR_INIT_EXPORT(fn, "2")
 
 /**
  * @brief Exports a device auto initialization function.
  */
-#define MR_INIT_DEV_EXPORT(fn)          MR_INIT_EXPORT(fn, "3")
+#define MR_INIT_DEV_EXPORT(fn)          _MR_INIT_EXPORT(fn, "3")
 
 /**
  * @brief Exports a app auto initialization function.
  */
-#define MR_INIT_APP_EXPORT(fn)          MR_INIT_EXPORT(fn, "4")
+#define MR_INIT_APP_EXPORT(fn)          _MR_INIT_EXPORT(fn, "4")
 
 /**
  * @brief Error code.
@@ -135,7 +141,7 @@ struct mr_ringbuf
     size_t size;                                                    /**< Buffer pool size */
     uint32_t read_mirror: 1;                                        /**< Read mirror flag */
     uint32_t write_mirror: 1;                                       /**< Write mirror flag */
-    uint32_t reserved: 30;                                          /**< Reserved */
+    uint32_t _reserved: 30;                                         /**< Reserved */
     size_t read_index;                                              /**< Read index */
     size_t write_index;                                             /**< Write index */
 };
@@ -145,7 +151,7 @@ struct mr_ringbuf
  */
 struct mr_avl
 {
-    int32_t height;                                                 /**< Balance factor */
+    int height;                                                     /**< Balance factor */
     uint32_t value;                                                 /**< Key-hold */
     struct mr_avl *left_child;                                      /**< Point to left-child node */
     struct mr_avl *right_child;                                     /**< Point to right-child node */
@@ -280,7 +286,7 @@ struct mr_dev_ops
     int (*close)(struct mr_dev *dev);
     ssize_t (*read)(struct mr_dev *dev, int off, void *buf, size_t size, int async);
     ssize_t (*write)(struct mr_dev *dev, int off, const void *buf, size_t size, int async);
-    ssize_t (*ioctl)(struct mr_dev *dev, int off, int cmd, void *args);
+    int (*ioctl)(struct mr_dev *dev, int off, int cmd, void *args);
     ssize_t (*isr)(struct mr_dev *dev, int event, void *args);
 };
 
@@ -320,3 +326,5 @@ struct mr_dev
 #endif /* __cplusplus */
 
 #endif /* _MR_DEF_H_ */
+
+#pragma clang diagnostic pop
