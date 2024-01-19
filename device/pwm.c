@@ -65,74 +65,62 @@ static int pwm_channel_get_configure(struct mr_pwm *pwm, int channel, struct mr_
 static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
 {
     uint32_t clk = pwm->info->clk, psc_max = pwm->info->prescaler_max, per_max = pwm->info->period_max;
-    uint32_t psc_best = 0, per_best = 0;
+    uint32_t psc_best = 1, per_best = 1;
     int error_min = INT32_MAX;
 
-    /* Check the clock */
+    /* Check the clock and frequency */
     if (clk == 0 || freq == 0)
     {
         return MR_EINVAL;
     }
 
-    /* Calculate the timeout */
-    uint32_t timeout = (clk * 1000000) / freq;
+    /* Calculate the prescaler and period product */
+    uint32_t product = clk / freq;
 
-    /* Calculate the Least error period */
-    for (uint32_t per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 0; per--)
+    /* If the product is within the maximum period, set it as the period */
+    if (product <= per_max)
     {
-        uint32_t psc = timeout / per;
-
-        /* Calculate the error */
-        int error = (int)timeout - (int)(psc * per);
-        if (error == 0)
-        {
-            psc_best = psc;
-            per_best = per;
-            break;
-        }
-        if (error <= error_min)
-        {
-            error_min = error;
-            psc_best = psc;
-            per_best = per;
-        }
-    }
-
-    /* Optimize the prescaler and period */
-    for (uint32_t divisor = 9; divisor > 1; divisor--)
+        psc_best = 1;
+        per_best = product;
+    } else
     {
-        /* Check if reload value can be divided by current divisor */
-        while ((psc_best % divisor) == 0)
+        /* Calculate the Least error prescaler and period */
+        for (uint32_t psc = MR_BOUND(product / per_max, 1, psc_max); psc < psc_max; psc++)
         {
-            uint32_t per_temp = per_best * divisor;
+            uint32_t per = MR_BOUND(product / psc, 1, per_max);
 
-            /* Check if new period or prescaler is valid */
-            if (per_temp <= per_max)
-            {
-                per_best = per_temp;
-                psc_best /= divisor;
-            } else
-            {
-                break;
-            }
+            /* Calculate the frequency error */
+            int error = (int)freq - (int)(clk / psc / per);
 
-            /* Check if prescaler can be used as period */
-            if ((psc_best > per_best) && (psc_best < per_max))
+            /* Found a potentially optimal prescaler and period combination */
+            if (error == 0)
             {
-                MR_SWAP(per_best, psc_best);
+                psc_best = psc;
+                per_best = per;
+
+                /* Found a valid and optimal solution */
+                if (per_best < per_max)
+                {
+                    break;
+                }
+            } else if (error < error_min)
+            {
+                error_min = error;
+                psc_best = psc;
+                per_best = per;
             }
         }
     }
 
-    /* Check prescaler is valid */
-    if (psc_best > psc_max)
+    /* Check period is valid */
+    if (per_best > per_max)
     {
         return MR_EINVAL;
     }
 
     pwm->prescaler = psc_best;
     pwm->period = per_best;
-    pwm->freq = (clk * 1000000) / psc_best / per_best;
+    pwm->freq = clk / psc_best / per_best;
     return MR_EOK;
 }
 

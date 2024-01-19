@@ -144,8 +144,8 @@ static int drv_pwm_configure(struct mr_pwm *pwm, int state)
         pclk = RCC_ClockStructure.PCLK1_Frequency;
     }
 
-    /* Update pwm clock(MHz) */
-    pwm->info->clk = pclk / 1000000;
+    /* Update pwm clock(Hz) */
+    pwm->info->clk = pclk;
 
     /* Configure remap */
     if (pwm_data->remap != 0)

@@ -53,7 +53,7 @@ typedef uint32_t mr_pwm_data_t;                                     /**< PWM rea
  */
 struct mr_pwm_info
 {
-    uint32_t clk;                                                   /**< Clock(MHz) */
+    uint32_t clk;                                                   /**< Clock(Hz) */
     uint32_t prescaler_max;                                         /**< Prescaler max */
     uint32_t period_max;                                            /**< Period max */
 };
