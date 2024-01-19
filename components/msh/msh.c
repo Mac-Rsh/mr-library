@@ -30,7 +30,7 @@ static struct
 } msh;
 
 #define MR_MSH_EXPORT(name, fn, help, level) \
-    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION(".mr_msh_cmd."level) = {#name, fn, help};
+    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION("mr_msh_cmd."level) = {#name, fn, help};
 
 MR_MSH_EXPORT(start, MR_NULL, MR_NULL, "0");
 MR_MSH_EXPORT(end, MR_NULL, MR_NULL, "1.end");

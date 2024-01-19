@@ -246,8 +246,9 @@ class Eclipse:
                         link_config = """
         /* mr-library */
         . = ALIGN(4);
-        KEEP(*(SORT(.mr_auto_init*)))
-        KEEP(*(SORT(.mr_msh_cmd.*)))
+        KEEP(*(SORT(mr_auto_init.*)))
+        KEEP(*(SORT(mr_msh_cmd.*)))
+        . = ALIGN(4);
     """
                         back = content[pos:]
                         fw.write(front + link_config + back)

@@ -35,7 +35,7 @@ struct mr_msh_cmd
  * @param help The help information.
  */
 #define MR_MSH_CMD_EXPORT(name, fn, help) \
-    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION(".mr_msh_cmd.1") = {#name, fn, help};
+    MR_USED const struct mr_msh_cmd _mr_msh_cmd_##name MR_SECTION("mr_msh_cmd.1") = {#name, fn, help};
 
 /**
  * @brief This macro function gets the argument at the specified index.
