@@ -13,82 +13,81 @@
 static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
 {
     uint32_t clk = timer->info->clk, psc_max = timer->info->prescaler_max, per_max = timer->info->period_max;
-    uint32_t psc_best = 0, per_best = 0, reload_best = 0;
-    uint32_t psc;
+    uint32_t psc_best = 1, per_best = 1, reload_best = 1;
     int error_min = INT32_MAX;
 
-    /* Check the clock */
-    if (clk == 0)
+    /* Check the clock and timeout */
+    if ((clk == 0) || (timeout == 0))
     {
         return MR_EINVAL;
     }
 
-    /* Calculate the prescaler */
-    for (psc = clk; psc <= (psc_max / 10); psc *= 10)
+    /* Take the timeout as the product of the prescaler and period */
+    uint32_t product = timeout;
+
+    /* If the product is within the maximum period, set it as the period */
+    if (product <= per_max)
     {
-        /* If the timeout is not a multiple of 10, break */
-        if (timeout % 10 != 0)
-        {
-            break;
-        }
-        timeout /= 10;
-    }
-
-    /* Calculate the Least error reload */
-    for (uint32_t per = (timeout <= per_max) ? timeout : (timeout / (per_max + 1)); per > 1; per--)
+        psc_best = clk / 1000000;
+        per_best = MR_BOUND(product, 1, per_max);
+    } else
     {
-        uint32_t reload = timeout / per;
-
-        /* Calculate the error */
-        int error = (int)timeout - (int)(reload * per);
-        if (error == 0)
+        /* Calculate the least error prescaler and period */
+        for (uint32_t psc = MR_BOUND((product / per_max), 1, product); psc < UINT32_MAX; psc++)
         {
-            reload_best = reload;
-            psc_best = psc;
-            per_best = per;
-            break;
-        }
-        if (error <= error_min)
-        {
-            error_min = error;
-            reload_best = reload;
-            psc_best = psc;
-            per_best = per;
-        }
-    }
+            uint32_t per = MR_BOUND(product / psc, 1, per_max);
 
-    /* Optimize the prescaler and period */
-    uint32_t divisor = 0;
-    for (divisor = 9; divisor > 1; divisor--)
-    {
-        /* Check if reload value can be divided by current divisor */
-        while ((reload_best % divisor) == 0)
-        {
-            uint32_t per_temp = per_best * divisor;
-            uint32_t psc_temp = psc_best * divisor;
+            /* Calculate the timeout error */
+            int error = (int)(timeout - (per * psc));
 
-            /* Check if new period or prescaler is valid */
-            if (per_temp <= per_max)
+            /* Found a valid and optimal solution */
+            if (error <= 1)
             {
-                per_best = per_temp;
-                reload_best /= divisor;
-            } else if (psc_temp <= psc_max)
-            {
-                psc_best = psc_temp;
-                reload_best /= divisor;
-            } else
-            {
+                psc_best = psc;
+                per_best = per;
                 break;
+            } else if (error < error_min)
+            {
+                error_min = error;
+                psc_best = psc;
+                per_best = per;
             }
+        }
 
-            /* Check if reload can be used as period or prescaler */
-            if ((reload_best > per_best) && (reload_best < per_max))
+        /* Calculate the reload and prescaler product */
+        product = psc_best * (clk / 1000000);
+
+        /* Calculate the least error reload and prescaler */
+        for (uint32_t reload = MR_BOUND(product / psc_max, 1, product); reload < product; reload++)
+        {
+            uint32_t psc = MR_BOUND(product / reload, 1, psc_max);
+
+            /* Calculate the product error */
+            int error = (int)product - (int)(reload * psc);
+
+            /* Found a valid and optimal solution */
+            if (error <= 1)
             {
-                MR_SWAP(per_best, reload_best);
-            } else if ((reload_best > psc_best) && (reload_best < psc_max))
+                reload_best = reload;
+                psc_best = psc;
+                break;
+            } else if (error < error_min)
             {
-                MR_SWAP(psc_best, reload_best);
+                error_min = error;
+                reload_best = reload;
+                psc_best = psc;
             }
+        }
+
+        /* If period can take reload value, lower interrupts by loading reload to period */
+        if (per_best <= (per_max / reload_best))
+        {
+            per_best *= reload_best;
+            reload_best = 1;
+            /* If the reload is less than the prescaler, swap them */
+        } else if ((reload_best > per_best) && (reload_best < per_max))
+        {
+            MR_SWAP(reload_best, per_best);
         }
     }
 
@@ -96,13 +95,7 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
     timer->period = per_best;
     timer->reload = reload_best;
     timer->count = timer->reload;
-    if ((psc_best < UINT16_MAX) && (per_best < UINT16_MAX))
-    {
-        timer->timeout = psc_best * per_best / clk;
-    } else
-    {
-        timer->timeout = psc_best / clk * per_best;
-    }
+    timer->timeout = timeout / timer->reload;
     return MR_EOK;
 }
 

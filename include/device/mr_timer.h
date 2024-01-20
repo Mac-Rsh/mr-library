@@ -63,7 +63,7 @@ typedef uint32_t mr_timer_data_t;                                   /**< Timer r
  */
 struct mr_timer_info
 {
-    uint32_t clk;                                                   /**< Clock(MHz) */
+    uint32_t clk;                                                   /**< Clock(Hz) */
     uint32_t prescaler_max;                                         /**< Prescaler max */
     uint32_t period_max;                                            /**< Period max */
 };

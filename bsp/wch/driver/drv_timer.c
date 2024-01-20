@@ -170,7 +170,7 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
     }
 
     /* Update timer clock(MHz) */
-    timer->info->clk = pclk / 1000000;
+    timer->info->clk = pclk;
 
     /* Configure timer */
     TIM_TimeBaseInitStructure.TIM_Period = 0;

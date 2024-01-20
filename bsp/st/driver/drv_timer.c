@@ -223,7 +223,7 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
     }
 
     /* Update timer clock(MHz) */
-    timer->info->clk = pclk / 1000000;
+    timer->info->clk = pclk;
 
     if (state == ENABLE)
     {
