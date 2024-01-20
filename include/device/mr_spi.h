@@ -95,7 +95,7 @@ struct mr_spi_transfer
 #define MR_CTL_SPI_SET_RD_BUFSZ         MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
 #define MR_CTL_SPI_CLR_RD_BUF           MR_CTL_CLR_RD_BUF           /**< Clear read buffer */
 #define MR_CTL_SPI_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
-#define MR_CTL_SPI_TRANSFER             (0x01 << 8)                 /**< Transfer */
+#define MR_CTL_SPI_TRANSFER             (0x01)                      /**< Transfer */
 
 #define MR_CTL_SPI_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
 #define MR_CTL_SPI_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */

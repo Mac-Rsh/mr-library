@@ -200,29 +200,32 @@ struct mr_avl
 #define MR_SFLAG_ONLY                   (0x20)                      /**< Only */
 
 /**
- * @brief Descriptor control command.
+ * @brief Device control command.
+ *
+ * @note [31:24] are for basic commands, [23:0] can define custom commands.
+ *       (> 0) is set command, (< 0) is get command.
  */
-#define MR_CTL_SET_OFFSET               (0x02)                      /**< Set offset */
-#define MR_CTL_SET_RD_CALL              (0x06)                      /**< Set read callback */
-#define MR_CTL_SET_WR_CALL              (0x07)                      /**< Set write callback */
-#define MR_CTL_SET_CONFIG               (0x08)                      /**< Set configuration */
-#define MR_CTL_SET_RD_BUFSZ             (0x09)                      /**< Set read buffer size */
-#define MR_CTL_SET_WR_BUFSZ             (0x0a)                      /**< Set write buffer size */
-#define MR_CTL_CLR_RD_BUF               (0x0b)                      /**< Clear read buffer */
-#define MR_CTL_CLR_WR_BUF               (0x0c)                      /**< Clear write buffer */
+#define MR_CTL_SET_OFFSET               (0x02 << 24)                /**< Set offset */
+#define MR_CTL_SET_RD_CALL              (0x06 << 24)                /**< Set read callback */
+#define MR_CTL_SET_WR_CALL              (0x07 << 24)                /**< Set write callback */
+#define MR_CTL_SET_CONFIG               (0x08 << 24)                /**< Set configuration */
+#define MR_CTL_SET_RD_BUFSZ             (0x09 << 24)                /**< Set read buffer size */
+#define MR_CTL_SET_WR_BUFSZ             (0x0a << 24)                /**< Set write buffer size */
+#define MR_CTL_CLR_RD_BUF               (0x0b << 24)                /**< Clear read buffer */
+#define MR_CTL_CLR_WR_BUF               (0x0c << 24)                /**< Clear write buffer */
 
-#define MR_CTL_GET_OFLAGS               (-(0x01))                   /**< Get open flags */
-#define MR_CTL_GET_OFFSET               (-(0x02))                   /**< Get offset */
-#define MR_CTL_GET_SFLAGS               (-(0x03))                   /**< Get support flags */
-#define MR_CTL_GET_PATH                 (-(0x04))                   /**< Get path */
-#define MR_CTL_GET_NAME                 (-(0x05))                   /**< Get name */
-#define MR_CTL_GET_RD_CALL              (-(0x06))                   /**< Get read callback */
-#define MR_CTL_GET_WR_CALL              (-(0x07))                   /**< Get write callback */
-#define MR_CTL_GET_CONFIG               (-(0x08))                   /**< Get configuration */
-#define MR_CTL_GET_RD_BUFSZ             (-(0x09))                   /**< Get read buffer size */
-#define MR_CTL_GET_WR_BUFSZ             (-(0x0a))                   /**< Get write buffer size */
-#define MR_CTL_GET_RD_DATASZ            (-(0x0b))                   /**< Get read data size */
-#define MR_CTL_GET_WR_DATASZ            (-(0x0c))                   /**< Get write data size */
+#define MR_CTL_GET_OFLAGS               (-(0x01 << 24))             /**< Get open flags */
+#define MR_CTL_GET_OFFSET               (-(0x02 << 24))             /**< Get offset */
+#define MR_CTL_GET_SFLAGS               (-(0x03 << 24))             /**< Get support flags */
+#define MR_CTL_GET_PATH                 (-(0x04 << 24))             /**< Get path */
+#define MR_CTL_GET_NAME                 (-(0x05 << 24))             /**< Get name */
+#define MR_CTL_GET_RD_CALL              (-(0x06 << 24))             /**< Get read callback */
+#define MR_CTL_GET_WR_CALL              (-(0x07 << 24))             /**< Get write callback */
+#define MR_CTL_GET_CONFIG               (-(0x08 << 24))             /**< Get configuration */
+#define MR_CTL_GET_RD_BUFSZ             (-(0x09 << 24))             /**< Get read buffer size */
+#define MR_CTL_GET_WR_BUFSZ             (-(0x0a << 24))             /**< Get write buffer size */
+#define MR_CTL_GET_RD_DATASZ            (-(0x0b << 24))             /**< Get read data size */
+#define MR_CTL_GET_WR_DATASZ            (-(0x0c << 24))             /**< Get write data size */
 
 /**
  * @brief ISR event.

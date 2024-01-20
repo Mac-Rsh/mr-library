@@ -37,11 +37,11 @@ struct mr_pwm_config
  */
 #define MR_CTL_PWM_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
 #define MR_CTL_PWM_SET_CHANNEL_CONFIG   MR_CTL_SET_CONFIG           /**< Set channel config */
-#define MR_CTL_PWM_SET_FREQ             (0x01 << 8)                 /**< Set frequency */
+#define MR_CTL_PWM_SET_FREQ             (0x01)                      /**< Set frequency */
 
 #define MR_CTL_PWM_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
 #define MR_CTL_PWM_GET_CHANNEL_CONFIG   MR_CTL_GET_CONFIG           /**< Get channel config */
-#define MR_CTL_PWM_GET_FREQ             (-(0x01 << 8))              /**< Get frequency */
+#define MR_CTL_PWM_GET_FREQ             (-(0x01))                   /**< Get frequency */
 
 /**
  * @brief PWM data type.
