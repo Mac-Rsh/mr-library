@@ -69,7 +69,7 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
     int error_min = INT32_MAX;
 
     /* Check the clock and frequency */
-    if (clk == 0 || freq == 0)
+    if ((clk == 0) || (freq == 0))
     {
         return MR_EINVAL;
     }
@@ -81,28 +81,29 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
     if (product <= per_max)
     {
         psc_best = 1;
-        per_best = product;
+        per_best = MR_BOUND(product, 1, per_max);
     } else
     {
-        /* Calculate the Least error prescaler and period */
+        /* Calculate the least error prescaler and period */
         for (uint32_t psc = MR_BOUND(product / per_max, 1, psc_max); psc < psc_max; psc++)
         {
             uint32_t per = MR_BOUND(product / psc, 1, per_max);
 
             /* Calculate the frequency error */
-            int error = (int)freq - (int)(clk / psc / per);
+            int error = (int)((clk / psc / per) - freq);
 
-            /* Found a potentially optimal prescaler and period combination */
+            /* Found a valid and optimal solution */
             if (error == 0)
             {
                 psc_best = psc;
                 per_best = per;
+                break;
 
-                /* Found a valid and optimal solution */
-                if (per_best < per_max)
-                {
-                    break;
-                }
+                /* Error could only be >= 0 because:
+                 * <product> is floored during calculation, making it smaller,
+                 * smaller <product> leads to smaller <per>,
+                 * smaller <per> means <clk / psc / per> is lower than <freq>
+                 */
             } else if (error < error_min)
             {
                 error_min = error;
@@ -110,12 +111,6 @@ static int pwm_calculate(struct mr_pwm *pwm, uint32_t freq)
                 per_best = per;
             }
         }
-    }
-
-    /* Check period is valid */
-    if (per_best > per_max)
-    {
-        return MR_EINVAL;
     }
 
     pwm->prescaler = psc_best;
