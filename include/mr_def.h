@@ -309,8 +309,8 @@ struct mr_dev
     struct mr_list clist;                                           /**< Child list */
 
     size_t ref_count;                                               /**< Reference count */
-#ifdef MR_USING_RDWR_CTL
     int sflags;                                                     /**< Support flags */
+#ifdef MR_USING_RDWR_CTL
     volatile int lflags;                                            /**< Lock flags */
 #endif /* MR_USING_RDWR_CTL */
 
