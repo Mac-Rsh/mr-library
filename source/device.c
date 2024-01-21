@@ -594,7 +594,7 @@ static struct mr_desc
 #define MR_DESC_CHECK(desc)
 #endif /* MR_USING_DESC_CHECK */
 
-static int desc_allocate(const char *path)
+MR_INLINE int desc_allocate(const char *path)
 {
     int desc = -1;
 
@@ -626,7 +626,7 @@ static int desc_allocate(const char *path)
     return desc;
 }
 
-static void desc_free(int desc)
+MR_INLINE void desc_free(int desc)
 {
     if (desc >= 0 && desc < MR_CFG_DESC_MAX)
     {
