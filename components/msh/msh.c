@@ -121,10 +121,7 @@ static void msh_insert_char(char c)
     }
 
     /* Check whether the cursor is at the end of the buffer */
-    if (msh.cursor == msh.bytes)
-    {
-        msh.buf[msh.bytes] = c;
-    } else
+    if (msh.cursor != msh.bytes)
     {
         /* Insert the character */
         mr_msh_printf(MSH_INSERT_CHAR(1));
@@ -134,8 +131,8 @@ static void msh_insert_char(char c)
         {
             msh.buf[i + 1] = msh.buf[i];
         }
-        msh.buf[msh.cursor] = c;
     }
+    msh.buf[msh.cursor] = c;
     msh.cursor++;
     msh.bytes++;
     msh.buf[msh.bytes] = '\0';
@@ -165,7 +162,7 @@ static int msh_parse_cmd(void)
     /* Execute the command */
     for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
     {
-        if (strcmp(msh_cmd->name, msh.buf) != 0)
+        if (strncmp(msh_cmd->name, msh.buf, MR_CFG_MSH_NAME_MAX) != 0)
         {
             continue;
         }
@@ -356,18 +353,6 @@ static void msh_parse_key(char c)
     }
 }
 
-static void mr_msh_recv_char(char c)
-{
-    /* Judgments are characters and keys */
-    if (MSH_IS_PRINTABLE(c) && (msh.key_bytes == 0))
-    {
-        msh_insert_char(c);
-    } else
-    {
-        msh_parse_key(c);
-    }
-}
-
 static int msh_cmd_help(int argc, void *argv)
 {
     for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
@@ -537,7 +522,14 @@ void mr_msh_handle(void)
     char c;
     while (mr_msh_input(&c) > 0)
     {
-        mr_msh_recv_char(c);
+        /* Judgments are characters and keys */
+        if (MSH_IS_PRINTABLE(c) && (msh.key_bytes == 0))
+        {
+            msh_insert_char(c);
+        } else
+        {
+            msh_parse_key(c);
+        }
     }
 }
 

@@ -147,18 +147,30 @@ static int msh_cmd_dselect(int argc, void *argv)
         goto usage;
     }
 
-    /* Parse <desc (>=0)> */
-    ret = sscanf(MR_MSH_GET_ARG(1), "%d", &desc);
-    if ((ret < 1) || (desc < 0))
+    /* Parse <-g|desc (>=0)> */
+    if (strncmp(MR_MSH_GET_ARG(1), "-g", 2) == 0)
     {
-        goto usage;
+        mr_msh_printf("%d\r\n", MSH_GET_DESC());
+        return MR_EOK;
+    } else
+    {
+        ret = sscanf(MR_MSH_GET_ARG(1), "%d", &desc);
+        if ((ret < 1) || (desc < 0))
+        {
+            goto usage;
+        }
+
+        /* Switch to the new descriptor */
+        ret = msh_update_path(desc);
+        if (ret < 0)
+        {
+            mr_msh_printf("error: %s\r\n", mr_strerror(ret));
+        }
+        return MR_EOK;
     }
 
-    /* Switch to the new descriptor */
-    return msh_update_path(desc);
-
     usage:
-    mr_msh_printf("usage: dselect <desc (>=0)>\r\n");
+    mr_msh_printf("usage: dselect <desc (>=0)|-g>\r\n");
     return MR_EINVAL;
 }
 
@@ -669,7 +681,7 @@ static int msh_cmd_dread(int argc, void *argv)
     }
 
     /* Read data */
-    size = MR_BOUND(size *itemsz, 0, sizeof(buf));
+    size = MR_BOUND(size * itemsz, 0, sizeof(buf));
     ret = (int)mr_dev_read(MSH_GET_DESC(), buf, size);
     if (ret < 0)
     {
