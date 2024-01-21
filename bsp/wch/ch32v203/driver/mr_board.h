@@ -146,7 +146,6 @@ extern "C" {
 #define DRV_PWM5_INFO_CONFIG            \
     {0, UINT16_MAX, UINT16_MAX}
 
-
 #if (MR_CFG_UART1_GROUP == 1)
 #define DRV_UART1_CONFIG                \
     {USART1, RCC_APB2Periph_USART1, RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_10, GPIOA, GPIO_Pin_9, USART1_IRQn, 0}
@@ -180,8 +179,10 @@ extern "C" {
 #define DRV_SPI1_CONFIG                 \
     {SPI1, RCC_APB2Periph_SPI1, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, GPIOB, GPIO_Pin_4, GPIOB, GPIO_Pin_5, SPI1_IRQn, GPIO_Remap_SPI1}
 #endif /* MR_CFG_SPI1_GROUP */
+#if (MR_CFG_SPI2_GROUP == 1)
 #define DRV_SPI2_CONFIG                 \
     {SPI2, RCC_APB1Periph_SPI2, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_13, GPIOB, GPIO_Pin_14, GPIOB, GPIO_Pin_15, SPI2_IRQn, 0}
+#endif /* MR_CFG_SPI2_GROUP */
 
 #define DRV_TIMER1_CONFIG               \
     {TIM1, RCC_APB2Periph_TIM1, TIM1_UP_IRQn}

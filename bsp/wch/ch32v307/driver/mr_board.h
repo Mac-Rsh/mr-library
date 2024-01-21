@@ -287,8 +287,10 @@ extern "C" {
 #define DRV_SPI1_CONFIG                 \
     {SPI1, RCC_APB2Periph_SPI1, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, GPIOB, GPIO_Pin_4, GPIOB, GPIO_Pin_5, SPI1_IRQn, GPIO_Remap_SPI1}
 #endif /* MR_CFG_SPI1_GROUP */
+#if (MR_CFG_SPI2_GROUP == 1)
 #define DRV_SPI2_CONFIG                 \
     {SPI2, RCC_APB1Periph_SPI2, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_13, GPIOB, GPIO_Pin_14, GPIOB, GPIO_Pin_15, SPI2_IRQn, 0}
+#endif /* MR_CFG_SPI2_GROUP */
 #if (MR_CFG_SPI3_GROUP == 1)
 #define DRV_SPI3_CONFIG                 \
     {SPI3, RCC_APB1Periph_SPI3, RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, GPIOB, GPIO_Pin_4, GPIOB, GPIO_Pin_5, SPI3_IRQn, 0}
