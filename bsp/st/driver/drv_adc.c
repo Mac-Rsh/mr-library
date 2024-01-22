@@ -71,14 +71,14 @@ static int drv_adc_configure(struct mr_adc *adc, int state)
     if (state == ENABLE)
     {
         /* Configure ADC */
-        adc_data->handle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+        adc_data->handle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
 #if defined(ADC_RESOLUTION_12B)
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_12B;
 #elif defined(ADC_RESOLUTION_10B)
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_10B;
 #else
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_8B;
-#endif /* ADC_RESOLUTION_12B */
+#endif /* defined(ADC_RESOLUTION_12B) */
         adc_data->handle.Init.ScanConvMode = DISABLE;
         adc_data->handle.Init.ContinuousConvMode = DISABLE;
         adc_data->handle.Init.DiscontinuousConvMode = DISABLE;
@@ -120,7 +120,7 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
     sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
     HAL_ADC_ConfigChannel(&adc_data->handle, &sConfig);
     HAL_ADC_Start(&adc_data->handle);
-    HAL_ADC_PollForConversion(&adc_data->handle, INT16_MAX);
+    HAL_ADC_PollForConversion(&adc_data->handle, UINT16_MAX);
     HAL_ADC_Stop(&adc_data->handle);
     return HAL_ADC_GetValue(&adc_data->handle);
 }
@@ -159,11 +159,9 @@ static struct mr_drv adc_drv[] =
 
 int drv_adc_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(adc_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(adc_dev); i++)
     {
-        mr_adc_register(&adc_dev[index], adc_name[index], &adc_drv[index]);
+        mr_adc_register(&adc_dev[i], adc_name[i], &adc_drv[i]);
     }
     return MR_EOK;
 }

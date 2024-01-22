@@ -1,12 +1,42 @@
 menu "Driver configure"
 
-    config MR_USING_STM32F4
-           bool "Enable STM32F4 driver"
-           default y
-
     menu "ADC"
         config MR_USING_ADC1
             bool "Enable ADC1 driver"
+            default n
+    endmenu
+
+    menu "PWM"
+        config MR_USING_PWM1
+            bool "Enable PWM1 driver"
+            default n
+
+        config MR_USING_PWM2
+            bool "Enable PWM2 driver"
+            default n
+
+        config MR_USING_PWM3
+            bool "Enable PWM3 driver"
+            default n
+
+        config MR_USING_PWM4
+            bool "Enable PWM4 driver"
+            default n
+
+        config MR_USING_PWM5
+            bool "Enable PWM5 driver"
+            default n
+
+        config MR_USING_PWM9
+            bool "Enable PWM9 driver"
+            default n
+
+        config MR_USING_PWM10
+            bool "Enable PWM10 driver"
+            default n
+
+        config MR_USING_PWM11
+            bool "Enable PWM11 driver"
             default n
     endmenu
 

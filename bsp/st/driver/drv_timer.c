@@ -239,14 +239,11 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
         /* Configure NVIC */
         HAL_NVIC_SetPriority(timer_data->irq, 3, 0);
         HAL_NVIC_EnableIRQ(timer_data->irq);
-        __HAL_TIM_ENABLE_IT(&timer_data->handle, TIM_IT_UPDATE);
     } else
     {
         /* Configure timer */
-        HAL_TIM_Base_DeInit(&timer_data->handle);
-
-        /* Configure timer */
         __HAL_TIM_DISABLE_IT(&timer_data->handle, TIM_IT_UPDATE);
+        HAL_TIM_Base_DeInit(&timer_data->handle);
     }
     return MR_EOK;
 }
@@ -259,8 +256,9 @@ static void drv_timer_start(struct mr_timer *timer, uint32_t prescaler, uint32_t
     __HAL_TIM_SET_COUNTER(&timer_data->handle, 0);
     __HAL_TIM_SET_AUTORELOAD(&timer_data->handle, period - 1);
     __HAL_TIM_SET_PRESCALER(&timer_data->handle, prescaler - 1);
-    __HAL_TIM_ENABLE(&timer_data->handle);
-    timer_data->handle.Instance->EGR = TIM_EGR_UG;
+    HAL_TIM_GenerateEvent(&timer_data->handle, TIM_EVENTSOURCE_UPDATE);
+    __HAL_TIM_CLEAR_FLAG(&timer_data->handle, TIM_FLAG_UPDATE);
+    HAL_TIM_Base_Start_IT(&timer_data->handle);
 }
 
 static void drv_timer_stop(struct mr_timer *timer)
@@ -268,7 +266,7 @@ static void drv_timer_stop(struct mr_timer *timer)
     struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->dev.drv->data;
 
     /* Disable the timer */
-    __HAL_TIM_DISABLE(&timer_data->handle);
+    HAL_TIM_Base_Stop_IT(&timer_data->handle);
 }
 
 static uint32_t drv_timer_get_count(struct mr_timer *timer)
@@ -496,11 +494,9 @@ static struct mr_drv timer_drv[] =
 
 int drv_timer_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(timer_dev); index++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(timer_dev); i++)
     {
-        mr_timer_register(&timer_dev[index], timer_name[index], &timer_drv[index], &timer_info[index]);
+        mr_timer_register(&timer_dev[i], timer_name[i], &timer_drv[i], &timer_info[i]);
     }
     return MR_EOK;
 }

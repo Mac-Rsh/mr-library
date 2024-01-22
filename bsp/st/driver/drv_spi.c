@@ -246,12 +246,12 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
 static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     while (__HAL_SPI_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_RXNE) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return 0;
         }
@@ -262,13 +262,13 @@ static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
 static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
-    int i = 0;
+    size_t i = 0;
 
     spi_bus_data->handle.Instance->DR = data;
     while (__HAL_SPI_GET_FLAG(&spi_bus_data->handle, SPI_FLAG_TXE) == RESET)
     {
         i++;
-        if (i > INT16_MAX)
+        if (i > UINT16_MAX)
         {
             return;
         }
@@ -383,11 +383,9 @@ static struct mr_drv spi_bus_drv[] =
 
 int drv_spi_bus_init(void)
 {
-    int index = 0;
-
-    for (index = 0; index < MR_ARRAY_NUM(spi_bus_dev); index++)
+    for (size_t i = 0; index < MR_ARRAY_NUM(spi_bus_dev); i++)
     {
-        mr_spi_bus_register(&spi_bus_dev[index], spi_bus_name[index], &spi_bus_drv[index]);
+        mr_spi_bus_register(&spi_bus_dev[i], spi_bus_name[i], &spi_bus_drv[i]);
     }
     return MR_EOK;
 }

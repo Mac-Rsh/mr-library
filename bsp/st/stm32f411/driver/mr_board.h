@@ -103,6 +103,23 @@ extern "C" {
         GPIO_PIN_15,                    \
     }
 
+#define DRV_PWM1_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM2_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT32_MAX}
+#define DRV_PWM3_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM4_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM5_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT32_MAX}
+#define DRV_PWM9_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM10_INFO_CONFIG           \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM11_INFO_CONFIG           \
+    {0, UINT16_MAX, UINT16_MAX}
+
 #define DRV_TIMER1_INFO_CONFIG          \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER2_INFO_CONFIG          \

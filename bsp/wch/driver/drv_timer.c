@@ -188,6 +188,7 @@ static int drv_timer_configure(struct mr_timer *timer, int state)
     NVIC_Init(&NVIC_InitStructure);
     if (state == DISABLE)
     {
+        TIM_ITConfig(timer_data->instance, TIM_IT_Update, DISABLE);
         TIM_Cmd(timer_data->instance, DISABLE);
     }
     return MR_EOK;
@@ -211,8 +212,8 @@ static void drv_timer_stop(struct mr_timer *timer)
     struct drv_timer_data *timer_data = (struct drv_timer_data *)timer->dev.drv->data;
 
     /* Disable the timer */
-    TIM_Cmd(timer_data->instance, DISABLE);
     TIM_ITConfig(timer_data->instance, TIM_IT_Update, DISABLE);
+    TIM_Cmd(timer_data->instance, DISABLE);
 }
 
 static uint32_t drv_timer_get_count(struct mr_timer *timer)
