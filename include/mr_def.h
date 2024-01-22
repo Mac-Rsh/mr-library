@@ -329,5 +329,3 @@ struct mr_dev
 #endif /* __cplusplus */
 
 #endif /* _MR_DEF_H_ */
-
-#pragma clang diagnostic pop

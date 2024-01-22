@@ -381,7 +381,6 @@ size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
     {
         memcpy(read_buffer, &ringbuf->buffer[ringbuf->read_index], size);
         ringbuf->read_index += size;
-
         return size;
     }
 
