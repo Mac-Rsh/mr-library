@@ -14,6 +14,12 @@ menu "Driver configure"
             default n
     endmenu
 
+    menu "DAC"
+        config MR_USING_DAC1
+            bool "Enable DAC1 driver"
+            default n
+    endmenu
+
     menu "PWM"
         config MR_USING_PWM1
             bool "Enable PWM1 driver"
