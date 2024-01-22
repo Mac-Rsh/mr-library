@@ -383,7 +383,7 @@ static struct mr_drv spi_bus_drv[] =
 
 int drv_spi_bus_init(void)
 {
-    for (size_t i = 0; index < MR_ARRAY_NUM(spi_bus_dev); i++)
+    for (size_t i = 0; i < MR_ARRAY_NUM(spi_bus_dev); i++)
     {
         mr_spi_bus_register(&spi_bus_dev[i], spi_bus_name[i], &spi_bus_drv[i]);
     }

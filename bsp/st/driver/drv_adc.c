@@ -71,23 +71,22 @@ static int drv_adc_configure(struct mr_adc *adc, int state)
     if (state == ENABLE)
     {
         /* Configure ADC */
-        adc_data->handle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
 #if defined(ADC_RESOLUTION_12B)
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_12B;
 #elif defined(ADC_RESOLUTION_10B)
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_10B;
-#else
+#elif defined(ADC_RESOLUTION_8B)
         adc_data->handle.Init.Resolution = ADC_RESOLUTION_8B;
 #endif /* defined(ADC_RESOLUTION_12B) */
         adc_data->handle.Init.ScanConvMode = DISABLE;
         adc_data->handle.Init.ContinuousConvMode = DISABLE;
         adc_data->handle.Init.DiscontinuousConvMode = DISABLE;
-        adc_data->handle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
         adc_data->handle.Init.ExternalTrigConv = ADC_SOFTWARE_START;
         adc_data->handle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
         adc_data->handle.Init.NbrOfConversion = 1;
-        adc_data->handle.Init.DMAContinuousRequests = DISABLE;
+#if defined(ADC_EOC_SINGLE_CONV)
         adc_data->handle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+#endif /* defined(ADC_EOC_SINGLE_CONV) */
         HAL_ADC_Init(&adc_data->handle);
     } else
     {
@@ -117,7 +116,25 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
     /* Read data */
     sConfig.Channel = adc_channel_data->channel;
     sConfig.Rank = 1;
+#if defined(ADC_SAMPLETIME_55CYCLES_5)
+    sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
+#elif defined(ADC_SAMPLETIME_56CYCLES)
     sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+#elif defined(ADC_SAMPLETIME_71CYCLES_5)
+    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
+#elif defined(ADC_SAMPLETIME_84CYCLES)
+    sConfig.SamplingTime = ADC_SAMPLETIME_84CYCLES;
+#elif defined(ADC_SAMPLETIME_112CYCLES)
+    sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
+#elif defined(ADC_SAMPLETIME_144CYCLES)
+    sConfig.SamplingTime = ADC_SAMPLETIME_144CYCLES;
+#elif defined(ADC_SAMPLETIME_239CYCLES_5)
+    sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+#elif defined(ADC_SAMPLETIME_247CYCLES_5)
+    sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
+#elif defined(ADC_SAMPLETIME_480CYCLES)
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+#endif /* defined(ADC_SAMPLETIME_55CYCLES_5) */
     HAL_ADC_ConfigChannel(&adc_data->handle, &sConfig);
     HAL_ADC_Start(&adc_data->handle);
     HAL_ADC_PollForConversion(&adc_data->handle, UINT16_MAX);

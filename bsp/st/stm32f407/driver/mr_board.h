@@ -119,28 +119,52 @@ extern "C" {
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_PWM5_INFO_CONFIG            \
     {0, UINT16_MAX, UINT32_MAX}
+#define DRV_PWM6_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM7_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM8_INFO_CONFIG            \
+    {0, UINT16_MAX, UINT16_MAX}
 #define DRV_PWM9_INFO_CONFIG            \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_PWM10_INFO_CONFIG           \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_PWM11_INFO_CONFIG           \
     {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM12_INFO_CONFIG           \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM13_INFO_CONFIG           \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_PWM14_INFO_CONFIG           \
+    {0, UINT16_MAX, UINT16_MAX}
 
 #define DRV_TIMER1_INFO_CONFIG          \
-    {0, UINT16_MAX, UINT16_MAX}
-#define DRV_TIMER2_INFO_CONFIG          \
     {0, UINT16_MAX, UINT32_MAX}
+#define DRV_TIMER2_INFO_CONFIG          \
+    {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER3_INFO_CONFIG          \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER4_INFO_CONFIG          \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER5_INFO_CONFIG          \
     {0, UINT16_MAX, UINT32_MAX}
+#define DRV_TIMER6_INFO_CONFIG          \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_TIMER7_INFO_CONFIG          \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_TIMER8_INFO_CONFIG          \
+    {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER9_INFO_CONFIG          \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER10_INFO_CONFIG         \
     {0, UINT16_MAX, UINT16_MAX}
 #define DRV_TIMER11_INFO_CONFIG         \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_TIMER12_INFO_CONFIG         \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_TIMER13_INFO_CONFIG         \
+    {0, UINT16_MAX, UINT16_MAX}
+#define DRV_TIMER14_INFO_CONFIG         \
     {0, UINT16_MAX, UINT16_MAX}
 
 #ifdef __cplusplus
