@@ -20,6 +20,11 @@ extern "C" {
 #include "include/device/mr_i2c.h"
 
 /**
+* @addtogroup I2C
+* @{
+*/
+
+/**
 * @brief Soft-I2C bus structure.
 */
 struct mr_soft_i2c_bus
@@ -29,14 +34,9 @@ struct mr_soft_i2c_bus
     uint32_t delay;                                                 /**< Speed delay */
     int scl_pin;                                                    /**< SCL pin */
     int sda_pin;                                                    /**< SDA pin */
-    int desc;                                                       /**< SCL-SDA descriptor */
 };
 
-/**
-* @addtogroup Soft-I2C.
-* @{
-*/
-int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *name, int scl_pin, int sda_pin);
+int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *path, int scl_pin, int sda_pin);
 /** @} */
 #endif /* defined(MR_USING_I2C) && defined(MR_USING_SOFT_I2C) */
 

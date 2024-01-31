@@ -18,6 +18,11 @@ extern "C" {
 #ifdef MR_USING_SPI
 
 /**
+ * @addtogroup SPI
+ * @{
+ */
+
+/**
  * @brief SPI host/slave.
  */
 #define MR_SPI_HOST                     (0)                         /**< SPI host */
@@ -90,18 +95,18 @@ struct mr_spi_transfer
 /**
  * @brief SPI control command.
  */
-#define MR_CTL_SPI_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set configuration */
-#define MR_CTL_SPI_SET_REG              MR_CTL_SET_OFFSET           /**< Set register */
-#define MR_CTL_SPI_SET_RD_BUFSZ         MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
-#define MR_CTL_SPI_CLR_RD_BUF           MR_CTL_CLR_RD_BUF           /**< Clear read buffer */
-#define MR_CTL_SPI_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
-#define MR_CTL_SPI_TRANSFER             (0x01)                      /**< Transfer */
+#define MR_IOC_SPI_SET_CONFIG           MR_IOC_SCFG                 /**< Set configuration */
+#define MR_IOC_SPI_SET_REG              MR_IOC_SPOS                 /**< Set register */
+#define MR_IOC_SPI_SET_RD_BUFSZ         MR_IOC_SRBSZ                /**< Set read buffer size */
+#define MR_IOC_SPI_CLR_RD_BUF           MR_IOC_CRBD                 /**< Clear read buffer */
+#define MR_IOC_SPI_SET_RD_CALL          MR_IOC_SRCB                 /**< Set read callback */
+#define MR_IOC_SPI_TRANSFER             (0x01)                      /**< Transfer */
 
-#define MR_CTL_SPI_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
-#define MR_CTL_SPI_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
-#define MR_CTL_SPI_GET_RD_BUFSZ         MR_CTL_GET_RD_BUFSZ         /**< Get read buffer size */
-#define MR_CTL_SPI_GET_RD_DATASZ        MR_CTL_GET_RD_DATASZ        /**< Get read data size */
-#define MR_CTL_SPI_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read callback */
+#define MR_IOC_SPI_GET_CONFIG           MR_IOC_GCFG                 /**< Get configuration */
+#define MR_IOC_SPI_GET_REG              MR_IOC_GPOS                 /**< Get register */
+#define MR_IOC_SPI_GET_RD_BUFSZ         MR_IOC_GRBSZ                /**< Get read buffer size */
+#define MR_IOC_SPI_GET_RD_DATASZ        MR_IOC_GRBDSZ               /**< Get read data size */
+#define MR_IOC_SPI_GET_RD_CALL          MR_IOC_GRCB                 /**< Get read callback */
 
 /**
  * @brief SPI data type.
@@ -111,7 +116,7 @@ typedef uint8_t mr_spi_data_t;                                      /**< SPI rea
 /**
  * @brief SPI ISR events.
  */
-#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
+#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01))        /**< Read interrupt */
 
 /**
  * @brief SPI bus structure.
@@ -141,7 +146,7 @@ struct mr_spi_bus_ops
  */
 #define MR_SPI_CS_ACTIVE_LOW            (0)                         /**< Active low */
 #define MR_SPI_CS_ACTIVE_HIGH           (1)                         /**< Active high */
-#define MR_SPI_CS_ACTIVE_NONE           (2)                         /**< No active */
+#define MR_SPI_CS_ACTIVE_HARDWARE       (2)                         /**< Hardware */
 
 /**
  * @brief SPI device structure.
@@ -153,16 +158,12 @@ struct mr_spi_dev
     struct mr_spi_config config;                                    /**< Config */
     struct mr_ringbuf rd_fifo;                                      /**< Read FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
-    uint32_t cs_pin: 30;                                            /**< CS pin */
-    uint32_t cs_active: 2;                                          /**< CS active level */
+    int cs_pin;                                                     /**< CS pin */
+    int cs_active;                                                  /**< CS active level */
 };
 
-/**
- * @addtogroup SPI.
- * @{
- */
-int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_drv *drv);
-int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin, int cs_active);
+int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *path, struct mr_drv *drv);
+int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *path, int cs_pin, int cs_active);
 /** @} */
 #endif /* MR_USING_SPI */
 
