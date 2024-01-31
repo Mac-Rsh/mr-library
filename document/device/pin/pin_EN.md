@@ -20,22 +20,22 @@
 ## Open PIN Device
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | Parameter        | Description       |
 |------------------|-------------------|
-| name             | Device name       |
-| oflags           | Open device flags |
+| path             | Device path       |
+| flags            | Open device flags |
 | **Return Value** |                   |  
 | `>=0`            | Device descriptor |
 | `<0`             | Error code        |
 
-- `name`: The PIN device name is usually `"pin"`.
-- `oflags`: Open device flags, supports `MR_OFLAG_RDONLY`, `MR_OFLAG_WRONLY`, `MR_OFLAG_RDWR`.
+- `path`: The PIN device path is usually `"pin"`.
+- `flags`: Open device flags, supports `MR_O_RDONLY`, `MR_O_WRONLY`, `MR_O_RDWR`.
 
 Note: When using, different tasks should open the PIN device separately according to actual situations and use
-appropriate `oflags` for management and permission control to ensure they won't interfere with each other.
+appropriate `flags` for management and permission control to ensure they won't interfere with each other.
 
 ## Close PIN Device
 
@@ -69,11 +69,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code        |
 
 - `cmd`: Command code, supports:
-    - `MR_CTL_PIN_SET_NUMBER`: Set pin number
-    - `MR_CTL_PIN_SET_MODE`: Set pin mode
-    - `MR_CTL_PIN_SET_EXTI_CALL`: Set external interrupt callback function
-    - `MR_CTL_PIN_GET_NUMBER`: Get pin number
-    - `MR_CTL_PIN_GET_EXTI_CALL`: Get external interrupt callback function
+    - `MR_IOC_PIN_SET_NUMBER`: Set pin number
+    - `MR_IOC_PIN_SET_MODE`: Set pin mode
+    - `MR_IOC_PIN_SET_EXTI_CALL`: Set external interrupt callback function
+    - `MR_IOC_PIN_GET_NUMBER`: Get pin number
+    - `MR_IOC_PIN_GET_EXTI_CALL`: Get external interrupt callback function
 
 ### Set/Get Pin Number
 
@@ -93,11 +93,11 @@ Note: This rule may not apply to all MCUs. Special requirements need to check th
 #define PIN_NUMBER                      45
 
 /* Set pin number */  
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, PIN_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, PIN_NUMBER));
 
 /* Get pin number */
 int number;
-mr_dev_ioctl(ds, MR_CTL_PIN_GET_NUMBER, &number);
+mr_dev_ioctl(ds, MR_IOC_PIN_GET_NUMBER, &number);
 ```
 
 Independent of PIN interface:
@@ -107,11 +107,11 @@ Independent of PIN interface:
 #define PIN_NUMBER                      45
 
 /* Set pin number */  
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, PIN_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, PIN_NUMBER));
 
 /* Get pin number */
 int number;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
 ### Set Pin Mode
@@ -140,7 +140,7 @@ And 5 external interrupt modes:
 #define PIN_MODE                        MR_PIN_MODE_OUTPUT
 
 /* Set pin mode */
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE)); 
+mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE)); 
 ```
 
 Independent of PIN interface:
@@ -150,7 +150,7 @@ Independent of PIN interface:
 #define PIN_MODE                        1
 
 /* Set pin mode */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, PIN_MODE)); 
+mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, PIN_MODE)); 
 ```
 
 ### Set/Get External Interrupt Callback Function
@@ -158,22 +158,22 @@ mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, PIN_MODE));
 ```c
 #define PIN_NUMBER                      45
 /* Define external interrupt callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
-  /* Get pin number */
-  ssize_t number = *(ssize_t *)args;  
-
-  /* Handle external interrupt event */
-
-  return MR_EOK;
+    /* Get pin number */
+    ssize_t number = *(ssize_t *)args;  
+    if (number == PIN_NUMBER)
+    {
+        /* Handle external interrupt event */
+    }
 }
 
 /* Set external interrupt callback function */ 
-mr_dev_ioctl(ds, MR_CTL_PIN_SET_EXTI_CALL, call);
+mr_dev_ioctl(ds, MR_IOC_PIN_SET_EXTI_CALL, fn);
 
 /* Get external interrupt callback function */
-int (*callback)(int desc, void *args);
-mr_dev_ioctl(ds, MR_CTL_PIN_GET_EXTI_CALL, &callback);
+void (*callback)(int desc, void *args);
+mr_dev_ioctl(ds, MR_IOC_PIN_GET_EXTI_CALL, &callback);
 ```
 
 Independent of PIN interface:
@@ -181,35 +181,32 @@ Independent of PIN interface:
 ```c
 #define PIN_NUMBER                      45
 /* Define external interrupt callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
-  /* Get pin number */
-  ssize_t number = *(ssize_t *)args;  
-
-  /* Handle external interrupt event */
-
-  return MR_EOK;
+    /* Get pin number */
+    ssize_t number = *(ssize_t *)args;  
+    if (number == PIN_NUMBER)
+    {
+        /* Handle external interrupt event */
+    }
 }
 
 /* Set external interrupt callback function */ 
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, fn);
 
 /* Get external interrupt callback function */
-int (*callback)(int desc, void *args);
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+void (*callback)(int desc, void *args);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 ```
 
 Note:
 
-- Before setting the external interrupt mode, you need to configure the callback function, otherwise, it becomes a
-  callback-free interrupt.
-- Even if the PIN device is closed, the callback function will not be invalid until the pin is set to a common mode (
-  external interrupts will be ignored when the PIN device is closed).
+- All callbacks are called as soon as any pin triggers an external interrupt, be sure to check that the pin is correct.
 
 ## Read PIN Device Pin Level
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);  
+ssize_t mr_dev_read(int desc, void *buf, size_t count);  
 ```
 
 | Parameter        | Description       |
@@ -235,7 +232,7 @@ if (ret != sizeof(pin_level))
 ## Write PIN Device Pin Level
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ``` 
 
 | Parameter        | Description       |
@@ -269,68 +266,63 @@ if (ret != sizeof(pin_level))
 #define LED_PIN_NUMBER                  45
 #define KEY_PIN_NUMBER                  0
 
-int key_call(int desc, void *args)
+/* Define LED and KEY descriptors */  
+int led_ds = -1;
+int key_ds = -1;
+
+void key_call(int desc, void *args)
 {
     ssize_t number = *((ssize_t *)args);
 
     if (number == KEY_PIN_NUMBER)
     {
         /* Print the callback function descriptor */
-        mr_printf("KEY callback, desc: %d\r\n", desc);
-        /* Toggle the LED pin level */
-        uint8_t level = 0;
-        mr_dev_read(desc, &level, sizeof(level));
-        level = !level;
-        mr_dev_write(desc, &level, sizeof(level));
-        return MR_EOK;
+        mr_printf("KEY callback\r\n");
     }
-    return MR_EINVAL;
 }
 
-int led_key_init(void)  
+void led_key_init(void)  
 {
     int ret = MR_EOK;
 
     /* Initialize LED */
-    int led_ds = mr_dev_open("pin", MR_OFLAG_RDWR);
+    led_ds = mr_dev_open("pin", MR_O_WRONLY);
     if (led_ds < 0)
     {
         mr_printf("led open failed: %s\r\n", mr_strerror(led_ds));
-        return led_ds;
+        return;
     }
     /* Print LED descriptor */
     mr_printf("LED desc: %d\r\n", led_ds);
     /* Set to LED pin */
-    mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
+    mr_dev_ioctl(led_ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
     /* Set LED pin to push-pull output mode */
-    ret = mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
+    ret = mr_dev_ioctl(led_ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
     if (ret < 0)
     {
         mr_printf("led set mode failed: %s\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
-    /* Set KEY external interrupt callback function (for demonstrating descriptor inheritance, use LED device descriptor to configure KEY callback function) */
-    mr_dev_ioctl(led_ds, MR_CTL_PIN_SET_EXTI_CALL, key_call);
 
     /* Initialize KEY */
-    int key_ds = mr_dev_open("pin", MR_OFLAG_RDWR);
+    key_ds = mr_dev_open("pin", MR_O_RDONLY);
     if (key_ds < 0)
     {
         mr_printf("key open failed: %s\r\n", mr_strerror(key_ds));
-        return key_ds;
+        return;
     }
     /* Print KEY descriptor */
     mr_printf("KEY desc: %d\r\n", key_ds);
     /* Set to KEY pin */
-    mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, KEY_PIN_NUMBER));
+    mr_dev_ioctl(key_ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, KEY_PIN_NUMBER));
+    /* Set KEY external interrupt callback function */
+    mr_dev_ioctl(key_ds, MR_IOC_PIN_SET_EXTI_CALL, key_call);
     /* Set KEY pin to external interrupt (falling edge) mode (without reconfiguring the callback function, use the previous result, i.e. the callback function set by LED) */
-    ret = mr_dev_ioctl(key_ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_IRQ_FALLING));
+    ret = mr_dev_ioctl(key_ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_IRQ_FALLING));
     if (ret < 0)
     {
         mr_printf("key set mode failed: %s\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* Export to auto initialization (APP level) */
 MR_INIT_APP_EXPORT(led_key_init);
@@ -342,14 +334,14 @@ int main(void)
 
     while(1)
     {
-        
+        /* Toggle LED pin level */
+        uint8_t level = 0;
+        mr_dev_read(led_ds, &level, sizeof(level));
+        level = !level;
+        mr_dev_write(led_ds, &level, sizeof(level));
+        mr_delay_ms(500);
     }
 }
 ```
 
-After pressing the KEY, the LED will flip.
-Observe the serial port print, you can see the LED and KEY descriptors. Although the external interrupt of the KEY pin
-is configured by the KEY,
-no callback function is configured. Therefore, the KEY pin callback function inherits the previous configuration, that
-is, the callback function of the LED configuration,
-so the descriptor printed in the KEY callback function is the descriptor of the LED.
+After pressing the KEY, the serial port prints "KEY callback" and the LED flips every 500ms.

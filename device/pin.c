@@ -10,88 +10,21 @@
 
 #ifdef MR_USING_PIN
 
-/**
- * @brief Pin irq structure.
- */
-struct pin_irq
-{
-    int number;                                                     /**< Pin number */
-    int desc;                                                       /**< Device descriptor */
-    int (*call)(int desc, void *args);                              /**< Callback function */
-    struct mr_list list;                                            /**< List */
-};
+void _mr_fast_pin_init(struct mr_dev *dev);
 
-static int pin_set_mode(struct mr_pin *pin, int number, int mode)
+MR_INLINE int pin_set_mode(struct mr_pin *pin, int number, int mode)
 {
     struct mr_pin_ops *ops = (struct mr_pin_ops *)pin->dev.drv->ops;
 
-    /* Check number is valid */
     if (number < 0)
     {
         return MR_EINVAL;
     }
 
-    /* Configure pin mode */
-    int ret = ops->configure(pin, number, mode);
-    if (ret < 0)
-    {
-        return ret;
-    }
-
-    /* Disable interrupt */
-    mr_interrupt_disable();
-
-    /* If the irq exists, update it */
-    for (struct mr_list *list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
-    {
-        struct pin_irq *irq = (struct pin_irq *)MR_CONTAINER_OF(list, struct pin_irq, list);
-        if (irq->number == number)
-        {
-            if (mode < MR_PIN_MODE_IRQ_RISING)
-            {
-                /* Remove irq */
-                mr_list_remove(list);
-                mr_free(irq);
-            } else
-            {
-                /* Update irq */
-                irq->desc = pin->dev.rd_call.desc;
-                irq->call = pin->dev.rd_call.call;
-            }
-
-            /* Enable interrupt */
-            mr_interrupt_enable();
-            return MR_EOK;
-        }
-    }
-
-    /* If not exist, allocate new irq */
-    if (mode >= MR_PIN_MODE_IRQ_RISING)
-    {
-        /* Allocate irq */
-        struct pin_irq *irq = (struct pin_irq *)mr_malloc(sizeof(struct pin_irq));
-        if (irq == MR_NULL)
-        {
-            /* Enable interrupt */
-            mr_interrupt_enable();
-            return MR_ENOMEM;
-        }
-        irq->number = number;
-        irq->desc = pin->dev.rd_call.desc;
-        irq->call = pin->dev.rd_call.call;
-        mr_list_init(&irq->list);
-        mr_list_insert_before(&pin->irq_list, &irq->list);
-
-        /* Clear call */
-        pin->dev.rd_call.call = MR_NULL;
-    }
-
-    /* Enable interrupt */
-    mr_interrupt_enable();
-    return MR_EOK;
+    return ops->configure(pin, number, mode);
 }
 
-static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
+static ssize_t mr_pin_read(struct mr_dev *dev, void *buf, size_t count)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
     struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
@@ -99,22 +32,22 @@ static ssize_t mr_pin_read(struct mr_dev *dev, int off, void *buf, size_t size, 
     ssize_t rd_size;
 
 #ifdef MR_USING_PIN_CHECK
-    /* Check offset is valid */
-    if (off < 0)
+    /* Check number is valid */
+    if (dev->position < 0)
     {
         return MR_EINVAL;
     }
 #endif /* MR_USING_PIN_CHECK */
 
-    for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
+    for (rd_size = 0; rd_size < count; rd_size += sizeof(*rd_buf))
     {
-        *rd_buf = (uint8_t)ops->read(pin, off);
+        *rd_buf = (uint8_t)ops->read(pin, dev->position);
         rd_buf++;
     }
     return rd_size;
 }
 
-static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
+static ssize_t mr_pin_write(struct mr_dev *dev, const void *buf, size_t count)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
     struct mr_pin_ops *ops = (struct mr_pin_ops *)dev->drv->ops;
@@ -122,34 +55,34 @@ static ssize_t mr_pin_write(struct mr_dev *dev, int off, const void *buf, size_t
     ssize_t wr_size;
 
 #ifdef MR_USING_PIN_CHECK
-    /* Check offset is valid */
-    if (off < 0)
+    /* Check number is valid */
+    if (dev->position < 0)
     {
         return MR_EINVAL;
     }
 #endif /* MR_USING_PIN_CHECK */
 
-    for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
+    for (wr_size = 0; wr_size < count; wr_size += sizeof(*wr_buf))
     {
-        ops->write(pin, off, *wr_buf);
+        ops->write(pin, dev->position, *wr_buf);
         wr_buf++;
     }
     return wr_size;
 }
 
-static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_pin_ioctl(struct mr_dev *dev, int cmd, void *args)
 {
     struct mr_pin *pin = (struct mr_pin *)dev;
 
     switch (cmd)
     {
-        case MR_CTL_PIN_SET_MODE:
+        case MR_IOC_PIN_SET_MODE:
         {
             if (args != MR_NULL)
             {
                 struct mr_pin_config config = *((struct mr_pin_config *)args);
 
-                int ret = pin_set_mode(pin, off, config.mode);
+                int ret = pin_set_mode(pin, dev->position, config.mode);
                 if (ret < 0)
                 {
                     return ret;
@@ -167,25 +100,13 @@ static int mr_pin_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
 
 static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
 {
-    struct mr_pin *pin = (struct mr_pin *)dev;
-
     switch (event)
     {
         case MR_ISR_PIN_EXTI_INT:
         {
             ssize_t number = *(int *)args;
 
-            /* If the irq exists, call it */
-            for (struct mr_list *list = pin->irq_list.next; list != &pin->irq_list; list = list->next)
-            {
-                struct pin_irq *irq = (struct pin_irq *)MR_CONTAINER_OF(list, struct pin_irq, list);
-                if (irq->number == number)
-                {
-                    irq->call(irq->desc, &number);
-                    return MR_EEXIST;
-                }
-            }
-            return MR_ENOTFOUND;
+            return number;
         }
         default:
         {
@@ -198,12 +119,12 @@ static ssize_t mr_pin_isr(struct mr_dev *dev, int event, void *args)
  * @brief This function registers a pin.
  *
  * @param pin The pin.
- * @param name The name of the pin.
+ * @param path The path of the pin.
  * @param drv The driver of the pin.
  *
- * @return MR_EOK on success, otherwise an error code.
+ * @return 0 on success, otherwise an error code.
  */
-int mr_pin_register(struct mr_pin *pin, const char *name, struct mr_drv *drv)
+int mr_pin_register(struct mr_pin *pin, const char *path, struct mr_drv *drv)
 {
     static struct mr_dev_ops ops =
         {
@@ -216,15 +137,18 @@ int mr_pin_register(struct mr_pin *pin, const char *name, struct mr_drv *drv)
         };
 
     MR_ASSERT(pin != MR_NULL);
-    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(path != MR_NULL);
     MR_ASSERT(drv != MR_NULL);
     MR_ASSERT(drv->ops != MR_NULL);
 
-    /* Initialize the fields */
-    mr_list_init(&pin->irq_list);
-
     /* Register the pin */
-    return mr_dev_register(&pin->dev, name, Mr_Dev_Type_Pin, MR_SFLAG_RDWR, &ops, drv);
+    int ret = mr_dev_register(&pin->dev, path, MR_DEV_TYPE_PIN, MR_O_RDWR, &ops, drv);
+    if (ret == MR_EOK)
+    {
+        /* Initialize the fast pin */
+        _mr_fast_pin_init(&pin->dev);
+    }
+    return ret;
 }
 
 #endif /* MR_USING_PIN */
