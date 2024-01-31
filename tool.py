@@ -341,12 +341,12 @@ def show_license():
                   "This software is provided subject to the terms of the Apache License 2.0, the full text of which "
                   "is not currently available due to missing license documentation. By continuing to use the "
                   "Software, you agree to be bound by the terms of the Apache License 2.0. The full license text is "
-                  "available at http://www.apache.org/licenses/LICENSE-2.0. We advise you to review the license terms "
+                  "available at https://www.apache.org/licenses/LICENSE-2.0. We advise you to review the license terms "
                   "in full before use to ensure you understand and agree to be bound by all provisions contained "
                   "therein.")
         log_print('warning',
                   "本软件根据Apache许可证2.0版本条款提供,由于许可证文件缺失,当前无法获取完整许可内容。继续使用本软件, "
-                  "代表您同意接受并遵守Apache许可证2.0版本的所有条款。完整许可证可在http://www.apache.org/licenses/LICENSE-2.0"
+                  "代表您同意接受并遵守Apache许可证2.0版本的所有条款。完整许可证可在https://www.apache.org/licenses/LICENSE-2.0"
                   "查看。建议您在使用前全面复核许可证内容, 以确保完全理解并同意接受其中的所有规定。")
 
 
