@@ -25,47 +25,47 @@ Note: SPI-CS control requires enabling the PIN device.
 ## Register SPI Device
 
 ```c
-int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin, int cs_active);
+int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *path, int cs_pin, int cs_active);
 ```
 
 | Parameter        | Description                  |
 |------------------|------------------------------|
 | spi_dev          | SPI device structure pointer | 
-| name             | Device name                  |
+| path             | Device path                  |
 | cs_pin           | Chip select pin number       |
 | cs_active        | Chip select enable state     |
 | **Return Value** |                              |
 | `=0`             | Registration succeeded       |
 | `<0`             | Error code                   |
 
-- `name`: The SPI device needs to be bound to a specified SPI bus, and the name needs to add the bus name, such
-  as: `spi1/dev-name`.
+- `path`: The SPI device needs to be bound to a specified SPI bus, and the path needs to add the bus name, such
+  as: `spix/dev-name`, `spi1/spi10`.
 - `cs_pin`: Chip select pin number (refer to PIN device documentation).
 - `cs_active`: Chip select enable state:
     - `MR_SPI_CS_ACTIVE_LOW`: Low level enables.
     - `MR_SPI_CS_ACTIVE_HIGH`: High level enables.
-    - `MR_SPI_CS_ACTIVE_NONE`: Do not enable (ignore `cs_pin` parameter).
+    - `MR_SPI_CS_ACTIVE_HARDWARE`: Do not enable (Slave mode can only be used in this mode, and `cs_pin` will automatically be set to `-1`).
 
 ## Open SPI Device
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | Parameter        | Description                  |
 |------------------|------------------------------|
-| name             | Device name                  |
-| oflags           | Flags for opening the device |
+| path             | Device path                  |
+| flags            | Flags for opening the device |
 | **Return Value** |                              |
 | `>=0`            | Device descriptor            |
 | `<0`             | Error code                   |
 
-- `name`: The SPI device is bound to the SPI bus, so the bus name needs to be added, such
-  as: `spix/dev-name`,`spi1/dev-name`.
-- `oflags`: Flags for opening the device, supporting `MR_OFLAG_RDONLY`, `MR_OFLAG_WRONLY`, `MR_OFLAG_RDWR`.
+- `path`: The SPI device is bound to the SPI bus, so the bus path needs to be added, such
+  as: `spix/dev-name`, `spi1/spi10`.
+- `flags`: Flags for opening the device, supporting `MR_O_RDONLY`, `MR_O_WRONLY`, `MR_O_RDWR`.
 
 Note: When using, different tasks should open the SPI device separately according to actual situations and use
-appropriate `oflags` for management and permission control to ensure they do not interfere with each other.
+appropriate `flags` for management and permission control to ensure they do not interfere with each other.
 
 ## Close SPI Device
 
@@ -96,17 +96,17 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code        |
 
 - `cmd`: Command code, supports:
-    - `MR_CTL_SPI_SET_CONFIG`: Set SPI device configuration.
-    - `MR_CTL_SPI_SET_REG`: Set register value.
-    - `MR_CTL_SPI_SET_RD_BUFSZ`: Set read buffer size.
-    - `MR_CTL_SPI_CLR_RD_BUF`: Clear read buffer.
-    - `MR_CTL_SPI_SET_RD_CALL`: Set read callback function.
-    - `MR_CTL_SPI_TRANSFER`: Full-duplex transmission.
-    - `MR_CTL_SPI_GET_CONFIG`: Get SPI device configuration.
-    - `MR_CTL_SPI_GET_REG`: Get register value.
-    - `MR_CTL_SPI_GET_RD_BUFSZ`: Get read buffer size.
-    - `MR_CTL_SPI_GET_RD_DATASZ`: Get read buffer data size.
-    - `MR_CTL_SPI_GET_RD_CALL`: Get read callback function.
+    - `MR_IOC_SPI_SET_CONFIG`: Set SPI device configuration.
+    - `MR_IOC_SPI_SET_REG`: Set register value.
+    - `MR_IOC_SPI_SET_RD_BUFSZ`: Set read buffer size.
+    - `MR_IOC_SPI_CLR_RD_BUF`: Clear read buffer.
+    - `MR_IOC_SPI_SET_RD_CALL`: Set read callback function.
+    - `MR_IOC_SPI_TRANSFER`: Full-duplex transmission.
+    - `MR_IOC_SPI_GET_CONFIG`: Get SPI device configuration.
+    - `MR_IOC_SPI_GET_REG`: Get register value.
+    - `MR_IOC_SPI_GET_RD_BUFSZ`: Get read buffer size.
+    - `MR_IOC_SPI_GET_RD_DATASZ`: Get read buffer data size.
+    - `MR_IOC_SPI_GET_RD_CALL`: Get read callback function.
 
 ### Set/Get SPI Device Configuration
 
@@ -124,10 +124,10 @@ SPI device configuration:
 struct mr_spi_config config = MR_SPI_CONFIG_DEFAULT;
 
 /* Set SPI device configuration */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_CONFIG, &config);
 
 /* Get SPI device configuration */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_CONFIG, &config);
 ```
 
 Independent of SPI interface:
@@ -137,10 +137,10 @@ Independent of SPI interface:
 int config[] = {3000000, 0, 0, 8, 1, 8};
 
 /* Set SPI device configuration */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 
 /* Get SPI device configuration */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 Note:
@@ -155,6 +155,8 @@ Note:
 - When an SPI device on the SPI bus is configured as slave mode, it will continuously occupy the SPI bus until the slave
   mode SPI device is reconfigured to master mode. Other SPI devices cannot perform read/write operations during this
   time.
+- When hardware CS is forced to be used in slave mode, software IO will be restored to the default mode. For example, 
+  to determine the use of slave mode at the beginning, set `cs_pin` to `-1` and `cs_active` to `MR_SPI_CS_ACTIVE_HARDWARE`.
 
 ### Set/Get Register Value
 
@@ -162,22 +164,22 @@ The register value will be written first (range: `0` ~ `INT32_MAX`) before readi
 
 ```c
 /* Set register value */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
 
 /* Get register value */
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_REG, &reg);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_REG, &reg);
 ```
 
 Independent of SPI interface:
 
 ```c
 /* Set register value */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, 0x12));
 
 /* Get register value */
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_REG, &reg);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &reg);
 ```
 
 Note:
@@ -192,10 +194,10 @@ Note:
 size_t size = 256;
 
 /* Set read buffer size */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_RD_BUFSZ, &size);
 
 /* Get read buffer size */  
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_BUFSZ, &size);
 ```
 
 Independent of SPI interface:
@@ -204,10 +206,10 @@ Independent of SPI interface:
 size_t size = 256;
 
 /* Set read buffer size */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SRBSZ, &size);
 
 /* Get read buffer size */  
-mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBSZ, &size);
 ```
 
 Note: If not set manually, it will use the size configured in `Kconfig` (default 32Byte). The read buffer is only used
@@ -216,13 +218,13 @@ in slave mode.
 ### Clear Read Buffer
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_SPI_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_SPI_CLR_RD_BUF, MR_NULL);
 ```
 
 Independent of SPI interface:
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CRBD, MR_NULL);
 ```
 
 ### Get Read Buffer Data Size
@@ -231,7 +233,7 @@ mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
 size_t size = 0;
 
 /* Get read buffer data size */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_DATASZ, &size);
 ```
 
 Independent of SPI interface:
@@ -240,51 +242,47 @@ Independent of SPI interface:
 size_t size = 0;
 
 /* Get read buffer data size */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 ```
 
 ### Set/Get Read Callback Function
 
 ```c
 /* Define callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* Get buffer data size */
     ssize_t data_size = *(ssize_t *)args;
     
     /* Handle interrupt */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int, void *args);
 
 /* Set read callback function */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_RD_CALL, &fn);
 
 /* Get read callback function */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_CALL, &callback); 
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_CALL, &callback); 
 ```
 
 Independent of SPI interface:
 
 ```c
 /* Define callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* Get buffer data size */
     ssize_t data_size = *(ssize_t *)args;
     
     /* Handle interrupt */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int, void *args);
 
 /* Set read callback function */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 
 /* Get read callback function */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback); 
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback); 
 ```
 
 ### Full-Duplex Transmission
@@ -300,7 +298,7 @@ struct mr_spi_transfer transfer =
 };
 
 /* Full-duplex transmission */
-ssize_t size = mr_dev_ioctl(ds, MR_CTL_SPI_TRANSFER, &transfer);
+ssize_t size = mr_dev_ioctl(ds, MR_IOC_SPI_TRANSFER, &transfer);
 
 /* Check if transmission succeeded */
 if (size < 0)
@@ -322,7 +320,7 @@ struct
 } transfer = {buf, buf, sizeof(buf)};
 
 /* Full-duplex transmission */
-ssize_t size = mr_dev_ioctl(ds, (0x01 << 8), &transfer);
+ssize_t size = mr_dev_ioctl(ds, (0x01), &transfer);
 
 /* Check if transmission succeeded */
 if (size < 0)
@@ -334,7 +332,7 @@ if (size < 0)
 ## Read SPI Device Data
 
 ```c  
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | Parameter        | Description             |
@@ -369,7 +367,7 @@ Note:
 ## Write SPI Device Data
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | Parameter        | Description             |
@@ -410,7 +408,7 @@ struct mr_spi_dev slave_dev;
 int host_ds = -1;
 int slave_ds = -1;
 
-int spi_init(void)
+void spi_init(void)
 {
     int ret = MR_EOK;
     
@@ -418,47 +416,45 @@ int spi_init(void)
     ret = mr_spi_dev_register(&host_dev, "spi1/host", 0, MR_SPI_CS_ACTIVE_LOW);
     if (ret < 0) 
     {
-      mr_printf("host spi device register failed: %d\r\n", mr_strerror(ret));
-      return ret;
+        mr_printf("host spi device register failed: %d\r\n", mr_strerror(ret));
+        return;
     }
     
     /* Register SLAVE SPI device */
     ret = mr_spi_dev_register(&slave_dev, "spi2/slave", 1, MR_SPI_CS_ACTIVE_LOW);
     if (ret < 0)
     {
-      mr_printf("slave spi device register failed: %d\r\n", mr_strerror(ret));
-      return ret;
+        mr_printf("slave spi device register failed: %d\r\n", mr_strerror(ret));
+        return;
     }
     
     /* Open HOST SPI device */
-    host_ds = mr_dev_open("spi1/host", MR_OFLAG_RDWR);
+    host_ds = mr_dev_open("spi1/host", MR_O_RDWR);
     if (host_ds < 0)
     {
-      mr_printf("host spi device open failed: %d\r\n", mr_strerror(ret));
-      return ret; 
+        mr_printf("host spi device open failed: %d\r\n", mr_strerror(ret));
+        return; 
     }
     
     /* Set register value */
-    mr_dev_ioctl(host_ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+    mr_dev_ioctl(host_ds, MR_IOC_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
     
     /* Open SLAVE SPI device */
-    slave_ds = mr_dev_open("spi2/slave", MR_OFLAG_RDWR);
+    slave_ds = mr_dev_open("spi2/slave", MR_O_RDWR);
     if (slave_ds < 0)
     {
-      mr_printf("slave spi device open failed: %d\r\n", mr_strerror(ret));
-      return ret;
+        mr_printf("slave spi device open failed: %d\r\n", mr_strerror(ret));
+        return;
     }
     
     /* Set slave mode */
     struct mr_spi_config config = MR_SPI_CONFIG_DEFAULT;
     config.host_slave = MR_SPI_SLAVE;
-    ret = mr_dev_ioctl(slave_ds, MR_CTL_SPI_SET_CONFIG, &config);
+    ret = mr_dev_ioctl(slave_ds, MR_IOC_SPI_SET_CONFIG, &config);
     if (ret < 0)
     {
-      mr_printf("slave spi device set config failed: %d\r\n", mr_strerror(ret));
-      return ret;
+        mr_printf("slave spi device set config failed: %d\r\n", mr_strerror(ret));
     }
-    return MR_EOK;
 }
 /* Export to auto init (APP level) */
 MR_INIT_APP_EXPORT(spi_init);
@@ -474,17 +470,17 @@ int main(void)
     
     /* Receive test data */
     uint8_t rd_buf[128];
-    ssize_t ret = mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
+    mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
     
     /* Compare register value */
     if (rd_buf[0] == 0x12) 
     {
-      /* Compare data */
-      if (memcmp(wr_buf, (rd_buf + 1), sizeof(wr_buf)) == 0)
-      {
-        mr_printf("spi test success\r\n");
-        return 0;
-      }
+        /* Compare data */
+        if (memcmp(wr_buf, (rd_buf + 1), sizeof(wr_buf)) == 0)
+        {
+          mr_printf("spi test success\r\n");
+          return 0;
+        }
     }
     
     while (1)

@@ -24,7 +24,7 @@ static int mr_spi_bus_open(struct mr_dev *dev)
     /* Reset the hold */
     spi_bus->hold = MR_FALSE;
 #ifdef MR_USING_PIN
-    spi_bus->cs_desc = mr_dev_open("pin", MR_OFLAG_RDWR);
+    spi_bus->cs_desc = mr_dev_open("pin", MR_O_RDWR);
 #endif /* MR_USING_PIN */
     return ops->configure(spi_bus, &spi_bus->config);
 }
@@ -45,12 +45,12 @@ static int mr_spi_bus_close(struct mr_dev *dev)
     return ops->configure(spi_bus, &close_config);
 }
 
-static ssize_t mr_spi_bus_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
+static ssize_t mr_spi_bus_read(struct mr_dev *dev, void *buf, size_t count)
 {
     return MR_EIO;
 }
 
-static ssize_t mr_spi_bus_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
+static ssize_t mr_spi_bus_write(struct mr_dev *dev, const void *buf, size_t count)
 {
     return MR_EIO;
 }
@@ -67,26 +67,8 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
             struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)spi_bus->owner;
             uint32_t data = ops->read(spi_bus);
 
-#ifdef MR_USING_PIN
-            /* Check if CS is active */
-            if ((spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE) && (spi_bus->cs_desc >= 0))
-            {
-                uint8_t level = !spi_dev->cs_active;
-                mr_dev_read(spi_bus->cs_desc, &level, sizeof(level));
-                if (level != spi_dev->cs_active)
-                {
-                    return MR_EINVAL;
-                }
-            }
-#endif /* MR_USING_PIN */
-
             /* Read data to FIFO. if callback is set, call it */
             mr_ringbuf_write_force(&spi_dev->rd_fifo, &data, (spi_bus->config.data_bits >> 3));
-            if (spi_dev->dev.rd_call.call != MR_NULL)
-            {
-                ssize_t size = (ssize_t)mr_ringbuf_get_data_size(&spi_dev->rd_fifo);
-                spi_dev->dev.rd_call.call(spi_dev->dev.rd_call.desc, &size);
-            }
             return MR_EOK;
         }
         default:
@@ -100,12 +82,12 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
  * @brief This function registers a spi-bus.
  *
  * @param spi_bus The spi-bus.
- * @param name The name of the spi-bus.
+ * @param path The path of the spi-bus.
  * @param drv The driver of the spi-bus.
  *
- * @return MR_EOK on success, otherwise an error code.
+ * @return 0 on success, otherwise an error code.
  */
-int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_drv *drv)
+int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *path, struct mr_drv *drv)
 {
     static struct mr_dev_ops ops =
         {
@@ -119,7 +101,7 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
     struct mr_spi_config default_config = MR_SPI_CONFIG_DEFAULT;
 
     MR_ASSERT(spi_bus != MR_NULL);
-    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(path != MR_NULL);
     MR_ASSERT(drv != MR_NULL);
     MR_ASSERT(drv->ops != MR_NULL);
 
@@ -130,69 +112,60 @@ int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *name, struct mr_
     spi_bus->cs_desc = -1;
 
     /* Register the spi-bus */
-    return mr_dev_register(&spi_bus->dev, name, Mr_Dev_Type_SPI, MR_SFLAG_RDWR, &ops, drv);
+    return mr_dev_register(&spi_bus->dev, path, MR_DEV_TYPE_SPI, MR_O_RDWR, &ops, drv);
 }
 
 #ifdef MR_USING_PIN
 static void spi_dev_cs_configure(struct mr_spi_dev *spi_dev, int state)
 {
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
-    int desc = spi_bus->cs_desc;
+    int desc = spi_bus->cs_desc, old_number = -1;
 
-    /* Check the descriptor is valid */
     if (desc < 0)
     {
         return;
     }
 
-    if (spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE)
+    if (spi_dev->cs_pin != -1)
     {
-        int old_number = -1;
-
         /* Temporarily store the old number */
-        mr_dev_ioctl(desc, MR_CTL_PIN_GET_NUMBER, &old_number);
+        mr_dev_ioctl(desc, MR_IOC_GPOS, &old_number);
 
         /* Set the new number */
-        mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, spi_dev->cs_pin));
+        mr_dev_ioctl(desc, MR_IOC_SPOS, MR_MAKE_LOCAL(int, spi_dev->cs_pin));
         if (state == MR_ENABLE)
         {
-            int mode = MR_PIN_MODE_NONE;
-
             if (spi_dev->config.host_slave == MR_SPI_HOST)
             {
-                mode = MR_PIN_MODE_OUTPUT;
+                mr_dev_ioctl(desc, MR_IOC_SCFG, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
+                mr_dev_write(desc, MR_MAKE_LOCAL(uint8_t, !spi_dev->cs_active), sizeof(uint8_t));
             } else
             {
-                if (spi_dev->cs_active == MR_SPI_CS_ACTIVE_LOW)
-                {
-                    mode = MR_PIN_MODE_INPUT_UP;
-                } else
-                {
-                    mode = MR_PIN_MODE_INPUT_DOWN;
-                }
+                mr_dev_ioctl(desc, MR_IOC_SCFG, MR_MAKE_LOCAL(int, MR_PIN_MODE_NONE));
             }
-            mr_dev_ioctl(desc, MR_CTL_PIN_SET_MODE, &mode);
-            mr_dev_write(desc, MR_MAKE_LOCAL(uint8_t, !spi_dev->cs_active), sizeof(uint8_t));
         } else
         {
-            mr_dev_ioctl(desc, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_NONE));
+            mr_dev_ioctl(desc, MR_IOC_SCFG, MR_MAKE_LOCAL(int, MR_PIN_MODE_NONE));
         }
 
         /* Restore the old number */
-        mr_dev_ioctl(desc, MR_CTL_PIN_SET_NUMBER, &old_number);
+        mr_dev_ioctl(desc, MR_IOC_SPOS, &old_number);
     }
 }
 #endif /* MR_USING_PIN */
 
 MR_INLINE void spi_dev_cs_set(struct mr_spi_dev *spi_dev, int state)
 {
+#ifdef MR_USING_PIN
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
 
-#ifdef MR_USING_PIN
-    if ((spi_dev->cs_active != MR_SPI_CS_ACTIVE_NONE) && (spi_bus->cs_desc >= 0))
+    if (spi_bus->cs_desc < 0)
     {
-        mr_dev_write(spi_bus->cs_desc, MR_MAKE_LOCAL(uint8_t, !(state ^ spi_dev->cs_active)), sizeof(uint8_t));
+        return;
     }
+
+    /* Set the new state */
+    mr_dev_write(spi_bus->cs_desc, MR_MAKE_LOCAL(uint8_t, !(state ^ spi_dev->cs_active)), sizeof(uint8_t));
 #endif /* MR_USING_PIN */
 }
 
@@ -225,9 +198,9 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
         spi_bus->config = spi_dev->config;
         spi_bus->owner = spi_dev;
 #ifdef MR_USING_PIN
-        if (spi_bus->cs_desc >= 0)
+        if ((spi_bus->cs_desc >= 0) && (spi_bus->config.host_slave == MR_SPI_HOST))
         {
-            mr_dev_ioctl(spi_bus->cs_desc, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, spi_dev->cs_pin));
+            mr_dev_ioctl(spi_bus->cs_desc, MR_IOC_SPOS, MR_MAKE_LOCAL(int, spi_dev->cs_pin));
         }
 #endif /* MR_USING_PIN */
     }
@@ -269,8 +242,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             case MR_SPI_DATA_BITS_8:
             {
                 uint8_t *rd_data = (uint8_t *)rd_buf;
-                MR_BIT_CLR(size, sizeof(*rd_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*rd_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*rd_data)); tf_size += sizeof(*rd_data))
                 {
                     ops->write(spi_bus, 0);
                     *rd_data = ops->read(spi_bus);
@@ -281,8 +253,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             case MR_SPI_DATA_BITS_16:
             {
                 uint16_t *rd_data = (uint16_t *)rd_buf;
-                MR_BIT_CLR(size, sizeof(*rd_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*rd_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*rd_data)); tf_size += sizeof(*rd_data))
                 {
                     ops->write(spi_bus, 0);
                     *rd_data = ops->read(spi_bus);
@@ -293,8 +264,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             case MR_SPI_DATA_BITS_32:
             {
                 uint32_t *rd_data = (uint32_t *)rd_buf;
-                MR_BIT_CLR(size, sizeof(*rd_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*rd_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*rd_data)); tf_size += sizeof(*rd_data))
                 {
                     ops->write(spi_bus, 0);
                     *rd_data = ops->read(spi_bus);
@@ -314,8 +284,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             case MR_SPI_DATA_BITS_8:
             {
                 uint8_t *wr_data = (uint8_t *)wr_buf;
-                MR_BIT_CLR(size, sizeof(*wr_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
                 {
                     ops->write(spi_bus, *wr_data);
                     ops->read(spi_bus);
@@ -326,8 +295,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             case MR_SPI_DATA_BITS_16:
             {
                 uint16_t *wr_data = (uint16_t *)wr_buf;
-                MR_BIT_CLR(size, sizeof(*wr_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
                 {
                     ops->write(spi_bus, *wr_data);
                     ops->read(spi_bus);
@@ -338,8 +306,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             case MR_SPI_DATA_BITS_32:
             {
                 uint32_t *wr_data = (uint32_t *)wr_buf;
-                MR_BIT_CLR(size, sizeof(*wr_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
                 {
                     ops->write(spi_bus, *wr_data);
                     ops->read(spi_bus);
@@ -360,8 +327,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             {
                 uint8_t *rd_data = (uint8_t *)rd_buf;
                 uint8_t *wr_data = (uint8_t *)wr_buf;
-                MR_BIT_CLR(size, sizeof(*wr_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
                 {
                     ops->write(spi_bus, *wr_data);
                     *rd_data = ops->read(spi_bus);
@@ -374,8 +340,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             {
                 uint16_t *wr_data = (uint16_t *)wr_buf;
                 uint16_t *rd_data = (uint16_t *)rd_buf;
-                MR_BIT_CLR(size, sizeof(*wr_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
                 {
                     ops->write(spi_bus, *wr_data);
                     *rd_data = ops->read(spi_bus);
@@ -388,8 +353,7 @@ static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const 
             {
                 uint32_t *wr_data = (uint32_t *)wr_buf;
                 uint32_t *rd_data = (uint32_t *)rd_buf;
-                MR_BIT_CLR(size, sizeof(*wr_data) - 1);
-                for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_data))
+                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
                 {
                     ops->write(spi_bus, *wr_data);
                     *rd_data = ops->read(spi_bus);
@@ -432,7 +396,7 @@ static int mr_spi_dev_close(struct mr_dev *dev)
     return MR_EOK;
 }
 
-static ssize_t mr_spi_dev_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
+static ssize_t mr_spi_dev_read(struct mr_dev *dev, void *buf, size_t count)
 {
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
@@ -445,30 +409,25 @@ static ssize_t mr_spi_dev_read(struct mr_dev *dev, int off, void *buf, size_t si
     if (spi_dev->config.host_slave == MR_SPI_HOST)
     {
         spi_dev_cs_set(spi_dev, MR_ENABLE);
-        if (off >= 0)
+
+        /* Send the address of the register that needs to be read */
+        if (dev->position >= 0)
         {
-            /* Send the address of the register that needs to be read */
-            spi_dev_transfer(spi_dev, MR_NULL, &off, (spi_dev->config.reg_bits >> 3), MR_SPI_WR);
+            spi_dev_transfer(spi_dev, MR_NULL, &dev->position, (spi_dev->config.reg_bits >> 3), MR_SPI_WR);
         }
 
-        ret = spi_dev_transfer(spi_dev, buf, MR_NULL, size, MR_SPI_RD);
+        ret = spi_dev_transfer(spi_dev, buf, MR_NULL, count, MR_SPI_RD);
         spi_dev_cs_set(spi_dev, MR_DISABLE);
     } else
     {
-        if (mr_ringbuf_get_bufsz(&spi_dev->rd_fifo) == 0)
-        {
-            ret = spi_dev_transfer(spi_dev, buf, MR_NULL, size, MR_SPI_RD);
-        } else
-        {
-            ret = (ssize_t)mr_ringbuf_read(&spi_dev->rd_fifo, buf, size);
-        }
+        ret = (ssize_t)mr_ringbuf_read(&spi_dev->rd_fifo, buf, count);
     }
 
     spi_dev_release_bus(spi_dev);
     return ret;
 }
 
-static ssize_t mr_spi_dev_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
+static ssize_t mr_spi_dev_write(struct mr_dev *dev, const void *buf, size_t count)
 {
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
@@ -481,30 +440,31 @@ static ssize_t mr_spi_dev_write(struct mr_dev *dev, int off, const void *buf, si
     if (spi_dev->config.host_slave == MR_SPI_HOST)
     {
         spi_dev_cs_set(spi_dev, MR_ENABLE);
-        if (off >= 0)
+
+        /* Send the address of the register that needs to be written */
+        if (dev->position >= 0)
         {
-            /* Send the address of the register that needs to be written */
-            spi_dev_transfer(spi_dev, MR_NULL, &off, (spi_dev->config.reg_bits >> 3), MR_SPI_WR);
+            spi_dev_transfer(spi_dev, MR_NULL, &dev->position, (spi_dev->config.reg_bits >> 3), MR_SPI_WR);
         }
 
-        ret = spi_dev_transfer(spi_dev, MR_NULL, buf, size, MR_SPI_WR);
+        ret = spi_dev_transfer(spi_dev, MR_NULL, buf, count, MR_SPI_WR);
         spi_dev_cs_set(spi_dev, MR_DISABLE);
     } else
     {
-        ret = spi_dev_transfer(spi_dev, MR_NULL, buf, size, MR_SPI_WR);
+        ret = spi_dev_transfer(spi_dev, MR_NULL, buf, count, MR_SPI_WR);
     }
 
     spi_dev_release_bus(spi_dev);
     return ret;
 }
 
-static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_spi_dev_ioctl(struct mr_dev *dev, int cmd, void *args)
 {
     struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)dev;
 
     switch (cmd)
     {
-        case MR_CTL_SPI_SET_CONFIG:
+        case MR_IOC_SPI_SET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -541,7 +501,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SPI_SET_RD_BUFSZ:
+        case MR_IOC_SPI_SET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -558,12 +518,12 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SPI_CLR_RD_BUF:
+        case MR_IOC_SPI_CLR_RD_BUF:
         {
             mr_ringbuf_reset(&spi_dev->rd_fifo);
             return MR_EOK;
         }
-        case MR_CTL_SPI_TRANSFER:
+        case MR_IOC_SPI_TRANSFER:
         {
             if (args != MR_NULL)
             {
@@ -598,7 +558,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SPI_GET_CONFIG:
+        case MR_IOC_SPI_GET_CONFIG:
         {
             if (args != MR_NULL)
             {
@@ -609,7 +569,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SPI_GET_RD_BUFSZ:
+        case MR_IOC_SPI_GET_RD_BUFSZ:
         {
             if (args != MR_NULL)
             {
@@ -620,7 +580,7 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_SPI_GET_RD_DATASZ:
+        case MR_IOC_SPI_GET_RD_DATASZ:
         {
             if (args != MR_NULL)
             {
@@ -642,13 +602,13 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
  * @brief This function registers a spi-device.
  *
  * @param spi_dev The spi-device.
- * @param name The name of the spi-device.
+ * @param path The path of the spi-device.
  * @param cs_pin The cs pin of the spi-device.
  * @param cs_active The cs active level of the spi-device.
  *
- * @return MR_EOK on success, otherwise an error code.
+ * @return 0 on success, otherwise an error code.
  */
-int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin, int cs_active)
+int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *path, int cs_pin, int cs_active)
 {
     static struct mr_dev_ops ops =
         {
@@ -662,8 +622,8 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
     struct mr_spi_config default_config = MR_SPI_CONFIG_DEFAULT;
 
     MR_ASSERT(spi_dev != MR_NULL);
-    MR_ASSERT(name != MR_NULL);
-    MR_ASSERT((cs_active >= MR_SPI_CS_ACTIVE_LOW) && (cs_active <= MR_SPI_CS_ACTIVE_NONE));
+    MR_ASSERT(path != MR_NULL);
+    MR_ASSERT((cs_active >= MR_SPI_CS_ACTIVE_LOW) && (cs_active <= MR_SPI_CS_ACTIVE_HARDWARE));
 
     /* Initialize the fields */
     spi_dev->config = default_config;
@@ -672,11 +632,11 @@ int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin
 #define MR_CFG_SPI_RD_BUFSZ             (0)
 #endif /* MR_CFG_SPI_RD_BUFSZ */
     spi_dev->rd_bufsz = MR_CFG_SPI_RD_BUFSZ;
-    spi_dev->cs_pin = cs_pin;
-    spi_dev->cs_active = (cs_pin >= 0) ? cs_active : MR_SPI_CS_ACTIVE_NONE;
+    spi_dev->cs_pin = (cs_active != MR_SPI_CS_ACTIVE_HARDWARE) ? cs_pin : -1;
+    spi_dev->cs_active = cs_active;
 
     /* Register the spi-device */
-    return mr_dev_register(&spi_dev->dev, name, Mr_Dev_Type_SPI, MR_SFLAG_RDWR | MR_SFLAG_NONDRV, &ops, MR_NULL);
+    return mr_dev_register(&spi_dev->dev, path, MR_DEV_TYPE_SPI, MR_O_RDWR, &ops, MR_NULL);
 }
 
 #endif /* MR_USING_SPI */

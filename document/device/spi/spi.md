@@ -25,44 +25,44 @@
 ## 注册SPI设备
 
 ```c
-int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *name, int cs_pin, int cs_active);
+int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *path, int cs_pin, int cs_active);
 ```
 
 | 参数        | 描述         |
 |-----------|------------|
 | spi_dev   | SPI设备结构体指针 |
-| name      | 设备名称       |
+| path      | 设备路径       |
 | cs_pin    | 片选引脚编号     |
 | cs_active | 片选使能状态     |
 | **返回值**   |            |
 | `=0`      | 注册成功       |
 | `<0`      | 错误码        |
 
-- `name`：SPI设备要绑定到指定的SPI总线，命名需要加上总线名称，例如：`spi1/dev-name`。
+- `path`：SPI设备要绑定到指定的SPI总线，路径需要加上总线名称，例如：`spix/dev-name`, `spi1/spi10`。
 - `cs_pin`：片选引脚编号（参考PIN设备文档）。
 - `cs_active`：片选使能状态：
     - `MR_SPI_CS_ACTIVE_LOW`：低电平使能。
     - `MR_SPI_CS_ACTIVE_HIGH`：高电平使能。
-    - `MR_SPI_CS_ACTIVE_NONE`：不使能（忽略`cs_pin`参数）。
+    - `MR_SPI_CS_ACTIVE_HARDWARE`：硬件片选（从机模式只能使用此模式，`cs_pin`将自动被设为`-1`）。
 
 ## 打开SPI设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：SPI设备绑定在SPI总线上，需加上总线名称，例如：`spix/dev-name`，`spi1/dev-name`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_RDONLY`、 `MR_OFLAG_WRONLY`、 `MR_OFLAG_RDWR`。
+- `path`：SPI设备要绑定到指定的SPI总线，路径需要加上总线名称，例如：`spix/dev-name`, `spi1/spi10`。
+- `flags`：打开设备的标志，支持 `MR_O_RDONLY`、 `MR_O_WRONLY`、 `MR_O_RDWR`。
 
-注：使用时应根据实际情况为不同的任务分别打开SPI设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开SPI设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭SPI设备
 
@@ -93,17 +93,17 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_SPI_SET_CONFIG`：设置SPI设备配置。
-    - `MR_CTL_SPI_SET_REG`：设置寄存器值。
-    - `MR_CTL_SPI_SET_RD_BUFSZ`：设置读缓冲区大小。
-    - `MR_CTL_SPI_CLR_RD_BUF`：清空读缓冲区。
-    - `MR_CTL_SPI_SET_RD_CALL`：设置读回调函数。
-    - `MR_CTL_SPI_TRANSFER`：全双工传输。
-    - `MR_CTL_SPI_GET_CONFIG`：获取SPI设备配置。
-    - `MR_CTL_SPI_GET_REG`：获取寄存器值。
-    - `MR_CTL_SPI_GET_RD_BUFSZ`：获取读缓冲区大小。
-    - `MR_CTL_SPI_GET_RD_DATASZ`：获取读缓冲区数据大小。
-    - `MR_CTL_SPI_GET_RD_CALL`：获取读回调函数。
+    - `MR_IOC_SPI_SET_CONFIG`：设置SPI设备配置。
+    - `MR_IOC_SPI_SET_REG`：设置寄存器值。
+    - `MR_IOC_SPI_SET_RD_BUFSZ`：设置读缓冲区大小。
+    - `MR_IOC_SPI_CLR_RD_BUF`：清空读缓冲区。
+    - `MR_IOC_SPI_SET_RD_CALL`：设置读回调函数。
+    - `MR_IOC_SPI_TRANSFER`：全双工传输。
+    - `MR_IOC_SPI_GET_CONFIG`：获取SPI设备配置。
+    - `MR_IOC_SPI_GET_REG`：获取寄存器值。
+    - `MR_IOC_SPI_GET_RD_BUFSZ`：获取读缓冲区大小。
+    - `MR_IOC_SPI_GET_RD_DATASZ`：获取读缓冲区数据大小。
+    - `MR_IOC_SPI_GET_RD_CALL`：获取读回调函数。
 
 ### 设置/获取SPI设备配置
 
@@ -121,9 +121,9 @@ SPI设备配置：
 struct mr_spi_config config = MR_SPI_CONFIG_DEFAULT;
 
 /* 设置SPI设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_CONFIG, &config);
 /* 获取SPI设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_CONFIG, &config);
 ```
 
 不依赖SPI接口：
@@ -133,9 +133,9 @@ mr_dev_ioctl(ds, MR_CTL_SPI_GET_CONFIG, &config);
 int config[] = {3000000, 0, 0, 8, 1, 8};
 
 /* 设置SPI设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 /* 获取SPI设备配置 */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 注：
@@ -148,6 +148,7 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
     - 数据传输顺序：`MR_SPI_BIT_ORDER_MSB`
     - 寄存器位数：`MR_SPI_REG_BITS_8`
 - 当SPI总线上有SPI设备被配置成从机模式后，其将持续占用SPI总线，此时其余SPI设备无法进行读写等操作，直至从机模式SPI设备被重新配置为主机模式。
+- 从机模式时强制使用硬件CS，软件IO将被恢复到默认模式，如一开始即确定使用从模式请设置`cs_pin`为`-1`，`cs_active`为`MR_SPI_CS_ACTIVE_HARDWARE`。
 
 ### 设置/获取寄存器值
 
@@ -155,22 +156,22 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
 
 ```c
 /* 设置寄存器值 */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
 
 /* 获取寄存器值 */
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_REG, &reg);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_REG, &reg);
 ```
 
 不依赖SPI接口：
 
 ```c
 /* 设置寄存器值 */
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, 0x12));
 
 /* 获取寄存器值 */
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &reg);
 ```
 
 注：
@@ -185,9 +186,9 @@ mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
 size_t size = 256;
 
 /* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_RD_BUFSZ, &size);
 /* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_BUFSZ, &size);
 ```
 
 不依赖SPI接口：
@@ -196,9 +197,9 @@ mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_BUFSZ, &size);
 size_t size = 256;
 
 /* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SRBSZ, &size);
 /* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBSZ, &size);
 ```
 
 注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。只有在从机模式下才使用读缓冲区。
@@ -206,13 +207,13 @@ mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
 ### 清空读缓冲区
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_SPI_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_SPI_CLR_RD_BUF, MR_NULL);
 ```
 
 不依赖SPI接口：
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CRBD, MR_NULL);
 ```
 
 ### 获取读缓冲区数据大小
@@ -221,7 +222,7 @@ mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
 size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_DATASZ, &size);
 ```
 
 不依赖SPI接口：
@@ -230,49 +231,45 @@ mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_DATASZ, &size);
 size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 ```
 
 ### 设置/获取读回调函数
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
-  /* 获取缓冲区数据大小 */
-  ssize_t data_size = *(ssize_t *)args;
-  
-  /* 处理中断 */
-  
-  return MR_EOK;
+    /* 获取缓冲区数据大小 */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* 处理中断 */
 }
-int (*callback)(int, void *args);
+void (*callback)(int, void *args);
 
 /* 设置读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SPI_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SPI_SET_RD_CALL, &fn);
 /* 获取读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SPI_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_CALL, &callback);
 ```
 
 不依赖SPI接口：
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
-  /* 获取缓冲区数据大小 */
-  ssize_t data_size = *(ssize_t *)args;
-  
-  /* 处理中断 */
-  
-  return MR_EOK;
+    /* 获取缓冲区数据大小 */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* 处理中断 */
 }
-int (*callback)(int, void *args);
+void (*callback)(int, void *args);
 
 /* 设置读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 /* 获取读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 ```
 
 ### 全双工传输
@@ -288,7 +285,7 @@ struct mr_spi_transfer transfer =
 };
 
 /* 全双工传输 */
-ssize_t size = mr_dev_ioctl(ds, MR_CTL_SPI_TRANSFER, &transfer);
+ssize_t size = mr_dev_ioctl(ds, MR_IOC_SPI_TRANSFER, &transfer);
 /* 是否传输成功 */
 if (size < 0)
 {
@@ -309,7 +306,7 @@ struct
 } transfer = {buf, buf, sizeof(buf)};
 
 /* 全双工传输 */
-ssize_t size = mr_dev_ioctl(ds, (0x01 << 8), &transfer);
+ssize_t size = mr_dev_ioctl(ds, (0x01), &transfer);
 /* 是否传输成功 */
 if (size < 0)
 {
@@ -320,7 +317,7 @@ if (size < 0)
 ## 读取SPI设备数据
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -351,7 +348,7 @@ if (size < 0)
 ## 写入SPI设备数据
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -389,7 +386,7 @@ struct mr_spi_dev slave_dev;
 int host_ds = -1;
 int slave_ds = -1;
 
-int spi_init(void)
+void spi_init(void)
 {
     int ret = MR_EOK;
     
@@ -398,7 +395,7 @@ int spi_init(void)
     if (ret < 0)
     {
         mr_printf("host spi device register failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     
     /* 注册SPI-SLAVE设备 */
@@ -406,36 +403,34 @@ int spi_init(void)
     if (ret < 0)
     {
         mr_printf("slave spi device register failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     
     /* 打开SPI-HOST设备 */
-    host_ds = mr_dev_open("spi1/host", MR_OFLAG_RDWR);
+    host_ds = mr_dev_open("spi1/host", MR_O_RDWR);
     if (host_ds < 0)
     {
         mr_printf("host spi device open failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     /* 设置寄存器值 */
-    mr_dev_ioctl(host_ds, MR_CTL_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+    mr_dev_ioctl(host_ds, MR_IOC_SPI_SET_REG, MR_MAKE_LOCAL(int, 0x12));
     
     /* 打开SPI-SLAVE设备 */
-    slave_ds = mr_dev_open("spi2/slave", MR_OFLAG_RDWR);
+    slave_ds = mr_dev_open("spi2/slave", MR_O_RDWR);
     if (slave_ds < 0)
     {
         mr_printf("slave spi device open failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     /* 设置为从机模式 */
     struct mr_spi_config config = MR_SPI_CONFIG_DEFAULT;
     config.host_slave = MR_SPI_SLAVE;
-    ret = mr_dev_ioctl(slave_ds, MR_CTL_SPI_SET_CONFIG, &config);
+    ret = mr_dev_ioctl(slave_ds, MR_IOC_SPI_SET_CONFIG, &config);
     if (ret < 0)
     {
         mr_printf("slave spi device set config failed: %d\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(spi_init);
@@ -451,7 +446,7 @@ int main(void)
     
     /* 接收测试数据 */
     uint8_t rd_buf[128];
-    ssize_t ret = mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
+    mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
     
     /* 比较寄存器值 */
     if (rd_buf[0] == 0x12)
