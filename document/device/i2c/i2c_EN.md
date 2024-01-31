@@ -24,13 +24,13 @@
 ## Register I2C Device
 
 ```c
-int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, int addr_bits);
+int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *path, int addr, int addr_bits);
 ```
 
 | Parameter        | Description                  |
 |------------------|------------------------------|
 | i2c_dev          | I2C device structure pointer | 
-| name             | Device name                  |
+| path             | Device path                  |
 | addr             | Device address               |
 | addr_bits        | Device address bits          |
 | **Return Value** |                              |
@@ -38,8 +38,9 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
 | `<0`             | Error code                   |
 
 - `name`: The I2C device needs to bind to the specified I2C bus, and the name needs to add the bus name, such
-  as: `i2c1/dev-name`.
+  as: `i2cx/dev-name`, `i2c1/i2c10`.
 - `addr`: Device address (the lowest bit is read/write bit, please pass the address shifted to the left).
+  When serving as a host, the address is the peer's address. When serving as a slave, the address is its own address.
 - `addr_bits`: Device address bits:
     - `MR_I2C_ADDR_BITS_7`: 7-bit address.
     - `MR_I2C_ADDR_BITS_10`: 10-bit address.
@@ -47,23 +48,22 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
 ## Open I2C Device
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ``` 
 
 | Parameter        | Description       |
 |------------------|-------------------|
-| name             | Device name       |
-| oflags           | Open device flags |
+| path             | Device path       |
+| flags            | Open device flags |
 | **Return Value** |                   |
 | `>=0`            | Device descriptor |
 | `<0`             | Error code        |
 
-- `name`: The I2C device is bound to the I2C bus and needs to add the bus name, such
-  as: `i2cx/dev-name`,`i2c1/dev-name`.
-- `oflags`: Open device flags, support `MR_OFLAG_RDONLY`, `MR_OFLAG_WRONLY`, `MR_OFLAG_RDWR`.
+- `path`: The I2C device path, such as: `i2cx/dev-name`,`i2c1/i2c10`.
+- `flags`: Open device flags, support `MR_O_RDONLY`, `MR_O_WRONLY`, `MR_O_RDWR`.
 
 Note: When using, the I2C device should be opened separately for different tasks according to the actual situation, and
-the appropriate `oflags` should be used for management and permission control to ensure that they will not interfere
+the appropriate `flags` should be used for management and permission control to ensure that they will not interfere
 with each other.
 
 ## Close I2C Device
@@ -95,16 +95,16 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code         |
 
 - `cmd`: Command code, supports the following commands:
-    - `MR_CTL_I2C_SET_CONFIG`: Set I2C device configuration.
-    - `MR_CTL_I2C_SET_REG`: Set register value.
-    - `MR_CTL_I2C_SET_RD_BUFSZ`: Set read buffer size.
-    - `MR_CTL_I2C_CLR_RD_BUF`: Clear read buffer.
-    - `MR_CTL_I2C_SET_RD_CALL`:Set read callback function.
-    - `MR_CTL_I2C_GET_CONFIG`: Get I2C device configuration.
-    - `MR_CTL_I2C_GET_REG`: Get register value.
-    - `MR_CTL_I2C_GET_RD_BUFSZ`: Get read buffer size.
-    - `MR_CTL_I2C_GET_RD_DATASZ`: Get read buffer data size.
-    - `MR_CTL_I2C_GET_RD_CALL`:Get read callback function.
+    - `MR_IOC_I2C_SET_CONFIG`: Set I2C device configuration.
+    - `MR_IOC_I2C_SET_REG`: Set register value.
+    - `MR_IOC_I2C_SET_RD_BUFSZ`: Set read buffer size.
+    - `MR_IOC_I2C_CLR_RD_BUF`: Clear read buffer.
+    - `MR_IOC_I2C_SET_RD_CALL`:Set read callback function.
+    - `MR_IOC_I2C_GET_CONFIG`: Get I2C device configuration.
+    - `MR_IOC_I2C_GET_REG`: Get register value.
+    - `MR_IOC_I2C_GET_RD_BUFSZ`: Get read buffer size.
+    - `MR_IOC_I2C_GET_RD_DATASZ`: Get read buffer data size.
+    - `MR_IOC_I2C_GET_RD_CALL`:Get read callback function.
 
 ### Set/Get I2C Device Configuration
 
@@ -119,9 +119,9 @@ I2C device configuration:
 struct mr_i2c_config config = MR_I2C_CONFIG_DEFAULT;
 
 /* Set I2C device configuration */  
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_CONFIG, &config);
 /* Get I2C device configuration */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_CONFIG, &config);
 ```
 
 Independent of I2C interface:
@@ -131,9 +131,9 @@ Independent of I2C interface:
 int config[] = {100000, 0, 8};
 
 /* Set I2C device configuration */  
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 /* Get I2C device configuration */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 Note:
@@ -152,22 +152,22 @@ The register value will be written first (range: `0` ~ `INT32_MAX`) before readi
 
 ```c
 /* Set register value */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
 
 /* Get register value */  
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_REG, &reg);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_REG, &reg);
 ```
 
 Independent of I2C interface:
 
 ```c
 /* Set register value */
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, 0x12));
 
 /* Get register value */  
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &reg);
 ```
 
 Note:
@@ -182,9 +182,9 @@ Note:
 size_t size = 256;
 
 /* Set read buffer size */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_RD_BUFSZ, &size);
 /* Get read buffer size */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_RD_BUFSZ, &size);
 ```
 
 Independent of I2C interface:
@@ -193,9 +193,9 @@ Independent of I2C interface:
 size_t size = 256;
 
 /* Set read buffer size */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SRBSZ, &size);
 /* Get read buffer size */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBSZ, &size);
 ```
 
 Note: If not manually configured, it will use the size configured in `Kconfig` (default 32Byte). The read buffer is only
@@ -204,13 +204,13 @@ used in slave mode.
 ### Clear Read Buffer
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_I2C_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_I2C_CLR_RD_BUF, MR_NULL);
 ```
 
 Independent of I2C interface:
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CRBD, MR_NULL);
 ```
 
 ### Get Read Buffer Data Size
@@ -219,7 +219,7 @@ mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
 size_t size = 0;
 
 /* Get read buffer data size */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_RD_DATASZ, &size);
 ```
 
 Independent of I2C interface:
@@ -228,55 +228,51 @@ Independent of I2C interface:
 size_t size = 0;
 
 /* Get read buffer data size */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 ```
 
 ### Set/Get Read Callback Function
 
 ```c
 /* Define callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* Get buffer data size */
     ssize_t data_size = *(ssize_t *)args;  
     
     /* Handle interrupt */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* Set read callback function */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_RD_CALL, &fn);
 /* Get read callback function */  
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_RD_CALL, &callback);
 ```
 
 Independent of I2C interface:
 
 ```c
 /* Define callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* Get buffer data size */
     ssize_t data_size = *(ssize_t *)args;  
     
     /* Handle interrupt */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* Set read callback function */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 /* Get read callback function */  
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 ```
 
 ## Read I2C Device Data
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | Parameter        | Description       |
@@ -311,7 +307,7 @@ Note:
 ## Write I2C Device Data
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | Parameter        | Description       |
@@ -350,7 +346,7 @@ struct mr_i2c_dev slave_dev;
 int host_ds = -1;
 int slave_ds = -1;
 
-int i2c_init(void)
+void i2c_init(void)
 {
     int ret = MR_EOK;
     
@@ -359,7 +355,7 @@ int i2c_init(void)
     if (ret < 0)
     {
         mr_printf("host i2c device register failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     
     /* Register I2C-SLAVE device */
@@ -367,36 +363,34 @@ int i2c_init(void)
     if (ret < 0)
     {
         mr_printf("slave i2c device register failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     
     /* Open I2C-HOST device */
-    host_ds = mr_dev_open("i2c1/host", MR_OFLAG_RDWR);
+    host_ds = mr_dev_open("i2c1/host", MR_O_RDWR);
     if (host_ds < 0)
     {
        mr_printf("host i2c device open failed: %d\r\n", mr_strerror(ret));
-       return ret;
+       return;
     }
     /* Set register value */
-    mr_dev_ioctl(host_ds, MR_CTL_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+    mr_dev_ioctl(host_ds, MR_IOC_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
     
     /* Open I2C-SLAVE device */
-    slave_ds = mr_dev_open("i2c2/slave", MR_OFLAG_RDWR);
+    slave_ds = mr_dev_open("i2c2/slave", MR_O_RDWR);
     if (slave_ds < 0)
     {
        mr_printf("slave i2c device open failed: %d\r\n", mr_strerror(ret));
-       return ret;
+       return;
     }
     /* Set slave mode */
     struct mr_i2c_config config = MR_I2C_CONFIG_DEFAULT;
     config.host_slave = MR_I2C_SLAVE;
-    ret = mr_dev_ioctl(slave_ds, MR_CTL_I2C_SET_CONFIG, &config);
+    ret = mr_dev_ioctl(slave_ds, MR_IOC_I2C_SET_CONFIG, &config);
     if (ret < 0)
     {
        mr_printf("slave i2c device set config failed: %d\r\n", mr_strerror(ret));
-       return ret;
     }
-    return MR_EOK;
 }
 /* Export to auto init (APP level) */
 MR_INIT_APP_EXPORT(i2c_init);
@@ -412,7 +406,7 @@ int main(void)
     
     /* Receive test data */
     uint8_t rd_buf[128];
-    ssize_t ret = mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
+    mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
     
     /* Compare register value */
     if (rd_buf[0] == 0x12)

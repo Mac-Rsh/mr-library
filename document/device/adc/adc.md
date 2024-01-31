@@ -16,21 +16,21 @@
 ## 打开ADC设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：ADC设备名称一般为：`adcx`、`adc1`、`adc2`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_RDONLY`。
+- `path`：ADC设备路径一般为：`adcx`、`adc1`、`adc2`。
+- `flags`：打开设备的标志，支持 `MR_O_RDONLY`。
 
-注：使用时应根据实际情况为不同的任务分别打开ADC设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开ADC设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭ADC设备
 
@@ -63,10 +63,10 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_ADC_SET_CHANNEL`：设置通道编号。
-    - `MR_CTL_ADC_SET_CHANNEL_CONFIG`：设置通道配置。
-    - `MR_CTL_ADC_GET_CHANNEL`：获取通道编号。
-    - `MR_CTL_ADC_GET_CHANNEL_CONFIG`：获取通道配置。
+    - `MR_IOC_ADC_SET_CHANNEL`：设置通道编号。
+    - `MR_IOC_ADC_SET_CHANNEL_CONFIG`：设置通道配置。
+    - `MR_IOC_ADC_GET_CHANNEL`：获取通道编号。
+    - `MR_IOC_ADC_GET_CHANNEL_CONFIG`：获取通道配置。
 
 ### 设置/获取通道编号
 
@@ -77,11 +77,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 #define CHANNEL_NUMBER                  5
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
-mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL, &number);
+mr_dev_ioctl(ds, MR_IOC_ADC_GET_CHANNEL, &number);
 ```
 
 不依赖ADC接口：
@@ -91,11 +91,11 @@ mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL, &number);
 #define CHANNEL_NUMBER                  5
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
 ### 设置/获取通道配置
@@ -107,28 +107,28 @@ mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
 
 ```c
 /* 设置通道配置 */
-mr_dev_ioctl(ds, MR_CTL_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+mr_dev_ioctl(ds, MR_IOC_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
 /* 获取通道配置 */
 int state;
-mr_dev_ioctl(ds, MR_CTL_ADC_GET_CHANNEL_CONFIG, &state);
+mr_dev_ioctl(ds, MR_IOC_ADC_GET_CHANNEL_CONFIG, &state);
 ```
 
 不依赖ADC接口：
 
 ```c
 /* 设置通道配置 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
 /* 获取通道配置 */
 int state;
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &state);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &state);
 ```
 
 ## 读取ADC设备通道值
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -164,29 +164,27 @@ if (ret != sizeof(data))
 /* 定义ADC设备描述符 */
 int adc_ds = -1;
 
-int adc_init(void)
+void adc_init(void)
 {
     int ret = MR_EOK;
 
     /* 初始化ADC */
-    adc_ds = mr_dev_open("adc1", MR_OFLAG_RDONLY);
+    adc_ds = mr_dev_open("adc1", MR_O_RDONLY);
     if (adc_ds < 0)
     {
         mr_printf("ADC1 open failed: %s\r\n", mr_strerror(adc_ds));
-        return adc_ds;
+        return;
     }
     /* 打印ADC描述符 */
     mr_printf("ADC1 desc: %d\r\n", adc_ds);
     /* 设置到通道5 */
-    mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+    mr_dev_ioctl(adc_ds, MR_IOC_ADC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
     /* 设置通道使能 */
-    ret = mr_dev_ioctl(adc_ds, MR_CTL_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+    ret = mr_dev_ioctl(adc_ds, MR_IOC_ADC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
     if (ret < 0)
     {
         mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(adc_init);

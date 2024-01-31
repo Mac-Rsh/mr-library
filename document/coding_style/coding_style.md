@@ -208,11 +208,11 @@
      * @param dev The device.
      * @param name The name of the device.
      * @param type The type of the device.
-     * @param sflags The support flags of the device.
+     * @param flags The support flags of the device.
      * @param ops The operations of the device.
      * @param drv The driver of the device.
      *
-     * @return MR_EOK on success, otherwise an error code.
+     * @return 0 on success, otherwise an error code.
      */ 
    ```
 
@@ -239,13 +239,13 @@
 
    ```c
    /**
-    * @addtogroup Device description.
+    * @addtogroup Device description
     * @{
     */
-   int mr_dev_open(const char *name, uint32_t oflags);
+   int mr_dev_open(const char *name, uint32_t flags);
    int mr_dev_close(int desc);
-   ssize_t mr_dev_read(int desc, void *buf, size_t size);
-   ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+   ssize_t mr_dev_read(int desc, void *buf, size_t count);
+   ssize_t mr_dev_write(int desc, const void *buf, size_t count);
    int mr_dev_ioctl(int desc, int cmd, void *args);
    /** @} */
     ```

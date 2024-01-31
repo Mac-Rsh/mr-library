@@ -18,6 +18,11 @@ extern "C" {
 #ifdef MR_USING_I2C
 
 /**
+ * @addtogroup I2C
+ * @{
+ */
+
+/**
 * @brief I2C host/slave.
 */
 #define MR_I2C_HOST                     (0)                         /**< I2C host */
@@ -53,17 +58,17 @@ struct mr_i2c_config
 /**
  * @brief I2C control command.
  */
-#define MR_CTL_I2C_SET_CONFIG           MR_CTL_SET_CONFIG           /**< Set configuration */
-#define MR_CTL_I2C_SET_REG              MR_CTL_SET_OFFSET           /**< Set register */
-#define MR_CTL_I2C_SET_RD_BUFSZ         MR_CTL_SET_RD_BUFSZ         /**< Set read buffer size */
-#define MR_CTL_I2C_CLR_RD_BUF           MR_CTL_CLR_RD_BUF           /**< Clear read buffer */
-#define MR_CTL_I2C_SET_RD_CALL          MR_CTL_SET_RD_CALL          /**< Set read callback */
+#define MR_IOC_I2C_SET_CONFIG           MR_IOC_SCFG                 /**< Set configuration command */
+#define MR_IOC_I2C_SET_REG              MR_IOC_SPOS                 /**< Set register command */
+#define MR_IOC_I2C_SET_RD_BUFSZ         MR_IOC_SRBSZ                /**< Set read buffer size command */
+#define MR_IOC_I2C_CLR_RD_BUF           MR_IOC_CRBD                 /**< Clear read buffer command */
+#define MR_IOC_I2C_SET_RD_CALL          MR_IOC_SRCB                 /**< Set read callback command */
 
-#define MR_CTL_I2C_GET_CONFIG           MR_CTL_GET_CONFIG           /**< Get configuration */
-#define MR_CTL_I2C_GET_REG              MR_CTL_GET_OFFSET           /**< Get register */
-#define MR_CTL_I2C_GET_RD_BUFSZ         MR_CTL_GET_RD_BUFSZ         /**< Get read buffer size */
-#define MR_CTL_I2C_GET_RD_DATASZ        MR_CTL_GET_RD_DATASZ        /**< Get read data size */
-#define MR_CTL_I2C_GET_RD_CALL          MR_CTL_GET_RD_CALL          /**< Get read callback */
+#define MR_IOC_I2C_GET_CONFIG           MR_IOC_GCFG                 /**< Get configuration command */
+#define MR_IOC_I2C_GET_REG              MR_IOC_GPOS                 /**< Get register command */
+#define MR_IOC_I2C_GET_RD_BUFSZ         MR_IOC_GRBSZ                /**< Get read buffer size command */
+#define MR_IOC_I2C_GET_RD_DATASZ        MR_IOC_GRBDSZ               /**< Get read data size command */
+#define MR_IOC_I2C_GET_RD_CALL          MR_IOC_GRCB                 /**< Get read callback command */
 
 /**
  * @brief I2C data type.
@@ -73,7 +78,7 @@ typedef uint8_t mr_i2c_data_t;                                      /**< I2C rea
 /**
  * @brief I2C ISR events.
  */
-#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01 << 8))   /**< Read interrupt */
+#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01))        /**< Read interrupt */
 
 /**
  * @brief I2C bus structure.
@@ -120,12 +125,8 @@ struct mr_i2c_dev
     uint32_t addr_bits: 16;                                         /**< Address bits */
 };
 
-/**
- * @addtogroup I2C.
- * @{
- */
-int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *name, struct mr_drv *drv);
-int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, int addr_bits);
+int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *path, struct mr_drv *drv);
+int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *path, int addr, int addr_bits);
 /** @} */
 #endif /* MR_USING_I2C */
 

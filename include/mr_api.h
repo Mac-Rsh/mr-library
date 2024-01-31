@@ -17,24 +17,25 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
- * @addtogroup Interrupt.
+ * @addtogroup Interrupt
+ * @{
  */
 void mr_interrupt_disable(void);
 void mr_interrupt_enable(void);
 /** @} */
 
 /**
- * @addtogroup Delay.
+ * @addtogroup Delay
+ * @{
  */
 void mr_delay_us(uint32_t us);
 void mr_delay_ms(uint32_t ms);
 /** @} */
 
 /**
- * @addtogroup Memory.
+ * @addtogroup Memory
  * @{
  */
-int mr_heap_init(void);
 void *mr_malloc(size_t size);
 void mr_free(void *memory);
 size_t mr_malloc_usable_size(void *memory);
@@ -43,21 +44,23 @@ void *mr_realloc(void *memory, size_t size);
 /** @} */
 
 /**
- * @addtogroup Printf.
+ * @addtogroup String
  * @{
  */
 int mr_printf(const char *fmt, ...);
 const char *mr_strerror(int err);
+const char *mr_strflags(int flags);
 /** @} */
 
 /**
- * @addtogroup Initialization.
+ * @addtogroup Auto-init
+ * @{
  */
 void mr_auto_init(void);
 /** @} */
 
 /**
- * @addtogroup Ringbuffer.
+ * @addtogroup Ringbuffer
  * @{
  */
 void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size);
@@ -76,7 +79,7 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
 /** @} */
 
 /**
- * @addtogroup AVL tree.
+ * @addtogroup AVL-tree
  * @{
  */
 void mr_avl_init(struct mr_avl *node, uint32_t value);
@@ -87,28 +90,21 @@ size_t mr_avl_get_length(struct mr_avl *tree);
 /** @} */
 
 /**
-* @addtogroup Device.
-* @{
-*/
+ * @addtogroup Device
+ * @{
+ */
 int mr_dev_register(struct mr_dev *dev,
                     const char *path,
                     int type,
-                    int sflags,
+                    int flags,
                     struct mr_dev_ops *ops,
                     struct mr_drv *drv);
 int mr_dev_isr(struct mr_dev *dev, int event, void *args);
-/** @} */
-
-/**
- * @addtogroup Device description.
- * @{
- */
-int mr_dev_open(const char *path, int oflags);
+int mr_dev_open(const char *path, int flags);
 int mr_dev_close(int desc);
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 int mr_dev_ioctl(int desc, int cmd, void *args);
-int mr_dev_is_valid(int desc);
 /** @} */
 
 #ifdef __cplusplus

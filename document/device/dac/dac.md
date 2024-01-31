@@ -16,21 +16,21 @@
 ## 打开DAC设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：DAC设备名称一般为：`dacx`、`dac1`、`dac2`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_WRONLY`。
+- `path`：DAC设备路径一般为：`dacx`、`dac1`、`dac2`。
+- `flags`：打开设备的标志，支持 `MR_O_WRONLY`。
 
-注：使用时应根据实际情况为不同的任务分别打开DAC设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开DAC设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭DAC设备
 
@@ -63,10 +63,10 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_DAC_SET_CHANNEL`：设置通道编号。
-    - `MR_CTL_DAC_SET_CHANNEL_CONFIG`：设置通道配置。
-    - `MR_CTL_DAC_GET_CHANNEL`：获取通道编号。
-    - `MR_CTL_DAC_GET_CHANNEL_CONFIG`：获取通道配置。
+    - `MR_IOC_DAC_SET_CHANNEL`：设置通道编号。
+    - `MR_IOC_DAC_SET_CHANNEL_CONFIG`：设置通道配置。
+    - `MR_IOC_DAC_GET_CHANNEL`：获取通道编号。
+    - `MR_IOC_DAC_GET_CHANNEL_CONFIG`：获取通道配置。
 
 ### 设置/获取通道编号
 
@@ -77,11 +77,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 #define CHANNEL_NUMBER                  5
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
-mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL, &number);
+mr_dev_ioctl(ds, MR_IOC_DAC_GET_CHANNEL, &number);
 ```
 
 不依赖DAC接口：
@@ -91,11 +91,11 @@ mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL, &number);
 #define CHANNEL_NUMBER                  5
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
 ### 设置/获取通道配置
@@ -107,28 +107,28 @@ mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
 
 ```c
 /* 设置通道配置 */
-mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+mr_dev_ioctl(ds, MR_IOC_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
 /* 获取通道配置 */
 int state;
-mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL_CONFIG, &state);
+mr_dev_ioctl(ds, MR_IOC_DAC_GET_CHANNEL_CONFIG, &state);
 ```
 
 不依赖DAC接口：
 
 ```c
 /* 设置通道配置 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
 /* 获取通道配置 */
 int state;
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &state);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &state);
 ```
 
 ## 写入DAC设备通道值
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -159,40 +159,38 @@ if (ret != sizeof(data))
 #include "include/mr_lib.h"
 
 /* 定义通道编号 */
-#define CHANNEL_NUMBER                  5
+#define CHANNEL_NUMBER                  1
 
 /* 定义DAC设备描述符 */
 int dac_ds = -1;
 
-int dac_init(void)
+void dac_init(void)
 {
     int ret = MR_EOK;
 
     /* 初始化DAC */
-    dac_ds = mr_dev_open("dac1", MR_OFLAG_RDONLY);
+    dac_ds = mr_dev_open("dac1", MR_O_WRONLY);
     if (dac_ds < 0)
     {
         mr_printf("DAC1 open failed: %s\r\n", mr_strerror(dac_ds));
-        return dac_ds;
+        return;
     }
     /* 打印DAC描述符 */
     mr_printf("DAC1 desc: %d\r\n", dac_ds);
-    /* 设置到通道5 */
-    mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+    /* 设置到通道1 */
+    mr_dev_ioctl(dac_ds, MR_IOC_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
     /* 设置通道使能 */
-    ret = mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+    ret = mr_dev_ioctl(dac_ds, MR_IOC_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
     if (ret < 0)
     {
-        mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));
-        return ret;
+        mr_printf("Channel%d enable failed: %s\r\n", CHANNEL_NUMBER, mr_strerror(ret));
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(dac_init);
 
 /* 定义DAC数据最大值 */
-#define DAC_DATA_MAX                    4095
+#define DAC_DATA_MAX                    4000
 
 int main(void)
 {
@@ -202,7 +200,7 @@ int main(void)
     while(1)
     {
         uint32_t data = 0;
-        for (data = 0; data < DAC_DATA_MAX; data += 500)
+        for (data = 0; data <= DAC_DATA_MAX; data += 500)
         {
             int ret = mr_dev_write(dac_ds, &data, sizeof(data));
             if (ret != sizeof(data))
@@ -216,4 +214,4 @@ int main(void)
 }
 ```
 
-DAC1通道5使能，间隔500毫秒输出一次DAC值并打印（输出值递增，步进500，直到达到最大值4095）。
+DAC1通道1使能，间隔500毫秒输出一次DAC值并打印（输出值递增，步进500，直到达到最大值）。

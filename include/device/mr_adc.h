@@ -18,6 +18,11 @@ extern "C" {
 #ifdef MR_USING_ADC
 
 /**
+ * @addtogroup ADC
+ * @{
+ */
+
+/**
  * @brief ADC configuration structure.
  */
 struct mr_adc_config
@@ -28,11 +33,11 @@ struct mr_adc_config
 /**
  * @brief ADC control command.
  */
-#define MR_CTL_ADC_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
-#define MR_CTL_ADC_SET_CHANNEL_CONFIG   MR_CTL_SET_CONFIG           /**< Set channel config */
+#define MR_IOC_ADC_SET_CHANNEL          MR_IOC_SPOS                 /**< Set channel command */
+#define MR_IOC_ADC_SET_CHANNEL_CONFIG   MR_IOC_SCFG                 /**< Set channel configuration command */
 
-#define MR_CTL_ADC_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
-#define MR_CTL_ADC_GET_CHANNEL_CONFIG   MR_CTL_GET_CONFIG           /**< Get channel config */
+#define MR_IOC_ADC_GET_CHANNEL          MR_IOC_GPOS                 /**< Get channel command */
+#define MR_IOC_ADC_GET_CHANNEL_CONFIG   MR_IOC_GCFG                 /**< Get channel configuration command */
 
 /**
  * @brief ADC data type.
@@ -59,11 +64,7 @@ struct mr_adc_ops
     uint32_t (*read)(struct mr_adc *adc, int channel);
 };
 
-/**
- * @addtogroup ADC.
- * @{
- */
-int mr_adc_register(struct mr_adc *adc, const char *name, struct mr_drv *drv);
+int mr_adc_register(struct mr_adc *adc, const char *path, struct mr_drv *drv);
 /** @} */
 #endif /* MR_USING_ADC */
 

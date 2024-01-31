@@ -76,7 +76,7 @@
 int main(void)
 {
     /* 打开SPI1总线下的SPI10设备 */
-    int ds = mr_dev_open("spi1/spi10", MR_OFLAG_RDWR);
+    int ds = mr_dev_open("spi1/spi10", MR_O_RDWR);
     
     /* 发送数据 */
     uint8_t wr_buf[] = {0x01, 0x02, 0x03, 0x04};
@@ -180,7 +180,7 @@ int main(void)
 
     注：
     - 支持`MDK5`、`Eclipse`。
-    - `MDK`版本过低可能导致`GNU`配置失败。
+    - `MDK`未先编译或版本过低可能导致`GNU`配置失败。
 
 ## 配置菜单选项
 
@@ -220,11 +220,11 @@ int main(void)
     mr_auto_init();
 
     /* 打开PIN设备 */
-    int ds = mr_dev_open("pin", MR_OFLAG_RDWR);
+    int ds = mr_dev_open("pin", MR_O_WRONLY);
     /* 设置到LED引脚 */
-    mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
+    mr_dev_ioctl(ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
     /* 设置LED引脚为推挽输出模式 */
-    mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
+    mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
 
     while(1)
     {
@@ -248,7 +248,7 @@ int main(void)
     mr_auto_init();
 
     /* 打开Serial-1设备 */
-    int ds = mr_dev_open("serial1", MR_OFLAG_RDWR);
+    int ds = mr_dev_open("serial1", MR_O_RDWR);
     /* 输出Hello World */
     mr_dev_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
     

@@ -17,21 +17,21 @@
 ## 打开TIMER设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：TIMER设备名称一般为：`timerx`，例如：`timer1`、`timer2`、`timer3`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_RDONLY`、 `MR_OFLAG_WRONLY`、 `MR_OFLAG_RDWR`。
+- `path`：TIMER设备路径一般为：`timerx`，例如：`timer1`、`timer2`、`timer3`。
+- `flags`：打开设备的标志，支持 `MR_O_RDONLY`、 `MR_O_WRONLY`、 `MR_O_RDWR`。
 
-注：使用时应根据实际情况为不同的任务分别打开TIMER设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开TIMER设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭TIMER设备
 
@@ -62,10 +62,10 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_TIMER_SET_MODE`：设置TIMER设备模式。
-    - `MR_CTL_TIMER_SET_TIMEOUT_CALL`：设置超时回调函数。
-    - `MR_CTL_TIMER_GET_MODE`：获取TIMER设备模式。
-    - `MR_CTL_TIMER_GET_TIMEOUT_CALL`：获取超时回调函数。
+    - `MR_IOC_TIMER_SET_MODE`：设置TIMER设备模式。
+    - `MR_IOC_TIMER_SET_TIMEOUT_CALL`：设置超时回调函数。
+    - `MR_IOC_TIMER_GET_MODE`：获取TIMER设备模式。
+    - `MR_IOC_TIMER_GET_TIMEOUT_CALL`：获取超时回调函数。
 
 ### 设置/获取TIMER设备配置
 
@@ -78,11 +78,11 @@ TIMER设备配置：
 #define TIMER_MODE                      MR_TIMER_MODE_ONESHOT
 
 /* 设置TIMER设备模式 */
-mr_dev_ioctl(ds, MR_CTL_TIMER_SET_MODE, MR_MAKE_LOCAL(int, TIMER_MODE));
+mr_dev_ioctl(ds, MR_IOC_TIMER_SET_MODE, MR_MAKE_LOCAL(int, TIMER_MODE));
 
 /* 获取TIMER设备模式 */
 int mode;
-mr_dev_ioctl(ds, MR_CTL_TIMER_GET_MODE, &mode);
+mr_dev_ioctl(ds, MR_IOC_TIMER_GET_MODE, &mode);
 ```
 
 不依赖TIMER接口：
@@ -92,11 +92,11 @@ mr_dev_ioctl(ds, MR_CTL_TIMER_GET_MODE, &mode);
 #define TIMER_MODE                      1
 
 /* 设置TIMER设备模式 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, TIMER_MODE));
+mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, TIMER_MODE));
 
 /* 获取TIMER设备模式 */
 int mode;
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &mode);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &mode);
 ```
 
 注：如未手动配置，默认配置为：
@@ -107,42 +107,38 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &mode);
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* 处理中断 */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
     
 /* 设置超时回调函数 */
-mr_dev_ioctl(ds, MR_CTL_TIMER_SET_TIMEOUT_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_TIMER_SET_TIMEOUT_CALL, &fn);
 /* 获取超时回调函数 */
-mr_dev_ioctl(ds, MR_CTL_TIMER_GET_TIMEOUT_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_TIMER_GET_TIMEOUT_CALL, &callback);
 ```
 
 不依赖TIMER接口：
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* 处理中断 */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
     
 /* 设置超时回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 /* 获取超时回调函数 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 ```
 
 ## 读取TIMER设备运行时间
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -173,7 +169,7 @@ if (size < 0)
 ## 写入TIMER设备定时时间
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -195,38 +191,34 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t size);
 ```c
 #include "include/mr_lib.h"
 
-int timeout_call(int desc, void *args)
+void timeout_call(int desc, void *args)
 {
-    /* 注意：请将CONSOLE的打开方式设置成非阻塞模式 */
     mr_printf("Timeout\r\n");
-    return MR_EOK;
 }
 
 /* 定时时间 */
 #define TIMEOUT                         500000
 
-int timer_init(void)
+void timer_init(void)
 {
     /* 初始化TIMER */
-    int timer_ds = mr_dev_open("timer1", MR_OFLAG_RDWR);
+    int timer_ds = mr_dev_open("timer1", MR_O_RDWR);
     if (timer_ds < 0)
     {
         mr_printf("timer open failed: %s\r\n", mr_strerror(timer_ds));
-        return timer_ds;
+        return;
     }
     /* 打印TIMER描述符 */
     mr_printf("TIMER desc: %d\r\n", timer_ds);
     /* 设置超时回调函数 */
-    mr_dev_ioctl(timer_ds, MR_CTL_TIMER_SET_TIMEOUT_CALL, timeout_call);
+    mr_dev_ioctl(timer_ds, MR_IOC_TIMER_SET_TIMEOUT_CALL, timeout_call);
     /* 设置定时时间 */
     uint32_t timeout = TIMEOUT;
     int ret = mr_dev_write(timer_ds, &timeout, sizeof(timeout));
     if(ret < 0)
     {
         mr_printf("timer write failed: %s\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(timer_init);

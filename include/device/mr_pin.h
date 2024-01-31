@@ -18,23 +18,28 @@ extern "C" {
 #ifdef MR_USING_PIN
 
 /**
+ * @addtogroup PIN
+ * @{
+ */
+
+/**
  * @brief PIN mode.
  */
-#define MR_PIN_MODE_NONE                (0)                         /* No mode */
-#define MR_PIN_MODE_OUTPUT              (1)                         /* Output push-pull mode */
-#define MR_PIN_MODE_OUTPUT_OD           (2)                         /* Output open-drain mode */
-#define MR_PIN_MODE_INPUT               (3)                         /* Input mode */
-#define MR_PIN_MODE_INPUT_DOWN          (4)                         /* Input pull-down mode */
-#define MR_PIN_MODE_INPUT_UP            (5)                         /* Input pull-up mode */
+#define MR_PIN_MODE_NONE                (0)                         /**< No mode */
+#define MR_PIN_MODE_OUTPUT              (1)                         /**< Output push-pull mode */
+#define MR_PIN_MODE_OUTPUT_OD           (2)                         /**< Output open-drain mode */
+#define MR_PIN_MODE_INPUT               (3)                         /**< Input mode */
+#define MR_PIN_MODE_INPUT_DOWN          (4)                         /**< Input pull-down mode */
+#define MR_PIN_MODE_INPUT_UP            (5)                         /**< Input pull-up mode */
 
 /**
  * @brief PIN mode-interrupt.
  */
-#define MR_PIN_MODE_IRQ_RISING          (6)                         /* Interrupt rising edge */
-#define MR_PIN_MODE_IRQ_FALLING         (7)                         /* Interrupt falling edge */
-#define MR_PIN_MODE_IRQ_EDGE            (8)                         /* Interrupt edge */
-#define MR_PIN_MODE_IRQ_LOW             (9)                         /* Interrupt low level */
-#define MR_PIN_MODE_IRQ_HIGH            (10)                        /* Interrupt high level */
+#define MR_PIN_MODE_IRQ_RISING          (6)                         /**< Interrupt rising edge */
+#define MR_PIN_MODE_IRQ_FALLING         (7)                         /**< Interrupt falling edge */
+#define MR_PIN_MODE_IRQ_EDGE            (8)                         /**< Interrupt edge */
+#define MR_PIN_MODE_IRQ_LOW             (9)                         /**< Interrupt low level */
+#define MR_PIN_MODE_IRQ_HIGH            (10)                        /**< Interrupt high level */
 
 /**
  * @brief PIN configuration structure.
@@ -47,12 +52,12 @@ struct mr_pin_config
 /**
  * @brief PIN control command.
  */
-#define MR_CTL_PIN_SET_NUMBER           MR_CTL_SET_OFFSET           /**< Set pin number */
-#define MR_CTL_PIN_SET_MODE             MR_CTL_SET_CONFIG           /**< Set pin mode */
-#define MR_CTL_PIN_SET_EXTI_CALL        MR_CTL_SET_RD_CALL          /**< Set pin exti callback */
+#define MR_IOC_PIN_SET_NUMBER           MR_IOC_SPOS                 /**< Set pin number command */
+#define MR_IOC_PIN_SET_MODE             MR_IOC_SCFG                 /**< Set pin mode command */
+#define MR_IOC_PIN_SET_EXTI_CALL        MR_IOC_SRCB                 /**< Set pin exti callback command */
 
-#define MR_CTL_PIN_GET_NUMBER           MR_CTL_GET_OFFSET           /**< Get pin number */
-#define MR_CTL_PIN_GET_EXTI_CALL        MR_CTL_GET_RD_CALL          /**< Get pin exti callback */
+#define MR_IOC_PIN_GET_NUMBER           MR_IOC_GPOS                 /**< Get pin number command */
+#define MR_IOC_PIN_GET_EXTI_CALL        MR_IOC_GRCB                 /**< Get pin exti callback command */
 
 /**
  * @brief PIN data type.
@@ -62,7 +67,7 @@ typedef uint8_t mr_pin_data_t;                                      /**< PIN rea
 /**
  * @brief PIN ISR events.
  */
-#define MR_ISR_PIN_EXTI_INT             (MR_ISR_RD | (0x01 << 8))   /**< Exti interrupt */
+#define MR_ISR_PIN_EXTI_INT             (MR_ISR_RD | (0x01))        /**< Exti interrupt */
 
 /**
  * @brief PIN structure.
@@ -70,8 +75,6 @@ typedef uint8_t mr_pin_data_t;                                      /**< PIN rea
 struct mr_pin
 {
     struct mr_dev dev;                                              /**< Device */
-
-    struct mr_list irq_list;                                        /**< IRQ list */
 };
 
 /**
@@ -84,11 +87,7 @@ struct mr_pin_ops
     void (*write)(struct mr_pin *pin, int number, uint8_t value);
 };
 
-/**
- * @addtogroup PIN.
- * @{
- */
-int mr_pin_register(struct mr_pin *pin, const char *name, struct mr_drv *drv);
+int mr_pin_register(struct mr_pin *pin, const char *path, struct mr_drv *drv);
 /** @} */
 #endif /* MR_USING_PIN */
 

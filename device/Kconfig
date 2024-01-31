@@ -1,13 +1,13 @@
 menu "Device configure"
     # Device
-    config MR_CFG_DEV_NAME_MAX
+    config MR_CFG_DEV_NAME_LEN
         int "Name max length"
         range 4 1024
         default 12
         help
             "This option sets the max length of the name."
 
-    config MR_CFG_DESC_MAX
+    config MR_CFG_DESC_NUM
         int "Descriptors max number"
         range 16 1024
         default 64
@@ -106,7 +106,7 @@ menu "Device configure"
 
         config MR_USING_SOFT_I2C
             bool "Use Soft I2C"
-            default y
+            default n
             help
                 "Use this option allows for the use of soft I2C."
     endmenu

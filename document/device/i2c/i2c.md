@@ -24,21 +24,21 @@
 ## 注册I2C设备
 
 ```c
-int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, int addr_bits);
+int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *path, int addr, int addr_bits);
 ```
 
 | 参数        | 描述         |
 |-----------|------------|
 | i2c_dev   | I2C设备结构体指针 |
-| name      | 设备名称       |
+| path      | 设备路径       |
 | addr      | 设备地址       |
 | addr_bits | 设备地址位数     |
 | **返回值**   |            |
 | `=0`      | 注册成功       |
 | `<0`      | 错误码        |
 
-- `name`：I2C设备要绑定到指定的I2C总线，命名需要加上总线名称，例如：`i2c1/dev-name`。
-- `addr`：设备地址（最低位为读写位，请传入向左移位后的地址）。
+- `path`：I2C设备要绑定到指定的I2C总线，路径需要加上总线，例如：`i2cx/dev-name`, `i2c1/i2c10`。
+- `addr`：设备地址（最低位为读写位，请传入向左移位后的地址）。作为主机时，地址为对方地址，作为从机时，地址为自身地址。
 - `addr_bits`：设备地址位数：
     - `MR_I2C_ADDR_BITS_7`：7位地址。
     - `MR_I2C_ADDR_BITS_10`：10位地址。
@@ -46,21 +46,21 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *name, int addr, 
 ## 打开I2C设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：I2C设备绑定在I2C总线上，需加上总线名称，例如：`i2cx/dev-name`，`i2c1/dev-name`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_RDONLY`、 `MR_OFLAG_WRONLY`、 `MR_OFLAG_RDWR`。
+- `path`：I2C设备路径，例如：`i2cx/dev-name`，`i2c1/i2c10`。
+- `flags`：打开设备的标志，支持 `MR_O_RDONLY`、 `MR_O_WRONLY`、 `MR_O_RDWR`。
 
-注：使用时应根据实际情况为不同的任务分别打开I2C设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开I2C设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭I2C设备
 
@@ -91,16 +91,16 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_I2C_SET_CONFIG`： 设置I2C设备配置。
-    - `MR_CTL_I2C_SET_REG`： 设置寄存器值。
-    - `MR_CTL_I2C_SET_RD_BUFSZ`： 设置读缓冲区大小。
-    - `MR_CTL_I2C_CLR_RD_BUF`： 清空读缓冲区。
-    - `MR_CTL_I2C_SET_RD_CALL`：设置读回调函数。
-    - `MR_CTL_I2C_GET_CONFIG`： 获取I2C设备配置。
-    - `MR_CTL_I2C_GET_REG`： 获取寄存器值。
-    - `MR_CTL_I2C_GET_RD_BUFSZ`： 获取读缓冲区大小。
-    - `MR_CTL_I2C_GET_RD_DATASZ`： 获取读缓冲区数据大小。
-    - `MR_CTL_I2C_GET_RD_CALL`：获取读回调函数。
+    - `MR_IOC_I2C_SET_CONFIG`： 设置I2C设备配置。
+    - `MR_IOC_I2C_SET_REG`： 设置寄存器值。
+    - `MR_IOC_I2C_SET_RD_BUFSZ`： 设置读缓冲区大小。
+    - `MR_IOC_I2C_CLR_RD_BUF`： 清空读缓冲区。
+    - `MR_IOC_I2C_SET_RD_CALL`：设置读回调函数。
+    - `MR_IOC_I2C_GET_CONFIG`： 获取I2C设备配置。
+    - `MR_IOC_I2C_GET_REG`： 获取寄存器值。
+    - `MR_IOC_I2C_GET_RD_BUFSZ`： 获取读缓冲区大小。
+    - `MR_IOC_I2C_GET_RD_DATASZ`： 获取读缓冲区数据大小。
+    - `MR_IOC_I2C_GET_RD_CALL`：获取读回调函数。
 
 ### 设置/获取I2C设备配置
 
@@ -115,9 +115,9 @@ I2C设备配置：
 struct mr_i2c_config config = MR_I2C_CONFIG_DEFAULT;
 
 /* 设置I2C设备配置 */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_CONFIG, &config);
 /* 获取I2C设备配置 */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_CONFIG, &config);
 ```
 
 不依赖I2C接口：
@@ -127,9 +127,9 @@ mr_dev_ioctl(ds, MR_CTL_I2C_GET_CONFIG, &config);
 int config[] = {100000, 0, 8};
 
 /* 设置I2C设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 /* 获取I2C设备配置 */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 注：
@@ -146,22 +146,22 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
 
 ```c
 /* 设置寄存器值 */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
 
 /* 获取寄存器值 */
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_REG, &reg);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_REG, &reg);
 ```
 
 不依赖I2C接口：
 
 ```c
 /* 设置寄存器值 */
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, 0x12));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, 0x12));
 
 /* 获取寄存器值 */
 uint8_t reg;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &reg);
 ```
 
 注：
@@ -176,9 +176,9 @@ mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &reg);
 size_t size = 256;
 
 /* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_RD_BUFSZ, &size);
 /* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_RD_BUFSZ, &size);
 ```
 
 不依赖I2C接口：
@@ -187,9 +187,9 @@ mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_BUFSZ, &size);
 size_t size = 256;
 
 /* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SRBSZ, &size);
 /* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBSZ, &size);
 ```
 
 注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。只有在从机模式下才使用读缓冲区。
@@ -197,13 +197,13 @@ mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
 ### 清空读缓冲区
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_I2C_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_I2C_CLR_RD_BUF, MR_NULL);
 ```
 
 不依赖I2C接口：
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CRBD, MR_NULL);
 ```
 
 ### 获取读缓冲区数据大小
@@ -212,7 +212,7 @@ mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
 size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_RD_DATASZ, &size);
 ```
 
 不依赖I2C接口：
@@ -221,55 +221,51 @@ mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_DATASZ, &size);
 size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 ```
 
 ### 设置/获取读回调函数
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
-  /* 获取缓冲区数据大小 */
-  ssize_t data_size = *(ssize_t *)args;
-  
-  /* 处理中断 */
-  
-  return MR_EOK;
+    /* 获取缓冲区数据大小 */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* 处理中断 */
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* 设置读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_I2C_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_I2C_SET_RD_CALL, &fn);
 /* 获取读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_I2C_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_I2C_GET_RD_CALL, &callback);
 ```
 
 不依赖I2C接口：
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
-  /* 获取缓冲区数据大小 */
-  ssize_t data_size = *(ssize_t *)args;
-  
-  /* 处理中断 */
-  
-  return MR_EOK;
+    /* 获取缓冲区数据大小 */
+    ssize_t data_size = *(ssize_t *)args;
+    
+    /* 处理中断 */
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* 设置读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 /* 获取读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 ```
 
 ## 读取I2C设备数据
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -300,7 +296,7 @@ if (size < 0)
 ## 写入I2C设备数据
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -338,7 +334,7 @@ struct mr_i2c_dev slave_dev;
 int host_ds = -1;
 int slave_ds = -1;
 
-int i2c_init(void)
+void i2c_init(void)
 {
     int ret = MR_EOK;
     
@@ -347,7 +343,7 @@ int i2c_init(void)
     if (ret < 0)
     {
         mr_printf("host i2c device register failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     
     /* 注册I2C-SLAVE设备 */
@@ -355,36 +351,34 @@ int i2c_init(void)
     if (ret < 0)
     {
         mr_printf("slave i2c device register failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     
     /* 打开I2C-HOST设备 */
-    host_ds = mr_dev_open("i2c1/host", MR_OFLAG_RDWR);
+    host_ds = mr_dev_open("i2c1/host", MR_O_RDWR);
     if (host_ds < 0)
     {
         mr_printf("host i2c device open failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     /* 设置寄存器值 */
-    mr_dev_ioctl(host_ds, MR_CTL_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
+    mr_dev_ioctl(host_ds, MR_IOC_I2C_SET_REG, MR_MAKE_LOCAL(int, 0x12));
     
     /* 打开I2C-SLAVE设备 */
-    slave_ds = mr_dev_open("i2c2/slave", MR_OFLAG_RDWR);
+    slave_ds = mr_dev_open("i2c2/slave", MR_O_RDWR);
     if (slave_ds < 0)
     {
         mr_printf("slave i2c device open failed: %d\r\n", mr_strerror(ret));
-        return ret;
+        return;
     }
     /* 设置为从机模式 */
     struct mr_i2c_config config = MR_I2C_CONFIG_DEFAULT;
     config.host_slave = MR_I2C_SLAVE;
-    ret = mr_dev_ioctl(slave_ds, MR_CTL_I2C_SET_CONFIG, &config);
+    ret = mr_dev_ioctl(slave_ds, MR_IOC_I2C_SET_CONFIG, &config);
     if (ret < 0)
     {
         mr_printf("slave i2c device set config failed: %d\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(i2c_init);
@@ -400,7 +394,7 @@ int main(void)
     
     /* 接收测试数据 */
     uint8_t rd_buf[128];
-    ssize_t ret = mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
+    mr_dev_read(slave_ds, rd_buf, sizeof(rd_buf));
     
     /* 比较寄存器值 */
     if (rd_buf[0] == 0x12)

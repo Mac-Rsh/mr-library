@@ -18,6 +18,11 @@ extern "C" {
 #ifdef MR_USING_TIMER
 
 /**
+ * @addtogroup Timer
+ * @{
+ */
+
+/**
 * @brief Timer mode.
 */
 #define MR_TIMER_MODE_PERIOD            (0)                         /**< Periodic mode */
@@ -42,11 +47,11 @@ struct mr_timer_config
 /**
  * @brief Timer control command.
  */
-#define MR_CTL_TIMER_SET_MODE           MR_CTL_SET_CONFIG           /**< Set timer mode */
-#define MR_CTL_TIMER_SET_TIMEOUT_CALL   MR_CTL_SET_RD_CALL          /**< Set timeout callback */
+#define MR_IOC_TIMER_SET_MODE           MR_IOC_SCFG                 /**< Set timer mode command */
+#define MR_IOC_TIMER_SET_TIMEOUT_CALL   MR_IOC_SRCB                 /**< Set timeout callback command */
 
-#define MR_CTL_TIMER_GET_MODE           MR_CTL_GET_CONFIG           /**< Get timer mode */
-#define MR_CTL_TIMER_GET_TIMEOUT_CALL   MR_CTL_GET_RD_CALL          /**< Get timeout callback */
+#define MR_IOC_TIMER_GET_MODE           MR_IOC_GCFG                 /**< Get timer mode command */
+#define MR_IOC_TIMER_GET_TIMEOUT_CALL   MR_IOC_GRCB                 /**< Get timeout callback command */
 
 /**
  * @brief Timer data type.
@@ -56,7 +61,7 @@ typedef uint32_t mr_timer_data_t;                                   /**< Timer r
 /**
  * @brief Timer ISR events.
  */
-#define MR_ISR_TIMER_TIMEOUT_INT        (MR_ISR_RD | (0x01 << 16))  /**< Timeout interrupt */
+#define MR_ISR_TIMER_TIMEOUT_INT        (MR_ISR_RD | (0x01))        /**< Timeout interrupt */
 
 /**
  * @brief Timer information structure.
@@ -96,11 +101,7 @@ struct mr_timer_ops
     uint32_t (*get_count)(struct mr_timer *timer);
 };
 
-/**
- * @addtogroup Timer.
- * @{
- */
-int mr_timer_register(struct mr_timer *timer, const char *name, struct mr_drv *drv, struct mr_timer_info *info);
+int mr_timer_register(struct mr_timer *timer, const char *path, struct mr_drv *drv, struct mr_timer_info *info);
 /** @} */
 
 #endif /* MR_USING_TIMER */

@@ -18,21 +18,21 @@
 ## 打开PWM设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：PWM设备名称一般为：`pwmx`、`pwm1`、`pwm2`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_RDONLY`、 `MR_OFLAG_WRONLY`、 `MR_OFLAG_RDWR`。
+- `name`：PWM设备路径一般为：`pwmx`、`pwm1`、`pwm2`。
+- `flags`：打开设备的标志，支持 `MR_O_RDONLY`、 `MR_O_WRONLY`、 `MR_O_RDWR`。
 
-注：使用时应根据实际情况为不同的任务分别打开PWM设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开PWM设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭PWM设备
 
@@ -65,12 +65,12 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_PWM_SET_CHANNEL`：设置通道编号。
-    - `MR_CTL_PWM_SET_CHANNEL_CONFIG`：设置通道配置。
-    - `MR_CTL_PWM_SET_FREQ`：设置频率。
-    - `MR_CTL_PWM_GET_CHANNEL`：获取通道编号。
-    - `MR_CTL_PWM_GET_CHANNEL_CONFIG`：获取通道配置。
-    - `MR_CTL_PWM_GET_FREQ`：获取频率。
+    - `MR_IOC_PWM_SET_CHANNEL`：设置通道编号。
+    - `MR_IOC_PWM_SET_CHANNEL_CONFIG`：设置通道配置。
+    - `MR_IOC_PWM_SET_FREQ`：设置频率。
+    - `MR_IOC_PWM_GET_CHANNEL`：获取通道编号。
+    - `MR_IOC_PWM_GET_CHANNEL_CONFIG`：获取通道配置。
+    - `MR_IOC_PWM_GET_FREQ`：获取频率。
 
 ### 设置/获取通道编号
 
@@ -81,11 +81,11 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 #define CHANNEL_NUMBER                  1
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
-mr_dev_ioctl(ds, MR_CTL_PWM_GET_CHANNEL, &number);
+mr_dev_ioctl(ds, MR_IOC_PWM_GET_CHANNEL, &number);
 ```
 
 不依赖PWM接口：
@@ -95,11 +95,11 @@ mr_dev_ioctl(ds, MR_CTL_PWM_GET_CHANNEL, &number);
 #define CHANNEL_NUMBER                  1
 
 /* 设置通道编号 */
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* 获取通道编号 */
 int number;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
 ### 设置/获取通道配置
@@ -113,9 +113,9 @@ mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
 struct mr_pwm_config config = {MR_ENABLE, MR_PWM_POLARITY_NORMAL};
 
 /* 设置通道配置 */
-mr_dev_ioctl(ds, MR_CTL_PWM_SET_CHANNEL_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_PWM_SET_CHANNEL_CONFIG, &config);
 /* 获取通道配置 */
-mr_dev_ioctl(ds, MR_CTL_PWM_GET_CHANNEL_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_PWM_GET_CHANNEL_CONFIG, &config);
 ```
 
 不依赖PWM接口：
@@ -124,9 +124,9 @@ mr_dev_ioctl(ds, MR_CTL_PWM_GET_CHANNEL_CONFIG, &config);
 int config[] = {MR_ENABLE, 0};
 
 /* 设置通道配置 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 /* 获取通道配置 */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 ### 设置/获取频率
@@ -136,11 +136,11 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
 #define PWM_FREQ                        1000
 
 /* 设置频率 */
-mr_dev_ioctl(ds, MR_CTL_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, PWM_FREQ));
+mr_dev_ioctl(ds, MR_IOC_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, PWM_FREQ));
 
 /* 获取频率 */
 uint32_t freq;
-mr_dev_ioctl(ds, MR_CTL_PWM_GET_FREQ, &freq);
+mr_dev_ioctl(ds, MR_IOC_PWM_GET_FREQ, &freq);
 ```
 
 不依赖PWM接口：
@@ -150,17 +150,17 @@ mr_dev_ioctl(ds, MR_CTL_PWM_GET_FREQ, &freq);
 #define PWM_FREQ                        1000
 
 /* 设置频率 */
-mr_dev_ioctl(ds, (0x01 << 8), MR_MAKE_LOCAL(uint32_t, PWM_FREQ));
+mr_dev_ioctl(ds, (0x01), MR_MAKE_LOCAL(uint32_t, PWM_FREQ));
 
 /* 获取频率 */
 uint32_t freq;
-mr_dev_ioctl(ds, (-(0x01 << 8)), &freq);
+mr_dev_ioctl(ds, (-(0x01)), &freq);
 ```
 
 ## 读取PWM通道占空比
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -188,7 +188,7 @@ if (ret != sizeof(duty))
 ## 写入PWM通道占空比
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -225,35 +225,33 @@ if (ret != sizeof(duty))
 /* 定义PWM设备描述符 */
 int pwm_ds = -1;
 
-int pwm_init(void)
+void pwm_init(void)
 {
     int ret = MR_EOK;
 
     /* 初始化PWM */
-    pwm_ds = mr_dev_open("pwm1", MR_OFLAG_RDWR);
+    pwm_ds = mr_dev_open("pwm1", MR_O_RDWR);
     if (pwm_ds < 0)
     {
         mr_printf("PWM1 open failed: %s\r\n", mr_strerror(pwm_ds));
-        return pwm_ds;
+        return;
     }
     /* 打印PWM描述符 */
     mr_printf("PWM1 desc: %d\r\n", pwm_ds);
     /* 设置到通道1 */
-    mr_dev_ioctl(pwm_ds, MR_CTL_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+    mr_dev_ioctl(pwm_ds, MR_IOC_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
     /* 设置通道使能 */
-    ret = mr_dev_ioctl(pwm_ds, MR_CTL_PWM_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(struct mr_pwm_config, MR_ENABLE, MR_PWM_POLARITY_NORMAL));
+    ret = mr_dev_ioctl(pwm_ds, MR_IOC_PWM_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(struct mr_pwm_config, MR_ENABLE, MR_PWM_POLARITY_NORMAL));
     if (ret < 0)
     {
-        mr_printf("Channel1 enable failed: %s\r\n", mr_strerror(ret));
-        return ret;
+        mr_printf("Channel%d enable failed: %s\r\n", CHANNEL_NUMBER, mr_strerror(ret));
+        return;
     }
-    ret = mr_dev_ioctl(pwm_ds, MR_CTL_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, FREQ));
+    ret = mr_dev_ioctl(pwm_ds, MR_IOC_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, FREQ));
     if (ret < 0)
     {
         mr_printf("Freq configure failed: %s\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(pwm_init);

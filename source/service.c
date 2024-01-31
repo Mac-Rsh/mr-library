@@ -8,27 +8,25 @@
 
 #include "include/mr_api.h"
 
-static int start(void)
+static void start(void)
 {
-    return 0;
-}
-_MR_INIT_EXPORT(start, "0");
 
-static int end(void)
-{
-    return 0;
 }
-_MR_INIT_EXPORT(end, "5.end");
+MR_INIT_EXPORT(start, "0");
+
+static void end(void)
+{
+
+}
+MR_INIT_EXPORT(end, "5.end");
 
 /**
  * @brief This function is auto initialized.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
  */
 void mr_auto_init(void)
 {
     /* Auto-initialization */
-    for (volatile const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)
+    for (const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)
     {
         (*fn)();
     }
@@ -98,21 +96,25 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 {
     static int desc = -1;
 
-    if (mr_dev_is_valid(desc) == MR_FALSE)
+    /* Try to open the serial port */
+    if (desc == -1)
     {
 #ifndef MR_CFG_PRINTF_DEV_NAME
 #define MR_CFG_PRINTF_DEV_NAME          "serial1"
 #endif /* MR_CFG_PRINTF_DEV_NAME */
 #ifndef MR_USING_PRINTF_NONBLOCKING
-        desc = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR);
+        int ret = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_O_RDWR);
 #else
-        desc = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_OFLAG_RDWR | MR_OFLAG_NONBLOCK);
+        int ret = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_O_RDWR | MR_O_NONBLOCK);
 #endif /* MR_USING_PRINTF_NONBLOCKING */
-        if (mr_dev_is_valid(desc) == MR_FALSE)
+        if (ret < 0)
         {
-            return desc;
+            return ret;
         }
+        desc = ret;
     }
+
+    /* Write data to the serial port */
     return (int)mr_dev_write(desc, buf, size);
 }
 
@@ -132,19 +134,21 @@ int mr_printf(const char *fmt, ...)
     char buf[MR_CFG_PRINTF_BUFSZ] = {0};
     va_list args;
 
+    /* Format the string */
     va_start(args, fmt);
     int ret = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
-    ret = mr_printf_output(buf, ret);
     va_end(args);
-    return ret;
+
+    /* Output the string */
+    return mr_printf_output(buf, ret);
 }
 
 /**
- * @brief This function get the error message.
+ * @brief This function get the error string representation.
  *
  * @param err The error code.
  *
- * @return The error message.
+ * @return A pointer to the error string.
  */
 const char *mr_strerror(int err)
 {
@@ -172,6 +176,35 @@ const char *mr_strerror(int err)
 }
 
 /**
+ * @brief This function get the flags string representation.
+ *
+ * @param flags The flags code.
+ *
+ * @return A pointer to the flags string.
+ *
+ * @note This function returns a pointer to a static string and overwrites the buffer each time it is called.
+ */
+const char *mr_strflags(int flags)
+{
+    static char str[6] = {0};
+
+    strcpy(str, "-----");
+    if (MR_BIT_IS_SET(flags, MR_O_RDONLY))
+    {
+        str[1] = 'r';
+    }
+    if (MR_BIT_IS_SET(flags, MR_O_WRONLY))
+    {
+        str[2] = 'w';
+    }
+    if (MR_BIT_IS_SET(flags, MR_O_NONBLOCK))
+    {
+        str[3] = 'n';
+    }
+    return str;
+}
+
+/**
  * @brief This function initialize the ringbuffer.
  *
  * @param ringbuf The ringbuffer to initialize.
@@ -187,7 +220,6 @@ void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size)
     ringbuf->write_index = 0;
     ringbuf->read_mirror = 0;
     ringbuf->write_mirror = 0;
-
     ringbuf->size = size;
     ringbuf->buffer = pool;
 }
@@ -204,8 +236,7 @@ int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
 {
     MR_ASSERT(ringbuf != MR_NULL);
 
-    /* Check the buffer size */
-    if (mr_ringbuf_get_bufsz(ringbuf) == size)
+    if (size == mr_ringbuf_get_bufsz(ringbuf))
     {
         mr_ringbuf_reset(ringbuf);
         return MR_EOK;
@@ -215,6 +246,7 @@ int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
     if (ringbuf->size != 0)
     {
         mr_free(ringbuf->buffer);
+        mr_ringbuf_init(ringbuf, MR_NULL, 0);
     }
 
     /* Allocate new buffer */
@@ -561,7 +593,6 @@ size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, si
         {
             ringbuf->read_index = ringbuf->write_index;
         }
-
         return size;
     }
 

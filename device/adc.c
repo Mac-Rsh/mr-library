@@ -10,17 +10,15 @@
 
 #ifdef MR_USING_ADC
 
-static int adc_channel_set_configure(struct mr_adc *adc, int channel, struct mr_adc_config config)
+MR_INLINE int adc_channel_set_configure(struct mr_adc *adc, int channel, struct mr_adc_config config)
 {
     struct mr_adc_ops *ops = (struct mr_adc_ops *)adc->dev.drv->ops;
 
-    /* Check channel is valid */
     if (channel < 0 || channel >= 32)
     {
         return MR_EINVAL;
     }
 
-    /* Configure the channel */
     int ret = ops->channel_configure(adc, channel, config.state);
     if (ret < 0)
     {
@@ -38,9 +36,8 @@ static int adc_channel_set_configure(struct mr_adc *adc, int channel, struct mr_
     return MR_EOK;
 }
 
-static int adc_channel_get_configure(struct mr_adc *adc, int channel, struct mr_adc_config *config)
+MR_INLINE int adc_channel_get_configure(struct mr_adc *adc, int channel, struct mr_adc_config *config)
 {
-    /* Check channel is valid */
     if (channel < 0 || channel >= 32)
     {
         return MR_EINVAL;
@@ -79,7 +76,7 @@ static int mr_adc_close(struct mr_dev *dev)
     return ops->configure(adc, MR_DISABLE);
 }
 
-static ssize_t mr_adc_read(struct mr_dev *dev, int off, void *buf, size_t size, int async)
+static ssize_t mr_adc_read(struct mr_dev *dev, void *buf, size_t count)
 {
     struct mr_adc *adc = (struct mr_adc *)dev;
     struct mr_adc_ops *ops = (struct mr_adc_ops *)dev->drv->ops;
@@ -88,34 +85,33 @@ static ssize_t mr_adc_read(struct mr_dev *dev, int off, void *buf, size_t size, 
 
 #ifdef MR_USING_ADC_CHANNEL_CHECK
     /* Check if the channel is enabled */
-    if (MR_BIT_IS_SET(adc->channel, (1 << off)) == MR_DISABLE)
+    if (MR_BIT_IS_SET(adc->channel, (1 << dev->position)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
 #endif /* MR_USING_ADC_CHANNEL_CHECK */
 
-    MR_BIT_CLR(size, sizeof(*rd_buf) - 1);
-    for (rd_size = 0; rd_size < size; rd_size += sizeof(*rd_buf))
+    for (rd_size = 0; rd_size < MR_ALIGN_DOWN(count, sizeof(*rd_buf)); rd_size += sizeof(*rd_buf))
     {
-        *rd_buf = ops->read(adc, off);
+        *rd_buf = ops->read(adc, dev->position);
         rd_buf++;
     }
     return rd_size;
 }
 
-static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_adc_ioctl(struct mr_dev *dev, int cmd, void *args)
 {
     struct mr_adc *adc = (struct mr_adc *)dev;
 
     switch (cmd)
     {
-        case MR_CTL_ADC_SET_CHANNEL_CONFIG:
+        case MR_IOC_ADC_SET_CHANNEL_CONFIG:
         {
             if (args != MR_NULL)
             {
                 struct mr_adc_config config = *((struct mr_adc_config *)args);
 
-                int ret = adc_channel_set_configure(adc, off, config);
+                int ret = adc_channel_set_configure(adc, dev->position, config);
                 if (ret < 0)
                 {
                     return ret;
@@ -124,13 +120,13 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_ADC_GET_CHANNEL_CONFIG:
+        case MR_IOC_ADC_GET_CHANNEL_CONFIG:
         {
             if (args != MR_NULL)
             {
                 struct mr_adc_config *config = (struct mr_adc_config *)args;
 
-                int ret = adc_channel_get_configure(adc, off, config);
+                int ret = adc_channel_get_configure(adc, dev->position, config);
                 if (ret < 0)
                 {
                     return ret;
@@ -149,12 +145,12 @@ static int mr_adc_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
  * @brief This function registers an adc.
  *
  * @param adc The adc.
- * @param name The name of the adc.
+ * @param path The path of the adc.
  * @param drv The driver of the adc.
  *
- * @return MR_EOK on success, otherwise an error code.
+ * @return 0 on success, otherwise an error code.
  */
-int mr_adc_register(struct mr_adc *adc, const char *name, struct mr_drv *drv)
+int mr_adc_register(struct mr_adc *adc, const char *path, struct mr_drv *drv)
 {
     static struct mr_dev_ops ops =
         {
@@ -167,7 +163,7 @@ int mr_adc_register(struct mr_adc *adc, const char *name, struct mr_drv *drv)
         };
 
     MR_ASSERT(adc != MR_NULL);
-    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(path != MR_NULL);
     MR_ASSERT(drv != MR_NULL);
     MR_ASSERT(drv->ops != MR_NULL);
 
@@ -175,7 +171,7 @@ int mr_adc_register(struct mr_adc *adc, const char *name, struct mr_drv *drv)
     adc->channel = 0;
 
     /* Register the adc */
-    return mr_dev_register(&adc->dev, name, Mr_Dev_Type_ADC, MR_SFLAG_RDONLY, &ops, drv);
+    return mr_dev_register(&adc->dev, path, MR_DEV_TYPE_ADC, MR_O_RDONLY, &ops, drv);
 }
 
 #endif /* MR_USING_ADC */

@@ -10,17 +10,15 @@
 
 #ifdef MR_USING_DAC
 
-static int dac_channel_set_configure(struct mr_dac *dac, int channel, struct mr_dac_config config)
+MR_INLINE int dac_channel_set_configure(struct mr_dac *dac, int channel, struct mr_dac_config config)
 {
     struct mr_dac_ops *ops = (struct mr_dac_ops *)dac->dev.drv->ops;
 
-    /* Check channel is valid */
     if (channel < 0 || channel >= 32)
     {
         return MR_EINVAL;
     }
 
-    /* Configure the channel */
     int ret = ops->channel_configure(dac, channel, config.state);
     if (ret < 0)
     {
@@ -38,9 +36,8 @@ static int dac_channel_set_configure(struct mr_dac *dac, int channel, struct mr_
     return MR_EOK;
 }
 
-static int dac_channel_get_configure(struct mr_dac *dac, int channel, struct mr_dac_config *config)
+MR_INLINE int dac_channel_get_configure(struct mr_dac *dac, int channel, struct mr_dac_config *config)
 {
-    /* Check channel is valid */
     if (channel < 0 || channel >= 32)
     {
         return MR_EINVAL;
@@ -79,7 +76,7 @@ static int mr_dac_close(struct mr_dev *dev)
     return ops->configure(dac, MR_DISABLE);
 }
 
-static ssize_t mr_dac_write(struct mr_dev *dev, int off, const void *buf, size_t size, int async)
+static ssize_t mr_dac_write(struct mr_dev *dev, const void *buf, size_t count)
 {
     struct mr_dac *dac = (struct mr_dac *)dev;
     struct mr_dac_ops *ops = (struct mr_dac_ops *)dev->drv->ops;
@@ -88,34 +85,33 @@ static ssize_t mr_dac_write(struct mr_dev *dev, int off, const void *buf, size_t
 
 #ifdef MR_USING_DAC_CHANNEL_CHECK
     /* Check if the channel is enabled */
-    if (MR_BIT_IS_SET(dac->channel, (1 << off)) == MR_DISABLE)
+    if (MR_BIT_IS_SET(dac->channel, (1 << dev->position)) == MR_DISABLE)
     {
         return MR_EINVAL;
     }
 #endif /* MR_USING_DAC_CHANNEL_CHECK */
 
-    MR_BIT_CLR(size, sizeof(*wr_buf) - 1);
-    for (wr_size = 0; wr_size < size; wr_size += sizeof(*wr_buf))
+    for (wr_size = 0; wr_size < MR_ALIGN_DOWN(count, sizeof(*wr_buf)); wr_size += sizeof(*wr_buf))
     {
-        ops->write(dac, off, *wr_buf);
+        ops->write(dac, dev->position, *wr_buf);
         wr_buf++;
     }
     return wr_size;
 }
 
-static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
+static int mr_dac_ioctl(struct mr_dev *dev, int cmd, void *args)
 {
     struct mr_dac *dac = (struct mr_dac *)dev;
 
     switch (cmd)
     {
-        case MR_CTL_DAC_SET_CHANNEL_CONFIG:
+        case MR_IOC_DAC_SET_CHANNEL_CONFIG:
         {
             if (args != MR_NULL)
             {
                 struct mr_dac_config config = *((struct mr_dac_config *)args);
 
-                int ret = dac_channel_set_configure(dac, off, config);
+                int ret = dac_channel_set_configure(dac, dev->position, config);
                 if (ret < 0)
                 {
                     return ret;
@@ -124,13 +120,13 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_CTL_DAC_GET_CHANNEL_CONFIG:
+        case MR_IOC_DAC_GET_CHANNEL_CONFIG:
         {
             if (args != MR_NULL)
             {
                 struct mr_dac_config *config = (struct mr_dac_config *)args;
 
-                int ret = dac_channel_get_configure(dac, off, config);
+                int ret = dac_channel_get_configure(dac, dev->position, config);
                 if (ret < 0)
                 {
                     return ret;
@@ -150,12 +146,12 @@ static int mr_dac_ioctl(struct mr_dev *dev, int off, int cmd, void *args)
  * @brief This function registers an dac.
  *
  * @param dac The dac.
- * @param name The name of the dac.
+ * @param path The path of the dac.
  * @param drv The driver of the dac.
  *
- * @return MR_EOK on success, otherwise an error code.
+ * @return 0 on success, otherwise an error code.
  */
-int mr_dac_register(struct mr_dac *dac, const char *name, struct mr_drv *drv)
+int mr_dac_register(struct mr_dac *dac, const char *path, struct mr_drv *drv)
 {
     static struct mr_dev_ops ops =
         {
@@ -168,7 +164,7 @@ int mr_dac_register(struct mr_dac *dac, const char *name, struct mr_drv *drv)
         };
 
     MR_ASSERT(dac != MR_NULL);
-    MR_ASSERT(name != MR_NULL);
+    MR_ASSERT(path != MR_NULL);
     MR_ASSERT(drv != MR_NULL);
     MR_ASSERT(drv->ops != MR_NULL);
 
@@ -176,7 +172,7 @@ int mr_dac_register(struct mr_dac *dac, const char *name, struct mr_drv *drv)
     dac->channel = 0;
 
     /* Register the dac */
-    return mr_dev_register(&dac->dev, name, Mr_Dev_Type_DAC, MR_SFLAG_WRONLY, &ops, drv);
+    return mr_dev_register(&dac->dev, path, MR_DEV_TYPE_DAC, MR_O_WRONLY, &ops, drv);
 }
 
 #endif /* MR_USING_DAC */

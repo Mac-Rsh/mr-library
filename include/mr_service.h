@@ -16,6 +16,11 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
+ * @addtogroup Basic
+ * @{
+ */
+
+/**
  * @brief This macro function concatenates two strings.
  *
  * @param a The first string.
@@ -47,18 +52,24 @@ extern "C" {
     ((type *)((char *)(pointer) - (unsigned long)(&((type *)0)->member)))
 
 /**
- * @brief This macro function aligns the size up to a multiple of 4.
+ * @brief This macro function aligns a value upwards.
  *
- * @param size The size to align.
+ * @param value The value to align.
+ * @param align The alignment.
+ *
+ * @return The aligned value.
  */
-#define MR_ALIGN4_UP(size)              (((size) + 3) & (~3))
+#define MR_ALIGN_UP(value, align)       (((value) + (align) - 1) & ~((align) - 1))
 
 /**
- * @brief This macro function aligns a size down to a multiple of 4.
+ * @brief This macro function aligns a value downwards.
  *
- * @param size The size to align.
+ * @param value The value to align.
+ * @param align The alignment.
+ *
+ * @return The aligned value.
  */
-#define MR_ALIGN4_DOWN(size)            ((size) & (~3))
+#define MR_ALIGN_DOWN(value, align)     ((value) & ~((align) - 1))
 
 /**
  * @brief This macro function checks if a value is set.
@@ -66,7 +77,7 @@ extern "C" {
  * @param value The value to check.
  * @param mask The mask to check.
  */
-#define MR_BIT_IS_SET(value, mask)     (((value) & (mask)) == (mask))
+#define MR_BIT_IS_SET(value, mask)      (((value) & (mask)) == (mask))
 
 /**
  * @brief This macro function sets a value.
@@ -74,7 +85,7 @@ extern "C" {
  * @param value The value to set.
  * @param mask The mask to set.
  */
-#define MR_BIT_SET(value, mask)        ((value) |= (mask))
+#define MR_BIT_SET(value, mask)         ((value) |= (mask))
 
 /**
  * @brief This macro function clears a value.
@@ -82,13 +93,13 @@ extern "C" {
  * @param value The value to clear.
  * @param mask The mask to clear.
  */
-#define MR_BIT_CLR(value, mask)        ((value) &= ~(mask))
+#define MR_BIT_CLR(value, mask)         ((value) &= ~(mask))
 
 /**
  * @brief This macro function creates a local variable.
  *
  * @param type The type of the variable.
- * @param value The value of the variable.
+ * @param ... The arguments.
  *
  * @return A pointer to the variable.
  *
@@ -163,16 +174,22 @@ extern "C" {
  * @return The boolean value.
  */
 #define MR_TO_BOOL(value)               (!!(value))
+/** @} */
+
+/**
+ * @addtogroup Log
+ * @{
+ */
 
 /**
  * @brief Log message with color.
  */
 #ifdef MR_USING_LOG_COLOR
-#define MR_LOG_COLOR_RED(str, fmt)      "\033[31m"str, fmt"\033[0m"
-#define MR_LOG_COLOR_YELLOW(str, fmt)   "\033[33m"str, fmt"\033[0m"
-#define MR_LOG_COLOR_BLUE(str, fmt)     "\033[34m"str, fmt"\033[0m"
-#define MR_LOG_COLOR_PURPLE(str, fmt)   "\033[35m"str, fmt"\033[0m"
-#define MR_LOG_COLOR_GREEN(str, fmt)    "\033[32m"str, fmt"\033[0m"
+#define MR_LOG_COLOR_RED(str, fmt)      "\033[31m"str, fmt"\033[0m" /**< Log red color */
+#define MR_LOG_COLOR_YELLOW(str, fmt)   "\033[33m"str, fmt"\033[0m" /**< Log yellow color */
+#define MR_LOG_COLOR_BLUE(str, fmt)     "\033[34m"str, fmt"\033[0m" /**< Log blue color */
+#define MR_LOG_COLOR_PURPLE(str, fmt)   "\033[35m"str, fmt"\033[0m" /**< Log purple color */
+#define MR_LOG_COLOR_GREEN(str, fmt)    "\033[32m"str, fmt"\033[0m" /**< Log green color */
 #else
 #define MR_LOG_COLOR_RED(str, fmt)      str, fmt
 #define MR_LOG_COLOR_YELLOW(str, fmt)   str, fmt
@@ -181,34 +198,42 @@ extern "C" {
 #define MR_LOG_COLOR_GREEN(str, fmt)    str, fmt
 #endif /* MR_USING_LOG_COLOR */
 
-/**
- * @brief This macro function logs a error-warning-debug-info message.
- */
 #ifdef MR_USING_LOG_ERROR
+/* Print error message */
 #define MR_LOG_ERROR(fmt, ...)          mr_printf("%-8s %s\r\n", MR_LOG_COLOR_RED("ERROR:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_ERROR(fmt, ...)
 #endif /* MR_USING_LOG_ERROR */
 #ifdef MR_USING_LOG_WARN
+/* Print warning message */
 #define MR_LOG_WARN(fmt, ...)           mr_printf("%-8s %s\r\n", MR_LOG_COLOR_YELLOW("WARNING:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_WARN(fmt, ...)
 #endif /* MR_USING_LOG_WARN */
 #ifdef MR_USING_LOG_INFO
+/* Print information message */
 #define MR_LOG_INFO(fmt, ...)           mr_printf("%-8s %s\r\n", MR_LOG_COLOR_BLUE("INFO:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_INFO(fmt, ...)
 #endif /* MR_USING_LOG_INFO */
 #ifdef MR_USING_LOG_DEBUG
+/* Print debug message */
 #define MR_LOG_DEBUG(fmt, ...)          mr_printf("%-8s %s\r\n", MR_LOG_COLOR_PURPLE("DEBUG:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_DEBUG(fmt, ...)
 #endif /* MR_USING_LOG_DEBUG */
 #ifdef MR_USING_LOG_SUCCESS
+/* Print success message */
 #define MR_LOG_SUCCESS(fmt, ...)        mr_printf("%-8s %s\r\n", MR_LOG_COLOR_GREEN("SUCCESS:", fmt), ##__VA_ARGS__)
 #else
 #define MR_LOG_SUCCESS(fmt, ...)
 #endif /* MR_USING_LOG_SUCCESS */
+/** @} */
+
+/**
+ * @addtogroup Assert
+ * @{
+ */
 
 /**
  * @brief This macro function asserts a condition.
@@ -237,6 +262,12 @@ extern "C" {
 #else
 #define MR_ASSERT(ex)
 #endif /* MR_USING_ASSERT */
+/** @} */
+
+/**
+ * @addtogroup List
+ * @{
+ */
 
 /**
  * @brief This macro function initializes a list.
@@ -315,19 +346,19 @@ MR_INLINE void mr_list_remove(struct mr_list *node)
  *
  * @return The length of the list.
  */
-MR_INLINE size_t mr_list_get_length(struct mr_list *list)
+MR_INLINE size_t mr_list_get_len(struct mr_list *list)
 {
-    size_t length = 0;
     struct mr_list *node = list;
+    size_t len = 0;
 
     while (node->next != list)
     {
         node = node->next;
-        length++;
+        len++;
     }
-
-    return length;
+    return len;
 }
+/** @} */
 
 #ifdef __cplusplus
 }

@@ -16,22 +16,22 @@
 ## Open DAC Device
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | Parameter        | Description       |
 |------------------|-------------------|
-| name             | Device name       |
-| oflags           | Open device flags |
+| path             | Device path       |
+| flags            | Open device flags |
 | **Return Value** |                   |
 | `>=0`            | Device descriptor |
 | `<0`             | Error code        |
 
-- `name`: DAC device name usually is: `dacx`, `dac1`, `dac2`.
-- `oflags`: Open device flags, support `MR_OFLAG_WRONLY`.
+- `path`: DAC device path usually is: `dacx`, `dac1`, `dac2`.
+- `flags`: Open device flags, support `MR_O_WRONLY`.
 
 Note: When using, the DAC device should be opened separately for different tasks according to actual situations, and the
-appropriate `oflags` should be used for management and permission control to ensure they will not interfere with each
+appropriate `flags` should be used for management and permission control to ensure they will not interfere with each
 other.
 
 ## Close DAC Device
@@ -66,10 +66,10 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code         |
 
 - `cmd`: Command code, supports the following commands:
-    - `MR_CTL_DAC_SET_CHANNEL`: Set channel number.
-    - `MR_CTL_DAC_SET_CHANNEL_CONFIG`: Set channel configure.
-    - `MR_CTL_DAC_GET_CHANNEL`: Get channel number.
-    - `MR_CTL_DAC_GET_CHANNEL_CONFIG`: Get channel configure.
+    - `MR_IOC_DAC_SET_CHANNEL`: Set channel number.
+    - `MR_IOC_DAC_SET_CHANNEL_CONFIG`: Set channel configure.
+    - `MR_IOC_DAC_GET_CHANNEL`: Get channel number.
+    - `MR_IOC_DAC_GET_CHANNEL_CONFIG`: Get channel configure.
 
 ### Set/Get Channel Number
 
@@ -80,11 +80,11 @@ Channel number range: `0` ~ `31`.
 #define CHANNEL_NUMBER                  5
 
 /* Set channel number */   
-mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* Get channel number */
 int number;  
-mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL, &number);
+mr_dev_ioctl(ds, MR_IOC_DAC_GET_CHANNEL, &number);
 ```
 
 Independent of DAC interface:
@@ -94,11 +94,11 @@ Independent of DAC interface:
 #define CHANNEL_NUMBER                  5
 
 /* Set channel number */   
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* Get channel number */
 int number;  
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
 ### Set/Get Channel Configure
@@ -110,28 +110,28 @@ Channel configure:
 
 ```c
 /* Set channel status */
-mr_dev_ioctl(ds, MR_CTL_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+mr_dev_ioctl(ds, MR_IOC_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
 /* Get channel status */   
 int state;
-mr_dev_ioctl(ds, MR_CTL_DAC_GET_CHANNEL_CONFIG, &state);
+mr_dev_ioctl(ds, MR_IOC_DAC_GET_CHANNEL_CONFIG, &state);
 ```
 
 Independent of DAC interface:
 
 ```c
 /* Set channel status */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, MR_ENABLE));
 
 /* Get channel status */   
 int state;
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &state);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &state);
 ```
 
 ## Write DAC Device Channel Value
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | Parameter        | Description       |
@@ -162,7 +162,7 @@ Note: The write data is the raw DAC data. The minimum write unit is `uint32_t`, 
 #include "include/mr_lib.h"
 
 /* Define channel number */
-#define CHANNEL_NUMBER                  5
+#define CHANNEL_NUMBER                  1
 
 /* Define DAC device descriptor */   
 int dac_ds = -1;
@@ -172,7 +172,7 @@ int dac_init(void)
    int ret = MR_EOK;
 
    /* Initialize DAC */
-   dac_ds = mr_dev_open("dac1", MR_OFLAG_RDONLY);
+   dac_ds = mr_dev_open("dac1", MR_O_WRONLY);
    if (dac_ds < 0)
    {
        mr_printf("DAC1 open failed: %s\r\n", mr_strerror(dac_ds));  
@@ -180,13 +180,13 @@ int dac_init(void)
    }
    /* Print DAC descriptor */
    mr_printf("DAC1 desc: %d\r\n", dac_ds);
-   /* Set to channel 5 */
-   mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+   /* Set to channel 1 */
+   mr_dev_ioctl(dac_ds, MR_IOC_DAC_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
    /* Set channel enable */
-   ret = mr_dev_ioctl(dac_ds, MR_CTL_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
+   ret = mr_dev_ioctl(dac_ds, MR_IOC_DAC_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(int, MR_ENABLE));
    if (ret < 0)
    {
-       mr_printf("Channel5 enable failed: %s\r\n", mr_strerror(ret));
+       mr_printf("Channel%d enable failed: %s\r\n", CHANNEL_NUMBER, mr_strerror(ret));
        return ret;
    }
    return MR_EOK;
@@ -195,7 +195,7 @@ int dac_init(void)
 MR_INIT_APP_EXPORT(dac_init);
 
 /* Define DAC data maximum value */
-#define DAC_DATA_MAX                    4095
+#define DAC_DATA_MAX                    4000
 
 int main(void) 
 {
@@ -205,7 +205,7 @@ int main(void)
    while(1)
    {
        uint32_t data = 0;
-       for (data = 0; data < DAC_DATA_MAX; data += 500)
+       for (data = 0; data <= DAC_DATA_MAX; data += 500)
        {
            int ret = mr_dev_write(dac_ds, &data, sizeof(data));
            if (ret != sizeof(data))
@@ -219,5 +219,5 @@ int main(void)
 }
 ```
 
-Enable DAC1 channel 5, output the DAC value every 500ms and print it
-(the output value increases by 500 each time until reaching the maximum value 4095).
+Enable DAC1 channel 1, output the DAC value every 500ms and print it
+(the output value increases by 500 each time until reaching the maximum value).

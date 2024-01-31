@@ -83,7 +83,7 @@ Example:
 int main(void)
 {
     /* Open SPI10 device under SPI1 bus line */
-    int ds = mr_dev_open("spi1/spi10", MR_OFLAG_RDWR);
+    int ds = mr_dev_open("spi1/spi10", MR_O_RDWR);
     
     /* Send data */
     uint8_t wr_buf[] = {0x01, 0x02, 0x03, 0x04};
@@ -196,7 +196,7 @@ Versions later than `3.11.7` are not supported).
 
    Note:
    - Supports `MDK5` and `Eclipse`.
-   - If the `MDK` version is too early, the `GNU` configuration may fail.
+   - `MDK` uncompiled or too low a version can cause the 'GNU' configuration to fail.
 
 ## Configure Menu Options
 
@@ -239,11 +239,11 @@ int main(void)
     mr_auto_init();
 
     /* Open the PIN device */
-    int ds = mr_dev_open("pin", MR_OFLAG_RDWR);
+    int ds = mr_dev_open("pin", MR_O_WRONLY);
     /* Set to the LED pin */
-    mr_dev_ioctl(ds, MR_CTL_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
+    mr_dev_ioctl(ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
     /* Set the LED pin to push-pull output mode */
-    mr_dev_ioctl(ds, MR_CTL_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
+    mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
 
     while(1)
     {
@@ -267,7 +267,7 @@ int main(void)
     mr_auto_init();
 
     /* Open the Serial-1 device */
-    int ds = mr_dev_open("serial1", MR_OFLAG_RDWR);
+    int ds = mr_dev_open("serial1", MR_O_RDWR);
     /* Output Hello World */
     mr_dev_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
     

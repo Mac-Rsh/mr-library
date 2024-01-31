@@ -18,6 +18,11 @@ extern "C" {
 #ifdef MR_USING_PWM
 
 /**
+ * @addtogroup PWM
+ * @{
+ */
+
+/**
  * @brief PWM channel polarity.
  */
 #define MR_PWM_POLARITY_NORMAL          (0)                         /**< PWM normal polarity */
@@ -35,13 +40,13 @@ struct mr_pwm_config
 /**
  * @brief PWM control command.
  */
-#define MR_CTL_PWM_SET_CHANNEL          MR_CTL_SET_OFFSET           /**< Set channel */
-#define MR_CTL_PWM_SET_CHANNEL_CONFIG   MR_CTL_SET_CONFIG           /**< Set channel config */
-#define MR_CTL_PWM_SET_FREQ             (0x01)                      /**< Set frequency */
+#define MR_IOC_PWM_SET_CHANNEL          MR_IOC_SPOS                 /**< Set channel command */
+#define MR_IOC_PWM_SET_CHANNEL_CONFIG   MR_IOC_SCFG                 /**< Set channel configuration command */
+#define MR_IOC_PWM_SET_FREQ             (0x01)                      /**< Set frequency command */
 
-#define MR_CTL_PWM_GET_CHANNEL          MR_CTL_GET_OFFSET           /**< Get channel */
-#define MR_CTL_PWM_GET_CHANNEL_CONFIG   MR_CTL_GET_CONFIG           /**< Get channel config */
-#define MR_CTL_PWM_GET_FREQ             (-(0x01))                   /**< Get frequency */
+#define MR_IOC_PWM_GET_CHANNEL          MR_IOC_GPOS                 /**< Get channel command */
+#define MR_IOC_PWM_GET_CHANNEL_CONFIG   MR_IOC_GCFG                 /**< Get channel configuration command */
+#define MR_IOC_PWM_GET_FREQ             (-(0x01))                   /**< Get frequency command */
 
 /**
  * @brief PWM data type.
@@ -86,11 +91,7 @@ struct mr_pwm_ops
     uint32_t (*read)(struct mr_pwm *pwm, int channel);
 };
 
-/**
- * @addtogroup PWM.
- * @{
- */
-int mr_pwm_register(struct mr_pwm *pwm, const char *name, struct mr_drv *drv, struct mr_pwm_info *info);
+int mr_pwm_register(struct mr_pwm *pwm, const char *path, struct mr_drv *drv, struct mr_pwm_info *info);
 /** @} */
 #endif /* MR_USING_PWM */
 

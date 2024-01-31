@@ -18,21 +18,21 @@
 ## Open PWM Device
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | Parameter        | Description             |  
 |------------------|-------------------------|
-| name             | Device name             |
-| oflags           | Flag for opening device |
+| path             | Device path             |
+| flags            | Flag for opening device |
 | **Return Value** |                         |
 | `>=0`            | Device descriptor       |     
 | `<0`             | Error code              |
 
-- `name`: PWM device name usually is: `pwmx`、`pwm1`、`pwm2`.
-- `oflags`: Flag for opening device, support `MR_OFLAG_RDONLY`、 `MR_OFLAG_WRONLY`、 `MR_OFLAG_RDWR`.
+- `path`: PWM device path usually is: `pwmx`、`pwm1`、`pwm2`.
+- `flags`: Flag for opening device, support `MR_O_RDONLY`、 `MR_O_WRONLY`、 `MR_O_RDWR`.
 
-Note: When using, the PWM device should be opened separately for different tasks with the appropriate `oflags` 
+Note: When using, the PWM device should be opened separately for different tasks with the appropriate `flags` 
 for management and permission control, to ensure they will not interfere with each other.
 
 ## Close PWM Device
@@ -67,12 +67,12 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code        |
 
 - `cmd`: Command code, support:
-    - `MR_CTL_PWM_SET_CHANNEL`: Set channel number.
-    - `MR_CTL_PWM_SET_CHANNEL_CONFIG`: Set channel configuration.
-    - `MR_CTL_PWM_SET_FREQ`: Set frequency.
-    - `MR_CTL_PWM_GET_CHANNEL`: Get channel number.
-    - `MR_CTL_PWM_GET_CHANNEL_CONFIG`: Get channel configuration.
-    - `MR_CTL_PWM_GET_FREQ`: Get frequency.
+    - `MR_IOC_PWM_SET_CHANNEL`: Set channel number.
+    - `MR_IOC_PWM_SET_CHANNEL_CONFIG`: Set channel configuration.
+    - `MR_IOC_PWM_SET_FREQ`: Set frequency.
+    - `MR_IOC_PWM_GET_CHANNEL`: Get channel number.
+    - `MR_IOC_PWM_GET_CHANNEL_CONFIG`: Get channel configuration.
+    - `MR_IOC_PWM_GET_FREQ`: Get frequency.
 
 ### Set/Get Channel Number
 
@@ -83,11 +83,11 @@ Channel number range: `0` ~ `31`.
 #define CHANNEL_NUMBER                  1
 
 /* Set channel number */   
-mr_dev_ioctl(ds, MR_CTL_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* Get channel number */
 int number;
-mr_dev_ioctl(ds, MR_CTL_PWM_GET_CHANNEL, &number);
+mr_dev_ioctl(ds, MR_IOC_PWM_GET_CHANNEL, &number);
 ```
 
 Independent of PWM interface:
@@ -97,11 +97,11 @@ Independent of PWM interface:
 #define CHANNEL_NUMBER                  1
 
 /* Set channel number */   
-mr_dev_ioctl(ds, MR_CTL_SET_OFFSET, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+mr_dev_ioctl(ds, MR_IOC_SPOS, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
 
 /* Get channel number */
 int number;
-mr_dev_ioctl(ds, MR_CTL_GET_OFFSET, &number);
+mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
 ### Set/Get Channel Configuration
@@ -115,9 +115,9 @@ Channel configuration:
 struct mr_pwm_config config = {MR_ENABLE, MR_PWM_POLARITY_NORMAL};
 
 /* Set channel configuration */
-mr_dev_ioctl(ds, MR_CTL_PWM_SET_CHANNEL_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_PWM_SET_CHANNEL_CONFIG, &config);
 /* Get channel configuration */  
-mr_dev_ioctl(ds, MR_CTL_PWM_GET_CHANNEL_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_PWM_GET_CHANNEL_CONFIG, &config);
 ```
 
 Independent of PWM interface:
@@ -126,9 +126,9 @@ Independent of PWM interface:
 int config[] = {MR_ENABLE, 0};
 
 /* Set channel configuration */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 /* Get channel configuration */  
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 ### Set/Get Frequency
@@ -138,11 +138,11 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
 #define PWM_FREQ                        1000
 
 /* Set frequency */
-mr_dev_ioctl(ds, MR_CTL_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, PWM_FREQ));  
+mr_dev_ioctl(ds, MR_IOC_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, PWM_FREQ));  
 
 /* Get frequency */
 uint32_t freq;
-mr_dev_ioctl(ds, MR_CTL_PWM_GET_FREQ, &freq);
+mr_dev_ioctl(ds, MR_IOC_PWM_GET_FREQ, &freq);
 ```
 
 Independent of PWM interface:
@@ -152,17 +152,17 @@ Independent of PWM interface:
 #define PWM_FREQ                        1000
 
 /* Set frequency */
-mr_dev_ioctl(ds, (0x01 << 8), MR_MAKE_LOCAL(uint32_t, PWM_FREQ));  
+mr_dev_ioctl(ds, (0x01), MR_MAKE_LOCAL(uint32_t, PWM_FREQ));  
 
 /* Get frequency */
 uint32_t freq;
-mr_dev_ioctl(ds, (-(0x01 << 8)), &freq);
+mr_dev_ioctl(ds, (-(0x01)), &freq);
 ```
 
 ## Read PWM Channel Duty Cycle
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | Parameter        | Description             |
@@ -191,7 +191,7 @@ The minimum unit for single reading is `uint32_t`, which is 4 bytes.
 ## Write PWM Channel Duty Cycle
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);  
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);  
 ```
 
 | Parameter        | Description             |
@@ -229,35 +229,33 @@ The minimum unit for single writing is `uint32_t`, which is 4 bytes.
 /* PWM device descriptor */  
 int pwm_ds = -1;
 
-int pwm_init(void)
+void pwm_init(void)
 {
     int ret = MR_EOK;
 
     /* PWM initialization */
-    pwm_ds = mr_dev_open("pwm1", MR_OFLAG_RDWR);
+    pwm_ds = mr_dev_open("pwm1", MR_O_RDWR);
     if (pwm_ds < 0)
     {
         mr_printf("PWM1 open failed: %s\r\n", mr_strerror(pwm_ds));
-        return pwm_ds;
+        return;
     }
     /* Print PWM descriptor */
     mr_printf("PWM1 desc: %d\r\n", pwm_ds);
     /* Set to channel 1*/ 
-    mr_dev_ioctl(pwm_ds, MR_CTL_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
+    mr_dev_ioctl(pwm_ds, MR_IOC_PWM_SET_CHANNEL, MR_MAKE_LOCAL(int, CHANNEL_NUMBER));
     /* Set channel enable */
-    ret = mr_dev_ioctl(pwm_ds, MR_CTL_PWM_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(struct mr_pwm_config, MR_ENABLE, MR_PWM_POLARITY_NORMAL));
+    ret = mr_dev_ioctl(pwm_ds, MR_IOC_PWM_SET_CHANNEL_CONFIG, MR_MAKE_LOCAL(struct mr_pwm_config, MR_ENABLE, MR_PWM_POLARITY_NORMAL));
     if (ret < 0)
     {
-        mr_printf("Channel1 enable failed: %s\r\n", mr_strerror(ret));
-        return ret;
+        mr_printf("Channel%d enable failed: %s\r\n", CHANNEL_NUMBER, mr_strerror(ret));
+        return;
     }
-    ret = mr_dev_ioctl(pwm_ds, MR_CTL_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, FREQ));
+    ret = mr_dev_ioctl(pwm_ds, MR_IOC_PWM_SET_FREQ, MR_MAKE_LOCAL(uint32_t, FREQ));
     if (ret < 0)
     {
         mr_printf("Freq configure failed: %s\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* Export to automatic initialization (APP level) */
 MR_INIT_APP_EXPORT(pwm_init);
