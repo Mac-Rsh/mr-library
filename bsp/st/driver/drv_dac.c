@@ -8,6 +8,12 @@
 
 #include "drv_dac.h"
 
+#ifdef MR_USING_DAC
+
+#if !defined(MR_USING_DAC1) && !defined(MR_USING_DAC2) && !defined(MR_USING_DAC3)
+#warning "Please enable at least one DAC driver"
+#endif /* !defined(MR_USING_DAC1) && !defined(MR_USING_DAC2) && !defined(MR_USING_DAC3) */
+
 enum drv_dac_index
 {
 #ifdef MR_USING_DAC1
@@ -131,33 +137,34 @@ static struct mr_drv dac_drv[] =
     {
 #ifdef MR_USING_DAC1
         {
-            Mr_Drv_Type_DAC,
+            MR_DRV_TYPE_DAC,
             &dac_drv_ops,
             &dac_drv_data[DRV_INDEX_DAC1],
         },
 #endif /* MR_USING_DAC1 */
 #ifdef MR_USING_DAC2
         {
-            Mr_Drv_Type_DAC,
+            MR_DRV_TYPE_DAC,
             &dac_drv_ops,
             &dac_drv_data[DRV_INDEX_DAC2],
         }
 #endif /* MR_USING_DAC2 */
 #ifdef MR_USING_DAC3
         {
-            Mr_Drv_Type_DAC,
+            MR_DRV_TYPE_DAC,
             &dac_drv_ops,
             &dac_drv_data[DRV_INDEX_DAC3],
         }
 #endif /* MR_USING_DAC3 */
     };
 
-int drv_dac_init(void)
+static void drv_dac_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(dac_dev); i++)
     {
         mr_dac_register(&dac_dev[i], dac_name[i], &dac_drv[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_dac_init);
+
+#endif /* MR_USING_DAC */

@@ -23,6 +23,8 @@ struct drv_spi_bus_data
     SPI_TypeDef *instance;
     uint32_t clock;
     uint32_t gpio_clock;
+    GPIO_TypeDef *nss_port;
+    uint32_t nss_pin;
     GPIO_TypeDef *sck_port;
     uint32_t sck_pin;
     GPIO_TypeDef *miso_port;

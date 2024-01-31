@@ -10,6 +10,10 @@
 
 #ifdef MR_USING_ADC
 
+#if !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2)
+#warning "Please enable at least one ADC driver"
+#endif /* !defined(MR_USING_ADC1) && !defined(MR_USING_ADC2) */
+
 enum drv_adc_index
 {
 #ifdef MR_USING_ADC1
@@ -21,7 +25,7 @@ enum drv_adc_index
     DRV_INDEX_ADC_MAX
 };
 
-static const char *adc_name[] =
+static const char *adc_path[] =
     {
 #ifdef MR_USING_ADC1
         "adc1",
@@ -153,27 +157,24 @@ static struct mr_drv adc_drv[] =
     {
 #ifdef MR_USING_ADC1
         {
-            Mr_Drv_Type_ADC,
             &adc_drv_ops,
             &adc_drv_data[DRV_INDEX_ADC1],
         },
 #endif /* MR_USING_ADC1 */
 #ifdef MR_USING_ADC2
         {
-            Mr_Drv_Type_ADC,
             &adc_drv_ops,
             &adc_drv_data[DRV_INDEX_ADC2],
         },
 #endif /* MR_USING_ADC2 */
     };
 
-static int drv_adc_init(void)
+static void drv_adc_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(adc_dev); i++)
     {
-        mr_adc_register(&adc_dev[i], adc_name[i], &adc_drv[i]);
+        mr_adc_register(&adc_dev[i], adc_path[i], &adc_drv[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_adc_init);
 

@@ -10,6 +10,14 @@
 
 #ifdef MR_USING_TIMER
 
+#if !defined(MR_USING_TIMER1) && !defined(MR_USING_TIMER2) && !defined(MR_USING_TIMER3) && !defined(MR_USING_TIMER4) && \
+    !defined(MR_USING_TIMER5) && !defined(MR_USING_TIMER8) && !defined(MR_USING_TIMER9) && !defined(MR_USING_TIMER10) && \
+    !defined(MR_USING_TIMER11) && !defined(MR_USING_TIMER12) && !defined(MR_USING_TIMER13) && !defined(MR_USING_TIMER14)
+#warning "Please enable at least one Timer driver"
+#endif /* !defined(MR_USING_TIMER1) && !defined(MR_USING_TIMER2) && !defined(MR_USING_TIMER3) && !defined(MR_USING_TIMER4) &&
+        * !defined(MR_USING_TIMER5) && !defined(MR_USING_TIMER8) && !defined(MR_USING_TIMER9) && !defined(MR_USING_TIMER10) &&
+        * !defined(MR_USING_TIMER11) && !defined(MR_USING_TIMER12) && !defined(MR_USING_TIMER13) && !defined(MR_USING_TIMER14) */
+
 enum drv_timer_index
 {
 #ifdef MR_USING_TIMER1
@@ -57,7 +65,7 @@ enum drv_timer_index
     DRV_INDEX_TIMER_MAX
 };
 
-static const char *timer_name[] =
+static const char *timer_path[] =
     {
 #ifdef MR_USING_TIMER1
         "timer1",
@@ -394,111 +402,96 @@ static struct mr_drv timer_drv[] =
     {
 #ifdef MR_USING_TIMER1
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER1]
         },
 #endif /* MR_USING_TIMER1 */
 #ifdef MR_USING_TIMER2
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER2]
         },
 #endif /* MR_USING_TIMER2 */
 #ifdef MR_USING_TIMER3
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER3]
         },
 #endif /* MR_USING_TIMER3 */
 #ifdef MR_USING_TIMER4
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER4]
         },
 #endif /* MR_USING_TIMER4 */
 #ifdef MR_USING_TIMER5
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER5]
         },
 #endif /* MR_USING_TIMER5 */
 #ifdef MR_USING_TIMER6
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER6]
         },
 #endif /* MR_USING_TIMER6 */
 #ifdef MR_USING_TIMER7
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER7]
         },
 #endif /* MR_USING_TIMER7 */
 #ifdef MR_USING_TIMER8
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER8]
         },
 #endif /* MR_USING_TIMER8 */
 #ifdef MR_USING_TIMER9
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER9]
         },
 #endif /* MR_USING_TIMER9 */
 #ifdef MR_USING_TIMER10
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER10]
         },
 #endif /* MR_USING_TIMER10 */
 #ifdef MR_USING_TIMER11
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER11]
         },
 #endif /* MR_USING_TIMER11 */
 #ifdef MR_USING_TIMER12
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER12]
         },
 #endif /* MR_USING_TIMER12 */
 #ifdef MR_USING_TIMER13
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER13]
         },
 #endif /* MR_USING_TIMER13 */
 #ifdef MR_USING_TIMER14
         {
-            Mr_Drv_Type_Timer,
             &timer_drv_ops,
             &timer_drv_data[DRV_INDEX_TIMER14]
         },
 #endif /* MR_USING_TIMER14 */
     };
 
-int drv_timer_init(void)
+static void drv_timer_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(timer_dev); i++)
     {
-        mr_timer_register(&timer_dev[i], timer_name[i], &timer_drv[i], &timer_info[i]);
+        mr_timer_register(&timer_dev[i], timer_path[i], &timer_drv[i], &timer_info[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_timer_init);
 

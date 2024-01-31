@@ -10,6 +10,12 @@
 
 #ifdef MR_USING_PWM
 
+#if !defined(MR_USING_PWM1) && !defined(MR_USING_PWM2) && !defined(MR_USING_PWM3) && !defined(MR_USING_PWM4) && \
+    !defined(MR_USING_PWM5) && !defined(MR_USING_PWM8) && !defined(MR_USING_PWM9) && !defined(MR_USING_PWM10)
+#warning "Please enable at least one PWM driver"
+#endif /* !defined(MR_USING_PWM1) && !defined(MR_USING_PWM2) && !defined(MR_USING_PWM3) && !defined(MR_USING_PWM4) &&
+        * !defined(MR_USING_PWM5) && !defined(MR_USING_PWM8) && !defined(MR_USING_PWM9) && !defined(MR_USING_PWM10) */
+
 enum drv_pwm_index
 {
 #ifdef MR_USING_PWM1
@@ -39,7 +45,7 @@ enum drv_pwm_index
     DRV_INDEX_PWM_MAX
 };
 
-static const char *pwm_name[] =
+static const char *pwm_path[] =
     {
 #ifdef MR_USING_PWM1
         "pwm1",
@@ -314,69 +320,60 @@ static struct mr_drv pwm_drv[] =
     {
 #ifdef MR_USING_PWM1
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM1]
         },
 #endif /* MR_USING_PWM1 */
 #ifdef MR_USING_PWM2
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM2]
         },
 #endif /* MR_USING_PWM2 */
 #ifdef MR_USING_PWM3
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM3]
         },
 #endif /* MR_USING_PWM3 */
 #ifdef MR_USING_PWM4
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM4]
         },
 #endif /* MR_USING_PWM4 */
 #ifdef MR_USING_PWM5
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM5]
         },
 #endif /* MR_USING_PWM5 */
 #ifdef MR_USING_PWM8
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM8]
         },
 #endif /* MR_USING_PWM8 */
 #ifdef MR_USING_PWM9
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM9]
         },
 #endif /* MR_USING_PWM9 */
 #ifdef MR_USING_PWM10
         {
-            Mr_Drv_Type_PWM,
             &pwm_drv_ops,
             &pwm_drv_data[DRV_INDEX_PWM10]
         },
 #endif /* MR_USING_PWM10 */
     };
 
-static int drv_pwm_init(void)
+static void drv_pwm_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(pwm_dev); i++)
     {
-        mr_pwm_register(&pwm_dev[i], pwm_name[i], &pwm_drv[i], &pwm_info[i]);
+        mr_pwm_register(&pwm_dev[i], pwm_path[i], &pwm_drv[i], &pwm_info[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_pwm_init);
 

@@ -90,8 +90,11 @@ extern "C" {
 
 #if (MR_CFG_SPI1_GROUP == 1)
 #define DRV_SPI1_CONFIG                 \
-    {SPI1, RCC_APB2Periph_SPI1, RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_5, GPIOC, GPIO_Pin_7, GPIOC, GPIO_Pin_6, SPI1_IRQn, 0}
-#endif /* MR_CFG_SPI2_GROUP */
+    {SPI1, RCC_APB2Periph_SPI1, RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_1, GPIOC, GPIO_Pin_5, GPIOC, GPIO_Pin_7, GPIOC, GPIO_Pin_6, SPI1_IRQn, 0}
+#elif (MR_CFG_SPI1_GROUP == 2)
+#define DRV_SPI1_CONFIG                 \
+    {SPI1, RCC_APB2Periph_SPI1, RCC_APB2Periph_GPIOC, GPIOC, GPIO_Pin_0, GPIOC, GPIO_Pin_5, GPIOC, GPIO_Pin_7, GPIOC, GPIO_Pin_6, SPI1_IRQn, GPIO_Remap_SPI1}
+#endif /* MR_CFG_SPI1_GROUP */
 
 #define DRV_TIMER1_CONFIG               \
     {TIM1, RCC_APB2Periph_TIM1, TIM1_UP_IRQn}

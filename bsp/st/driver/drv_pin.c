@@ -41,20 +41,24 @@ static struct mr_pin pin_dev;
 static struct drv_pin_port_data *drv_pin_get_port_data(int pin)
 {
     pin >>= 4;
+#ifdef MR_USING_PIN_CHECK
     if ((pin >= MR_ARRAY_NUM(pin_port_drv_data)) || (pin_port_drv_data[pin].port == MR_NULL))
     {
         return MR_NULL;
     }
+#endif /* MR_USING_PIN_CHECK */
     return &pin_port_drv_data[pin];
 }
 
 static struct drv_pin_data *drv_pin_get_data(int pin)
 {
     pin &= 0x0f;
+#ifdef MR_USING_PIN_CHECK
     if (pin >= MR_ARRAY_NUM(pin_drv_data))
     {
         return MR_NULL;
     }
+#endif /* MR_USING_PIN_CHECK */
     return &pin_drv_data[pin];
 }
 
@@ -215,11 +219,13 @@ static uint8_t drv_pin_read(struct mr_pin *pin, int number)
     struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
     struct drv_pin_data *pin_data = drv_pin_get_data(number);
 
+#ifdef MR_USING_PIN_CHECK
     /* Check pin is valid */
     if (pin_port_data == NULL || pin_data == NULL)
     {
         return 0;
     }
+#endif /* MR_USING_PIN_CHECK */
     return (int)HAL_GPIO_ReadPin(pin_port_data->port, pin_data->pin);
 }
 
@@ -228,11 +234,13 @@ static void drv_pin_write(struct mr_pin *pin, int number, uint8_t value)
     struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
     struct drv_pin_data *pin_data = drv_pin_get_data(number);
 
+#ifdef MR_USING_PIN_CHECK
     /* Check pin is valid */
     if (pin_port_data == NULL || pin_data == NULL)
     {
         return;
     }
+#endif /* MR_USING_PIN_CHECK */
     HAL_GPIO_WritePin(pin_port_data->port, pin_data->pin, (GPIO_PinState)value);
 }
 
@@ -353,14 +361,13 @@ static struct mr_pin_ops pin_drv_ops =
 
 static struct mr_drv pin_drv =
     {
-        Mr_Drv_Type_Pin,
         &pin_drv_ops,
         MR_NULL
     };
 
-int drv_pin_init(void)
+static void drv_pin_init(void)
 {
-    return mr_pin_register(&pin_dev, "pin", &pin_drv);
+    mr_pin_register(&pin_dev, "pin", &pin_drv);
 }
 MR_INIT_DRV_EXPORT(drv_pin_init);
 

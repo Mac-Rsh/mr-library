@@ -10,6 +10,10 @@
 
 #ifdef MR_USING_SPI
 
+#if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3)
+#warning "Please enable at least one SPI driver"
+#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) */
+
 enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
@@ -24,7 +28,7 @@ enum drv_spi_bus_index
     DRV_INDEX_SPI_MAX
 };
 
-static const char *spi_bus_name[] =
+static const char *spi_bus_path[] =
     {
 #ifdef MR_USING_SPI1
         "spi1",
@@ -75,33 +79,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         pclk = RCC_ClockStructure.PCLK1_Frequency;
     }
 
-    psc = pclk / config->baud_rate;
-    if (psc >= 256)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
-    } else if (psc >= 128)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
-    } else if (psc >= 64)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_64;
-    } else if (psc >= 32)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
-    } else if (psc >= 16)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
-    } else if (psc >= 8)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
-    } else if (psc >= 4)
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
-    } else
-    {
-        SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
-    }
-
     /* Configure remap */
     if (spi_bus_data->remap != 0)
     {
@@ -111,11 +88,39 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
 
     if (state == ENABLE)
     {
+        psc = pclk / config->baud_rate;
+        if (psc >= 256)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+        } else if (psc >= 128)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
+        } else if (psc >= 64)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_64;
+        } else if (psc >= 32)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
+        } else if (psc >= 16)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
+        } else if (psc >= 8)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+        } else if (psc >= 4)
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+        } else
+        {
+            SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
+        }
+
         switch (config->host_slave)
         {
             case MR_SPI_HOST:
             {
                 SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+                SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
 
                 GPIO_InitStructure.GPIO_Pin = spi_bus_data->sck_pin;
                 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
@@ -135,6 +140,11 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
             case MR_SPI_SLAVE:
             {
                 SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
+                SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
+
+                GPIO_InitStructure.GPIO_Pin = spi_bus_data->nss_pin;
+                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+                GPIO_Init(spi_bus_data->nss_port, &GPIO_InitStructure);
 
                 GPIO_InitStructure.GPIO_Pin = spi_bus_data->sck_pin;
                 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
@@ -225,6 +235,13 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         }
     } else
     {
+        if (config->host_slave == MR_SPI_SLAVE)
+        {
+            GPIO_InitStructure.GPIO_Pin = spi_bus_data->nss_pin;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_Init(spi_bus_data->nss_port, &GPIO_InitStructure);
+        }
+
         GPIO_InitStructure.GPIO_Pin = spi_bus_data->sck_pin;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
         GPIO_Init(spi_bus_data->sck_port, &GPIO_InitStructure);
@@ -239,7 +256,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     }
 
     /* Configure SPI */
-    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(spi_bus_data->instance, &SPI_InitStructure);
@@ -342,34 +358,30 @@ static struct mr_drv spi_bus_drv[] =
     {
 #ifdef MR_USING_SPI1
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI1],
         },
 #endif /* MR_USING_SPI1 */
 #ifdef MR_USING_SPI2
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI2],
         },
 #endif /* MR_USING_SPI2 */
 #ifdef MR_USING_SPI3
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI3],
         },
 #endif /* MR_USING_SPI3 */
     };
 
-static int drv_spi_bus_init(void)
+static void drv_spi_bus_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(spi_bus_dev); i++)
     {
-        mr_spi_bus_register(&spi_bus_dev[i], spi_bus_name[i], &spi_bus_drv[i]);
+        mr_spi_bus_register(&spi_bus_dev[i], spi_bus_path[i], &spi_bus_drv[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_spi_bus_init);
 

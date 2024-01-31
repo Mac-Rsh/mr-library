@@ -10,6 +10,12 @@
 
 #ifdef MR_USING_SPI
 
+#if !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) && !defined(MR_USING_SPI4) && \
+    !defined(MR_USING_SPI5) && !defined(MR_USING_SPI6)
+#warning "Please enable at least one SPI driver"
+#endif /* !defined(MR_USING_SPI1) && !defined(MR_USING_SPI2) && !defined(MR_USING_SPI3) && !defined(MR_USING_SPI4) && \
+        * !defined(MR_USING_SPI5) && !defined(MR_USING_SPI6) */
+
 enum drv_spi_bus_index
 {
 #ifdef MR_USING_SPI1
@@ -33,7 +39,7 @@ enum drv_spi_bus_index
     DRV_INDEX_SPI_MAX
 };
 
-static const char *spi_bus_name[] =
+static const char *spi_bus_path[] =
     {
 #ifdef MR_USING_SPI1
         "spi1",
@@ -95,45 +101,47 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         pclk = HAL_RCC_GetPCLK1Freq();
     }
 
-    psc = pclk / config->baud_rate;
-    if (psc >= 256)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
-    } else if (psc >= 128)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
-    } else if (psc >= 64)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
-    } else if (psc >= 32)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-    } else if (psc >= 16)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-    } else if (psc >= 8)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-    } else if (psc >= 4)
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-    } else
-    {
-        spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-    }
-
     if (state == ENABLE)
     {
+        psc = pclk / config->baud_rate;
+        if (psc >= 256)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+        } else if (psc >= 128)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+        } else if (psc >= 64)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+        } else if (psc >= 32)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+        } else if (psc >= 16)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        } else if (psc >= 8)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+        } else if (psc >= 4)
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+        } else
+        {
+            spi_bus_data->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+        }
+
         switch (config->host_slave)
         {
             case MR_SPI_HOST:
             {
                 spi_bus_data->handle.Init.Mode = SPI_MODE_MASTER;
+                spi_bus_data->handle.Init.NSS = SPI_NSS_SOFT;
                 break;
             }
             case MR_SPI_SLAVE:
             {
                 spi_bus_data->handle.Init.Mode = SPI_MODE_SLAVE;
+                spi_bus_data->handle.Init.NSS = SPI_NSS_HARD_INPUT;
                 break;
             }
             default:
@@ -211,7 +219,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
         }
 
         /* Configure SPI */
-        spi_bus_data->handle.Init.NSS = SPI_NSS_SOFT;
         spi_bus_data->handle.Init.Direction = SPI_DIRECTION_2LINES;
         spi_bus_data->handle.Init.TIMode = SPI_TIMODE_DISABLE;
         spi_bus_data->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -339,55 +346,48 @@ static struct mr_drv spi_bus_drv[] =
     {
 #ifdef MR_USING_SPI1
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI1],
         },
 #endif /* MR_USING_SPI1 */
 #ifdef MR_USING_SPI2
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI2],
         },
 #endif /* MR_USING_SPI2 */
 #ifdef MR_USING_SPI3
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI3],
         },
 #endif /* MR_USING_SPI3 */
 #ifdef MR_USING_SPI4
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI4],
         },
 #endif /* MR_USING_SPI4 */
 #ifdef MR_USING_SPI5
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI5],
         },
 #endif /* MR_USING_SPI5 */
 #ifdef MR_USING_SPI6
         {
-            Mr_Drv_Type_SPI,
             &spi_bus_drv_ops,
             &spi_bus_drv_data[DRV_INDEX_SPI6],
         },
 #endif /* MR_USING_SPI6 */
     };
 
-int drv_spi_bus_init(void)
+static void drv_spi_bus_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(spi_bus_dev); i++)
     {
-        mr_spi_bus_register(&spi_bus_dev[i], spi_bus_name[i], &spi_bus_drv[i]);
+        mr_spi_bus_register(&spi_bus_dev[i], spi_bus_path[i], &spi_bus_drv[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_spi_bus_init);
 

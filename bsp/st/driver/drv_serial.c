@@ -10,6 +10,12 @@
 
 #ifdef MR_USING_SERIAL
 
+#if !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) && \
+    !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8)
+#warning "Please enable at least one Serial driver"
+#endif /* !defined(MR_USING_UART1) && !defined(MR_USING_UART2) && !defined(MR_USING_UART3) && !defined(MR_USING_UART4) &&  \
+        * !defined(MR_USING_UART5) && !defined(MR_USING_UART6) && !defined(MR_USING_UART7) && !defined(MR_USING_UART8) */
+
 enum drv_serial_index
 {
 #ifdef MR_USING_UART1
@@ -39,7 +45,7 @@ enum drv_serial_index
     DRV_INDEX_UART_MAX
 };
 
-static const char *serial_name[] =
+static const char *serial_path[] =
     {
 #ifdef MR_USING_UART1
         "serial1",
@@ -362,69 +368,60 @@ static struct mr_drv serial_drv[] =
     {
 #ifdef MR_USING_UART1
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART1]
         },
 #endif /* MR_USING_UART1 */
 #ifdef MR_USING_UART2
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART2]
         },
 #endif /* MR_USING_UART2 */
 #ifdef MR_USING_UART3
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART3]
         },
 #endif /* MR_USING_UART3 */
 #ifdef MR_USING_UART4
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART4]
         },
 #endif /* MR_USING_UART4 */
 #ifdef MR_USING_UART5
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART5]
         },
 #endif /* MR_USING_UART5 */
 #ifdef MR_USING_UART6
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART6]
         },
 #endif /* MR_USING_UART6 */
 #ifdef MR_USING_UART7
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART7]
         },
 #endif /* MR_USING_UART7 */
 #ifdef MR_USING_UART8
         {
-            Mr_Drv_Type_Serial,
             &serial_drv_ops,
             &serial_drv_data[DRV_INDEX_UART8]
         },
 #endif /* MR_USING_UART8 */
     };
 
-int drv_serial_init(void)
+static void drv_serial_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(serial_dev); i++)
     {
-        mr_serial_register(&serial_dev[i], serial_name[i], &serial_drv[i]);
+        mr_serial_register(&serial_dev[i], serial_path[i], &serial_drv[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_serial_init);
 

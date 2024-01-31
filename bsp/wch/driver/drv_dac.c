@@ -10,6 +10,10 @@
 
 #ifdef MR_USING_DAC
 
+#if !defined(MR_USING_DAC1)
+#warning "Please enable at least one DAC driver"
+#endif /* !defined(MR_USING_DAC1) */
+
 static struct drv_dac_data dac_drv_data[] =
     {
 #ifdef MR_USING_DAC1
@@ -23,11 +27,7 @@ static struct mr_dac dac_dev;
 
 static struct drv_dac_channel_data *drv_dac_get_channel_data(int channel)
 {
-    if (channel >= MR_ARRAY_NUM(dac_channel_drv_data))
-    {
-        return NULL;
-    }
-    if (dac_channel_drv_data[channel].channel == 0)
+    if ((channel >= MR_ARRAY_NUM(dac_channel_drv_data)) || (dac_channel_drv_data[channel].port == NULL))
     {
         return NULL;
     }
@@ -144,14 +144,13 @@ static struct mr_dac_ops dac_drv_ops =
 
 static struct mr_drv dac_drv =
     {
-        Mr_Drv_Type_DAC,
         &dac_drv_ops,
         &dac_drv_data,
     };
 
-static int drv_dac_init(void)
+static void drv_dac_init(void)
 {
-    return mr_dac_register(&dac_dev, "dac1", &dac_drv);
+    mr_dac_register(&dac_dev, "dac1", &dac_drv);
 }
 MR_INIT_DRV_EXPORT(drv_dac_init);
 

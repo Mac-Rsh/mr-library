@@ -10,6 +10,10 @@
 
 #ifdef MR_USING_I2C
 
+#if !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2)
+#warning "Please enable at least one I2C driver"
+#endif /* !defined(MR_USING_I2C1) && !defined(MR_USING_I2C2) */
+
 enum drv_i2c_index
 {
 #ifdef MR_USING_I2C1
@@ -21,7 +25,7 @@ enum drv_i2c_index
     DRV_INDEX_I2C_MAX
 };
 
-static const char *i2c_bus_name[] =
+static const char *i2c_bus_path[] =
     {
 #ifdef MR_USING_I2C1
         "i2c1",
@@ -260,27 +264,24 @@ static struct mr_drv i2c_bus_drv[] =
     {
 #ifdef MR_USING_I2C1
         {
-            Mr_Drv_Type_I2C,
             &i2c_bus_drv_ops,
             &i2c_bus_drv_data[DRV_INDEX_I2C1]
         },
 #endif /* MR_USING_I2C1 */
 #ifdef MR_USING_I2C2
         {
-            Mr_Drv_Type_I2C,
             &i2c_bus_drv_ops,
             &i2c_bus_drv_data[DRV_INDEX_I2C2]
         },
 #endif /* MR_USING_I2C2 */
     };
 
-static int drv_i2c_bus_init(void)
+static void drv_i2c_bus_init(void)
 {
     for (size_t i = 0; i < MR_ARRAY_NUM(i2c_bus_dev); i++)
     {
-        mr_i2c_bus_register(&i2c_bus_dev[i], i2c_bus_name[i], &i2c_bus_drv[i]);
+        mr_i2c_bus_register(&i2c_bus_dev[i], i2c_bus_path[i], &i2c_bus_drv[i]);
     }
-    return MR_EOK;
 }
 MR_INIT_DRV_EXPORT(drv_i2c_bus_init);
 
