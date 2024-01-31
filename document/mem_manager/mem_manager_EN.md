@@ -130,7 +130,7 @@ void *mr_malloc(size_t size)
     }
 
     /* Align the size to the next multiple of 4 bytes */
-    size = MR_ALIGN4_UP(size);
+    size = MR_ALIGN_UP(size, 4);
 
     /* Find a memory block that can accommodate the requested size */
     while (block->size < size)

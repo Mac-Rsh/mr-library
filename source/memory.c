@@ -8,34 +8,28 @@
 
 #include "include/mr_api.h"
 
-/**
- * @brief Heap memory.
- */
 #ifndef MR_CFG_HEAP_SIZE
-#define MR_CFG_HEAP_SIZE                (4 * 1024)                  /* If not defined, use 4KB */
+#define MR_CFG_HEAP_SIZE                (4 * 1024)                  /**< If not defined, use 4KB */
+#elif (MR_CFG_HEAP_SIZE < 16)
+#define MR_CFG_HEAP_SIZE                (16)                        /**< If less than 16, use 16B */
 #endif /* MR_CFG_HEAP_SIZE */
-static uint8_t heap_mem[MR_CFG_HEAP_SIZE] = {0};
+static uint8_t heap_mem[MR_CFG_HEAP_SIZE] = {0};                    /**< Heap memory */
 
 #define MR_HEAP_BLOCK_FREE              (0)
 #define MR_HEAP_BLOCK_ALLOCATED         (1)
 #define MR_HEAP_BLOCK_MIN_SIZE          (sizeof(struct mr_heap_block) << 1)
 
-/**
- * @brief Heap block structure.
- */
-static struct mr_heap_block
-{
-    struct mr_heap_block *next;
-    uint32_t size: 31;
-    uint32_t allocated: 1;
-} heap_start = {MR_NULL, 0, MR_HEAP_BLOCK_FREE};
+static struct mr_heap_block heap_start =                            /**< Heap start block */
+    {
+        MR_NULL,
+        0,
+        MR_HEAP_BLOCK_FREE
+    };
 
 /**
  * @brief This function initialize the heap.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
  */
-int mr_heap_init(void)
+static void mr_heap_init(void)
 {
     struct mr_heap_block *first_block = (struct mr_heap_block *)&heap_mem;
 
@@ -43,10 +37,7 @@ int mr_heap_init(void)
     first_block->next = MR_NULL;
     first_block->size = sizeof(heap_mem) - sizeof(struct mr_heap_block);
     first_block->allocated = MR_HEAP_BLOCK_FREE;
-
-    /* Initialize the heap */
     heap_start.next = first_block;
-    return MR_EOK;
 }
 MR_INIT_BOARD_EXPORT(mr_heap_init);
 
@@ -55,7 +46,7 @@ static void heap_insert_block(struct mr_heap_block *block)
     struct mr_heap_block *block_prev = &heap_start;
 
     /* Search for the previous block */
-    while (((block_prev->next != MR_NULL) && ((uint32_t)block_prev->next < (uint32_t)block)))
+    while (((block_prev->next != MR_NULL) && (block_prev->next < block)))
     {
         block_prev = block_prev->next;
     }
@@ -96,33 +87,30 @@ static void heap_insert_block(struct mr_heap_block *block)
  *
  * @param size The size of the memory.
  *
- * @return The allocated memory.
+ * @return A pointer to the allocated memory.
  */
 MR_WEAK void *mr_malloc(size_t size)
 {
     struct mr_heap_block *block_prev = &heap_start;
     struct mr_heap_block *block = block_prev->next;
 
-    /* Disable interrupt */
     mr_interrupt_disable();
 
     /* Check size and residual memory */
     if ((size == 0) || (size > (UINT32_MAX >> 1) || (block == MR_NULL)))
     {
-        /* Enable interrupt */
         mr_interrupt_enable();
         return MR_NULL;
     }
 
-    /* Align the size up 4 bytes */
-    size = MR_ALIGN4_UP(size);
+    /* Align the size to the next multiple of 4 bytes */
+    size = MR_ALIGN_UP(size, 4);
 
     /* Search for and take blocks that match the criteria */
     while (block->size < size)
     {
         if (block->next == MR_NULL)
         {
-            /* Enable interrupt */
             mr_interrupt_enable();
             return MR_NULL;
         }
@@ -154,7 +142,6 @@ MR_WEAK void *mr_malloc(size_t size)
         heap_insert_block(new_block);
     }
 
-    /* Enable interrupt */
     mr_interrupt_enable();
     return memory;
 }
@@ -170,7 +157,6 @@ MR_WEAK void mr_free(void *memory)
     {
         struct mr_heap_block *block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
 
-        /* Disable interrupt */
         mr_interrupt_disable();
 
         /* Check the block */
@@ -182,7 +168,6 @@ MR_WEAK void mr_free(void *memory)
             heap_insert_block(block);
         }
 
-        /* Enable interrupt */
         mr_interrupt_enable();
     }
 }
@@ -211,7 +196,7 @@ MR_WEAK size_t mr_malloc_usable_size(void *memory)
  * @param num The number of the memory.
  * @param size The size of the memory.
  *
- * @return The initialized memory.
+ * @return A pointer to the allocated memory.
  */
 MR_WEAK void *mr_calloc(size_t num, size_t size)
 {
@@ -231,7 +216,7 @@ MR_WEAK void *mr_calloc(size_t num, size_t size)
  * @param memory The memory.
  * @param size The size of the memory.
  *
- * @return The reallocated memory.
+ * @return A pointer to the allocated memory.
  */
 MR_WEAK void *mr_realloc(void *memory, size_t size)
 {
