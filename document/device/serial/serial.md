@@ -20,21 +20,21 @@
 ## 打开SERIAL设备
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | 参数      | 描述      |
 |---------|---------|
-| name    | 设备名称    |
-| oflags  | 打开设备的标志 |
+| path    | 设备路径    |
+| flags   | 打开设备的标志 |
 | **返回值** |         |
 | `>=0`   | 设备描述符   |
 | `<0`    | 错误码     |
 
-- `name`：SERIAL设备名称一般为：`serialx`，例如：`serial1`、`serial2`、`serial3`。
-- `oflags`：打开设备的标志，支持 `MR_OFLAG_RDONLY`、 `MR_OFLAG_WRONLY`、 `MR_OFLAG_RDWR`、 `MR_OFLAG_NONBLOCK`。
+- `path`：SERIAL设备路径一般为：`serialx`，例如：`serial1`、`serial2`、`serial3`。
+- `flags`：打开设备的标志，支持 `MR_O_RDONLY`、 `MR_O_WRONLY`、 `MR_O_RDWR`、 `MR_O_NONBLOCK`。
 
-注：使用时应根据实际情况为不同的任务分别打开SERIAL设备，并使用适当的`oflags`进行管理和权限控制，以确保它们不会相互影响。
+注：使用时应根据实际情况为不同的任务分别打开SERIAL设备，并使用适当的`flags`进行管理和权限控制，以确保它们不会相互影响。
 
 ## 关闭SERIAL设备
 
@@ -65,20 +65,20 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`    | 错误码   |
 
 - `cmd`：命令码，支持以下命令：
-    - `MR_CTL_SERIAL_SET_CONFIG`：设置SERIAL设备配置。
-    - `MR_CTL_SERIAL_SET_RD_BUFSZ`：设置读缓冲区大小。
-    - `MR_CTL_SERIAL_SET_WR_BUFSZ`：设置写缓冲区大小。
-    - `MR_CTL_SERIAL_CLR_RD_BUF`：清空读缓冲区。
-    - `MR_CTL_SERIAL_CLR_WR_BUF`：清空写缓冲区。
-    - `MR_CTL_SERIAL_SET_RD_CALL`：设置读回调函数。
-    - `MR_CTL_SERIAL_SET_WR_CALL`：设置写回调函数。
-    - `MR_CTL_SERIAL_GET_CONFIG`：获取SERIAL设备配置。
-    - `MR_CTL_SERIAL_GET_RD_BUFSZ`：获取读缓冲区大小。
-    - `MR_CTL_SERIAL_GET_WR_BUFSZ`：获取写缓冲区大小。
-    - `MR_CTL_SERIAL_GET_RD_DATASZ`：获取读缓冲区数据大小。
-    - `MR_CTL_SERIAL_GET_WR_DATASZ`：获取写缓冲区数据大小。
-    - `MR_CTL_SERIAL_GET_RD_CALL`：获取读回调函数。
-    - `MR_CTL_SERIAL_GET_WR_CALL`：获取写回调函数。
+    - `MR_IOC_SERIAL_SET_CONFIG`：设置SERIAL设备配置。
+    - `MR_IOC_SERIAL_SET_RD_BUFSZ`：设置读缓冲区大小。
+    - `MR_IOC_SERIAL_SET_WR_BUFSZ`：设置写缓冲区大小。
+    - `MR_IOC_SERIAL_CLR_RD_BUF`：清空读缓冲区。
+    - `MR_IOC_SERIAL_CLR_WR_BUF`：清空写缓冲区。
+    - `MR_IOC_SERIAL_SET_RD_CALL`：设置读回调函数。
+    - `MR_IOC_SERIAL_SET_WR_CALL`：设置写回调函数。
+    - `MR_IOC_SERIAL_GET_CONFIG`：获取SERIAL设备配置。
+    - `MR_IOC_SERIAL_GET_RD_BUFSZ`：获取读缓冲区大小。
+    - `MR_IOC_SERIAL_GET_WR_BUFSZ`：获取写缓冲区大小。
+    - `MR_IOC_SERIAL_GET_RD_DATASZ`：获取读缓冲区数据大小。
+    - `MR_IOC_SERIAL_GET_WR_DATASZ`：获取写缓冲区数据大小。
+    - `MR_IOC_SERIAL_GET_RD_CALL`：获取读回调函数。
+    - `MR_IOC_SERIAL_GET_WR_CALL`：获取写回调函数。
 
 ### 设置/获取SERIAL设备配置
 
@@ -96,9 +96,9 @@ SERIAL设备配置：
 struct mr_serial_config config = MR_SERIAL_CONFIG_DEFAULT;
 
 /* 设置SERIAL设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_CONFIG, &config);
 /* 获取SERIAL设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_CONFIG, &config);
 ```
 
 不依赖SERIAL接口：
@@ -108,9 +108,9 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_CONFIG, &config);
 int config[] = {115200, 8, 1, 0, 0, 0};
 
 /* 设置SERIAL设备配置 */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 /* 获取SERIAL设备配置 */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 注：如未手动配置，默认配置为：
@@ -128,14 +128,14 @@ mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
 size_t size = 256;
 
 /* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_RD_BUFSZ, &size);
 /* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_RD_BUFSZ, &size);
 
 /* 设置写缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_WR_BUFSZ, &size);
 /* 获取写缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_WR_BUFSZ, &size);
 ```
 
 不依赖SERIAL接口：
@@ -144,14 +144,14 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
 size_t size = 256;
 
 /* 设置读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SRBSZ, &size);
 /* 获取读缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBSZ, &size);
 
 /* 设置写缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_SET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SWBSZ, &size);
 /* 获取写缓冲区大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GWBSZ, &size);
 ```
 
 注：如未手动配置，将使用 `Kconfig`中配置的大小（默认为32Byte）。
@@ -159,15 +159,15 @@ mr_dev_ioctl(ds, MR_CTL_GET_WR_BUFSZ, &size);
 ### 清空读/写缓冲区
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_RD_BUF, MR_NULL);
-mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_WR_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_CLR_WR_BUF, MR_NULL);
 ```
 
 不依赖SERIAL接口：
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
-mr_dev_ioctl(ds, MR_CTL_CLR_WR_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CRBD, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CWBD, MR_NULL);
 ```
 
 ### 获取读/写缓冲区数据大小
@@ -176,10 +176,10 @@ mr_dev_ioctl(ds, MR_CTL_CLR_WR_BUF, MR_NULL);
 size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_RD_DATASZ, &size);
 
 /* 获取写缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_WR_DATASZ, &size);
 ```
 
 不依赖SERIAL接口：
@@ -188,68 +188,64 @@ mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
 size_t size = 0;
 
 /* 获取读缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 
 /* 获取写缓冲区数据大小 */
-mr_dev_ioctl(ds, MR_CTL_GET_WR_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GWBDSZ, &size);
 ```
 
 ### 设置/获取读/写回调函数
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* 获取缓冲区数据大小 */
     ssize_t data_size = *(ssize_t *)args;
     
     /* 处理中断 */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* 设置读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_RD_CALL, &fn);
 /* 获取读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_RD_CALL, &callback);
 
 /* 设置写回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_WR_CALL, &fn);
 /* 获取写回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_WR_CALL, &callback);
 ```
 
 不依赖SERIAL接口：
 
 ```c
 /* 定义回调函数 */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* 获取缓冲区数据大小 */
     ssize_t data_size = *(ssize_t *)args;
     
     /* 处理中断 */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* 设置读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 /* 获取读回调函数 */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 
 /* 设置写回调函数 */
-mr_dev_ioctl(ds, MR_CTL_SET_WR_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SWCB, &fn);
 /* 获取写回调函数 */
-mr_dev_ioctl(ds, MR_CTL_GET_WR_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GWCB, &callback);
 ```
 
 ## 读取SERIAL设备数据
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -277,7 +273,7 @@ if (size < 0)
 ## 写入SERIAL设备数据
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | 参数      | 描述      |
@@ -300,7 +296,7 @@ if (size < 0)
 }
 ```
 
-注：当未设置写缓冲区且未使用 `MR_OFLAG_NONBLOCK` 打开时将使用轮询方式同步写入数据。
+注：当未设置写缓冲区且未使用 `MR_O_NONBLOCK` 打开时将使用轮询方式同步写入数据。
 当设置写缓冲区后会将数据写入写缓冲区（返回实际写入的数据大小），通过中断或DMA异步发送数据，发送完成后会触发写回调函数。
 当有数据在异步发送时，写入锁将自动上锁，此时无法同步写入，直至异步发送完成。
 
@@ -312,24 +308,22 @@ if (size < 0)
 /* 定义串口设备描述符 */
 int serial_ds = -1;
 
-int serial_init(void)
+void serial_init(void)
 {
     /* 初始化串口 */
-    serial_ds = mr_dev_open("serial1", MR_OFLAG_RDWR); 
+    serial_ds = mr_dev_open("serial1", MR_O_RDWR); 
     if (serial_ds < 0)
     {
         mr_printf("serial open failed: %s\r\n", mr_strerror(serial_ds));
-        return serial_ds;
+        return;
     }
     /* 设置串口配置 */
     struct mr_serial_config config = MR_SERIAL_CONFIG_DEFAULT;
-    int ret = mr_dev_ioctl(serial_ds, MR_CTL_SERIAL_SET_CONFIG, &config);
+    int ret = mr_dev_ioctl(serial_ds, MR_IOC_SERIAL_SET_CONFIG, &config);
     if (ret < 0)
     {
         mr_printf("serial set config failed: %s\r\n", mr_strerror(ret));
-        return ret;
     }
-    return MR_EOK;
 }
 /* 导出到自动初始化（APP级） */
 MR_INIT_APP_EXPORT(serial_init);
@@ -349,4 +343,4 @@ int main(void)
 }
 ```
 
-电脑连接串口1，在串口软件中进行回环测试，发送数据后会在串口软件中显示接收到的数据。
+连接串口1，在串口软件中进行回环测试，发送数据后会在串口软件中显示接收到的数据。

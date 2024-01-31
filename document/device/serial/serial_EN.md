@@ -20,23 +20,23 @@
 ## Open SERIAL Device
 
 ```c
-int mr_dev_open(const char *name, int oflags);
+int mr_dev_open(const char *path, int flags);
 ```
 
 | Parameter        | Description                  |
 |------------------|------------------------------|
-| name             | Device name                  |
-| oflags           | Flags for opening the device |
+| path             | Device path                  |
+| flags            | Flags for opening the device |
 | **Return Value** |                              |
 | `>=0`            | Device descriptor            |
 | `<0`             | Error code                   |
 
-- `name`: The SERIAL device name is usually `serialx`, such as `serial1`, `serial2`, `serial3`.
-- `oflags`: Flags for opening the device,
-  supports `MR_OFLAG_RDONLY`, `MR_OFLAG_WRONLY`, `MR_OFLAG_RDWR`, `MR_OFLAG_NONBLOCK`.
+- `path`: The SERIAL device name is usually `serialx`, such as `serial1`, `serial2`, `serial3`.
+- `flags`: Flags for opening the device,
+  supports `MR_O_RDONLY`, `MR_O_WRONLY`, `MR_O_RDWR`, `MR_O_NONBLOCK`.
 
 Note: When using it, different tasks should open the SERIAL device separately according to actual situations, and use
-appropriate `oflags` for management and permission control to ensure they do not interfere with each other.
+appropriate `flags` for management and permission control to ensure they do not interfere with each other.
 
 ## Close SERIAL Device
 
@@ -67,20 +67,20 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
 | `<0`             | Error code        |
 
 - `cmd`: Command code, supports the following commands:
-    - `MR_CTL_SERIAL_SET_CONFIG`: Set SERIAL device configuration.
-    - `MR_CTL_SERIAL_SET_RD_BUFSZ`: Set read buffer size.
-    - `MR_CTL_SERIAL_SET_WR_BUFSZ`: Set write buffer size.
-    - `MR_CTL_SERIAL_CLR_RD_BUF`: Clear read buffer.
-    - `MR_CTL_SERIAL_CLR_WR_BUF`: Clear write buffer.
-    - `MR_CTL_SERIAL_SET_RD_CALL`: Set read callback function.
-    - `MR_CTL_SERIAL_SET_WR_CALL`: Set write callback function.
-    - `MR_CTL_SERIAL_GET_CONFIG`: Get SERIAL device configuration.
-    - `MR_CTL_SERIAL_GET_RD_BUFSZ`: Get read buffer size.
-    - `MR_CTL_SERIAL_GET_WR_BUFSZ`: Get write buffer size.
-    - `MR_CTL_SERIAL_GET_RD_DATASZ`: Get read buffer data size.
-    - `MR_CTL_SERIAL_GET_WR_DATASZ`: Get write buffer data size.
-    - `MR_CTL_SERIAL_GET_RD_CALL`: Get read callback function.
-    - `MR_CTL_SERIAL_GET_WR_CALL`: Get write callback function.
+    - `MR_IOC_SERIAL_SET_CONFIG`: Set SERIAL device configuration.
+    - `MR_IOC_SERIAL_SET_RD_BUFSZ`: Set read buffer size.
+    - `MR_IOC_SERIAL_SET_WR_BUFSZ`: Set write buffer size.
+    - `MR_IOC_SERIAL_CLR_RD_BUF`: Clear read buffer.
+    - `MR_IOC_SERIAL_CLR_WR_BUF`: Clear write buffer.
+    - `MR_IOC_SERIAL_SET_RD_CALL`: Set read callback function.
+    - `MR_IOC_SERIAL_SET_WR_CALL`: Set write callback function.
+    - `MR_IOC_SERIAL_GET_CONFIG`: Get SERIAL device configuration.
+    - `MR_IOC_SERIAL_GET_RD_BUFSZ`: Get read buffer size.
+    - `MR_IOC_SERIAL_GET_WR_BUFSZ`: Get write buffer size.
+    - `MR_IOC_SERIAL_GET_RD_DATASZ`: Get read buffer data size.
+    - `MR_IOC_SERIAL_GET_WR_DATASZ`: Get write buffer data size.
+    - `MR_IOC_SERIAL_GET_RD_CALL`: Get read callback function.
+    - `MR_IOC_SERIAL_GET_WR_CALL`: Get write callback function.
 
 ### Set/Get SERIAL Device Configuration
 
@@ -98,10 +98,10 @@ SERIAL device configuration:
 struct mr_serial_config config = MR_SERIAL_CONFIG_DEFAULT;
 
 /* Set SERIAL device configuration */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_CONFIG, &config);
 
 /* Get SERIAL device configuration */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_CONFIG, &config);
 ```
 
 Independent of SERIAL interface:
@@ -111,10 +111,10 @@ Independent of SERIAL interface:
 int config[] = {115200, 8, 1, 0, 0, 0};
 
 /* Set SERIAL device configuration */
-mr_dev_ioctl(ds, MR_CTL_SET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_SCFG, &config);
 
 /* Get SERIAL device configuration */
-mr_dev_ioctl(ds, MR_CTL_GET_CONFIG, &config);
+mr_dev_ioctl(ds, MR_IOC_GCFG, &config);
 ```
 
 Note: If not configured manually, the default configuration is:
@@ -132,16 +132,16 @@ Note: If not configured manually, the default configuration is:
 size_t size = 256;
 
 /* Set read buffer size */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_RD_BUFSZ, &size);
 
 /* Get read buffer size */  
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_RD_BUFSZ, &size);
 
 /* Set write buffer size */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_WR_BUFSZ, &size);
 
 /* Get write buffer size */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_WR_BUFSZ, &size);
 ```
 
 Independent of SERIAL interface:
@@ -150,16 +150,16 @@ Independent of SERIAL interface:
 size_t size = 256;
 
 /* Set read buffer size */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SRBSZ, &size);
 
 /* Get read buffer size */  
-mr_dev_ioctl(ds, MR_CTL_GET_RD_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBSZ, &size);
 
 /* Set write buffer size */
-mr_dev_ioctl(ds, MR_CTL_SET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SWBSZ, &size);
 
 /* Get write buffer size */
-mr_dev_ioctl(ds, MR_CTL_GET_WR_BUFSZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GWBSZ, &size);
 ```
 
 Note: If not configured manually, the size configured in `Kconfig` will be used (default is 32Byte).
@@ -167,15 +167,15 @@ Note: If not configured manually, the size configured in `Kconfig` will be used 
 ### Clear Read/Write Buffer
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_RD_BUF, MR_NULL);
-mr_dev_ioctl(ds, MR_CTL_SERIAL_CLR_WR_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_CLR_RD_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_CLR_WR_BUF, MR_NULL);
 ```
 
 Independent of SERIAL interface:
 
 ```c
-mr_dev_ioctl(ds, MR_CTL_CLR_RD_BUF, MR_NULL);
-mr_dev_ioctl(ds, MR_CTL_CLR_WR_BUF, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CRBD, MR_NULL);
+mr_dev_ioctl(ds, MR_IOC_CWBD, MR_NULL);
 ```
 
 ### Get Read/Write Buffer Data Size
@@ -184,10 +184,10 @@ mr_dev_ioctl(ds, MR_CTL_CLR_WR_BUF, MR_NULL);
 size_t size = 0;
 
 /* Get read buffer data size */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_RD_DATASZ, &size);
 
 /* Get write buffer data size */  
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_WR_DATASZ, &size);
 ```
 
 Independent of SERIAL interface:
@@ -196,72 +196,68 @@ Independent of SERIAL interface:
 size_t size = 0;
 
 /* Get read buffer data size */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 
 /* Get write buffer data size */  
-mr_dev_ioctl(ds, MR_CTL_GET_WR_DATASZ, &size);
+mr_dev_ioctl(ds, MR_IOC_GWBDSZ, &size);
 ```
 
 ### Set/Get Read/Write Callback Function
 
 ```c
 /* Define callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* Get buffer data size */
     ssize_t data_size = *(ssize_t *)args;
     
     /* Handle interrupt */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* Set read callback function */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_RD_CALL, &fn);
 
 /* Get read callback function */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_RD_CALL, &callback);
 
 /* Set write callback function */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_SET_WR_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_SET_WR_CALL, &fn);
 
 /* Get write callback function */
-mr_dev_ioctl(ds, MR_CTL_SERIAL_GET_WR_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_SERIAL_GET_WR_CALL, &callback);
 ```
 
 Independent of SERIAL interface:
 
 ```c
 /* Define callback function */
-int call(int desc, void *args)
+void fn(int desc, void *args)
 {
     /* Get buffer data size */
     ssize_t data_size = *(ssize_t *)args;
     
     /* Handle interrupt */
-    
-    return MR_EOK;
 }
-int (*callback)(int, void *args);
+void (*callback)(int desc, void *args);
 
 /* Set read callback function */
-mr_dev_ioctl(ds, MR_CTL_SET_RD_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SRCB, &fn);
 
 /* Get read callback function */
-mr_dev_ioctl(ds, MR_CTL_GET_RD_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GRCB, &callback);
 
 /* Set write callback function */
-mr_dev_ioctl(ds, MR_CTL_SET_WR_CALL, &call);
+mr_dev_ioctl(ds, MR_IOC_SWCB, &fn);
 
 /* Get write callback function */
-mr_dev_ioctl(ds, MR_CTL_GET_WR_CALL, &callback);
+mr_dev_ioctl(ds, MR_IOC_GWCB, &callback);
 ```
 
 ## Read Data from SERIAL Device
 
 ```c
-ssize_t mr_dev_read(int desc, void *buf, size_t size);
+ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
 | Parameter        | Description              |
@@ -291,7 +287,7 @@ number of bytes read).
 ## Write Data to SERIAL Device
 
 ```c
-ssize_t mr_dev_write(int desc, const void *buf, size_t size);
+ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
 | Parameter        | Description               |
@@ -314,7 +310,7 @@ if (size < 0)
 }
 ```
 
-Note: When no write buffer is set and not using `MR_OFLAG_NONBLOCK` for opening, it will use polling mode for
+Note: When no write buffer is set and not using `MR_O_NONBLOCK` for opening, it will use polling mode for
 synchronous writing. When a write buffer is set, it will write the data to the write buffer (return the actual number of
 bytes written), and asynchronously send the data through interrupt or DMA. The write callback function will be triggered
 after sending is complete. When data is being asynchronously sent, the write lock will automatically be locked, and
@@ -328,25 +324,23 @@ synchronous writing is not allowed until asynchronous sending is complete.
 /* Define serial device descriptor */
 int serial_ds = -1;
 
-int serial_init(void) 
+void serial_init(void) 
 {
     /* Initialize serial */
-    serial_ds = mr_dev_open("serial1", MR_OFLAG_RDWR);  
+    serial_ds = mr_dev_open("serial1", MR_O_RDWR);  
     if (serial_ds < 0)
     {
-      mr_printf("serial open failed: %s\r\n", mr_strerror(serial_ds));
-      return serial_ds;
+        mr_printf("serial open failed: %s\r\n", mr_strerror(serial_ds));
+        return;
     }
     
     /* Set serial configuration */
     struct mr_serial_config config = MR_SERIAL_CONFIG_DEFAULT;  
-    int ret = mr_dev_ioctl(serial_ds, MR_CTL_SERIAL_SET_CONFIG, &config);
+    int ret = mr_dev_ioctl(serial_ds, MR_IOC_SERIAL_SET_CONFIG, &config);
     if (ret < 0) 
     {
-      mr_printf("serial set config failed: %s\r\n", mr_strerror(ret));
-      return ret;
+        mr_printf("serial set config failed: %s\r\n", mr_strerror(ret));
     }
-    return MR_EOK;
 }
 /* Export to auto initialization (APP level) */
 MR_INIT_APP_EXPORT(serial_init);
@@ -366,5 +360,5 @@ int main(void)
 }
 ```
 
-Connect the computer to serial port 1. Loopback test can be performed by sending data in the serial port software and
+Connect the serial port 1. Loopback test can be performed by sending data in the serial port software and
 seeing the received data displayed in the serial port software.
