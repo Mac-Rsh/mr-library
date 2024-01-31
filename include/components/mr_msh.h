@@ -18,17 +18,22 @@ extern "C" {
 #ifdef MR_USING_MSH
 
 /**
+ * @addtogroup Msh
+ * @{
+ */
+
+/**
  * @brief MSH command structure.
  */
 struct mr_msh_cmd
 {
     const char *name;                                               /**< Name */
-    int (*call)(int argc, void *args);                              /**< Callback function */
+    void (*fn)(int argc, void *args);                               /**< Callback function */
     const char *help;                                               /**< Help information */
 };
 
 /**
- * @brief Exports a MSH command.
+ * @brief This macro function exports a MSH command.
  *
  * @param name The name of the command.
  * @param fn The callback function.
@@ -65,11 +70,6 @@ struct mr_msh_cmd
 #define MR_MSH_COLOR_GREEN(str)         str
 #endif /* MR_USING_MSH_PRINTF_COLOR */
 
-/**
- * @addtogroup Msh.
- * @{
- */
-int mr_msh_printf_output(const char *buf, size_t size);
 int mr_msh_input(char *c);
 int mr_msh_printf(const char *fmt, ...);
 void mr_msh_set_prompt(char *prompt);
