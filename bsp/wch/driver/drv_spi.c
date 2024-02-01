@@ -198,24 +198,6 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
             }
         }
 
-        switch (config->data_bits)
-        {
-            case MR_SPI_DATA_BITS_8:
-            {
-                SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-                break;
-            }
-            case MR_SPI_DATA_BITS_16:
-            {
-                SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
-                break;
-            }
-            default:
-            {
-                return MR_EINVAL;
-            }
-        }
-
         switch (config->bit_order)
         {
             case MR_SPI_BIT_ORDER_LSB:
@@ -256,6 +238,7 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     }
 
     /* Configure SPI */
+    SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(spi_bus_data->instance, &SPI_InitStructure);
@@ -280,7 +263,7 @@ static int drv_spi_bus_configure(struct mr_spi_bus *spi_bus, struct mr_spi_confi
     return MR_EOK;
 }
 
-static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
+static int drv_spi_bus_read(struct mr_spi_bus *spi_bus, uint8_t *data)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
     size_t i = 0;
@@ -290,13 +273,14 @@ static uint32_t drv_spi_bus_read(struct mr_spi_bus *spi_bus)
         i++;
         if (i > UINT16_MAX)
         {
-            return 0;
+            return MR_ETIMEOUT;
         }
     }
-    return SPI_I2S_ReceiveData(spi_bus_data->instance);
+    *data = (uint8_t)(SPI_I2S_ReceiveData(spi_bus_data->instance) & 0xFF);
+    return MR_EOK;
 }
 
-static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
+static int drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint8_t data)
 {
     struct drv_spi_bus_data *spi_bus_data = (struct drv_spi_bus_data *)spi_bus->dev.drv->data;
     size_t i = 0;
@@ -307,7 +291,7 @@ static void drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint32_t data)
         i++;
         if (i > UINT16_MAX)
         {
-            return;
+            return MR_ETIMEOUT;
         }
     }
 }

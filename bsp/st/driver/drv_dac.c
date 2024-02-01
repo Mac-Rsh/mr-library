@@ -90,11 +90,13 @@ static int drv_dac_channel_configure(struct mr_dac *dac, int channel, int state)
     struct drv_dac_channel_data *dac_channel_data = drv_dac_get_channel_data(channel);
     DAC_ChannelConfTypeDef sConfig = {0};
 
+#ifdef MR_USING_DAC_CHANNEL_CHECK
     /* Check channel is valid */
     if (dac_channel_data == NULL)
     {
         return MR_EINVAL;
     }
+#endif /* MR_USING_DAC_CHANNEL_CHECK */
 
     /* Configure Channel */
     sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
@@ -111,16 +113,18 @@ static int drv_dac_channel_configure(struct mr_dac *dac, int channel, int state)
     return MR_EOK;
 }
 
-static void drv_dac_write(struct mr_dac *dac, int channel, uint32_t data)
+static int drv_dac_write(struct mr_dac *dac, int channel, uint32_t data)
 {
     struct drv_dac_data *dac_data = (struct drv_dac_data *)dac->dev.drv->data;
     struct drv_dac_channel_data *dac_channel_data = drv_dac_get_channel_data(channel);
 
+#ifdef MR_USING_DAC_CHANNEL_CHECK
     /* Check channel is valid */
     if (dac_channel_data == NULL)
     {
-        return;
+        return MR_EINVAL;
     }
+#endif /* MR_USING_DAC_CHANNEL_CHECK */
 
     /* Write data */
     HAL_DAC_SetValue(&dac_data->handle, dac_channel_data->channel, DAC_ALIGN_12B_R, (data & 0xFFF));

@@ -257,7 +257,7 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
     return MR_EOK;
 }
 
-static uint8_t drv_serial_read(struct mr_serial *serial)
+static int drv_serial_read(struct mr_serial *serial, uint8_t *data)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     size_t i = 0;
@@ -268,13 +268,14 @@ static uint8_t drv_serial_read(struct mr_serial *serial)
         i++;
         if (i > UINT16_MAX)
         {
-            return 0;
+            return MR_ETIMEOUT;
         }
     }
-    return (uint8_t)USART_ReceiveData(serial_data->instance);
+    *data = (uint8_t)USART_ReceiveData(serial_data->instance);
+    return MR_EOK;
 }
 
-static void drv_serial_write(struct mr_serial *serial, uint8_t data)
+static int drv_serial_write(struct mr_serial *serial, uint8_t data)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     size_t i = 0;
@@ -286,9 +287,10 @@ static void drv_serial_write(struct mr_serial *serial, uint8_t data)
         i++;
         if (i > UINT16_MAX)
         {
-            return;
+            return MR_ETIMEOUT;
         }
     }
+    return MR_EOK;
 }
 
 static void drv_serial_start_tx(struct mr_serial *serial)

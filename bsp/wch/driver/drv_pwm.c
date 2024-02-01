@@ -200,7 +200,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch1_port, &GPIO_InitStructure);
             TIM_OC1Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC1PreloadConfig(pwm_data->instance, OCPreload);
-            return MR_EOK;
+            break;
         }
         case 2:
         {
@@ -208,7 +208,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch2_port, &GPIO_InitStructure);
             TIM_OC2Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC2PreloadConfig(pwm_data->instance, OCPreload);
-            return MR_EOK;
+            break;
         }
         case 3:
         {
@@ -216,7 +216,7 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch3_port, &GPIO_InitStructure);
             TIM_OC3Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC3PreloadConfig(pwm_data->instance, OCPreload);
-            return MR_EOK;
+            break;
         }
         case 4:
         {
@@ -224,13 +224,14 @@ static int drv_pwm_channel_configure(struct mr_pwm *pwm, int channel, int state,
             GPIO_Init(pwm_data->ch4_port, &GPIO_InitStructure);
             TIM_OC4Init(pwm_data->instance, &TIM_OCInitStructure);
             TIM_OC4PreloadConfig(pwm_data->instance, OCPreload);
-            return MR_EOK;
+            break;
         }
         default:
         {
             return MR_EINVAL;
         }
     }
+    return MR_EOK;
 }
 
 static void drv_pwm_start(struct mr_pwm *pwm, uint32_t prescaler, uint32_t period)
@@ -245,7 +246,7 @@ static void drv_pwm_start(struct mr_pwm *pwm, uint32_t prescaler, uint32_t perio
     TIM_Cmd(pwm_data->instance, ENABLE);
 }
 
-static void drv_pwm_write(struct mr_pwm *pwm, int channel, uint32_t compare_value)
+static int drv_pwm_write(struct mr_pwm *pwm, int channel, uint32_t compare_value)
 {
     struct drv_pwm_data *pwm_data = (struct drv_pwm_data *)pwm->dev.drv->data;
 
@@ -254,31 +255,32 @@ static void drv_pwm_write(struct mr_pwm *pwm, int channel, uint32_t compare_valu
         case 1:
         {
             TIM_SetCompare1(pwm_data->instance, compare_value);
-            return;
+            break;
         }
         case 2:
         {
             TIM_SetCompare2(pwm_data->instance, compare_value);
-            return;
+            break;
         }
         case 3:
         {
             TIM_SetCompare3(pwm_data->instance, compare_value);
-            return;
+            break;
         }
         case 4:
         {
             TIM_SetCompare4(pwm_data->instance, compare_value);
-            return;
+            break;
         }
         default:
         {
-            return;
+            return MR_EINVAL;
         }
     }
+    return MR_EOK;
 }
 
-static uint32_t drv_pwm_read(struct mr_pwm *pwm, int channel)
+static int drv_pwm_read(struct mr_pwm *pwm, int channel, uint32_t *compare_value)
 {
     struct drv_pwm_data *pwm_data = (struct drv_pwm_data *)pwm->dev.drv->data;
 
@@ -286,25 +288,30 @@ static uint32_t drv_pwm_read(struct mr_pwm *pwm, int channel)
     {
         case 1:
         {
-            return TIM_GetCapture1(pwm_data->instance);
+            *compare_value = TIM_GetCapture1(pwm_data->instance);
+            break;
         }
         case 2:
         {
-            return TIM_GetCapture2(pwm_data->instance);
+            *compare_value = TIM_GetCapture2(pwm_data->instance);
+            break;
         }
         case 3:
         {
-            return TIM_GetCapture3(pwm_data->instance);
+            *compare_value = TIM_GetCapture3(pwm_data->instance);
+            break;
         }
         case 4:
         {
-            return TIM_GetCapture4(pwm_data->instance);
+            *compare_value = TIM_GetCapture4(pwm_data->instance);
+            break;
         }
         default:
         {
-            return 0;
+            return MR_EINVAL;
         }
     }
+    return MR_EOK;
 }
 
 static struct mr_pwm_ops pwm_drv_ops =
@@ -312,8 +319,8 @@ static struct mr_pwm_ops pwm_drv_ops =
         drv_pwm_configure,
         drv_pwm_channel_configure,
         drv_pwm_start,
-        drv_pwm_write,
-        drv_pwm_read
+        drv_pwm_read,
+        drv_pwm_write
     };
 
 static struct mr_drv pwm_drv[] =

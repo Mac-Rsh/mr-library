@@ -115,17 +115,19 @@ static int drv_adc_channel_configure(struct mr_adc *adc, int channel, int state)
     return MR_EOK;
 }
 
-static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
+static int drv_adc_read(struct mr_adc *adc, int channel, uint32_t *data)
 {
     struct drv_adc_data *adc_data = (struct drv_adc_data *)adc->dev.drv->data;
     struct drv_adc_channel_data *adc_channel_data = drv_adc_get_channel_data(channel);
     size_t i = 0;
 
+#ifdef MR_USING_ADC_CHANNEL_CHECK
     /* Check channel is valid */
     if (adc_channel_data == NULL)
     {
-        return 0;
+        return MR_EINVAL;
     }
+#endif /* MR_USING_ADC_CHANNEL_CHECK */
 
     /* Read data */
 #ifdef MR_USING_CH32V00X
@@ -139,11 +141,12 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
         i++;
         if (i > UINT16_MAX)
         {
-            return 0;
+            return MR_ETIMEOUT;
         }
     }
     ADC_ClearFlag(adc_data->instance, ADC_FLAG_EOC);
-    return ADC_GetConversionValue(adc_data->instance);
+    *data = ADC_GetConversionValue(adc_data->instance);
+    return MR_EOK;
 }
 
 static struct mr_adc_ops adc_drv_ops =

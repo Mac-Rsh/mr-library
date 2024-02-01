@@ -105,17 +105,19 @@ static int drv_adc_channel_configure(struct mr_adc *adc, int channel, int state)
     return MR_EOK;
 }
 
-static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
+static int drv_adc_read(struct mr_adc *adc, int channel, uint32_t *data)
 {
     struct drv_adc_data *adc_data = (struct drv_adc_data *)adc->dev.drv->data;
     struct drv_adc_channel_data *adc_channel_data = drv_adc_get_channel_data(channel);
     ADC_ChannelConfTypeDef sConfig = {0};
 
+#ifdef MR_USING_ADC_CHANNEL_CHECK
     /* Check channel is valid */
     if (adc_channel_data == NULL)
     {
-        return 0;
+        return MR_EINVAL;
     }
+#endif /* MR_USING_ADC_CHANNEL_CHECK */
 
     /* Read data */
     sConfig.Channel = adc_channel_data->channel;
@@ -141,9 +143,14 @@ static uint32_t drv_adc_read(struct mr_adc *adc, int channel)
 #endif /* defined(ADC_SAMPLETIME_55CYCLES_5) */
     HAL_ADC_ConfigChannel(&adc_data->handle, &sConfig);
     HAL_ADC_Start(&adc_data->handle);
-    HAL_ADC_PollForConversion(&adc_data->handle, UINT16_MAX);
+    if (HAL_ADC_PollForConversion(&adc_data->handle, UINT16_MAX) == HAL_OK)
+    {
+        *data = HAL_ADC_GetValue(&adc_data->handle);
+        HAL_ADC_Stop(&adc_data->handle);
+        return MR_EOK;
+    }
     HAL_ADC_Stop(&adc_data->handle);
-    return HAL_ADC_GetValue(&adc_data->handle);
+    return MR_ETIMEOUT;
 }
 
 static struct mr_adc_ops adc_drv_ops =

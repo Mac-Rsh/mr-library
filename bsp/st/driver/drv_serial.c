@@ -215,7 +215,7 @@ static int drv_serial_configure(struct mr_serial *serial, struct mr_serial_confi
     return MR_EOK;
 }
 
-static uint8_t drv_serial_read(struct mr_serial *serial)
+static int drv_serial_read(struct mr_serial *serial, uint8_t *data)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     size_t i = 0;
@@ -226,20 +226,21 @@ static uint8_t drv_serial_read(struct mr_serial *serial)
         i++;
         if (i > UINT16_MAX)
         {
-            return 0;
+            return MR_ETIMEOUT;
         }
     }
 #if defined(STM32L4) || defined(STM32WL) || defined(STM32F7) || defined(STM32F0) \
  || defined(STM32L0) || defined(STM32G0) || defined(STM32H7) || defined(STM32L5) \
  || defined(STM32G4) || defined(STM32MP1) || defined(STM32WB) || defined(STM32F3)\
  || defined(STM32U5) || defined(STM32H5)
-    return (uint8_t)serial_data->handle.Instance->RDR & 0xff;
+    *data = (uint8_t)serial_data->handle.Instance->RDR & 0xff;
 #else
-    return (uint8_t)serial_data->handle.Instance->DR & 0xff;
+    *data = (uint8_t)serial_data->handle.Instance->DR & 0xff;
 #endif
+    return MR_EOK;
 }
 
-static void drv_serial_write(struct mr_serial *serial, uint8_t data)
+static int drv_serial_write(struct mr_serial *serial, uint8_t data)
 {
     struct drv_serial_data *serial_data = (struct drv_serial_data *)serial->dev.drv->data;
     size_t i = 0;
@@ -258,9 +259,10 @@ static void drv_serial_write(struct mr_serial *serial, uint8_t data)
         i++;
         if (i > UINT16_MAX)
         {
-            return;
+            return MR_ETIMEOUT;
         }
     }
+    return MR_EOK;
 }
 
 static void drv_serial_start_tx(struct mr_serial *serial)

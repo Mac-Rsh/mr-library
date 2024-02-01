@@ -297,20 +297,36 @@ static void drv_pwm_start(struct mr_pwm *pwm, uint32_t prescaler, uint32_t perio
     __HAL_TIM_ENABLE(&pwm_data->handle);
 }
 
-static void drv_pwm_write(struct mr_pwm *pwm, int channel, uint32_t compare_value)
+static int drv_pwm_read(struct mr_pwm *pwm, int channel, uint32_t *compare_value)
 {
     struct drv_pwm_data *pwm_data = (struct drv_pwm_data *)pwm->dev.drv->data;
     uint32_t Channel = (channel - 1) << 2;
 
-    __HAL_TIM_SET_COMPARE(&pwm_data->handle, Channel, compare_value);
+#ifdef MR_USING_PWM_CHANNEL_CHECK
+    if ((Channel & TIM_CHANNEL_ALL) || (Channel == 0))
+    {
+        return MR_EINVAL;
+    }
+#endif /* MR_USING_PWM_CHANNEL_CHECK */
+
+    *compare_value = __HAL_TIM_GET_COMPARE(&pwm_data->handle, Channel);
+    return MR_EOK;
 }
 
-static uint32_t drv_pwm_read(struct mr_pwm *pwm, int channel)
+static int drv_pwm_write(struct mr_pwm *pwm, int channel, uint32_t compare_value)
 {
     struct drv_pwm_data *pwm_data = (struct drv_pwm_data *)pwm->dev.drv->data;
     uint32_t Channel = (channel - 1) << 2;
 
-    return __HAL_TIM_GET_COMPARE(&pwm_data->handle, Channel);
+#ifdef MR_USING_PWM_CHANNEL_CHECK
+    if ((Channel & TIM_CHANNEL_ALL) || (Channel == 0))
+    {
+        return MR_EINVAL;
+    }
+#endif /* MR_USING_PWM_CHANNEL_CHECK */
+
+    __HAL_TIM_SET_COMPARE(&pwm_data->handle, Channel, compare_value);
+    return MR_EOK;
 }
 
 static struct mr_pwm_ops pwm_drv_ops =
@@ -318,8 +334,8 @@ static struct mr_pwm_ops pwm_drv_ops =
         drv_pwm_configure,
         drv_pwm_channel_configure,
         drv_pwm_start,
-        drv_pwm_write,
-        drv_pwm_read
+        drv_pwm_read,
+        drv_pwm_write
     };
 
 static struct mr_drv pwm_drv[] =

@@ -214,7 +214,7 @@ static int drv_pin_configure(struct mr_pin *pin, int number, int mode)
     return MR_EOK;
 }
 
-static uint8_t drv_pin_read(struct mr_pin *pin, int number)
+static int drv_pin_read(struct mr_pin *pin, int number, uint8_t *value)
 {
     struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
     struct drv_pin_data *pin_data = drv_pin_get_data(number);
@@ -223,13 +223,14 @@ static uint8_t drv_pin_read(struct mr_pin *pin, int number)
     /* Check pin is valid */
     if (pin_port_data == NULL || pin_data == NULL)
     {
-        return 0;
+        return MR_EINVAL;
     }
 #endif /* MR_USING_PIN_CHECK */
-    return (int)HAL_GPIO_ReadPin(pin_port_data->port, pin_data->pin);
+    *value = HAL_GPIO_ReadPin(pin_port_data->port, pin_data->pin);
+    return MR_EOK;
 }
 
-static void drv_pin_write(struct mr_pin *pin, int number, uint8_t value)
+static int drv_pin_write(struct mr_pin *pin, int number, uint8_t value)
 {
     struct drv_pin_port_data *pin_port_data = drv_pin_get_port_data(number);
     struct drv_pin_data *pin_data = drv_pin_get_data(number);
@@ -238,10 +239,11 @@ static void drv_pin_write(struct mr_pin *pin, int number, uint8_t value)
     /* Check pin is valid */
     if (pin_port_data == NULL || pin_data == NULL)
     {
-        return;
+        return MR_EINVAL;
     }
 #endif /* MR_USING_PIN_CHECK */
     HAL_GPIO_WritePin(pin_port_data->port, pin_data->pin, (GPIO_PinState)value);
+    return MR_EOK;
 }
 
 void EXTI0_IRQHandler(void)

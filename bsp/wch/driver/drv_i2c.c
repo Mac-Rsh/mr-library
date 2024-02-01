@@ -149,34 +149,47 @@ static void drv_i2c_bus_start(struct mr_i2c_bus *i2c_bus)
     }
 }
 
-static void drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
+static int drv_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
     size_t i = 0;
 
-    I2C_SendData(i2c_bus_data->instance, addr);
+    /* Check start condition */
+    while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_MODE_SELECT) == RESET)
+    {
+        i++;
+        if (i > UINT16_MAX)
+        {
+            return MR_ETIMEOUT;
+        }
+    }
+
+    /* Send address with 10-bit */
+    if (addr_bits == MR_I2C_ADDR_BITS_10)
+    {
+        i = 0;
+        I2C_SendData(i2c_bus_data->instance, addr >> 8);
+        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_MODE_ADDRESS10) == RESET)
+        {
+            i++;
+            if (i > UINT16_MAX)
+            {
+                return MR_ETIMEOUT;
+            }
+        }
+    }
+
+    /* Send address */
+    i = 0;
     while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == RESET)
     {
         i++;
         if (i > UINT16_MAX)
         {
-            return;
+            return MR_ETIMEOUT;
         }
     }
-
-    if (addr_bits == MR_I2C_ADDR_BITS_10)
-    {
-        I2C_SendData(i2c_bus_data->instance, (addr >> 8));
-        i = 0;
-        while (I2C_CheckEvent(i2c_bus_data->instance, I2C_EVENT_MASTER_BYTE_TRANSMITTED) == RESET)
-        {
-            i++;
-            if (i > UINT16_MAX)
-            {
-                return;
-            }
-        }
-    }
+    return MR_EOK;
 }
 
 static void drv_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
@@ -186,7 +199,7 @@ static void drv_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
     I2C_GenerateSTOP(i2c_bus_data->instance, ENABLE);
 }
 
-static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
+static int drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *data, int ack_state)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
     size_t i = 0;
@@ -200,13 +213,14 @@ static uint8_t drv_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
         i++;
         if (i > UINT16_MAX)
         {
-            return 0;
+            return MR_ETIMEOUT;
         }
     }
-    return (uint8_t)I2C_ReceiveData(i2c_bus_data->instance);
+    *data = (uint8_t)I2C_ReceiveData(i2c_bus_data->instance);
+    return MR_EOK;
 }
 
-static void drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
+static int drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
 {
     struct drv_i2c_bus_data *i2c_bus_data = (struct drv_i2c_bus_data *)i2c_bus->dev.drv->data;
     size_t i = 0;
@@ -218,9 +232,10 @@ static void drv_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
         i++;
         if (i > UINT16_MAX)
         {
-            return;
+            return MR_ETIMEOUT;
         }
     }
+    return MR_EOK;
 }
 
 static void drv_i2c_bus_isr(struct mr_i2c_bus *i2c_bus)
