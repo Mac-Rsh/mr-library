@@ -264,6 +264,7 @@ static int drv_spi_bus_write(struct mr_spi_bus *spi_bus, uint8_t data)
             return MR_ETIMEOUT;
         }
     }
+    return MR_EOK;
 }
 
 static void drv_spi_bus_isr(struct mr_spi_bus *spi_bus)
