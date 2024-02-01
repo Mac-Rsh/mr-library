@@ -44,6 +44,15 @@ menu "Driver configure"
         config MR_USING_SPI1
             bool "Enable SPI1 driver"
             default n
+
+        menu "SPI1 driver configure"
+            depends on MR_USING_SPI1
+
+            config MR_CFG_SPI1_GROUP
+                int "SPI1 Group"
+                default 1
+                range 1 2
+        endmenu
     endmenu
 
     menu "Timer"

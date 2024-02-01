@@ -65,11 +65,17 @@ static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
         case MR_ISR_SPI_RD_INT:
         {
             struct mr_spi_dev *spi_dev = (struct mr_spi_dev *)spi_bus->owner;
-            uint32_t data = ops->read(spi_bus);
+            uint8_t data;
 
-            /* Read data to FIFO. if callback is set, call it */
-            mr_ringbuf_write_force(&spi_dev->rd_fifo, &data, (spi_bus->config.data_bits >> 3));
-            return MR_EOK;
+            /* Read data to FIFO */
+            int ret = ops->read(spi_bus, &data);
+            if (ret < 0)
+            {
+                return ret;
+            }
+            mr_ringbuf_write_force(&spi_dev->rd_fifo, &data, sizeof(data));
+
+            return (ssize_t)mr_ringbuf_get_data_size(&spi_dev->rd_fifo);;
         }
         default:
         {
@@ -186,7 +192,6 @@ MR_INLINE int spi_dev_take_bus(struct mr_spi_dev *spi_dev)
         if (spi_dev->config.baud_rate != spi_bus->config.baud_rate
             || spi_dev->config.host_slave != spi_bus->config.host_slave
             || spi_dev->config.mode != spi_bus->config.mode
-            || spi_dev->config.data_bits != spi_bus->config.data_bits
             || spi_dev->config.bit_order != spi_bus->config.bit_order)
         {
             int ret = ops->configure(spi_bus, &spi_dev->config);
@@ -229,143 +234,57 @@ MR_INLINE int spi_dev_release_bus(struct mr_spi_dev *spi_dev)
 #define MR_SPI_WR                       (1)
 #define MR_SPI_RDWR                     (2)
 
-static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev, void *rd_buf, const void *wr_buf, size_t size, int rdwr)
+static ssize_t spi_dev_transfer(struct mr_spi_dev *spi_dev,
+                                uint8_t *rd_buf,
+                                const uint8_t *wr_buf,
+                                size_t size,
+                                int rdwr)
 {
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)spi_dev->dev.parent;
     struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)spi_bus->dev.drv->ops;
-    size_t tf_size;
+    ssize_t tf_size;
 
     if (rdwr == MR_SPI_RD)
     {
-        switch (spi_dev->config.data_bits)
+        for (tf_size = 0; tf_size < size; tf_size += sizeof(*rd_buf))
         {
-            case MR_SPI_DATA_BITS_8:
+            ops->write(spi_bus, 0);
+            int ret = ops->read(spi_bus, rd_buf);
+            if (ret < 0)
             {
-                uint8_t *rd_data = (uint8_t *)rd_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*rd_data)); tf_size += sizeof(*rd_data))
-                {
-                    ops->write(spi_bus, 0);
-                    *rd_data = ops->read(spi_bus);
-                    rd_data++;
-                }
-                break;
+                return (tf_size == 0) ? ret : tf_size;
             }
-            case MR_SPI_DATA_BITS_16:
-            {
-                uint16_t *rd_data = (uint16_t *)rd_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*rd_data)); tf_size += sizeof(*rd_data))
-                {
-                    ops->write(spi_bus, 0);
-                    *rd_data = ops->read(spi_bus);
-                    rd_data++;
-                }
-                break;
-            }
-            case MR_SPI_DATA_BITS_32:
-            {
-                uint32_t *rd_data = (uint32_t *)rd_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*rd_data)); tf_size += sizeof(*rd_data))
-                {
-                    ops->write(spi_bus, 0);
-                    *rd_data = ops->read(spi_bus);
-                    rd_data++;
-                }
-                break;
-            }
-            default:
-            {
-                return MR_EINVAL;
-            }
+            rd_buf++;
         }
     } else if (rdwr == MR_SPI_WR)
     {
-        switch (spi_dev->config.data_bits)
+        for (tf_size = 0; tf_size < size; tf_size += sizeof(*wr_buf))
         {
-            case MR_SPI_DATA_BITS_8:
+            int ret = ops->write(spi_bus, *wr_buf);
+            if (ret < 0)
             {
-                uint8_t *wr_data = (uint8_t *)wr_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
-                {
-                    ops->write(spi_bus, *wr_data);
-                    ops->read(spi_bus);
-                    wr_data++;
-                }
-                break;
+                return (tf_size == 0) ? ret : tf_size;
             }
-            case MR_SPI_DATA_BITS_16:
-            {
-                uint16_t *wr_data = (uint16_t *)wr_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
-                {
-                    ops->write(spi_bus, *wr_data);
-                    ops->read(spi_bus);
-                    wr_data++;
-                }
-                break;
-            }
-            case MR_SPI_DATA_BITS_32:
-            {
-                uint32_t *wr_data = (uint32_t *)wr_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
-                {
-                    ops->write(spi_bus, *wr_data);
-                    ops->read(spi_bus);
-                    wr_data++;
-                }
-                break;
-            }
-            default:
-            {
-                return MR_EINVAL;
-            }
+            ops->read(spi_bus, MR_MAKE_LOCAL(uint8_t, 0));
+            wr_buf++;
         }
     } else
     {
-        switch (spi_dev->config.data_bits)
+        for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_buf)); tf_size += sizeof(*wr_buf))
         {
-            case MR_SPI_DATA_BITS_8:
+            int ret = ops->write(spi_bus, *wr_buf);
+            if (ret < 0)
             {
-                uint8_t *rd_data = (uint8_t *)rd_buf;
-                uint8_t *wr_data = (uint8_t *)wr_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
-                {
-                    ops->write(spi_bus, *wr_data);
-                    *rd_data = ops->read(spi_bus);
-                    rd_data++;
-                    wr_data++;
-                }
-                break;
+                return (tf_size == 0) ? ret : tf_size;
             }
-            case MR_SPI_DATA_BITS_16:
+
+            ret = ops->read(spi_bus, rd_buf);
+            if (ret < 0)
             {
-                uint16_t *wr_data = (uint16_t *)wr_buf;
-                uint16_t *rd_data = (uint16_t *)rd_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
-                {
-                    ops->write(spi_bus, *wr_data);
-                    *rd_data = ops->read(spi_bus);
-                    rd_data++;
-                    wr_data++;
-                }
-                break;
+                return (tf_size == 0) ? ret : tf_size;
             }
-            case MR_SPI_DATA_BITS_32:
-            {
-                uint32_t *wr_data = (uint32_t *)wr_buf;
-                uint32_t *rd_data = (uint32_t *)rd_buf;
-                for (tf_size = 0; tf_size < MR_ALIGN_DOWN(size, sizeof(*wr_data)); tf_size += sizeof(*wr_data))
-                {
-                    ops->write(spi_bus, *wr_data);
-                    *rd_data = ops->read(spi_bus);
-                    rd_data++;
-                    wr_data++;
-                }
-                break;
-            }
-            default:
-            {
-                return MR_EINVAL;
-            }
+            rd_buf++;
+            wr_buf++;
         }
     }
     return (ssize_t)tf_size;
@@ -413,7 +332,17 @@ static ssize_t mr_spi_dev_read(struct mr_dev *dev, void *buf, size_t count)
         /* Send the address of the register that needs to be read */
         if (dev->position >= 0)
         {
-            spi_dev_transfer(spi_dev, MR_NULL, &dev->position, (spi_dev->config.reg_bits >> 3), MR_SPI_WR);
+            ret = spi_dev_transfer(spi_dev,
+                                   MR_NULL,
+                                   (uint8_t *)&dev->position,
+                                   (spi_dev->config.reg_bits >> 3),
+                                   MR_SPI_WR);
+            if (ret < 0)
+            {
+                spi_dev_cs_set(spi_dev, MR_DISABLE);
+                spi_dev_release_bus(spi_dev);
+                return ret;
+            }
         }
 
         ret = spi_dev_transfer(spi_dev, buf, MR_NULL, count, MR_SPI_RD);
@@ -444,7 +373,17 @@ static ssize_t mr_spi_dev_write(struct mr_dev *dev, const void *buf, size_t coun
         /* Send the address of the register that needs to be written */
         if (dev->position >= 0)
         {
-            spi_dev_transfer(spi_dev, MR_NULL, &dev->position, (spi_dev->config.reg_bits >> 3), MR_SPI_WR);
+            ret = spi_dev_transfer(spi_dev,
+                                   MR_NULL,
+                                   (uint8_t *)&dev->position,
+                                   (spi_dev->config.reg_bits >> 3),
+                                   MR_SPI_WR);
+            if (ret < 0)
+            {
+                spi_dev_cs_set(spi_dev, MR_DISABLE);
+                spi_dev_release_bus(spi_dev);
+                return ret;
+            }
         }
 
         ret = spi_dev_transfer(spi_dev, MR_NULL, buf, count, MR_SPI_WR);

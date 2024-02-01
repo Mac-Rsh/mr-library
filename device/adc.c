@@ -93,7 +93,11 @@ static ssize_t mr_adc_read(struct mr_dev *dev, void *buf, size_t count)
 
     for (rd_size = 0; rd_size < MR_ALIGN_DOWN(count, sizeof(*rd_buf)); rd_size += sizeof(*rd_buf))
     {
-        *rd_buf = ops->read(adc, dev->position);
+        int ret = ops->read(adc, dev->position, rd_buf);
+        if (ret < 0)
+        {
+            return (rd_size == 0) ? ret : rd_size;
+        }
         rd_buf++;
     }
     return rd_size;

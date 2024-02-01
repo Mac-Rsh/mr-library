@@ -84,8 +84,10 @@ int _mr_fast_pin_mode(int number, int mode)
 uint8_t _mr_fast_pin_read(int number)
 {
     struct mr_dev *dev = *_fast_pin_dev_get(MR_MAGIC_NUMBER);
+    uint8_t value = 0;
 
-    return ((struct mr_pin_ops *)dev->drv->ops)->read((struct mr_pin *)dev, number);
+    ((struct mr_pin_ops *)dev->drv->ops)->read((struct mr_pin *)dev, number, &value);
+    return value;
 }
 
 /**

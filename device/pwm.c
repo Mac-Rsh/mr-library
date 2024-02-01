@@ -157,8 +157,14 @@ static ssize_t mr_pwm_read(struct mr_dev *dev, void *buf, size_t count)
 
     for (rd_size = 0; rd_size < MR_ALIGN_DOWN(count, sizeof(*rd_buf)); rd_size += sizeof(*rd_buf))
     {
+        uint32_t compare_value;
+
         /* Calculate the duty */
-        uint32_t compare_value = ops->read(pwm, dev->position);
+        int ret = ops->read(pwm, dev->position, &compare_value);
+        if (ret < 0)
+        {
+            return (rd_size == 0) ? ret : rd_size;
+        }
         *rd_buf = (uint32_t)(((float)compare_value / (float)pwm->period) * 1000000.0f);
         rd_buf++;
     }
@@ -186,7 +192,11 @@ static ssize_t mr_pwm_write(struct mr_dev *dev, const void *buf, size_t count)
         uint32_t compare_value = MR_BOUND((uint32_t)(((float)*wr_buf / 1000000.0f) * (float)(pwm->period)),
                                           0,
                                           pwm->period);
-        ops->write(pwm, dev->position, compare_value);
+        int ret = ops->write(pwm, dev->position, compare_value);
+        if (ret < 0)
+        {
+            return (wr_size == 0) ? ret : wr_size;
+        }
         wr_buf++;
     }
     return wr_size;
@@ -236,8 +246,14 @@ static int mr_pwm_ioctl(struct mr_dev *dev, int cmd, void *args)
                 {
                     if (MR_BIT_IS_SET(pwm->channel, (1 << i)) == MR_ENABLE)
                     {
+                        uint32_t compare_value;
+
                         /* Get old duty */
-                        uint32_t compare_value = ops->read(pwm, (int)i);
+                        ret = ops->read(pwm, (int)i, &compare_value);
+                        if (ret < 0)
+                        {
+                            continue;
+                        }
 
                         /* Calculate new compare value */
                         compare_value = (uint32_t)(((float)compare_value / (float)old_period) * (float)(pwm->period));

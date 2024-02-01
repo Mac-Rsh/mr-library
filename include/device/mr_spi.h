@@ -37,13 +37,6 @@ extern "C" {
 #define MR_SPI_MODE_3                   (3)                         /**< CPOL = 1, CPHA = 1 */
 
 /**
- * @brief SPI data bits.
- */
-#define MR_SPI_DATA_BITS_8              (8)                         /**< 8 bits data */
-#define MR_SPI_DATA_BITS_16             (16)                        /**< 16 bits data */
-#define MR_SPI_DATA_BITS_32             (32)                        /**< 32 bits data */
-
-/**
  * @brief SPI bit order.
  */
 #define MR_SPI_BIT_ORDER_LSB            (0)                         /**< LSB first */
@@ -64,7 +57,6 @@ extern "C" {
     3000000,                            \
     MR_SPI_HOST,                        \
     MR_SPI_MODE_0,                      \
-    MR_SPI_DATA_BITS_8,                 \
     MR_SPI_BIT_ORDER_MSB,               \
     MR_SPI_REG_BITS_8,                  \
 }
@@ -77,7 +69,6 @@ struct mr_spi_config
     uint32_t baud_rate;                                             /**< Baud rate */
     int host_slave;                                                 /**< Host/slave */
     int mode;                                                       /**< Mode */
-    int data_bits;                                                  /**< Data bits */
     int bit_order;                                                  /**< Bit order */
     int reg_bits;                                                   /**< Register bits */
 };
@@ -137,8 +128,8 @@ struct mr_spi_bus
 struct mr_spi_bus_ops
 {
     int (*configure)(struct mr_spi_bus *spi_bus, struct mr_spi_config *config);
-    uint32_t (*read)(struct mr_spi_bus *spi_bus);
-    void (*write)(struct mr_spi_bus *spi_bus, uint32_t data);
+    int (*read)(struct mr_spi_bus *spi_bus, uint8_t *data);
+    int (*write)(struct mr_spi_bus *spi_bus, uint8_t data);
 };
 
 /**

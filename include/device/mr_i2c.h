@@ -99,10 +99,10 @@ struct mr_i2c_bus_ops
 {
     int (*configure)(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits);
     void (*start)(struct mr_i2c_bus *i2c_bus);
-    void (*send_addr)(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits);
+    int (*send_addr)(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits);
     void (*stop)(struct mr_i2c_bus *i2c_bus);
-    uint8_t (*read)(struct mr_i2c_bus *i2c_bus, int ack_state);
-    void (*write)(struct mr_i2c_bus *i2c_bus, uint8_t data);
+    int (*read)(struct mr_i2c_bus *i2c_bus, uint8_t *data, int ack_state);
+    int (*write)(struct mr_i2c_bus *i2c_bus, uint8_t data);
 };
 
 /**

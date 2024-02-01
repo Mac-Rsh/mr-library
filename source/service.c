@@ -170,6 +170,8 @@ const char *mr_strerror(int err)
             return "operation not supported";
         case MR_EINVAL:
             return "invalid argument";
+        case MR_ETIMEOUT:
+            return "timeout";
         default:
             return "unknown error";
     }

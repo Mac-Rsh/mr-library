@@ -87,8 +87,8 @@ struct mr_pwm_ops
     int (*configure)(struct mr_pwm *pwm, int state);
     int (*channel_configure)(struct mr_pwm *pwm, int channel, int state, int polarity);
     void (*start)(struct mr_pwm *pwm, uint32_t prescaler, uint32_t period);
-    void (*write)(struct mr_pwm *pwm, int channel, uint32_t compare_value);
-    uint32_t (*read)(struct mr_pwm *pwm, int channel);
+    int (*read)(struct mr_pwm *pwm, int channel, uint32_t *compare_value);
+    int (*write)(struct mr_pwm *pwm, int channel, uint32_t compare_value);
 };
 
 int mr_pwm_register(struct mr_pwm *pwm, const char *path, struct mr_drv *drv, struct mr_pwm_info *info);

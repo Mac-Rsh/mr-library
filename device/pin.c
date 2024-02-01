@@ -41,7 +41,11 @@ static ssize_t mr_pin_read(struct mr_dev *dev, void *buf, size_t count)
 
     for (rd_size = 0; rd_size < count; rd_size += sizeof(*rd_buf))
     {
-        *rd_buf = (uint8_t)ops->read(pin, dev->position);
+        int ret = (uint8_t)ops->read(pin, dev->position, rd_buf);
+        if (ret < 0)
+        {
+            return (rd_size == 0) ? ret : rd_size;
+        }
         rd_buf++;
     }
     return rd_size;
@@ -64,7 +68,11 @@ static ssize_t mr_pin_write(struct mr_dev *dev, const void *buf, size_t count)
 
     for (wr_size = 0; wr_size < count; wr_size += sizeof(*wr_buf))
     {
-        ops->write(pin, dev->position, *wr_buf);
+        int ret = ops->write(pin, dev->position, *wr_buf);
+        if (ret < 0)
+        {
+            return (wr_size == 0) ? ret : wr_size;
+        }
         wr_buf++;
     }
     return wr_size;

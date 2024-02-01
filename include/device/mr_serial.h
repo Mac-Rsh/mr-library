@@ -112,6 +112,7 @@ typedef uint8_t mr_serial_data_t;                                   /**< Serial 
  */
 #define MR_ISR_SERIAL_RD_INT            (MR_ISR_RD | (0x01))        /**< Read interrupt */
 #define MR_ISR_SERIAL_WR_INT            (MR_ISR_WR | (0x02))        /**< Write interrupt */
+#define MR_ISR_SERIAL_RD_IDLE           (MR_ISR_RD | (0x03))        /**< Read idle */
 
 /**
  * @brief Serial structure.
@@ -133,8 +134,8 @@ struct mr_serial
 struct mr_serial_ops
 {
     int (*configure)(struct mr_serial *serial, struct mr_serial_config *config);
-    uint8_t (*read)(struct mr_serial *serial);
-    void (*write)(struct mr_serial *serial, uint8_t data);
+    int (*read)(struct mr_serial *serial, uint8_t *data);
+    int (*write)(struct mr_serial *serial, uint8_t data);
     void (*start_tx)(struct mr_serial *serial);
     void (*stop_tx)(struct mr_serial *serial);
 };

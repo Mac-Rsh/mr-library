@@ -93,7 +93,11 @@ static ssize_t mr_dac_write(struct mr_dev *dev, const void *buf, size_t count)
 
     for (wr_size = 0; wr_size < MR_ALIGN_DOWN(count, sizeof(*wr_buf)); wr_size += sizeof(*wr_buf))
     {
-        ops->write(dac, dev->position, *wr_buf);
+        int ret = ops->write(dac, dev->position, *wr_buf);
+        if (ret < 0)
+        {
+            return (wr_size == 0) ? ret : wr_size;
+        }
         wr_buf++;
     }
     return wr_size;

@@ -61,7 +61,7 @@ struct mr_dac_ops
 {
     int (*configure)(struct mr_dac *dac, int state);
     int (*channel_configure)(struct mr_dac *dac, int channel, int state);
-    void (*write)(struct mr_dac *dac, int channel, uint32_t data);
+    int (*write)(struct mr_dac *dac, int channel, uint32_t data);
 };
 
 int mr_dac_register(struct mr_dac *dac, const char *path, struct mr_drv *drv);

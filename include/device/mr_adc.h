@@ -61,7 +61,7 @@ struct mr_adc_ops
 {
     int (*configure)(struct mr_adc *adc, int state);
     int (*channel_configure)(struct mr_adc *adc, int channel, int state);
-    uint32_t (*read)(struct mr_adc *adc, int channel);
+    int (*read)(struct mr_adc *adc, int channel, uint32_t *data);
 };
 
 int mr_adc_register(struct mr_adc *adc, const char *path, struct mr_drv *drv);

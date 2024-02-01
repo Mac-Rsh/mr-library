@@ -83,8 +83,8 @@ struct mr_pin
 struct mr_pin_ops
 {
     int (*configure)(struct mr_pin *pin, int number, int mode);
-    uint8_t (*read)(struct mr_pin *pin, int number);
-    void (*write)(struct mr_pin *pin, int number, uint8_t value);
+    int (*read)(struct mr_pin *pin, int number, uint8_t *value);
+    int (*write)(struct mr_pin *pin, int number, uint8_t value);
 };
 
 int mr_pin_register(struct mr_pin *pin, const char *path, struct mr_drv *drv);

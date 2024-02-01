@@ -37,9 +37,10 @@ MR_INLINE uint8_t soft_i2c_sda_get(struct mr_soft_i2c_bus *soft_i2c_bus)
     return (uint8_t)_mr_fast_pin_read(soft_i2c_bus->sda_pin);
 }
 
-static void soft_i2c_bus_wait_ack(struct mr_i2c_bus *i2c_bus)
+static int soft_i2c_bus_wait_ack(struct mr_i2c_bus *i2c_bus)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
+    int ret = MR_ETIMEOUT;
 
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
     soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
@@ -48,9 +49,13 @@ static void soft_i2c_bus_wait_ack(struct mr_i2c_bus *i2c_bus)
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_HIGH);
     mr_delay_us(soft_i2c_bus->delay);
 
-    soft_i2c_sda_get(soft_i2c_bus);
+    if (soft_i2c_sda_get(soft_i2c_bus) == SOFT_I2C_LOW)
+    {
+        ret = MR_EOK;
+    }
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
     mr_delay_us(soft_i2c_bus->delay);
+    return ret;
 }
 
 static void soft_i2c_bus_send_ack(struct mr_i2c_bus *i2c_bus, int ack)
@@ -58,7 +63,6 @@ static void soft_i2c_bus_send_ack(struct mr_i2c_bus *i2c_bus, int ack)
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
 
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
-    mr_delay_us(soft_i2c_bus->delay);
     if (ack == MR_ENABLE)
     {
         soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_LOW);
@@ -67,10 +71,11 @@ static void soft_i2c_bus_send_ack(struct mr_i2c_bus *i2c_bus, int ack)
         soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
     }
 
+    mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_HIGH);
     mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
-    mr_delay_us(soft_i2c_bus->delay);
+    soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
 }
 
 static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits)
@@ -118,15 +123,25 @@ static void mr_soft_i2c_bus_start(struct mr_i2c_bus *i2c_bus)
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
 }
 
-static void mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data);
+static int mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data);
 
-static void mr_soft_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
+static int mr_soft_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
 {
-    mr_soft_i2c_bus_write(i2c_bus, addr);
     if (addr_bits == MR_I2C_ADDR_BITS_10)
     {
-        mr_soft_i2c_bus_write(i2c_bus, (addr >> 8));
+        int ret = mr_soft_i2c_bus_write(i2c_bus, addr >> 8);
+        if (ret < 0)
+        {
+            return ret;
+        }
     }
+
+    int ret = mr_soft_i2c_bus_write(i2c_bus, addr);
+    if (ret < 0)
+    {
+        return ret;
+    }
+    return MR_EOK;
 }
 
 static void mr_soft_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
@@ -140,50 +155,43 @@ static void mr_soft_i2c_bus_stop(struct mr_i2c_bus *i2c_bus)
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_HIGH);
     mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
+    mr_delay_us(soft_i2c_bus->delay);
 }
 
-static uint8_t mr_soft_i2c_bus_read(struct mr_i2c_bus *i2c_bus, int ack_state)
+static int mr_soft_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *data, int ack_state)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
-    uint8_t data = 0;
 
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
     mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
 
-    for (size_t bits = 0; bits < 8; bits++)
+    for (size_t bits = 0; bits < (sizeof(*data) * 8); bits++)
     {
-        mr_delay_us(soft_i2c_bus->delay);
         soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
         mr_delay_us(soft_i2c_bus->delay);
         soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_HIGH);
         mr_delay_us(soft_i2c_bus->delay);
-        data <<= 1;
+        *data <<= 1;
         if (soft_i2c_sda_get(soft_i2c_bus) == SOFT_I2C_HIGH)
         {
-            data |= 0x01;
+            *data |= 0x01;
         }
     }
 
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
     mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_bus_send_ack(i2c_bus, ack_state);
-    return data;
+    return MR_EOK;
 }
 
-static void mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
+static int mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
 
     for (size_t bits = 0; bits < 8; bits++)
     {
-        if (data & 0x80)
-        {
-            soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
-        } else
-        {
-            soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_LOW);
-        }
+        soft_i2c_bus_sda_set(soft_i2c_bus, (data & 0x80) ? SOFT_I2C_HIGH : SOFT_I2C_LOW);
         data <<= 1;
 
         mr_delay_us(soft_i2c_bus->delay);
@@ -191,7 +199,7 @@ static void mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
         mr_delay_us(soft_i2c_bus->delay);
         soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
     }
-    soft_i2c_bus_wait_ack(i2c_bus);
+    return soft_i2c_bus_wait_ack(i2c_bus);
 }
 
 /**

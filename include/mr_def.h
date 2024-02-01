@@ -115,6 +115,7 @@ typedef void (*mr_init_fn_t)(void);                                 /**< Auto in
 #define MR_EEXIST                       (-5)                        /**< Exists */
 #define MR_ENOTSUP                      (-6)                        /**< Operation not supported */
 #define MR_EINVAL                       (-7)                        /**< Invalid argument */
+#define MR_ETIMEOUT                     (-8)                        /**< Timeout */
 /** @} */
 
 /**

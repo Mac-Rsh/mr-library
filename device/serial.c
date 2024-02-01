@@ -52,7 +52,11 @@ static ssize_t mr_serial_read(struct mr_dev *dev, void *buf, size_t count)
     {
         for (rd_size = 0; rd_size < count; rd_size += sizeof(*rd_buf))
         {
-            *rd_buf = ops->read(serial);
+            int ret = ops->read(serial, rd_buf);
+            if (ret < 0)
+            {
+                return (rd_size == 0) ? ret : rd_size;
+            }
             rd_buf++;
         }
     } else
@@ -73,7 +77,11 @@ static ssize_t mr_serial_write(struct mr_dev *dev, const void *buf, size_t count
     {
         for (wr_size = 0; wr_size < count; wr_size += sizeof(*wr_buf))
         {
-            ops->write(serial, *wr_buf);
+            int ret = ops->write(serial, *wr_buf);
+            if (ret < 0)
+            {
+                return (wr_size == 0) ? ret : wr_size;
+            }
             wr_buf++;
         }
     } else
@@ -226,16 +234,23 @@ static ssize_t mr_serial_isr(struct mr_dev *dev, int event, void *args)
     {
         case MR_ISR_SERIAL_RD_INT:
         {
+            uint8_t data;
+
             /* Read data to FIFO */
-            uint8_t data = ops->read(serial);
+            int ret = ops->read(serial, &data);
+            if (ret < 0)
+            {
+                return ret;
+            }
             mr_ringbuf_push_force(&serial->rd_fifo, data);
 
             return (ssize_t)mr_ringbuf_get_data_size(&serial->rd_fifo);
         }
         case MR_ISR_SERIAL_WR_INT:
         {
-            /* Write data from FIFO, if FIFO is empty, stop transmit */
             uint8_t data;
+
+            /* Write data from FIFO, if FIFO is empty, stop transmit */
             if (mr_ringbuf_pop(&serial->wr_fifo, &data) == sizeof(data))
             {
                 ops->write(serial, data);
