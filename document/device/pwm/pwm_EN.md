@@ -165,14 +165,14 @@ mr_dev_ioctl(ds, (-(0x01)), &freq);
 ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
-| Parameter        | Description             |
-|------------------|-------------------------|
-| desc             | Device descriptor       |
-| buf              | Buffer for reading data |
-| size             | Size of reading data    |
-| **Return Value** |                         |
-| `>=0`            | Size of reading data    |
-| `<0`             | Error code              |
+| Parameter        | Description          |
+|------------------|----------------------|
+| desc             | Device descriptor    |
+| buf              | Read data buffer     |
+| count            | Read data size       |
+| **Return Value** |                      |
+| `>=0`            | Size of reading data |
+| `<0`             | Error code           |
 
 ```c
 /* Read duty cycle */
@@ -194,14 +194,14 @@ The minimum unit for single reading is `uint32_t`, which is 4 bytes.
 ssize_t mr_dev_write(int desc, const void *buf, size_t count);  
 ```
 
-| Parameter        | Description             |
-|------------------|-------------------------|
-| desc             | Device descriptor       |
-| buf              | Buffer for writing data |
-| size             | Size of writing data    |
-| **Return Value** |                         |
-| `>=0`            | Size of writing data    |
-| `<0`             | Error code              |
+| Parameter        | Description          |
+|------------------|----------------------|
+| desc             | Device descriptor    |
+| buf              | Write data buffer    |
+| count            | Write data size      |
+| **Return Value** |                      |
+| `>=0`            | Size of writing data |
+| `<0`             | Error code           |
 
 ```c
 /* Write duty cycle */
@@ -264,19 +264,20 @@ int main(void)
 {
     /* Automatically initialize (pwm_init function will be automatically called here) */
     mr_auto_init();
+    
+    /* Write duty cycle */
+    uint32_t duty = 500000;
+    int ret = mr_dev_write(pwm_ds, &duty, sizeof(duty));
+    /* Check if writing succeeds */
+    if (ret != sizeof(duty))
+    {
+        mr_printf("Write failed: %s\r\n", mr_strerror(ret));
+        return ret;
+    }
 
     while(1)
     {
-        /* Write duty cycle */
-        uint32_t duty = 500000;
-        int ret = mr_dev_write(pwm_ds, &duty, sizeof(duty));
-        /* Check if writing succeeds */
-        if (ret != sizeof(duty))
-        {
-            mr_printf("Write failed: %s\r\n", mr_strerror(ret));
-            return ret;
-        }
-        mr_delay_ms(1000);
+
     }
 }
 ```

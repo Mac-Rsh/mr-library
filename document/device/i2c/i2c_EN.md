@@ -280,7 +280,7 @@ ssize_t mr_dev_read(int desc, void *buf, size_t count);
 |                  |                   |
 | desc             | Device descriptor |  
 | buf              | Read data buffer  |
-| size             | Read data size    |
+| count            | Read data size    |
 | **Return Value** |                   |
 | `>=0`            | Read data size    |
 | `<0`             | Error code        |
@@ -298,9 +298,8 @@ if (size < 0)
 
 Note:
 
-- In host mode, data is read synchronously in polling mode. In slave mode, if the read buffer is not set, the data is
-  read synchronously in polling mode. After the read buffer is set, the specified amount of data is read from the read
-  buffer (the size of the actual read data is returned).
+- In host mode, data is read synchronously in polling mode. In slave mode,
+  reads a specified amount of data from the read buffer (returns the size of the data actually read).
 - When the register parameter is not negative, the write operation of the register value is inserted before the read
   operation.
 
@@ -314,7 +313,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 |------------------|-------------------|
 | desc             | Device descriptor |
 | buf              | Write data buffer |
-| size             | Write data size   |  
+| count            | Write data size   |  
 | **Return Value** |                   |
 | `>=0`            | Write data size   |
 | `<0`             | Error code        |
@@ -437,13 +436,13 @@ Note: Software I2C requires enabling PIN device.
 ### Register Software I2C Bus
 
 ```c
-int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *name, int scl_pin, int sda_pin);
+int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *path, int scl_pin, int sda_pin);
 ```
 
 | Parameter        | Description                        |
 |------------------|------------------------------------|
 | soft_i2c_bus     | Software I2C bus structure pointer |
-| name             | Bus name                           |  
+| path             | Bus path                           |  
 | scl_pin          | SCL pin number                     |
 | sda_pin          | SDA pin number                     |
 | **Return Value** |                                    |

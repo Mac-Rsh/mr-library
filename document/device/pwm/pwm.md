@@ -167,7 +167,7 @@ ssize_t mr_dev_read(int desc, void *buf, size_t count);
 |---------|---------|
 | desc    | 设备描述符   |
 | buf     | 读取数据缓冲区 |
-| size    | 读取数据大小  |
+| count   | 读取数据大小  |
 | **返回值** |         |
 | `>=0`   | 读取数据大小  |
 | `<0`    | 错误码     |
@@ -195,7 +195,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 |---------|---------|
 | desc    | 设备描述符   |
 | buf     | 写入数据缓冲区 |
-| size    | 写入数据大小  |
+| count   | 写入数据大小  |
 | **返回值** |         |
 | `>=0`   | 写入数据大小  |
 | `<0`    | 错误码     |
@@ -260,19 +260,20 @@ int main(void)
 {
     /* 自动初始化（pwm_init函数将在此处自动调用） */
     mr_auto_init();
+    
+    /* 写入占空比 */
+    uint32_t duty = 500000;
+    int ret = mr_dev_write(pwm_ds, &duty, sizeof(duty));
+    /* 是否写入成功 */
+    if (ret != sizeof(duty))
+    {
+        mr_printf("Write failed: %s\r\n", mr_strerror(ret));
+        return ret;
+    }
 
     while(1)
     {
-        /* 写入占空比 */
-        uint32_t duty = 500000;
-        int ret = mr_dev_write(pwm_ds, &duty, sizeof(duty));
-        /* 是否写入成功 */
-        if (ret != sizeof(duty))
-        {
-            mr_printf("Write failed: %s\r\n", mr_strerror(ret));
-            return ret;
-        }
-        mr_delay_ms(1000);
+        
     }
 }
 ```

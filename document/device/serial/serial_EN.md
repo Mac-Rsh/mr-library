@@ -260,14 +260,14 @@ mr_dev_ioctl(ds, MR_IOC_GWCB, &callback);
 ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
-| Parameter        | Description              |
-|------------------|--------------------------|
-| desc             | Device descriptor        |  
-| buf              | Buffer to read data into |
-| size             | Size of data to read     |
-| **Return Value** |                          |
-| `>=0`            | Number of bytes read     |
-| `<0`             | Error code               |
+| Parameter        | Description          |
+|------------------|----------------------|
+| desc             | Device descriptor    |  
+| buf              | Read data buffer     |
+| count            | Read data size       |
+| **Return Value** |                      |
+| `>=0`            | Number of bytes read |
+| `<0`             | Error code           |
 
 ```c
 char buf[128];
@@ -280,8 +280,7 @@ if (size < 0)
 }
 ```
 
-Note: When no read buffer is set, it will use polling mode for synchronous reading (cannot ensure complete reception of
-data). When a read buffer is set, it will read the specified amount of data from the read buffer (return the actual
+Note: When no read buffer is set, it will use polling mode for synchronous reading. When a read buffer is set, it will read the specified amount of data from the read buffer (return the actual
 number of bytes read).
 
 ## Write Data to SERIAL Device
@@ -290,14 +289,14 @@ number of bytes read).
 ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
-| Parameter        | Description               |
-|------------------|---------------------------|
-| desc             | Device descriptor         |
-| buf              | Buffer with data to write |
-| size             | Size of data to write     |
-| **Return Value** |                           |
-| `>=0`            | Number of bytes written   |
-| `<0`             | Error code                |
+| Parameter        | Description             |
+|------------------|-------------------------|
+| desc             | Device descriptor       |
+| buf              | Write data buffer       |
+| count            | Write data size         |
+| **Return Value** |                         |
+| `>=0`            | Number of bytes written |
+| `<0`             | Error code              |
 
 ```c
 char buf[] = {"hello world"};
@@ -310,11 +309,10 @@ if (size < 0)
 }
 ```
 
-Note: When no write buffer is set and not using `MR_O_NONBLOCK` for opening, it will use polling mode for
-synchronous writing. When a write buffer is set, it will write the data to the write buffer (return the actual number of
-bytes written), and asynchronously send the data through interrupt or DMA. The write callback function will be triggered
-after sending is complete. When data is being asynchronously sent, the write lock will automatically be locked, and
-synchronous writing is not allowed until asynchronous sending is complete.
+Note: When opened with `MR_O_NONBLOCK`, the data is written to the write buffer (returns the size of the data actually written), 
+the data is sent asynchronously by interrupt or DMA, and the write callback function is triggered when the sending is complete.
+When data is sent asynchronously, the write lock is automatically locked. In this case,
+data cannot be written synchronously until the asynchronous transmission is complete.
 
 ## Example
 

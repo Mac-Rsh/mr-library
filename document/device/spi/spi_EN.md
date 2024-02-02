@@ -335,14 +335,14 @@ if (size < 0)
 ssize_t mr_dev_read(int desc, void *buf, size_t count);
 ```
 
-| Parameter        | Description             |
-|------------------|-------------------------|
-| desc             | Device descriptor       |
-| buf              | Buffer for reading data |
-| size             | Size of data to read    |
-| **Return Value** |                         |
-| `>=0`            | Size of data read       |  
-| `<0`             | Error code              |
+| Parameter        | Description       |
+|------------------|-------------------|
+| desc             | Device descriptor |
+| buf              | Read data buffer  |
+| count            | Read data size    |
+| **Return Value** |                   |
+| `>=0`            | Size of data read |  
+| `<0`             | Error code        |
 
 ```c
 uint8_t buf[128];
@@ -359,9 +359,8 @@ if (size < 0)
 
 Note:
 
-- In master mode, polling will be used for synchronous reading. In slave mode, if read buffer is not set, polling will
-  be used for synchronous reading; if read buffer is set, data of the specified size will be read from the read buffer (
-  returns actual size of data read).
+- In master mode, polling will be used for synchronous reading. In slave mode, 
+  reads a specified amount of data from the read buffer (returns the size of the data actually read).
 - The register value writing will be inserted before the reading operation if the register parameter is not negative.
 
 ## Write SPI Device Data
@@ -370,14 +369,14 @@ Note:
 ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 ```
 
-| Parameter        | Description             |
-|------------------|-------------------------|
-| desc             | Device descriptor       |
-| buf              | Buffer for writing data |
-| size             | Size of data to write   |
-| **Return Value** |                         |
-| `>=0`            | Size of data written    |
-| `<0`             | Error code              |
+| Parameter        | Description          |
+|------------------|----------------------|
+| desc             | Device descriptor    |
+| buf              | Write data buffer    |
+| count            | Write data size      |
+| **Return Value** |                      |
+| `>=0`            | Size of data written |
+| `<0`             | Error code           |
 
 ```c
 uint8_t buf[] = {0x01, 0x02, 0x03, 0x04};

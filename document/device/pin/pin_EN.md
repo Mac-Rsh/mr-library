@@ -213,7 +213,7 @@ ssize_t mr_dev_read(int desc, void *buf, size_t count);
 |------------------|-------------------|
 | desc             | Device descriptor |  
 | buf              | Read data buffer  |
-| size             | Read data size    |
+| count            | Read data size    |
 | **Return Value** |                   |
 | `>=0`            | Read data size    |
 | `<0`             | Error code        |
@@ -239,7 +239,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 |------------------|-------------------|
 | desc             | Device descriptor |
 | buf              | Write data buffer |  
-| size             | Write data size   |
+| count            | Write data size   |
 | **Return Value** |                   |
 | `>=0`            | Write data size   |
 | `<0`             | Error code        |

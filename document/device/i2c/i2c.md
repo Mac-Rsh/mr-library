@@ -272,7 +272,7 @@ ssize_t mr_dev_read(int desc, void *buf, size_t count);
 |---------|---------|
 | desc    | 设备描述符   |
 | buf     | 读取数据缓冲区 |
-| size    | 读取数据大小  |
+| count   | 读取数据大小  |
 | **返回值** |         |
 | `>=0`   | 读取数据大小  |
 | `<0`    | 错误码     |
@@ -290,7 +290,7 @@ if (size < 0)
 
 注：
 
-- 主机模式下，将使用轮询方式同步读取数据。从机模式下，未设置读缓冲区将使用轮询方式同步读取数据，设置读缓冲区后将从读缓冲区读取指定数量的数据（返回实际读取的数据大小）。
+- 主机模式下，将使用轮询方式同步读取数据。从机模式下，从读缓冲区读取指定数量的数据（返回实际读取的数据大小）。
 - 当寄存器参数不为负数时，将在读取操作前插入寄存器值的写入操作。
 
 ## 写入I2C设备数据
@@ -303,7 +303,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 |---------|---------|
 | desc    | 设备描述符   |
 | buf     | 写入数据缓冲区 |
-| size    | 写入数据大小  |
+| count   | 写入数据大小  |
 | **返回值** |         |
 | `>=0`   | 写入数据大小  |
 | `<0`    | 错误码     |
@@ -424,13 +424,13 @@ int main(void)
 ### 注册软件I2C总线
 
 ```c
-int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *name, int scl_pin, int sda_pin);
+int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *path, int scl_pin, int sda_pin);
 ```
 
 | 参数           | 描述           |
 |--------------|--------------|
 | soft_i2c_bus | 软件I2C总线结构体指针 |
-| name         | 总线名称         |
+| path         | 总线           |
 | scl_pin      | SCL引脚编号      |
 | sda_pin      | SDA引脚编号      |
 | **返回值**      |              |

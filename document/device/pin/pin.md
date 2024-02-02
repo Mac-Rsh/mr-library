@@ -209,7 +209,7 @@ ssize_t mr_dev_read(int desc, void *buf, size_t count);
 |---------|---------|
 | desc    | 设备描述符   |
 | buf     | 读取数据缓冲区 |
-| size    | 读取数据大小  |
+| count   | 读取数据大小  |
 | **返回值** |         |
 | `>=0`   | 读取数据大小  |
 | `<0`    | 错误码     |
@@ -235,7 +235,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 |---------|---------|
 | desc    | 设备描述符   |
 | buf     | 写入数据缓冲区 |
-| size    | 写入数据大小  |
+| count   | 写入数据大小  |
 | **返回值** |         |
 | `>=0`   | 写入数据大小  |
 | `<0`    | 错误码     |

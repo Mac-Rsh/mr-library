@@ -138,7 +138,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count);
 |------------------|-------------------|
 | desc             | Device descriptor |   
 | buf              | Write data buffer |
-| size             | Write data size   |
+| count            | Write data size   |
 | **Return Value** |                   |
 | `>=0`            | Write data size   |
 | `<0`             | Error code        |
