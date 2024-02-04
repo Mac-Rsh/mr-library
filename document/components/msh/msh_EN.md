@@ -87,9 +87,9 @@ char *p = MR_MSH_GET_ARG(index);
 ## Usage Example:
 
 ```c
-int hello_fn(int argc, void *argv)
+void hello_fn(int argc, void *argv)
 {
-    for (size_t i = 0; i < argc; i++)
+    for (size_t i = 1; i <= argc; i++)
     {
         mr_msh_printf("hello %s\r\n", MR_MSH_GET_ARG(i));
     }

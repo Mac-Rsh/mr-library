@@ -58,7 +58,7 @@ static ssize_t mr_spi_bus_write(struct mr_dev *dev, const void *buf, size_t coun
 static ssize_t mr_spi_bus_isr(struct mr_dev *dev, int event, void *args)
 {
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)dev;
-    struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)spi_bus->dev.drv->ops;
+    struct mr_spi_bus_ops *ops = (struct mr_spi_bus_ops *)dev->drv->ops;
 
     switch (event)
     {

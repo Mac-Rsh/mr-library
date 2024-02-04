@@ -121,8 +121,8 @@ struct mr_i2c_dev
     struct mr_i2c_config config;                                    /**< Configuration */
     struct mr_ringbuf rd_fifo;                                      /**< Read FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
-    uint32_t addr: 16;                                              /**< Address */
-    uint32_t addr_bits: 16;                                         /**< Address bits */
+    int addr;                                                       /**< Address */
+    int addr_bits;                                                  /**< Address bits */
 };
 
 int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *path, struct mr_drv *drv);

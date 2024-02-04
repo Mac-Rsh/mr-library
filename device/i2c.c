@@ -44,7 +44,7 @@ static ssize_t mr_i2c_bus_write(struct mr_dev *dev, const void *buf, size_t coun
 static ssize_t mr_i2c_bus_isr(struct mr_dev *dev, int event, void *args)
 {
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)dev;
-    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
+    struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)dev->drv->ops;
 
     switch (event)
     {
@@ -123,7 +123,8 @@ MR_INLINE int i2c_dev_take_bus(struct mr_i2c_dev *i2c_dev)
         if (i2c_dev->config.baud_rate != i2c_bus->config.baud_rate
             || i2c_dev->config.host_slave != i2c_bus->config.host_slave)
         {
-            int addr = (i2c_dev->config.host_slave == MR_I2C_SLAVE) ? i2c_dev->addr : 0x00;
+            int addr = (i2c_dev->config.host_slave == MR_I2C_HOST) ? 0x00 : i2c_dev->addr;
+
             int ret = ops->configure(i2c_bus, &i2c_dev->config, addr, i2c_dev->addr_bits);
             if (ret < 0)
             {
@@ -195,19 +196,18 @@ MR_INLINE ssize_t i2c_dev_read(struct mr_i2c_dev *i2c_dev, uint8_t *buf, size_t 
 {
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
-    uint8_t *rd_buf = (uint8_t *)buf;
     ssize_t rd_size;
 
-    for (rd_size = 0; rd_size < count; rd_size += sizeof(*rd_buf))
+    for (rd_size = 0; rd_size < count; rd_size += sizeof(*buf))
     {
-        int ack = ((count - rd_size) == sizeof(*rd_buf));
+        int ack = ((count - rd_size) != sizeof(*buf));
 
-        int ret = ops->read(i2c_bus, rd_buf, ack);
+        int ret = ops->read(i2c_bus, buf, ack);
         if (ret < 0)
         {
             return (rd_size == 0) ? ret : rd_size;
         }
-        rd_buf++;
+        buf++;
     }
     return rd_size;
 }
@@ -216,17 +216,16 @@ MR_INLINE ssize_t i2c_dev_write(struct mr_i2c_dev *i2c_dev, const uint8_t *buf, 
 {
     struct mr_i2c_bus *i2c_bus = (struct mr_i2c_bus *)i2c_dev->dev.parent;
     struct mr_i2c_bus_ops *ops = (struct mr_i2c_bus_ops *)i2c_bus->dev.drv->ops;
-    uint8_t *wr_buf = (uint8_t *)buf;
     ssize_t wr_size;
 
-    for (wr_size = 0; wr_size < count; wr_size += sizeof(*wr_buf))
+    for (wr_size = 0; wr_size < count; wr_size += sizeof(*buf))
     {
-        int ret = ops->write(i2c_bus, *wr_buf);
+        int ret = ops->write(i2c_bus, *buf);
         if (ret < 0)
         {
             return (wr_size == 0) ? ret : wr_size;
         }
-        wr_buf++;
+        buf++;
     }
     return wr_size;
 }
