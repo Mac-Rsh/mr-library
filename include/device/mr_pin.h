@@ -35,11 +35,11 @@ extern "C" {
 /**
  * @brief PIN mode-interrupt.
  */
-#define MR_PIN_MODE_IRQ_RISING          (6)                         /**< Interrupt rising edge */
-#define MR_PIN_MODE_IRQ_FALLING         (7)                         /**< Interrupt falling edge */
-#define MR_PIN_MODE_IRQ_EDGE            (8)                         /**< Interrupt edge */
-#define MR_PIN_MODE_IRQ_LOW             (9)                         /**< Interrupt low level */
-#define MR_PIN_MODE_IRQ_HIGH            (10)                        /**< Interrupt high level */
+#define MR_PIN_MODE_IRQ_RISING          (6)                         /**< Interrupt rising edge mode */
+#define MR_PIN_MODE_IRQ_FALLING         (7)                         /**< Interrupt falling edge mode */
+#define MR_PIN_MODE_IRQ_EDGE            (8)                         /**< Interrupt edge mode */
+#define MR_PIN_MODE_IRQ_LOW             (9)                         /**< Interrupt low level mode */
+#define MR_PIN_MODE_IRQ_HIGH            (10)                        /**< Interrupt high level mode */
 
 /**
  * @brief PIN configuration structure.
@@ -57,6 +57,7 @@ struct mr_pin_config
 #define MR_IOC_PIN_SET_EXTI_CALL        MR_IOC_SRCB                 /**< Set pin exti callback command */
 
 #define MR_IOC_PIN_GET_NUMBER           MR_IOC_GPOS                 /**< Get pin number command */
+#define MR_IOC_PIN_GET_MODE             MR_IOC_GCFG                 /**< Get pin mode command */
 #define MR_IOC_PIN_GET_EXTI_CALL        MR_IOC_GRCB                 /**< Get pin exti callback command */
 
 /**
@@ -67,7 +68,7 @@ typedef uint8_t mr_pin_data_t;                                      /**< PIN rea
 /**
  * @brief PIN ISR events.
  */
-#define MR_ISR_PIN_EXTI_INT             (MR_ISR_RD | (0x01))        /**< Exti interrupt */
+#define MR_ISR_PIN_EXTI_INT             (MR_ISR_RD | (0x01))        /**< Exti interrupt event */
 
 /**
  * @brief PIN structure.
@@ -75,6 +76,8 @@ typedef uint8_t mr_pin_data_t;                                      /**< PIN rea
 struct mr_pin
 {
     struct mr_dev dev;                                              /**< Device */
+
+    uint32_t pins[32];                                              /**< Pins */
 };
 
 /**
@@ -89,6 +92,7 @@ struct mr_pin_ops
 
 int mr_pin_register(struct mr_pin *pin, const char *path, struct mr_drv *drv);
 /** @} */
+
 #endif /* MR_USING_PIN */
 
 #ifdef __cplusplus

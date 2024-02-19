@@ -71,6 +71,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
     - `MR_IOC_PIN_SET_MODE`：设置引脚模式。
     - `MR_IOC_PIN_SET_EXTI_CALL`：设置外部中断回调函数。
     - `MR_IOC_PIN_GET_NUMBER`：获取引脚编号。
+    - `MR_IOC_PIN_GET_MODE`：获取引脚模式。
     - `MR_IOC_PIN_GET_EXTI_CALL`：获取外部中断回调函数。
 
 ### 设置/获取引脚编号
@@ -110,7 +111,7 @@ int number;
 mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 ```
 
-### 设置引脚模式
+### 设置/获取引脚模式
 
 #### 引脚模式
 
@@ -137,6 +138,10 @@ mr_dev_ioctl(ds, MR_IOC_GPOS, &number);
 
 /* 设置引脚模式 */
 mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE));
+
+/* 获取引脚模式 */
+int mode;
+mr_dev_ioctl(ds, MR_IOC_PIN_GET_MODE, &mode);
 ```
 
 不依赖PIN接口：
@@ -147,6 +152,10 @@ mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE));
 
 /* 设置引脚模式 */
 mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, PIN_MODE));
+
+/* 获取引脚模式 */
+int mode;
+mr_dev_ioctl(ds, MR_IOC_GCFG, &mode);
 ```
 
 ### 设置/获取外部中断回调函数
@@ -157,7 +166,7 @@ mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, PIN_MODE));
 void fn(int desc, void *args)
 {
     /* 获取引脚编号 */
-    ssize_t number = *(ssize_t *)args;
+    int number = *(int *)args;
     if (number == PIN_NUMBER)
     {
         /* 处理外部中断事件 */
@@ -180,7 +189,7 @@ mr_dev_ioctl(ds, MR_IOC_PIN_GET_EXTI_CALL, &callback);
 void fn(int desc, void *args)
 {
     /* 获取引脚编号 */
-    ssize_t number = *(ssize_t *)args;
+    int number = *(int *)args;
     if (number == PIN_NUMBER)
     {
         /* 处理外部中断事件 */
@@ -268,7 +277,7 @@ int key_ds = -1;
 
 void key_call(int desc, void *args)
 {
-    ssize_t number = *((ssize_t *)args);
+    int number = *((int *)args);
 
     if (number == KEY_PIN_NUMBER)
     {

@@ -73,6 +73,7 @@ int mr_dev_ioctl(int desc, int cmd, void *args);
     - `MR_IOC_PIN_SET_MODE`: Set pin mode
     - `MR_IOC_PIN_SET_EXTI_CALL`: Set external interrupt callback function
     - `MR_IOC_PIN_GET_NUMBER`: Get pin number
+    - `MR_IOC_PIN_GET_MODE`: Get pin mode
     - `MR_IOC_PIN_GET_EXTI_CALL`: Get external interrupt callback function
 
 ### Set/Get Pin Number
@@ -141,6 +142,10 @@ And 5 external interrupt modes:
 
 /* Set pin mode */
 mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, PIN_MODE)); 
+
+/* Get pin mode */
+int mode;
+mr_dev_ioctl(ds, MR_IOC_PIN_GET_MODE, &mode);
 ```
 
 Independent of PIN interface:
@@ -151,6 +156,10 @@ Independent of PIN interface:
 
 /* Set pin mode */
 mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, PIN_MODE)); 
+
+/* Get pin mode */
+int mode;
+mr_dev_ioctl(ds, MR_IOC_GCFG, &mode);
 ```
 
 ### Set/Get External Interrupt Callback Function
@@ -161,7 +170,7 @@ mr_dev_ioctl(ds, MR_IOC_SCFG, MR_MAKE_LOCAL(int, PIN_MODE));
 void fn(int desc, void *args)
 {
     /* Get pin number */
-    ssize_t number = *(ssize_t *)args;  
+    int number = *(int *)args;  
     if (number == PIN_NUMBER)
     {
         /* Handle external interrupt event */
@@ -184,7 +193,7 @@ Independent of PIN interface:
 void fn(int desc, void *args)
 {
     /* Get pin number */
-    ssize_t number = *(ssize_t *)args;  
+    int number = *(int *)args;  
     if (number == PIN_NUMBER)
     {
         /* Handle external interrupt event */
@@ -272,7 +281,7 @@ int key_ds = -1;
 
 void key_call(int desc, void *args)
 {
-    ssize_t number = *((ssize_t *)args);
+    int number = *((int *)args);
 
     if (number == KEY_PIN_NUMBER)
     {

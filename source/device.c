@@ -8,14 +8,8 @@
 
 #include "include/mr_api.h"
 
-static struct mr_dev root_dev =                                     /**< Root device */
-    {
-        .name = "dev",
-        .type = MR_DEV_TYPE_ROOT,
-        .parent = MR_NULL,
-        .list = MR_LIST_INIT(root_dev.list),
-        .clist = MR_LIST_INIT(root_dev.clist)
-    };
+static struct mr_dev root_dev = {.name = "dev", .type = MR_DEV_TYPE_ROOT, .parent = MR_NULL, .list = MR_LIST_INIT(
+    root_dev.list), .clist = MR_LIST_INIT(root_dev.clist)};         /**< Root device */
 
 #ifndef MR_CFG_DESC_NUM
 #define MR_CFG_DESC_NUM                 (32)
@@ -38,11 +32,9 @@ MR_INLINE int dev_is_root(struct mr_dev *dev)
 
 MR_INLINE struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
 {
-    for (struct mr_list *list = parent->clist.next; list != &parent->clist; list = list->next)
-    {
+    for (struct mr_list *list = parent->clist.next; list != &parent->clist; list = list->next) {
         struct mr_dev *dev = (struct mr_dev *)MR_CONTAINER_OF(list, struct mr_dev, list);
-        if (strncmp(name, dev->name, MR_CFG_DEV_NAME_LEN) == 0)
-        {
+        if (strncmp(name, dev->name, MR_CFG_DEV_NAME_LEN) == 0) {
             return dev;
         }
     }
@@ -51,8 +43,7 @@ MR_INLINE struct mr_dev *dev_find_child(struct mr_dev *parent, const char *name)
 
 MR_INLINE int dev_register_child(struct mr_dev *parent, struct mr_dev *child, const char *name)
 {
-    if (dev_find_child(parent, name) != MR_NULL)
-    {
+    if (dev_find_child(parent, name) != MR_NULL) {
         return MR_EEXIST;
     }
 
@@ -65,15 +56,13 @@ MR_INLINE int dev_register_child(struct mr_dev *parent, struct mr_dev *child, co
 
 static int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const char *path)
 {
-    if (path[0] == '/')
-    {
+    if (path[0] == '/') {
         path++;
     }
 
     /* Check for child path separator */
     const char *child_path = strchr(path, '/');
-    if (child_path != MR_NULL)
-    {
+    if (child_path != MR_NULL) {
         char child_name[MR_CFG_DEV_NAME_LEN + 1] = {0};
         size_t len = MR_BOUND(child_path - path, 0, MR_CFG_DEV_NAME_LEN);
 
@@ -81,15 +70,13 @@ static int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const
         strncpy(child_name, path, len);
         child_name[len] = '\0';
         struct mr_dev *child = dev_find_child(parent, child_name);
-        if (child == MR_NULL)
-        {
+        if (child == MR_NULL) {
             return MR_ENOTFOUND;
         }
 
         /* Register recursively */
         return dev_register_by_path(child, dev, child_path);
-    } else
-    {
+    } else {
         /* Register with parent */
         return dev_register_child(parent, dev, path);
     }
@@ -97,15 +84,13 @@ static int dev_register_by_path(struct mr_dev *parent, struct mr_dev *dev, const
 
 static struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 {
-    if (path[0] == '/')
-    {
+    if (path[0] == '/') {
         path++;
     }
 
     /* Check for child path separator */
     const char *child_path = strchr(path, '/');
-    if (child_path != MR_NULL)
-    {
+    if (child_path != MR_NULL) {
         char child_name[MR_CFG_DEV_NAME_LEN + 1] = {0};
         size_t len = MR_BOUND(child_path - path, 0, MR_CFG_DEV_NAME_LEN);
 
@@ -113,15 +98,13 @@ static struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
         strncpy(child_name, path, len);
         child_name[len] = '\0';
         struct mr_dev *child = dev_find_child(parent, child_name);
-        if (child == MR_NULL)
-        {
+        if (child == MR_NULL) {
             return MR_NULL;
         }
 
         /* Find recursively */
         return dev_find_by_path(child, child_path);
-    } else
-    {
+    } else {
         /* Find with parent */
         return dev_find_child(parent, path);
     }
@@ -131,17 +114,14 @@ static struct mr_dev *dev_find_by_path(struct mr_dev *parent, const char *path)
 static int dev_lock_take(struct mr_dev *dev, uint32_t take, uint32_t set)
 {
     /* Continue iterating until reach the root device */
-    if (dev_is_root(dev->parent) != MR_TRUE)
-    {
+    if (dev_is_root(dev->parent) != MR_TRUE) {
         int ret = dev_lock_take(dev->parent, take, set);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return ret;
         }
     }
 
-    if (dev->lock & take)
-    {
+    if (dev->lock & take) {
         return MR_EBUSY;
     }
     MR_BIT_SET(dev->lock, set);
@@ -151,8 +131,7 @@ static int dev_lock_take(struct mr_dev *dev, uint32_t take, uint32_t set)
 static void dev_lock_release(struct mr_dev *dev, uint32_t release)
 {
     /* Continue iterating until reach the root device */
-    if (dev_is_root(dev->parent) != MR_TRUE)
-    {
+    if (dev_is_root(dev->parent) != MR_TRUE) {
         dev_lock_release(dev->parent, release);
     }
 
@@ -163,13 +142,12 @@ static void dev_lock_release(struct mr_dev *dev, uint32_t release)
 MR_INLINE struct mr_dev *dev_find(const char *path)
 {
     /* Check whether the path is absolute */
-    if (*path == '/')
-    {
+    if (*path == '/') {
         path++;
         const char *next_slash = strchr(path, '/');
         if ((next_slash == MR_NULL) ||
-            (strncmp(path, root_dev.name, MR_BOUND(next_slash - path, 0, MR_CFG_DEV_NAME_LEN)) != 0))
-        {
+            (strncmp(path, root_dev.name, MR_BOUND(next_slash - path, 0, MR_CFG_DEV_NAME_LEN)) !=
+             0)) {
             return MR_NULL;
         }
         path += MR_BOUND(next_slash - path, 0, MR_CFG_DEV_NAME_LEN);
@@ -182,13 +160,12 @@ MR_INLINE struct mr_dev *dev_find(const char *path)
 MR_INLINE int dev_register(struct mr_dev *dev, const char *path)
 {
     /* Check whether the path is absolute */
-    if (*path == '/')
-    {
+    if (*path == '/') {
         path++;
         const char *next_slash = strchr(path, '/');
         if ((next_slash == MR_NULL) ||
-            (strncmp(path, root_dev.name, MR_BOUND(next_slash - path, 0, MR_CFG_DEV_NAME_LEN)) != 0))
-        {
+            (strncmp(path, root_dev.name, MR_BOUND(next_slash - path, 0, MR_CFG_DEV_NAME_LEN)) !=
+             0)) {
             return MR_EINVAL;
         }
         path += MR_BOUND(next_slash - path, 0, MR_CFG_DEV_NAME_LEN);
@@ -201,87 +178,28 @@ MR_INLINE int dev_register(struct mr_dev *dev, const char *path)
     return ret;
 }
 
-static int dev_isr(struct mr_dev *dev, int event, void *args)
-{
-    /* Call the all registered callbacks */
-    switch (event)
-    {
-        case MR_ISR_RD:
-        {
-            for (struct mr_list *list = dev->rd_call_list.next; list != &dev->rd_call_list; list = list->next)
-            {
-                struct mr_dev_desc *desc = (struct mr_dev_desc *)MR_CONTAINER_OF(list,
-                                                                                 struct mr_dev_desc,
-                                                                                 rd_call.list);
-                if (desc->rd_call.fn != MR_NULL)
-                {
-                    desc->rd_call.fn((int)(desc - &desc_map[0]), args);
-                }
-            }
-            break;
-        }
-        case MR_ISR_WR:
-        {
-#ifdef MR_USING_RDWR_CTL
-            dev_lock_release(dev, MR_LOCK_NONBLOCK);
-#endif /* MR_USING_RDWR_CTL */
-            for (struct mr_list *list = dev->wr_call_list.next; list != &dev->wr_call_list; list = list->next)
-            {
-                struct mr_dev_desc *desc = (struct mr_dev_desc *)MR_CONTAINER_OF(list,
-                                                                                 struct mr_dev_desc,
-                                                                                 wr_call.list);
-                if (desc->wr_call.fn != MR_NULL)
-                {
-                    desc->wr_call.fn((int)(desc - &desc_map[0]), args);
-                }
-            }
-            break;
-        }
-        default:
-        {
-            return MR_ENOTSUP;
-        }
-    }
-
-    /* Wake up all child devices */
-    for (struct mr_list *list = dev->clist.next; list != &dev->clist; list = list->next)
-    {
-        struct mr_dev *cdev = (struct mr_dev *)MR_CONTAINER_OF(list, struct mr_dev, list);
-
-        /* Handle recursively */
-        dev_isr(cdev, event, args);
-    }
-    return MR_EOK;
-}
-
 static int dev_open(struct mr_dev *dev, int flags)
 {
 #ifdef MR_USING_RDWR_CTL
-    if (MR_BIT_IS_SET(dev->flags, flags) != MR_ENABLE)
-    {
+    if (MR_BIT_IS_SET(dev->flags, flags) != MR_ENABLE) {
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
 
     /* Check whether the device is opened */
-    if (dev->ref_count == 0)
-    {
+    if (dev->ref_count == 0) {
         /* Continue iterating until reach the root device */
-        if (dev_is_root(dev->parent) != MR_TRUE)
-        {
+        if (dev_is_root(dev->parent) != MR_TRUE) {
             int ret = dev_open(dev->parent, flags);
-            if (ret < 0)
-            {
+            if (ret < 0) {
                 return ret;
             }
         }
 
         /* Open the device */
-        if (dev->ops->open != MR_NULL)
-        {
+        if (dev->ops->open != MR_NULL) {
             int ret = dev->ops->open(dev);
-            if (ret < 0)
-            {
+            if (ret < 0) {
                 return ret;
             }
         }
@@ -298,21 +216,17 @@ static int dev_close(struct mr_dev *dev)
     dev->ref_count--;
 
     /* Check whether the device needs to be closed */
-    if (dev->ref_count == 0)
-    {
+    if (dev->ref_count == 0) {
         /* Continue iterating until reach the root device */
-        if (dev_is_root(dev->parent) != MR_TRUE)
-        {
+        if (dev_is_root(dev->parent) != MR_TRUE) {
             int ret = dev_close(dev->parent);
-            if (ret < 0)
-            {
+            if (ret < 0) {
                 return ret;
             }
         }
 
         /* Close the device */
-        if (dev->ops->close != MR_NULL)
-        {
+        if (dev->ops->close != MR_NULL) {
             return dev->ops->close(dev);
         }
     }
@@ -322,12 +236,10 @@ static int dev_close(struct mr_dev *dev)
 MR_INLINE ssize_t dev_read(struct mr_dev *dev, int position, int sync, void *buf, size_t count)
 {
 #ifdef MR_USING_RDWR_CTL
-    do
-    {
+    do {
         mr_interrupt_disable();
         int ret = dev_lock_take(dev, (MR_LOCK_RD | MR_LOCK_SLEEP), MR_LOCK_RD);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             mr_interrupt_enable();
             return ret;
         }
@@ -348,17 +260,21 @@ MR_INLINE ssize_t dev_read(struct mr_dev *dev, int position, int sync, void *buf
     return ret;
 }
 
-MR_INLINE ssize_t dev_write(struct mr_dev *dev, int position, int sync, const void *buf, size_t count)
+MR_INLINE ssize_t dev_write(struct mr_dev *dev,
+                            int position,
+                            int sync,
+                            const void *buf,
+                            size_t count)
 {
 #ifdef MR_USING_RDWR_CTL
-    do
-    {
+    do {
         mr_interrupt_disable();
         int ret = dev_lock_take(dev,
-                                (MR_LOCK_WR | MR_LOCK_SLEEP | (sync == MR_SYNC ? MR_LOCK_NONBLOCK : 0)),
+                                (MR_LOCK_WR |
+                                 MR_LOCK_SLEEP |
+                                 (sync == MR_SYNC ? MR_LOCK_NONBLOCK : 0)),
                                 MR_LOCK_WR);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             mr_interrupt_enable();
             return ret;
         }
@@ -375,8 +291,7 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int position, int sync, const vo
 
 #ifdef MR_USING_RDWR_CTL
     dev_lock_release(dev, MR_LOCK_WR);
-    if ((sync == MR_ASYNC) && (ret > 0))
-    {
+    if ((sync == MR_ASYNC) && (ret > 0)) {
         mr_interrupt_disable();
         dev_lock_take(dev, 0, MR_LOCK_NONBLOCK);
         mr_interrupt_enable();
@@ -387,21 +302,19 @@ MR_INLINE ssize_t dev_write(struct mr_dev *dev, int position, int sync, const vo
 
 MR_INLINE int dev_ioctl(struct mr_dev *dev, int position, int sync, int cmd, void *args)
 {
-    if (dev->ops->ioctl == MR_NULL)
-    {
+    if (dev->ops->ioctl == MR_NULL) {
         return MR_ENOTSUP;
     }
 
 #ifdef MR_USING_RDWR_CTL
-    do
-    {
+    do {
         /* Lock only when user -> device command */
-        if (cmd)
-        {
+        if (cmd) {
             mr_interrupt_disable();
-            int ret = dev_lock_take(dev, (MR_LOCK_RDWR | MR_LOCK_SLEEP | MR_LOCK_NONBLOCK), MR_LOCK_RDWR);
-            if (ret < 0)
-            {
+            int ret = dev_lock_take(dev,
+                                    (MR_LOCK_RDWR | MR_LOCK_SLEEP | MR_LOCK_NONBLOCK),
+                                    MR_LOCK_RDWR);
+            if (ret < 0) {
                 mr_interrupt_enable();
                 return ret;
             }
@@ -428,22 +341,18 @@ MR_INLINE int desc_allocate(const char *path)
     int desc = -1;
 
     struct mr_dev *dev = dev_find(path);
-    if (dev == MR_NULL)
-    {
+    if (dev == MR_NULL) {
         return MR_ENOTFOUND;
     }
 
     /* Find a free descriptor */
-    for (size_t i = 0; i < MR_CFG_DESC_NUM; i++)
-    {
-        if (DESC_OF(i).dev == MR_NULL)
-        {
+    for (size_t i = 0; i < MR_CFG_DESC_NUM; i++) {
+        if (DESC_OF(i).dev == MR_NULL) {
             desc = (int)i;
             break;
         }
     }
-    if (desc < 0)
-    {
+    if (desc < 0) {
         return MR_ENOMEM;
     }
 
@@ -459,8 +368,7 @@ MR_INLINE int desc_allocate(const char *path)
 
 MR_INLINE void desc_free(int desc)
 {
-    if (DESC_IS_VALID(desc) == MR_TRUE)
-    {
+    if (DESC_IS_VALID(desc) == MR_TRUE) {
         DESC_OF(desc).dev = MR_NULL;
         DESC_OF(desc).flags = MR_O_CLOSED;
         DESC_OF(desc).position = -1;
@@ -543,20 +451,52 @@ int mr_dev_isr(struct mr_dev *dev, int event, void *args)
     MR_ASSERT(dev != MR_NULL);
     MR_ASSERT(event >= 0);
 
-    if ((dev->ref_count == 0) || (dev->ops->isr == MR_NULL))
-    {
+    if (dev->ref_count == 0) {
         return MR_ENOTSUP;
     }
 
-    /* Call the device ISR */
-    ssize_t ret = dev->ops->isr(dev, event, args);
-    if (ret < 0)
-    {
-        return (int)ret;
+    if (dev->ops->isr != MR_NULL) {
+        ssize_t ret = dev->ops->isr(dev, event, args);
+        if (ret < 0) {
+            return (int)ret;
+        }
     }
 
-    /* Handle the ISR event */
-    return dev_isr(dev, (event & MR_ISR_MASK), &ret);
+    /* Call the all set callbacks */
+    switch (event & MR_ISR_MASK) {
+        case MR_ISR_RD: {
+            for (struct mr_list *list = dev->rd_call_list.next;
+                 list != &dev->rd_call_list;
+                 list = list->next) {
+                struct mr_dev_desc *desc = (struct mr_dev_desc *)MR_CONTAINER_OF(list,
+                                                                                 struct mr_dev_desc,
+                                                                                 rd_call.list);
+                if (desc->rd_call.fn != MR_NULL) {
+                    desc->rd_call.fn((int)(desc - &desc_map[0]), args);
+                }
+            }
+            return MR_EOK;
+        }
+        case MR_ISR_WR: {
+#ifdef MR_USING_RDWR_CTL
+            dev_lock_release(dev, MR_LOCK_NONBLOCK);
+#endif /* MR_USING_RDWR_CTL */
+            for (struct mr_list *list = dev->wr_call_list.next;
+                 list != &dev->wr_call_list;
+                 list = list->next) {
+                struct mr_dev_desc *desc = (struct mr_dev_desc *)MR_CONTAINER_OF(list,
+                                                                                 struct mr_dev_desc,
+                                                                                 wr_call.list);
+                if (desc->wr_call.fn != MR_NULL) {
+                    desc->wr_call.fn((int)(desc - &desc_map[0]), args);
+                }
+            }
+            return MR_EOK;
+        }
+        default: {
+            return MR_ENOTSUP;
+        }
+    }
 }
 
 /**
@@ -579,11 +519,9 @@ int mr_dev_open(const char *path, int flags)
     MR_ASSERT(flags >= MR_O_CLOSED);
 
     /* Query device flags */
-    if (flags == MR_O_QUERY)
-    {
+    if (flags == MR_O_QUERY) {
         struct mr_dev *dev = dev_find(path);
-        if (dev == MR_NULL)
-        {
+        if (dev == MR_NULL) {
             return MR_ENOTFOUND;
         }
         return dev->flags;
@@ -591,13 +529,11 @@ int mr_dev_open(const char *path, int flags)
 
     /* Allocate descriptor and open device */
     int desc = desc_allocate(path);
-    if (desc < 0)
-    {
+    if (desc < 0) {
         return desc;
     }
     int ret = dev_open(DESC_OF(desc).dev, flags);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         desc_free(desc);
         return ret;
     }
@@ -623,8 +559,7 @@ int mr_dev_close(int desc)
 
     /* Close the device and free the descriptor */
     int ret = dev_close(DESC_OF(desc).dev);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         return ret;
     }
     desc_free(desc);
@@ -651,8 +586,7 @@ ssize_t mr_dev_read(int desc, void *buf, size_t count)
     MR_DESC_CHECK(desc);
 
 #ifdef MR_USING_RDWR_CTL
-    if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_RDONLY) == MR_DISABLE)
-    {
+    if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_RDONLY) == MR_DISABLE) {
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
@@ -685,8 +619,7 @@ ssize_t mr_dev_write(int desc, const void *buf, size_t count)
     MR_DESC_CHECK(desc);
 
 #ifdef MR_USING_RDWR_CTL
-    if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_WRONLY) == MR_DISABLE)
-    {
+    if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_WRONLY) == MR_DISABLE) {
         return MR_ENOTSUP;
     }
 #endif /* MR_USING_RDWR_CTL */
@@ -717,12 +650,9 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
 {
     MR_DESC_CHECK(desc);
 
-    switch (cmd)
-    {
-        case MR_IOC_SPOS:
-        {
-            if (args != MR_NULL)
-            {
+    switch (cmd) {
+        case MR_IOC_SPOS: {
+            if (args != MR_NULL) {
                 int position = *(int *)args;
 
                 DESC_OF(desc).position = position;
@@ -730,44 +660,48 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOC_SRCB:
-        {
+        case MR_IOC_SRCB: {
+#ifdef MR_USING_RDWR_CTL
+            if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_RDONLY) == MR_DISABLE) {
+                return MR_ENOTSUP;
+            }
+#endif /* MR_USING_RDWR_CTL */
             void (*fn)(int desc, void *args) =  (void (*)(int desc, void *args))args;
 
             /* Link or unlink the callback function */
             DESC_OF(desc).rd_call.fn = fn;
             mr_interrupt_disable();
-            if (fn != MR_NULL)
-            {
-                mr_list_insert_before(&DESC_OF(desc).dev->rd_call_list, &DESC_OF(desc).rd_call.list);
-            } else
-            {
+            if (fn != MR_NULL) {
+                mr_list_insert_before(&DESC_OF(desc).dev->rd_call_list,
+                                      &DESC_OF(desc).rd_call.list);
+            } else {
                 mr_list_remove(&DESC_OF(desc).rd_call.list);
             }
             mr_interrupt_enable();
             return sizeof(fn);
         }
-        case MR_IOC_SWCB:
-        {
+        case MR_IOC_SWCB: {
+#ifdef MR_USING_RDWR_CTL
+            if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_WRONLY) == MR_DISABLE) {
+                return MR_ENOTSUP;
+            }
+#endif /* MR_USING_RDWR_CTL */
             void (*fn)(int desc, void *args) =  (void (*)(int desc, void *args))args;
 
             /* Link or unlink the callback function */
             DESC_OF(desc).wr_call.fn = fn;
             mr_interrupt_disable();
-            if (fn != MR_NULL)
-            {
-                mr_list_insert_before(&DESC_OF(desc).dev->wr_call_list, &DESC_OF(desc).wr_call.list);
-            } else
-            {
+            if (fn != MR_NULL) {
+                mr_list_insert_before(&DESC_OF(desc).dev->wr_call_list,
+                                      &DESC_OF(desc).wr_call.list);
+            } else {
                 mr_list_remove(&DESC_OF(desc).wr_call.list);
             }
             mr_interrupt_enable();
             return sizeof(fn);
         }
-        case MR_IOC_GPOS:
-        {
-            if (args != MR_NULL)
-            {
+        case MR_IOC_GPOS: {
+            if (args != MR_NULL) {
                 int *position = (int *)args;
 
                 *position = DESC_OF(desc).position;
@@ -775,26 +709,31 @@ int mr_dev_ioctl(int desc, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOC_GRCB:
-        {
-            if (args != MR_NULL)
-            {
+        case MR_IOC_GRCB: {
+#ifdef MR_USING_RDWR_CTL
+            if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_RDONLY) == MR_DISABLE) {
+                return MR_ENOTSUP;
+            }
+#endif /* MR_USING_RDWR_CTL */
+            if (args != MR_NULL) {
                 *(void (**)(int desc, void *args))args = DESC_OF(desc).rd_call.fn;
                 return sizeof(DESC_OF(desc).rd_call.fn);
             }
             return MR_EINVAL;
         }
-        case MR_IOC_GWCB:
-        {
-            if (args != MR_NULL)
-            {
+        case MR_IOC_GWCB: {
+#ifdef MR_USING_RDWR_CTL
+            if (MR_BIT_IS_SET(DESC_OF(desc).flags, MR_O_WRONLY) == MR_DISABLE) {
+                return MR_ENOTSUP;
+            }
+#endif /* MR_USING_RDWR_CTL */
+            if (args != MR_NULL) {
                 *(void (**)(int desc, void *args))args = DESC_OF(desc).wr_call.fn;
                 return sizeof(DESC_OF(desc).wr_call.fn);
             }
             return MR_EINVAL;
         }
-        default:
-        {
+        default: {
             /* I/O control to the device */
             return dev_ioctl(DESC_OF(desc).dev,
                              DESC_OF(desc).position,
@@ -813,14 +752,12 @@ static int dev_get_path(struct mr_dev *dev, char *buf, size_t bufsz)
     int ret = 0;
 
     /* Continue iterating until reach the null parent */
-    if (dev->parent != MR_NULL)
-    {
+    if (dev->parent != MR_NULL) {
         ret = dev_get_path(dev->parent, buf, bufsz);
     }
 
     /* Check whether the buffer is enough */
-    if ((bufsz - ret) <= (strlen(dev->name) + 1))
-    {
+    if ((bufsz - ret) <= (strlen(dev->name) + 1)) {
         return ret;
     }
     ret += snprintf(buf + ret, bufsz - ret, "/%s", dev->name);
@@ -836,23 +773,23 @@ int msh_dev_get_path(int desc, char *buf, size_t size)
 
 void msh_dlist_tree(struct mr_dev *parent, int level)
 {
-    if (level == 0)
-    {
+    if (level == 0) {
         mr_msh_printf("|%s %-*s", mr_strflags(parent->flags), MR_CFG_DEV_NAME_LEN, parent->name);
-    } else
-    {
-        mr_msh_printf("%*s|%s %-*s", level, " ", mr_strflags(parent->flags), MR_CFG_DEV_NAME_LEN, parent->name);
+    } else {
+        mr_msh_printf("%*s|%s %-*s",
+                      level,
+                      " ",
+                      mr_strflags(parent->flags),
+                      MR_CFG_DEV_NAME_LEN,
+                      parent->name);
     }
-    for (size_t i = 0; i < MR_CFG_DESC_NUM; i++)
-    {
-        if (desc_map[i].dev == parent)
-        {
+    for (size_t i = 0; i < MR_CFG_DESC_NUM; i++) {
+        if (desc_map[i].dev == parent) {
             mr_msh_printf(" [%d]", i);
         }
     }
     mr_msh_printf("\r\n");
-    for (struct mr_list *child = parent->clist.next; child != &parent->clist; child = child->next)
-    {
+    for (struct mr_list *child = parent->clist.next; child != &parent->clist; child = child->next) {
         struct mr_dev *dev = MR_CONTAINER_OF(child, struct mr_dev, list);
         msh_dlist_tree(dev, level + 7);
     }

@@ -37,7 +37,7 @@ int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *path, int addr, 
 | `=0`             | Registration succeeds        |
 | `<0`             | Error code                   |
 
-- `name`: The I2C device needs to bind to the specified I2C bus, and the name needs to add the bus name, such
+- `name`: The I2C device needs to bind to the specified I2C spi_bus, and the name needs to add the spi_bus name, such
   as: `i2cx/dev-name`, `i2c1/i2c10`.
 - `addr`: Device address (the lowest bit is read/write bit, please pass the address shifted to the left).
   When serving as a host, the address is the peer's address. When serving as a slave, the address is its own address.
@@ -142,7 +142,7 @@ Note:
     - Baud rate: `100000`
     - Master/slave mode: `MR_I2C_HOST`
     - Register bits: `MR_I2C_REG_BITS_8`
-- When an I2C device on the I2C bus is configured to slave mode, it will continuously occupy the I2C bus. At this point,
+- When an I2C device on the I2C spi_bus is configured to slave mode, it will continuously occupy the I2C spi_bus. At this point,
   other I2C devices cannot perform read/write operations until the I2C device in slave mode is reconfigured to master
   mode.
 
@@ -237,9 +237,6 @@ mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 /* Define callback function */
 void fn(int desc, void *args)
 {
-    /* Get buffer data size */
-    ssize_t data_size = *(ssize_t *)args;  
-    
     /* Handle interrupt */
 }
 void (*callback)(int desc, void *args);
@@ -256,9 +253,6 @@ Independent of I2C interface:
 /* Define callback function */
 void fn(int desc, void *args)
 {
-    /* Get buffer data size */
-    ssize_t data_size = *(ssize_t *)args;  
-    
     /* Handle interrupt */
 }
 void (*callback)(int desc, void *args);
@@ -441,7 +435,7 @@ int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *p
 
 | Parameter        | Description                        |
 |------------------|------------------------------------|
-| soft_i2c_bus     | Software I2C bus structure pointer |
+| soft_i2c_bus     | Software I2C spi_bus structure pointer |
 | path             | Bus path                           |  
 | scl_pin          | SCL pin number                     |
 | sda_pin          | SDA pin number                     |
@@ -450,17 +444,17 @@ int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *p
 | `<0`             | Error code                         |
 
 ```c
-/* Define SCL, SDA pin numbers for software I2C bus */
+/* Define SCL, SDA pin numbers for software I2C spi_bus */
 #define SCL_PIN_NUMBER                  0    
 #define SDA_PIN_NUMBER                  1
 
-/* Define software I2C bus */
+/* Define software I2C spi_bus */
 struct mr_soft_i2c_bus soft_i2c_bus;
 
-/* Register software I2C bus */
+/* Register software I2C spi_bus */
 mr_soft_i2c_bus_register(&soft_i2c_bus, "i2c1", SCL_PIN_NUMBER, SDA_PIN_NUMBER);
 ```
 
-After registration, the software I2C bus will simulate a hardware I2C.
+After registration, the software I2C spi_bus will simulate a hardware I2C.
 
-Note: The software I2C bus only supports master mode.
+Note: The software I2C spi_bus only supports master mode.
