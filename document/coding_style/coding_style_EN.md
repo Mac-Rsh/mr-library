@@ -18,8 +18,8 @@
 ## Indentation and Line Breaks
 
 1. Only use 4 spaces for code indentation, tabs are forbidden.
-2. Keep each line of code within 120 characters, break lines and indent the next line by 4 spaces if exceeded.
-3. Curly braces `{` and `}` should each be on their own line.
+2. Keep each line of code within 100 characters, break lines and indent the next line by 4 spaces if exceeded.
+3. Braces are defined on a single line, and `if` etc. are used immediately at the end of the line.
    For example:
 
    ````c

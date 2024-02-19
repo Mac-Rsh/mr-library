@@ -208,9 +208,6 @@ mr_dev_ioctl(ds, MR_IOC_GWBDSZ, &size);
 /* Define callback function */
 void fn(int desc, void *args)
 {
-    /* Get buffer data size */
-    ssize_t data_size = *(ssize_t *)args;
-    
     /* Handle interrupt */
 }
 void (*callback)(int desc, void *args);
@@ -234,9 +231,6 @@ Independent of SERIAL interface:
 /* Define callback function */
 void fn(int desc, void *args)
 {
-    /* Get buffer data size */
-    ssize_t data_size = *(ssize_t *)args;
-    
     /* Handle interrupt */
 }
 void (*callback)(int desc, void *args);

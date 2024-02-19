@@ -251,9 +251,6 @@ mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 /* Define callback function */
 void fn(int desc, void *args)
 {
-    /* Get buffer data size */
-    ssize_t data_size = *(ssize_t *)args;
-    
     /* Handle interrupt */
 }
 void (*callback)(int, void *args);
@@ -271,9 +268,6 @@ Independent of SPI interface:
 /* Define callback function */
 void fn(int desc, void *args)
 {
-    /* Get buffer data size */
-    ssize_t data_size = *(ssize_t *)args;
-    
     /* Handle interrupt */
 }
 void (*callback)(int, void *args);

@@ -49,8 +49,7 @@ static int soft_i2c_bus_wait_ack(struct mr_i2c_bus *i2c_bus)
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_HIGH);
     mr_delay_us(soft_i2c_bus->delay);
 
-    if (soft_i2c_sda_get(soft_i2c_bus) == SOFT_I2C_LOW)
-    {
+    if (soft_i2c_sda_get(soft_i2c_bus) == SOFT_I2C_LOW) {
         ret = MR_EOK;
     }
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
@@ -63,11 +62,9 @@ static void soft_i2c_bus_send_ack(struct mr_i2c_bus *i2c_bus, int ack)
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
 
     soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
-    if (ack == MR_ENABLE)
-    {
+    if (ack == MR_ENABLE) {
         soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_LOW);
-    } else
-    {
+    } else {
         soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
     }
 
@@ -78,17 +75,18 @@ static void soft_i2c_bus_send_ack(struct mr_i2c_bus *i2c_bus, int ack)
     soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
 }
 
-static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits)
+static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus,
+                                     struct mr_i2c_config *config,
+                                     int addr,
+                                     int addr_bits)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
     int state = (config->baud_rate != 0) ? MR_ENABLE : MR_DISABLE;
     int mode = (state == MR_ENABLE) ? MR_PIN_MODE_OUTPUT_OD : MR_PIN_MODE_NONE;
 
-    if (state == MR_ENABLE)
-    {
+    if (state == MR_ENABLE) {
         /* Soft I2C only support host mode */
-        if (config->host_slave != MR_I2C_HOST)
-        {
+        if (config->host_slave != MR_I2C_HOST) {
             return MR_ENOTSUP;
         }
 
@@ -98,13 +96,11 @@ static int mr_soft_i2c_bus_configure(struct mr_i2c_bus *i2c_bus, struct mr_i2c_c
 
     /* Configure SCL and SDA */
     int ret = _mr_fast_pin_mode(soft_i2c_bus->scl_pin, mode);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         return ret;
     }
     ret = _mr_fast_pin_mode(soft_i2c_bus->sda_pin, mode);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         return ret;
     }
     return MR_EOK;
@@ -127,18 +123,15 @@ static int mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data);
 
 static int mr_soft_i2c_bus_send_addr(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits)
 {
-    if (addr_bits == MR_I2C_ADDR_BITS_10)
-    {
+    if (addr_bits == MR_I2C_ADDR_BITS_10) {
         int ret = mr_soft_i2c_bus_write(i2c_bus, addr >> 8);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return ret;
         }
     }
 
     int ret = mr_soft_i2c_bus_write(i2c_bus, addr);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         return ret;
     }
     return MR_EOK;
@@ -166,15 +159,13 @@ static int mr_soft_i2c_bus_read(struct mr_i2c_bus *i2c_bus, uint8_t *data, int a
     mr_delay_us(soft_i2c_bus->delay);
     soft_i2c_bus_sda_set(soft_i2c_bus, SOFT_I2C_HIGH);
 
-    for (size_t bits = 0; bits < (sizeof(*data) * 8); bits++)
-    {
+    for (size_t bits = 0; bits < (sizeof(*data) * 8); bits++) {
         soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_LOW);
         mr_delay_us(soft_i2c_bus->delay);
         soft_i2c_scl_set(soft_i2c_bus, SOFT_I2C_HIGH);
         mr_delay_us(soft_i2c_bus->delay);
         *data <<= 1;
-        if (soft_i2c_sda_get(soft_i2c_bus) == SOFT_I2C_HIGH)
-        {
+        if (soft_i2c_sda_get(soft_i2c_bus) == SOFT_I2C_HIGH) {
             *data |= 0x01;
         }
     }
@@ -189,8 +180,7 @@ static int mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
 {
     struct mr_soft_i2c_bus *soft_i2c_bus = (struct mr_soft_i2c_bus *)i2c_bus;
 
-    for (size_t bits = 0; bits < 8; bits++)
-    {
+    for (size_t bits = 0; bits < 8; bits++) {
         soft_i2c_bus_sda_set(soft_i2c_bus, (data & 0x80) ? SOFT_I2C_HIGH : SOFT_I2C_LOW);
         data <<= 1;
 
@@ -212,22 +202,18 @@ static int mr_soft_i2c_bus_write(struct mr_i2c_bus *i2c_bus, uint8_t data)
  *
  * @return 0 on success, otherwise an error code.
  */
-int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus, const char *path, int scl_pin, int sda_pin)
+int mr_soft_i2c_bus_register(struct mr_soft_i2c_bus *soft_i2c_bus,
+                             const char *path,
+                             int scl_pin,
+                             int sda_pin)
 {
-    static struct mr_i2c_bus_ops ops =
-        {
-            mr_soft_i2c_bus_configure,
-            mr_soft_i2c_bus_start,
-            mr_soft_i2c_bus_send_addr,
-            mr_soft_i2c_bus_stop,
-            mr_soft_i2c_bus_read,
-            mr_soft_i2c_bus_write
-        };
-    static struct mr_drv drv =
-        {
-            &ops,
-            MR_NULL
-        };
+    static struct mr_i2c_bus_ops ops = {mr_soft_i2c_bus_configure,
+                                        mr_soft_i2c_bus_start,
+                                        mr_soft_i2c_bus_send_addr,
+                                        mr_soft_i2c_bus_stop,
+                                        mr_soft_i2c_bus_read,
+                                        mr_soft_i2c_bus_write};
+    static struct mr_drv drv = {&ops, MR_NULL};
 
     MR_ASSERT(soft_i2c_bus != MR_NULL);
     MR_ASSERT(path != MR_NULL);

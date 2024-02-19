@@ -12,11 +12,11 @@
 
 static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
 {
-    uint32_t clk = timer->info->clk, psc_max = timer->info->prescaler_max, per_max = timer->info->period_max;
+    uint32_t clk = timer->info->clk, psc_max = timer->info->prescaler_max, per_max = timer->info
+                                                                                          ->period_max;
     uint32_t psc_best = 1, per_best = 1, reload_best = 1;
 
-    if ((clk == 0) || (timeout == 0))
-    {
+    if ((clk == 0) || (timeout == 0)) {
         return MR_EINVAL;
     }
 
@@ -24,28 +24,23 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
     uint32_t product = timeout;
 
     /* If the product is within the maximum period, set it as the period */
-    if (product <= per_max)
-    {
+    if (product <= per_max) {
         psc_best = clk / 1000000;
         per_best = MR_BOUND(product, 1, per_max);
-    } else
-    {
+    } else {
         int error_min = INT32_MAX;
 
         /* Calculate the least error prescaler and period */
-        for (uint32_t psc = MR_BOUND((product / per_max), 1, product); psc < UINT32_MAX; psc++)
-        {
+        for (uint32_t psc = MR_BOUND((product / per_max), 1, product); psc < UINT32_MAX; psc++) {
             uint32_t per = MR_BOUND(product / psc, 1, per_max);
             int error = (int)(timeout - (per * psc));
 
             /* Found a valid and optimal solution */
-            if (error <= 1)
-            {
+            if (error <= 1) {
                 psc_best = psc;
                 per_best = per;
                 break;
-            } else if (error < error_min)
-            {
+            } else if (error < error_min) {
                 error_min = error;
                 psc_best = psc;
                 per_best = per;
@@ -57,19 +52,18 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
         error_min = INT32_MAX;
 
         /* Calculate the least error reload and prescaler */
-        for (uint32_t reload = MR_BOUND(product / psc_max, 1, product); reload < product; reload++)
-        {
+        for (uint32_t reload = MR_BOUND(product / psc_max, 1, product);
+             reload < product;
+             reload++) {
             uint32_t psc = MR_BOUND(product / reload, 1, psc_max);
             int error = (int)product - (int)(reload * psc);
 
             /* Found a valid and optimal solution */
-            if (error <= 1)
-            {
+            if (error <= 1) {
                 reload_best = reload;
                 psc_best = psc;
                 break;
-            } else if (error < error_min)
-            {
+            } else if (error < error_min) {
                 error_min = error;
                 reload_best = reload;
                 psc_best = psc;
@@ -77,13 +71,11 @@ static int timer_calculate(struct mr_timer *timer, uint32_t timeout)
         }
 
         /* If period can take reload value, lower interrupts by loading reload to period */
-        if (per_best <= (per_max / reload_best))
-        {
+        if (per_best <= (per_max / reload_best)) {
             per_best *= reload_best;
             reload_best = 1;
             /* If the reload is less than the prescaler, swap them */
-        } else if ((reload_best > per_best) && (reload_best < per_max))
-        {
+        } else if ((reload_best > per_best) && (reload_best < per_max)) {
             MR_SWAP(reload_best, per_best);
         }
     }
@@ -119,8 +111,7 @@ static ssize_t mr_timer_read(struct mr_dev *dev, void *buf, size_t count)
     uint32_t *rd_buf = (uint32_t *)buf;
     ssize_t rd_size;
 
-    for (rd_size = 0; rd_size < MR_ALIGN_DOWN(count, sizeof(*rd_buf)); rd_size += sizeof(*rd_buf))
-    {
+    for (rd_size = 0; rd_size < MR_ALIGN_DOWN(count, sizeof(*rd_buf)); rd_size += sizeof(*rd_buf)) {
         uint32_t cnt = ops->get_count(timer);
 
         *rd_buf = (timer->reload - timer->count) * timer->timeout +
@@ -139,8 +130,7 @@ static ssize_t mr_timer_write(struct mr_dev *dev, const void *buf, size_t count)
     ssize_t wr_size;
 
     /* Only the last write is valid */
-    for (wr_size = 0; wr_size < MR_ALIGN_DOWN(count, sizeof(*wr_buf)); wr_size += sizeof(*wr_buf))
-    {
+    for (wr_size = 0; wr_size < MR_ALIGN_DOWN(count, sizeof(*wr_buf)); wr_size += sizeof(*wr_buf)) {
         timeout = *wr_buf;
         wr_buf++;
     }
@@ -149,12 +139,10 @@ static ssize_t mr_timer_write(struct mr_dev *dev, const void *buf, size_t count)
     ops->stop(timer);
     timer->count = timer->reload;
 
-    if (timeout != 0)
-    {
+    if (timeout != 0) {
         /* Calculate prescaler and period */
         int ret = timer_calculate(timer, timeout);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return ret;
         }
 
@@ -168,12 +156,9 @@ static int mr_timer_ioctl(struct mr_dev *dev, int cmd, void *args)
 {
     struct mr_timer *timer = (struct mr_timer *)dev;
 
-    switch (cmd)
-    {
-        case MR_IOC_TIMER_SET_MODE:
-        {
-            if (args != MR_NULL)
-            {
+    switch (cmd) {
+        case MR_IOC_TIMER_SET_MODE: {
+            if (args != MR_NULL) {
                 struct mr_timer_config config = *(struct mr_timer_config *)args;
 
                 timer->config = config;
@@ -181,10 +166,8 @@ static int mr_timer_ioctl(struct mr_dev *dev, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        case MR_IOC_TIMER_GET_MODE:
-        {
-            if (args != MR_NULL)
-            {
+        case MR_IOC_TIMER_GET_MODE: {
+            if (args != MR_NULL) {
                 struct mr_timer_config *config = (struct mr_timer_config *)args;
 
                 *config = timer->config;
@@ -192,8 +175,7 @@ static int mr_timer_ioctl(struct mr_dev *dev, int cmd, void *args)
             }
             return MR_EINVAL;
         }
-        default:
-        {
+        default: {
             return MR_ENOTSUP;
         }
     }
@@ -204,26 +186,21 @@ static ssize_t mr_timer_isr(struct mr_dev *dev, int event, void *args)
     struct mr_timer *timer = (struct mr_timer *)dev;
     struct mr_timer_ops *ops = (struct mr_timer_ops *)dev->drv->ops;
 
-    switch (event)
-    {
-        case MR_ISR_TIMER_TIMEOUT_INT:
-        {
+    switch (event) {
+        case MR_ISR_TIMER_TIMEOUT_INT: {
             timer->count--;
 
-            if (timer->count == 0)
-            {
+            if (timer->count == 0) {
                 timer->count = timer->reload;
 
-                if (timer->config.mode == MR_TIMER_MODE_ONESHOT)
-                {
+                if (timer->config.mode == MR_TIMER_MODE_ONESHOT) {
                     ops->stop(timer);
                 }
                 return MR_EOK;
             }
             return MR_EBUSY;
         }
-        default:
-        {
+        default: {
             return MR_ENOTSUP;
         }
     }
@@ -239,17 +216,17 @@ static ssize_t mr_timer_isr(struct mr_dev *dev, int event, void *args)
  *
  * @return 0 on success, otherwise an error code.
  */
-int mr_timer_register(struct mr_timer *timer, const char *path, struct mr_drv *drv, struct mr_timer_info *info)
+int mr_timer_register(struct mr_timer *timer,
+                      const char *path,
+                      struct mr_drv *drv,
+                      struct mr_timer_info *info)
 {
-    static struct mr_dev_ops ops =
-        {
-            mr_timer_open,
-            mr_timer_close,
-            mr_timer_read,
-            mr_timer_write,
-            mr_timer_ioctl,
-            mr_timer_isr
-        };
+    static struct mr_dev_ops ops = {mr_timer_open,
+                                    mr_timer_close,
+                                    mr_timer_read,
+                                    mr_timer_write,
+                                    mr_timer_ioctl,
+                                    mr_timer_isr};
     struct mr_timer_config default_config = MR_TIMER_CONFIG_DEFAULT;
 
     MR_ASSERT(timer != MR_NULL);

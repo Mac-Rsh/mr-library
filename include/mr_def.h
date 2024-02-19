@@ -230,9 +230,9 @@ struct mr_avl
 #define MR_IOC_GWBDSZ                   (-(0x08 << 24))             /**< Get write buffer data size command */
 
 /* [31:24] are for interrupt flags, [23:0] can define user flags */
-#define MR_ISR_RD                       (0x01 << 24)                /**< Read interrupt */
-#define MR_ISR_WR                       (0x02 << 24)                /**< Write interrupt */
-#define MR_ISR_MASK                     (0x7f << 24)                /**< Interrupt mask */
+#define MR_ISR_RD                       (0x01 << 24)                /**< Read interrupt event */
+#define MR_ISR_WR                       (0x02 << 24)                /**< Write interrupt event */
+#define MR_ISR_MASK                     (0x7f << 24)                /**< Interrupt event mask */
 
 /**
  * @brief Driver structure.
@@ -281,8 +281,9 @@ struct mr_dev_ops
  */
 struct mr_dev_call
 {
-    void (*fn)(int desc, void *args);
-    struct mr_list list;
+    struct mr_list list;                                            /**< List of callbacks */
+
+    void (*fn)(int desc, void *args);                               /**< Callback function */
 };
 
 /**

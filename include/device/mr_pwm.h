@@ -91,8 +91,12 @@ struct mr_pwm_ops
     int (*write)(struct mr_pwm *pwm, int channel, uint32_t compare_value);
 };
 
-int mr_pwm_register(struct mr_pwm *pwm, const char *path, struct mr_drv *drv, struct mr_pwm_info *info);
+int mr_pwm_register(struct mr_pwm *pwm,
+                    const char *path,
+                    struct mr_drv *drv,
+                    struct mr_pwm_info *info);
 /** @} */
+
 #endif /* MR_USING_PWM */
 
 #ifdef __cplusplus

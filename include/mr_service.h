@@ -351,8 +351,7 @@ MR_INLINE size_t mr_list_get_len(struct mr_list *list)
     struct mr_list *node = list;
     size_t len = 0;
 
-    while (node->next != list)
-    {
+    while (node->next != list) {
         node = node->next;
         len++;
     }

@@ -29,8 +29,7 @@ MR_INLINE struct mr_dev **_fast_pin_dev_get(uint32_t magic)
     static struct mr_dev *dev = MR_NULL;
 
     /* If that doesn't stop you, feel free to use it */
-    if (magic == MR_MAGIC_NUMBER)
-    {
+    if (magic == MR_MAGIC_NUMBER) {
         return &dev;
     }
     return MR_NULL;
@@ -45,8 +44,7 @@ MR_INLINE struct mr_dev **_fast_pin_dev_get(uint32_t magic)
  */
 void _mr_fast_pin_init(struct mr_dev *dev)
 {
-    if (_fast_pin_dev_get(dev->magic) != MR_NULL)
-    {
+    if (_fast_pin_dev_get(dev->magic) != MR_NULL) {
         *_fast_pin_dev_get(dev->magic) = dev;
     }
 }
@@ -65,8 +63,7 @@ int _mr_fast_pin_mode(int number, int mode)
 {
     struct mr_dev *dev = *_fast_pin_dev_get(MR_MAGIC_NUMBER);
 
-    if (dev == MR_NULL)
-    {
+    if (dev == MR_NULL) {
         return MR_ENOTFOUND;
     }
     return ((struct mr_pin_ops *)dev->drv->ops)->configure((struct mr_pin *)dev, number, mode);

@@ -102,6 +102,14 @@ struct mr_serial_config
 #define MR_IOC_SERIAL_GET_RD_CALL       MR_IOC_GRCB                 /**< Get read callback command */
 #define MR_IOC_SERIAL_GET_WR_CALL       MR_IOC_GWCB                 /**< Get write callback command */
 
+#ifdef MR_USING_SERIAL_DMA
+#define MR_IOC_SERIAL_SET_RD_DMA_BUFSZ  (0x01)                      /**< Set read DMA buffer size command */
+#define MR_IOC_SERIAL_SET_WR_DMA_BUFSZ  (0x02)                      /**< Set write DMA buffer size command */
+
+#define MR_IOC_SERIAL_GET_RD_DMA_BUFSZ  (-(0x01))                   /**< Get read DMA buffer size command */
+#define MR_IOC_SERIAL_GET_WR_DMA_BUFSZ  (-(0x02))                   /**< Get write DMA buffer size command */
+#endif /* MR_USING_SERIAL_DMA */
+
 /**
  * @brief Serial data type.
  */
@@ -110,9 +118,10 @@ typedef uint8_t mr_serial_data_t;                                   /**< Serial 
 /**
  * @brief Serial ISR events.
  */
-#define MR_ISR_SERIAL_RD_INT            (MR_ISR_RD | (0x01))        /**< Read interrupt */
-#define MR_ISR_SERIAL_WR_INT            (MR_ISR_WR | (0x02))        /**< Write interrupt */
-#define MR_ISR_SERIAL_RD_IDLE           (MR_ISR_RD | (0x03))        /**< Read idle */
+#define MR_ISR_SERIAL_RD_INT            (MR_ISR_RD | (0x01))        /**< Read interrupt event */
+#define MR_ISR_SERIAL_WR_INT            (MR_ISR_WR | (0x02))        /**< Write interrupt event */
+#define MR_ISR_SERIAL_RD_DMA            (MR_ISR_RD | (0x03))        /**< Read DMA interrupt event */
+#define MR_ISR_SERIAL_WR_DMA            (MR_ISR_WR | (0x04))        /**< Write DMA interrupt event */
 
 /**
  * @brief Serial structure.
@@ -126,6 +135,13 @@ struct mr_serial
     struct mr_ringbuf wr_fifo;                                      /**< Write FIFO */
     size_t rd_bufsz;                                                /**< Read buffer size */
     size_t wr_bufsz;                                                /**< Write buffer size */
+#ifdef MR_USING_SERIAL_DMA
+    uint8_t *dma_rd_buf;                                            /**< Read DMA buffer */
+    uint8_t *dma_wr_buf;                                            /**< Write DMA buffer */
+    size_t dma_rd_bufsz;                                            /**< Read DMA buffer size */
+    size_t dma_wr_bufsz;                                            /**< Write DMA buffer size */
+#endif /* MR_USING_SERIAL_DMA */
+    int nonblock_state;                                             /**< Nonblocking state */
 };
 
 /**
@@ -138,10 +154,18 @@ struct mr_serial_ops
     int (*write)(struct mr_serial *serial, uint8_t data);
     void (*start_tx)(struct mr_serial *serial);
     void (*stop_tx)(struct mr_serial *serial);
+
+#ifdef MR_USING_SERIAL_DMA
+    void (*start_dma_tx)(struct mr_serial *serial, uint8_t *buf, size_t count);
+    void (*stop_dma_tx)(struct mr_serial *serial);
+    void (*start_dma_rx)(struct mr_serial *serial, uint8_t *buf, size_t count);
+    void (*stop_dma_rx)(struct mr_serial *serial);
+#endif /* MR_USING_SERIAL_DMA */
 };
 
 int mr_serial_register(struct mr_serial *serial, const char *path, struct mr_drv *drv);
 /** @} */
+
 #endif /* MR_USING_SERIAL */
 
 #ifdef __cplusplus

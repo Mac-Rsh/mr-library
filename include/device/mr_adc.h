@@ -51,7 +51,7 @@ struct mr_adc
 {
     struct mr_dev dev;                                              /**< Device */
 
-    uint32_t channel;                                               /**< Channel */
+    uint32_t channels;                                              /**< Channels */
 };
 
 /**
@@ -66,6 +66,7 @@ struct mr_adc_ops
 
 int mr_adc_register(struct mr_adc *adc, const char *path, struct mr_drv *drv);
 /** @} */
+
 #endif /* MR_USING_ADC */
 
 #ifdef __cplusplus

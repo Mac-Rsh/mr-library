@@ -240,9 +240,6 @@ mr_dev_ioctl(ds, MR_IOC_GRBDSZ, &size);
 /* 定义回调函数 */
 void fn(int desc, void *args)
 {
-    /* 获取缓冲区数据大小 */
-    ssize_t data_size = *(ssize_t *)args;
-    
     /* 处理中断 */
 }
 void (*callback)(int, void *args);
@@ -259,9 +256,6 @@ mr_dev_ioctl(ds, MR_IOC_SPI_GET_RD_CALL, &callback);
 /* 定义回调函数 */
 void fn(int desc, void *args)
 {
-    /* 获取缓冲区数据大小 */
-    ssize_t data_size = *(ssize_t *)args;
-    
     /* 处理中断 */
 }
 void (*callback)(int, void *args);

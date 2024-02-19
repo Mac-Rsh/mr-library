@@ -61,7 +61,7 @@ typedef uint32_t mr_timer_data_t;                                   /**< Timer r
 /**
  * @brief Timer ISR events.
  */
-#define MR_ISR_TIMER_TIMEOUT_INT        (MR_ISR_RD | (0x01))        /**< Timeout interrupt */
+#define MR_ISR_TIMER_TIMEOUT_INT        (MR_ISR_RD | (0x01))        /**< Timeout interrupt event */
 
 /**
  * @brief Timer information structure.
@@ -101,7 +101,10 @@ struct mr_timer_ops
     uint32_t (*get_count)(struct mr_timer *timer);
 };
 
-int mr_timer_register(struct mr_timer *timer, const char *path, struct mr_drv *drv, struct mr_timer_info *info);
+int mr_timer_register(struct mr_timer *timer,
+                      const char *path,
+                      struct mr_drv *drv,
+                      struct mr_timer_info *info);
 /** @} */
 
 #endif /* MR_USING_TIMER */

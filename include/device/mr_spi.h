@@ -86,18 +86,18 @@ struct mr_spi_transfer
 /**
  * @brief SPI control command.
  */
-#define MR_IOC_SPI_SET_CONFIG           MR_IOC_SCFG                 /**< Set configuration */
-#define MR_IOC_SPI_SET_REG              MR_IOC_SPOS                 /**< Set register */
-#define MR_IOC_SPI_SET_RD_BUFSZ         MR_IOC_SRBSZ                /**< Set read buffer size */
-#define MR_IOC_SPI_CLR_RD_BUF           MR_IOC_CRBD                 /**< Clear read buffer */
-#define MR_IOC_SPI_SET_RD_CALL          MR_IOC_SRCB                 /**< Set read callback */
-#define MR_IOC_SPI_TRANSFER             (0x01)                      /**< Transfer */
+#define MR_IOC_SPI_SET_CONFIG           MR_IOC_SCFG                 /**< Set configuration command */
+#define MR_IOC_SPI_SET_REG              MR_IOC_SPOS                 /**< Set register command */
+#define MR_IOC_SPI_SET_RD_BUFSZ         MR_IOC_SRBSZ                /**< Set read buffer size command */
+#define MR_IOC_SPI_CLR_RD_BUF           MR_IOC_CRBD                 /**< Clear read buffer command */
+#define MR_IOC_SPI_SET_RD_CALL          MR_IOC_SRCB                 /**< Set read callback command */
+#define MR_IOC_SPI_TRANSFER             (0x01)                      /**< Transfer command */
 
-#define MR_IOC_SPI_GET_CONFIG           MR_IOC_GCFG                 /**< Get configuration */
-#define MR_IOC_SPI_GET_REG              MR_IOC_GPOS                 /**< Get register */
-#define MR_IOC_SPI_GET_RD_BUFSZ         MR_IOC_GRBSZ                /**< Get read buffer size */
-#define MR_IOC_SPI_GET_RD_DATASZ        MR_IOC_GRBDSZ               /**< Get read data size */
-#define MR_IOC_SPI_GET_RD_CALL          MR_IOC_GRCB                 /**< Get read callback */
+#define MR_IOC_SPI_GET_CONFIG           MR_IOC_GCFG                 /**< Get configuration command */
+#define MR_IOC_SPI_GET_REG              MR_IOC_GPOS                 /**< Get register command */
+#define MR_IOC_SPI_GET_RD_BUFSZ         MR_IOC_GRBSZ                /**< Get read buffer size command */
+#define MR_IOC_SPI_GET_RD_DATASZ        MR_IOC_GRBDSZ               /**< Get read data size command */
+#define MR_IOC_SPI_GET_RD_CALL          MR_IOC_GRCB                 /**< Get read callback command */
 
 /**
  * @brief SPI data type.
@@ -107,7 +107,7 @@ typedef uint8_t mr_spi_data_t;                                      /**< SPI rea
 /**
  * @brief SPI ISR events.
  */
-#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01))        /**< Read interrupt */
+#define MR_ISR_SPI_RD_INT               (MR_ISR_RD | (0x01))        /**< Read interrupt event */
 
 /**
  * @brief SPI bus structure.
@@ -156,6 +156,7 @@ struct mr_spi_dev
 int mr_spi_bus_register(struct mr_spi_bus *spi_bus, const char *path, struct mr_drv *drv);
 int mr_spi_dev_register(struct mr_spi_dev *spi_dev, const char *path, int cs_pin, int cs_active);
 /** @} */
+
 #endif /* MR_USING_SPI */
 
 #ifdef __cplusplus

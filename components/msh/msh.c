@@ -54,8 +54,7 @@ MR_INLINE void msh_new_current_line(void)
 {
     msh.cursor = 0;
     msh.bytes = 0;
-    if (msh.echo == MR_ENABLE)
-    {
+    if (msh.echo == MR_ENABLE) {
 #ifndef MR_CFG_MSH_PROMPT
 #define MR_CFG_MSH_PROMPT               "msh"
 #endif /* MR_CFG_MSH_PROMPT */
@@ -64,23 +63,26 @@ MR_INLINE void msh_new_current_line(void)
 #else
 #define MR_MSH_COLOR_CYAN(str)          str
 #endif /* MR_USING_MSH_PRINTF_COLOR */
-        mr_msh_printf(MR_MSH_COLOR_CYAN("%s ")MR_MSH_COLOR_YELLOW("%s> "), MR_CFG_MSH_PROMPT, msh.prompt);
+        mr_msh_printf(MR_MSH_COLOR_CYAN("%s ")MR_MSH_COLOR_YELLOW("%s> "),
+                      MR_CFG_MSH_PROMPT,
+                      msh.prompt);
     }
 }
 
 MR_INLINE void msh_refresh_line(void)
 {
-    if (msh.echo == MR_ENABLE)
-    {
+    if (msh.echo == MR_ENABLE) {
         mr_msh_printf(MSH_CLEAR_LINE);
-        mr_msh_printf(MR_MSH_COLOR_CYAN("%s ")MR_MSH_COLOR_YELLOW("%s> ")"%s", MR_CFG_MSH_PROMPT, msh.prompt, msh.buf);
+        mr_msh_printf(MR_MSH_COLOR_CYAN("%s ")MR_MSH_COLOR_YELLOW("%s> ")"%s",
+                      MR_CFG_MSH_PROMPT,
+                      msh.prompt,
+                      msh.buf);
     }
 }
 
 MR_INLINE void msh_move_cursor_left(void)
 {
-    if (msh.cursor > 0)
-    {
+    if (msh.cursor > 0) {
         msh.cursor--;
         mr_msh_printf(MSH_CURSOR_FORWARD);
     }
@@ -88,8 +90,7 @@ MR_INLINE void msh_move_cursor_left(void)
 
 MR_INLINE void msh_move_cursor_right(void)
 {
-    if (msh.cursor < msh.bytes)
-    {
+    if (msh.cursor < msh.bytes) {
         msh.cursor++;
         mr_msh_printf(MSH_CURSOR_BACKWARD);
     }
@@ -97,17 +98,14 @@ MR_INLINE void msh_move_cursor_right(void)
 
 MR_INLINE void msh_delete_char(void)
 {
-    if (msh.cursor > 0)
-    {
+    if (msh.cursor > 0) {
         /* Move the cursor forward and delete the character */
         mr_msh_printf(MSH_CURSOR_FORWARD MSH_DELETE_CHAR);
 
         /* Check if you need to remove characters from the middle */
-        if (msh.cursor != msh.bytes)
-        {
+        if (msh.cursor != msh.bytes) {
             /* Readjust string */
-            for (size_t i = msh.cursor; i < msh.bytes; i++)
-            {
+            for (size_t i = msh.cursor; i < msh.bytes; i++) {
                 msh.buf[i - 1] = msh.buf[i];
             }
         }
@@ -119,22 +117,18 @@ MR_INLINE void msh_delete_char(void)
 
 MR_INLINE void msh_insert_char(char c)
 {
-    if ((msh.bytes + 1) == MR_CFG_MSH_BUFSZ)
-    {
+    if ((msh.bytes + 1) == MR_CFG_MSH_BUFSZ) {
         return;
     }
 
     /* Check whether the cursor is at the end of the buffer */
-    if (msh.cursor != msh.bytes)
-    {
-        if (msh.echo == MR_ENABLE)
-        {
+    if (msh.cursor != msh.bytes) {
+        if (msh.echo == MR_ENABLE) {
             mr_msh_printf(MSH_INSERT_CHAR);
         }
 
         /* Readjust string */
-        for (size_t i = msh.bytes; i > msh.cursor; i--)
-        {
+        for (size_t i = msh.bytes; i > msh.cursor; i--) {
             msh.buf[i] = msh.buf[i - 1];
         }
     }
@@ -144,8 +138,7 @@ MR_INLINE void msh_insert_char(char c)
     msh.buf[msh.bytes] = '\0';
 
     /* Echo the character */
-    if (msh.echo == MR_ENABLE)
-    {
+    if (msh.echo == MR_ENABLE) {
         mr_msh_printf("%c", c);
     }
 }
@@ -155,14 +148,13 @@ MR_INLINE void msh_auto_complete(void)
     const struct mr_msh_cmd *msh_comp = MR_NULL;
 
     /* Find the command */
-    for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
-    {
+    for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1);
+         msh_cmd < &_mr_msh_cmd_end;
+         msh_cmd++) {
         /* When cursor is equal to 0, all commands are satisfied, so there is no auto-completion */
-        if (strncmp(msh_cmd->name, msh.buf, msh.cursor) == 0)
-        {
+        if (strncmp(msh_cmd->name, msh.buf, msh.cursor) == 0) {
             /* Check whether multiple commands are met */
-            if (msh_comp != MR_NULL)
-            {
+            if (msh_comp != MR_NULL) {
                 return;
             }
             msh_comp = msh_cmd;
@@ -170,10 +162,8 @@ MR_INLINE void msh_auto_complete(void)
     }
 
     /* Complete the command */
-    if (msh_comp != MR_NULL)
-    {
-        for (size_t i = msh.cursor; i < strlen(msh_comp->name); i++)
-        {
+    if (msh_comp != MR_NULL) {
+        for (size_t i = msh.cursor; i < strlen(msh_comp->name); i++) {
             msh_insert_char(msh_comp->name[i]);
         }
     }
@@ -181,11 +171,11 @@ MR_INLINE void msh_auto_complete(void)
 
 MR_INLINE void msh_history_push(void)
 {
-    uint16_t history_prev = (msh.history_index + (MR_CFG_MSH_HISTORY_LINES - 1)) % MR_CFG_MSH_HISTORY_LINES;
+    uint16_t history_prev = (msh.history_index + (MR_CFG_MSH_HISTORY_LINES - 1)) %
+                            MR_CFG_MSH_HISTORY_LINES;
 
     /* Check whether this command is the same as the previous one */
-    if ((msh.bytes != 0) && (strncmp(msh.history[history_prev], msh.buf, msh.bytes) != 0))
-    {
+    if ((msh.bytes != 0) && (strncmp(msh.history[history_prev], msh.buf, msh.bytes) != 0)) {
         memcpy(msh.history[msh.history_index], msh.buf, (msh.bytes + 1));
         msh.history_index = (msh.history_index + 1) % MR_CFG_MSH_HISTORY_LINES;
         msh.history_len = MR_BOUND(msh.history_len + 1, 0, MR_CFG_MSH_HISTORY_LINES);
@@ -195,12 +185,12 @@ MR_INLINE void msh_history_push(void)
 
 MR_INLINE void msh_history_pop_prev(void)
 {
-    if (msh.history_pos < msh.history_len)
-    {
+    if (msh.history_pos < msh.history_len) {
         msh.history_pos++;
 
         /* If the previous index is equal to the current index, no previous record is available */
-        uint16_t index = (msh.history_index + MR_CFG_MSH_HISTORY_LINES - msh.history_pos) % MR_CFG_MSH_HISTORY_LINES;
+        uint16_t index = (msh.history_index + MR_CFG_MSH_HISTORY_LINES - msh.history_pos) %
+                         MR_CFG_MSH_HISTORY_LINES;
 
         /* Refresh the line with the previous command */
         msh.cursor = msh.bytes = strlen(msh.history[index]);
@@ -211,12 +201,11 @@ MR_INLINE void msh_history_pop_prev(void)
 
 MR_INLINE void msh_history_pop_next(void)
 {
-    if (msh.history_pos > 1)
-    {
+    if (msh.history_pos > 1) {
         msh.history_pos--;
-        uint16_t index = (msh.history_index + MR_CFG_MSH_HISTORY_LINES - msh.history_pos) % MR_CFG_MSH_HISTORY_LINES;
-        if (index >= msh.history_len)
-        {
+        uint16_t index = (msh.history_index + MR_CFG_MSH_HISTORY_LINES - msh.history_pos) %
+                         MR_CFG_MSH_HISTORY_LINES;
+        if (index >= msh.history_len) {
             index = 0;
         }
 
@@ -231,30 +220,27 @@ MR_INLINE void msh_parse_cmd(void)
 {
     mr_msh_printf("\r\n");
 
-    if (msh.bytes == 0)
-    {
+    if (msh.bytes == 0) {
         msh_new_current_line();
         return;
     }
 
     /* Find the command */
     char *cmd = strchr(msh.buf, ' ');
-    if (cmd != MR_NULL)
-    {
+    if (cmd != MR_NULL) {
         *cmd = '\0';
     }
 
     /* Execute the command */
-    for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
-    {
-        if (strncmp(msh_cmd->name, msh.buf, strlen(msh_cmd->name)) != 0)
-        {
+    for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1);
+         msh_cmd < &_mr_msh_cmd_end;
+         msh_cmd++) {
+        if (strncmp(msh_cmd->name, msh.buf, strlen(msh_cmd->name)) != 0) {
             continue;
         }
 
         /* Restore the command */
-        if (cmd != MR_NULL)
-        {
+        if (cmd != MR_NULL) {
             *cmd = ' ';
         }
 
@@ -265,11 +251,9 @@ MR_INLINE void msh_parse_cmd(void)
 #endif /* MR_CFG_MSH_ARGS_NUM */
         char *argv[MR_CFG_MSH_ARGS_NUM] = {MR_NULL};
         char *old_arg = msh.buf;
-        for (argc = 0; argc < MR_CFG_MSH_ARGS_NUM; argc++)
-        {
+        for (argc = 0; argc < MR_CFG_MSH_ARGS_NUM; argc++) {
             char *arg = strchr(old_arg, ' ');
-            if ((arg == MR_NULL) || (*(arg + 1) == '\0') || (*(arg + 1) == ' '))
-            {
+            if ((arg == MR_NULL) || (*(arg + 1) == '\0') || (*(arg + 1) == ' ')) {
                 break;
             }
             *arg = '\0';
@@ -350,59 +334,46 @@ static struct
 {
     const char *key;
     void (*fn)(void);
-} msh_key_map[] =
-    {
-        {KEY_ENTER,     msh_key_enter},
-        {KEY_BACKSPACE, msh_key_backspace},
-        {KEY_TABLE,     msh_key_table},
-        {KEY_LEFT,      msh_key_left},
-        {KEY_RIGHT,     msh_key_right},
-        {KEY_UP,        msh_key_up},
-        {KEY_DOWN,      msh_key_down},
-        {KEY_DELETE,    msh_key_delete},
-    };
+} msh_key_map[] = {{KEY_ENTER,     msh_key_enter},
+                   {KEY_BACKSPACE, msh_key_backspace},
+                   {KEY_TABLE,     msh_key_table},
+                   {KEY_LEFT,      msh_key_left},
+                   {KEY_RIGHT,     msh_key_right},
+                   {KEY_UP,        msh_key_up},
+                   {KEY_DOWN,      msh_key_down},
+                   {KEY_DELETE,    msh_key_delete},};
 
 MR_INLINE void msh_parse_key(char c)
 {
     int parse_flag = MR_DISABLE;
 
     /* key-bytes: (0) -> short character key, (!0) -> long character key */
-    if (msh.key_bytes == 0)
-    {
-        if (MSH_IS_ESC_KEY(c))
-        {
+    if (msh.key_bytes == 0) {
+        if (MSH_IS_ESC_KEY(c)) {
             msh.key_buf[msh.key_bytes++] = c;
-        } else
-        {
+        } else {
             msh.key_buf[msh.key_bytes++] = c;
             msh.key_buf[msh.key_bytes] = '\0';
             parse_flag = MR_ENABLE;
         }
-    } else
-    {
-        if (MSH_IS_END_KEY(c))
-        {
+    } else {
+        if (MSH_IS_END_KEY(c)) {
             msh.key_buf[msh.key_bytes++] = c;
             msh.key_buf[msh.key_bytes] = '\0';
             parse_flag = MR_ENABLE;
-        } else
-        {
+        } else {
             msh.key_buf[msh.key_bytes++] = c;
             /* Check whether the key-buffer is full */
-            if (msh.key_bytes >= sizeof(msh.key_buf) - 1)
-            {
+            if (msh.key_bytes >= sizeof(msh.key_buf) - 1) {
                 msh.key_bytes = 0;
             }
         }
     }
 
     /* Parse the long character key */
-    if (parse_flag == MR_ENABLE)
-    {
-        for (size_t i = 0; i < MR_ARRAY_NUM(msh_key_map); i++)
-        {
-            if (strncmp(msh.key_buf, msh_key_map[i].key, msh.key_bytes) == 0)
-            {
+    if (parse_flag == MR_ENABLE) {
+        for (size_t i = 0; i < MR_ARRAY_NUM(msh_key_map); i++) {
+            if (strncmp(msh.key_buf, msh_key_map[i].key, msh.key_bytes) == 0) {
                 msh_key_map[i].fn();
                 break;
             }
@@ -421,8 +392,7 @@ MR_INLINE void msh_parse_key(char c)
 MR_WEAK int mr_msh_input(char *c)
 {
     /* Try to open the serial port */
-    if (msh.desc == -1)
-    {
+    if (msh.desc == -1) {
 #ifndef MR_CFG_MSH_DEV_NAME
 #define MR_CFG_MSH_DEV_NAME             "serial1"
 #endif /* MR_CFG_MSH_DEV_NAME */
@@ -431,8 +401,7 @@ MR_WEAK int mr_msh_input(char *c)
 #else
         int ret = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_O_RDWR | MR_O_NONBLOCK);
 #endif /* MR_CFG_MSH_NONBLOCKING */
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return ret;
         }
         msh.desc = ret;
@@ -453,15 +422,13 @@ MR_WEAK int mr_msh_input(char *c)
 MR_WEAK int mr_msh_printf_output(const char *buf, size_t size)
 {
     /* Try to open the serial port */
-    if (msh.desc == -1)
-    {
+    if (msh.desc == -1) {
 #ifndef MR_CFG_MSH_NONBLOCKING
         int ret = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_O_RDWR);
 #else
         int ret = mr_dev_open(MR_CFG_MSH_DEV_NAME, MR_O_RDWR | MR_O_NONBLOCK);
 #endif /* MR_CFG_MSH_NONBLOCKING */
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return ret;
         }
         msh.desc = ret;
@@ -512,14 +479,11 @@ void mr_msh_set_prompt(char *prompt)
 void mr_msh_handle(void)
 {
     char c;
-    while (mr_msh_input(&c) > 0)
-    {
+    while (mr_msh_input(&c) > 0) {
         /* Judgments are characters and keys */
-        if (MSH_IS_PRINTABLE(c) && (msh.key_bytes == 0))
-        {
+        if (MSH_IS_PRINTABLE(c) && (msh.key_bytes == 0)) {
             msh_insert_char(c);
-        } else
-        {
+        } else {
             msh_parse_key(c);
         }
     }
@@ -551,8 +515,9 @@ MR_INIT_DEV_EXPORT(mr_msh_init);
 
 static void msh_cmd_help(int argc, void *argv)
 {
-    for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1); msh_cmd < &_mr_msh_cmd_end; msh_cmd++)
-    {
+    for (const struct mr_msh_cmd *msh_cmd = ((&_mr_msh_cmd_start) + 1);
+         msh_cmd < &_mr_msh_cmd_end;
+         msh_cmd++) {
         mr_msh_printf("%-*s - %s\r\n", 16, msh_cmd->name, msh_cmd->help);
     }
 }
@@ -574,17 +539,14 @@ static void msh_cmd_logo(int argc, void *argv)
 
 static void msh_cmd_echo(int argc, void *argv)
 {
-    if (argc == 1)
-    {
+    if ((argc < 1) || (strncmp(MR_MSH_GET_ARG(1), "-h", 2) == 0)) {
         goto usage;
     }
 
-    if (strncmp(MR_MSH_GET_ARG(1), "on", 2) == 0)
-    {
+    if (strncmp(MR_MSH_GET_ARG(1), "on", 2) == 0) {
         msh.echo = MR_ENABLE;
         return;
-    } else if (strncmp(MR_MSH_GET_ARG(1), "off", 3) == 0)
-    {
+    } else if (strncmp(MR_MSH_GET_ARG(1), "off", 3) == 0) {
         msh.echo = MR_DISABLE;
         return;
     }

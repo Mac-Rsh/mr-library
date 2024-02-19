@@ -51,7 +51,7 @@ struct mr_dac
 {
     struct mr_dev dev;                                              /**< Device */
 
-    uint32_t channel;                                               /**< Channel */
+    uint32_t channels;                                              /**< Channels */
 };
 
 /**
@@ -66,6 +66,7 @@ struct mr_dac_ops
 
 int mr_dac_register(struct mr_dac *dac, const char *path, struct mr_drv *drv);
 /** @} */
+
 #endif /* MR_USING_DAC */
 
 #ifdef __cplusplus

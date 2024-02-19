@@ -120,6 +120,12 @@ menu "Device configure"
     menu "Pin configure"
         depends on MR_USING_PIN
 
+        config MR_USING_PIN_AUTO_DISABLE
+            bool "Use auto disable pin"
+            default y
+            help
+                "Use this option to allow the pin to be automatically disabled when the device is turned off."
+
         config MR_USING_PIN_CHECK
             bool "Use pin available check"
             default y
@@ -171,6 +177,12 @@ menu "Device configure"
             default 0
             help
                 "This option sets the size of the TX (transmit) buffer used by the Serial device."
+
+        config MR_USING_SERIAL_DMA
+            bool "Use Serial DMA"
+            default n
+            help
+                "Use this option allows for the use of Serial DMA."
     endmenu
 
     # SPI

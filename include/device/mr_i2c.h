@@ -23,8 +23,8 @@ extern "C" {
  */
 
 /**
-* @brief I2C host/slave.
-*/
+ * @brief I2C host/slave.
+ */
 #define MR_I2C_HOST                     (0)                         /**< I2C host */
 #define MR_I2C_SLAVE                    (1)                         /**< I2C slave */
 
@@ -78,7 +78,7 @@ typedef uint8_t mr_i2c_data_t;                                      /**< I2C rea
 /**
  * @brief I2C ISR events.
  */
-#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01))        /**< Read interrupt */
+#define MR_ISR_I2C_RD_INT               (MR_ISR_RD | (0x01))        /**< Read interrupt event */
 
 /**
  * @brief I2C bus structure.
@@ -97,7 +97,10 @@ struct mr_i2c_bus
  */
 struct mr_i2c_bus_ops
 {
-    int (*configure)(struct mr_i2c_bus *i2c_bus, struct mr_i2c_config *config, int addr, int addr_bits);
+    int (*configure)(struct mr_i2c_bus *i2c_bus,
+                     struct mr_i2c_config *config,
+                     int addr,
+                     int addr_bits);
     void (*start)(struct mr_i2c_bus *i2c_bus);
     int (*send_addr)(struct mr_i2c_bus *i2c_bus, int addr, int addr_bits);
     void (*stop)(struct mr_i2c_bus *i2c_bus);
@@ -128,6 +131,7 @@ struct mr_i2c_dev
 int mr_i2c_bus_register(struct mr_i2c_bus *i2c_bus, const char *path, struct mr_drv *drv);
 int mr_i2c_dev_register(struct mr_i2c_dev *i2c_dev, const char *path, int addr, int addr_bits);
 /** @} */
+
 #endif /* MR_USING_I2C */
 
 #ifdef __cplusplus
