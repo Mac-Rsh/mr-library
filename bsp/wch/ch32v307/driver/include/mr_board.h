@@ -18,6 +18,97 @@ extern "C" {
 
 #define MR_USE_CH32V30X
 
+#ifdef MR_USE_ADC1
+#define _DRIVER_ADC1_CONFIG                                                    \
+    {                                                                          \
+        .instance = ADC1, .clock = RCC_APB2Periph_ADC1                         \
+    }
+#endif /* MR_USE_ADC1 */
+#ifdef MR_USE_ADC2
+#define _DRIVER_ADC2_CONFIG                                                    \
+    {                                                                          \
+        .instance = ADC2, .clock = RCC_APB2Periph_ADC2                         \
+    }
+#endif /* MR_USE_ADC2 */
+
+#if defined(MR_USE_ADC1) || defined(MR_USE_ADC2)
+#define _DRIVER_ADC_CHANNEL_CONFIG                                             \
+    {                                                                          \
+        {.channel = ADC_Channel_0,                                             \
+         .gpio_clock = RCC_APB2Periph_GPIOA,                                   \
+         .port = GPIOA,                                                        \
+         .pin = GPIO_Pin_0},                                                   \
+            {.channel = ADC_Channel_1,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_1},                                               \
+            {.channel = ADC_Channel_2,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_2},                                               \
+            {.channel = ADC_Channel_3,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_3},                                               \
+            {.channel = ADC_Channel_4,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_4},                                               \
+            {.channel = ADC_Channel_5,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_5},                                               \
+            {.channel = ADC_Channel_6,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_6},                                               \
+            {.channel = ADC_Channel_7,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOA,                               \
+             .port = GPIOA,                                                    \
+             .pin = GPIO_Pin_7},                                               \
+            {.channel = ADC_Channel_8,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOB,                               \
+             .port = GPIOB,                                                    \
+             .pin = GPIO_Pin_0},                                               \
+            {.channel = ADC_Channel_9,                                         \
+             .gpio_clock = RCC_APB2Periph_GPIOB,                               \
+             .port = GPIOB,                                                    \
+             .pin = GPIO_Pin_1},                                               \
+            {.channel = ADC_Channel_10,                                        \
+             .gpio_clock = RCC_APB2Periph_GPIOC,                               \
+             .port = GPIOC,                                                    \
+             .pin = GPIO_Pin_0},                                               \
+            {.channel = ADC_Channel_11,                                        \
+             .gpio_clock = RCC_APB2Periph_GPIOC,                               \
+             .port = GPIOC,                                                    \
+             .pin = GPIO_Pin_1},                                               \
+            {.channel = ADC_Channel_12,                                        \
+             .gpio_clock = RCC_APB2Periph_GPIOC,                               \
+             .port = GPIOC,                                                    \
+             .pin = GPIO_Pin_2},                                               \
+            {.channel = ADC_Channel_13,                                        \
+             .gpio_clock = RCC_APB2Periph_GPIOC,                               \
+             .port = GPIOC,                                                    \
+             .pin = GPIO_Pin_3},                                               \
+            {.channel = ADC_Channel_14,                                        \
+             .gpio_clock = RCC_APB2Periph_GPIOC,                               \
+             .port = GPIOC,                                                    \
+             .pin = GPIO_Pin_4},                                               \
+            {.channel = ADC_Channel_15,                                        \
+             .gpio_clock = RCC_APB2Periph_GPIOC,                               \
+             .port = GPIOC,                                                    \
+             .pin = GPIO_Pin_5},                                               \
+            {.channel = ADC_Channel_16,                                        \
+             .gpio_clock = 0,                                                  \
+             .port = NULL,                                                     \
+             .pin = 0},                                                        \
+            {.channel = ADC_Channel_17,                                        \
+             .gpio_clock = 0,                                                  \
+             .port = NULL,                                                     \
+             .pin = 0},                                                        \
+    }
+#endif /* defined(MR_USE_ADC1) || defined(MR_USE_ADC2) */
+
 #if (MR_CFG_UART1_GROUP == 1)
 #define _DRIVER_UART1_CONFIG                                                   \
     {                                                                          \

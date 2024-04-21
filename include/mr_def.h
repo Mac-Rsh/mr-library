@@ -170,7 +170,7 @@ struct mr_fifo
 
 #define MR_CMD_POS                      (0x01 << 24)        /**< Position command */
 #define MR_CMD_EVENT                    (0x02 << 24)        /**< Event command */
-#define MR_CMD_CONFIG                   (0x04 << 24)        /**< Configuration command */
+#define MR_CMD_CONFIG                   (0x03 << 24)        /**< Configuration command */
 
 #define MR_EVENT_RD_COMPLETE            (0x01 << 24)        /**< Read complete event */
 #define MR_EVENT_WR_COMPLETE            (0x02 << 24)        /**< Write complete event */

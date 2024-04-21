@@ -1,0 +1,7 @@
+menu "ADC configure"
+    config MR_USE_ADC
+        bool "Use adc"
+        default y
+        help
+            "Use this option allows for the use of adc."
+endmenu
