@@ -18,7 +18,7 @@ MR_INLINE ssize_t _serial_read_poll(struct mr_serial *serial, uint8_t *buf,
 {
     struct mr_driver *driver =
         _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
     ssize_t rcount;
 
     /* Receive data */
@@ -49,7 +49,7 @@ MR_INLINE ssize_t _serial_write_poll(struct mr_serial *serial,
 {
     struct mr_driver *driver =
         _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
     ssize_t wcount;
 
     /* Send data */
@@ -73,7 +73,7 @@ MR_INLINE ssize_t _serial_write_fifo(struct mr_serial *serial,
 {
     struct mr_driver *driver =
         _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
     /* Driver does not support this function */
     if (ops->send_int_configure == NULL)
@@ -125,7 +125,7 @@ static int serial_open(struct mr_device *device)
 {
     struct mr_serial *serial = (struct mr_serial *)device;
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
     /* Enable serial */
     int ret = ops->configure(driver, true, &serial->config);
@@ -144,7 +144,7 @@ static int serial_close(struct mr_device *device)
 {
     struct mr_serial *serial = (struct mr_serial *)device;
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
     /* Disable serial */
     int ret = ops->configure(driver, false, &serial->config);
@@ -194,7 +194,7 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
     struct mr_serial *serial = (struct mr_serial *)device;
     struct mr_driver *driver =
         _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
     switch (cmd)
     {
@@ -343,13 +343,13 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
     struct mr_serial *serial = (struct mr_serial *)device;
     struct mr_driver *driver =
         _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_ops *ops = _MR_DRIVER_OPS_GET(driver);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
     switch (event)
     {
         case MR_EVENT_SERIAL_RD_COMPLETE_INT:
         {
-            uint8_t data;
+            size_t count = 1;
 
             /* If FIFO is empty, the read operation is abandoned */
             if (mr_fifo_size_get(&serial->rfifo) == 0)
@@ -357,15 +357,27 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 return MR_EOK;
             }
 
-            /* Read data from serial */
-            int ret = ops->receive(driver, &data);
-            if (ret < 0)
+            if (args != NULL)
             {
-                return ret;
+                /* Hardware FIFO is considered to be used */
+                count = *((size_t *)args);
             }
 
-            /* Force write data to FIFO */
-            mr_fifo_write_force(&serial->rfifo, &data, sizeof(data));
+            /* Read all data from hardware FIFO */
+            for (size_t rcount = 0; rcount < count; rcount++)
+            {
+                uint8_t data;
+
+                /* Read data from serial */
+                int ret = ops->receive(driver, &data);
+                if (ret < 0)
+                {
+                    return ret;
+                }
+
+                /* Force write data to FIFO */
+                mr_fifo_write_force(&serial->rfifo, &data, sizeof(data));
+            }
             return MR_EOK;
         }
         case MR_EVENT_SERIAL_WR_COMPLETE_INT:
@@ -444,7 +456,7 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
                                        .isr = serial_isr};
     struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
 
-    /* Initialize the fields */
+    /* Initialize the serial */
     serial->config = default_config;
     mr_fifo_init(&serial->rfifo, NULL, 0);
     mr_fifo_init(&serial->wfifo, NULL, 0);
@@ -459,7 +471,7 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
     serial->state = 0;
 
     /* Register the serial device */
-    return mr_device_register(&serial->device, path,
+    return mr_device_register((struct mr_device *)serial, path,
                               MR_DEVICE_TYPE_SERIAL | MR_DEVICE_TYPE_FDX, &ops,
                               driver);
 }

@@ -97,15 +97,16 @@ struct mr_serial
 };
 
 /**
- * @brief Serial operations structure.
+ * @brief Serial driver operations structure.
  */
-struct mr_serial_ops
+struct mr_serial_driver_ops
 {
     int (*configure)(struct mr_driver *driver, bool enable,
                      struct mr_serial_config *config);
     int (*receive)(struct mr_driver *driver, uint8_t *data);
     int (*send)(struct mr_driver *driver, uint8_t data);
 
+    /* Optional operations */
     int (*send_int_configure)(struct mr_driver *driver, bool enable);
 };
 

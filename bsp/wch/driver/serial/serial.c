@@ -23,30 +23,30 @@
 enum _serial_driver_index
 {
 #ifdef MR_USE_UART1
-    _SERIAL_DRIVER_INDEX_UART1,
+    _DRIVER_UART1_INDEX,
 #endif /* MR_USE_UART1 */
 #ifdef MR_USE_UART2
-    _SERIAL_DRIVER_INDEX_UART2,
+    _DRIVER_UART2_INDEX,
 #endif /* MR_USE_UART2 */
 #ifdef MR_USE_UART3
-    _SERIAL_DRIVER_INDEX_UART3,
+    _DRIVER_UART3_INDEX,
 #endif /* MR_USE_UART3 */
 #ifdef MR_USE_UART4
-    _SERIAL_DRIVER_INDEX_UART4,
+    _DRIVER_UART4_INDEX,
 #endif /* MR_USE_UART4 */
 #ifdef MR_USE_UART5
-    _SERIAL_DRIVER_INDEX_UART5,
+    _DRIVER_UART5_INDEX,
 #endif /* MR_USE_UART5 */
 #ifdef MR_USE_UART6
-    _SERIAL_DRIVER_INDEX_UART6,
+    _DRIVER_UART6_INDEX,
 #endif /* MR_USE_UART6 */
 #ifdef MR_USE_UART7
-    _SERIAL_DRIVER_INDEX_UART7,
+    _DRIVER_UART7_INDEX,
 #endif /* MR_USE_UART7 */
 #ifdef MR_USE_UART8
-    _SERIAL_DRIVER_INDEX_UART8,
+    _DRIVER_UART8_INDEX,
 #endif /* MR_USE_UART8 */
-    _SERIAL_DRIVER_INDEX_UART_MAX
+    _DRIVER_UART_INDEX_MAX
 };
 
 static struct mr_serial_driver _serial_driver[] = {
@@ -334,7 +334,7 @@ MR_INLINE void serial_device_isr(struct mr_serial *serial)
 void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART1_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART1]);
+    serial_device_isr(&_serial_device[_DRIVER_UART1_INDEX]);
 }
 #endif /* MR_USE_UART1 */
 
@@ -342,7 +342,7 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART2_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART2]);
+    serial_device_isr(&_serial_device[_DRIVER_UART2_INDEX]);
 }
 #endif /* MR_USE_UART2 */
 
@@ -350,7 +350,7 @@ void USART2_IRQHandler(void)
 void USART3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART3_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART3]);
+    serial_device_isr(&_serial_device[_DRIVER_UART3_INDEX]);
 }
 #endif /* MR_USE_UART3 */
 
@@ -358,7 +358,7 @@ void USART3_IRQHandler(void)
 void UART4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART4_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART4]);
+    serial_device_isr(&_serial_device[_DRIVER_UART4_INDEX]);
 }
 #endif /* MR_USE_UART4 */
 
@@ -366,7 +366,7 @@ void UART4_IRQHandler(void)
 void UART5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART5_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART5]);
+    serial_device_isr(&_serial_device[_DRIVER_UART5_INDEX]);
 }
 #endif /* MR_USE_UART5 */
 
@@ -374,7 +374,7 @@ void UART5_IRQHandler(void)
 void UART6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART6_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART6]);
+    serial_device_isr(&_serial_device[_DRIVER_UART6_INDEX]);
 }
 #endif /* MR_USE_UART6 */
 
@@ -382,7 +382,7 @@ void UART6_IRQHandler(void)
 void UART7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART7_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART7]);
+    serial_device_isr(&_serial_device[_DRIVER_UART7_INDEX]);
 }
 #endif /* MR_USE_UART7 */
 
@@ -390,15 +390,17 @@ void UART7_IRQHandler(void)
 void UART8_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART8_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_SERIAL_DRIVER_INDEX_UART8]);
+    serial_device_isr(&_serial_device[_DRIVER_UART8_INDEX]);
 }
 #endif /* MR_USE_UART8 */
 
 static void serial_driver_init(void)
 {
-    static struct mr_serial_ops ops = {
-        serial_driver_configure, serial_driver_receive, serial_driver_send,
-        serial_driver_send_int_configure};
+    static struct mr_serial_driver_ops ops = {
+        .configure = serial_driver_configure,
+        .receive = serial_driver_receive,
+        .send = serial_driver_send,
+        .send_int_configure = serial_driver_send_int_configure};
 
     for (size_t i = 0; i < MR_ARRAY_NUM(_serial_device); i++)
     {

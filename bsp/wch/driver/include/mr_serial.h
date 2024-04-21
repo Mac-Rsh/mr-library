@@ -6,8 +6,8 @@
  * @date 2023-11-10    MacRsh       First version
  */
 
-#ifndef _DRV_SERIAL_H_
-#define _DRV_SERIAL_H_
+#ifndef _MR_DRIVER_SERIAL_H_
+#define _MR_DRIVER_SERIAL_H_
 
 #include "../mr-library/device/include/mr_serial.h"
 #include "../mr-library/driver/include/mr_board.h"
@@ -38,4 +38,4 @@ struct mr_serial_driver
 }
 #endif /* __cplusplus */
 
-#endif /* _DRV_SERIAL_H_ */
+#endif /* _MR_DRIVER_SERIAL_H_ */
