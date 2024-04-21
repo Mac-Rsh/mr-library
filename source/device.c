@@ -197,6 +197,9 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
 
 MR_INLINE void _device_release(struct mr_device *device, uint32_t mask)
 {
+    /* If the device is not FDX, the read/write must be locked */
+    mask = (device->fdx == true) ? mask : _RDWR_LOCK_MASK;
+
     /* Release the device lock */
     MR_BIT_CLR(device->lock, mask);
 }
