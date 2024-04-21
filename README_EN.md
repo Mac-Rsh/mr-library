@@ -32,7 +32,7 @@ resource and performance requirements of embedded systems.
 By providing standardized device management interfaces, it greatly simplifies the development of embedded applications
 and helps developers quickly build embedded applications.
 
-The framework provides developers with standardized `open`, `close`, `ioctl`, `read`, `write` and other
+The framework provides developers with standardized `open`, `close`, `ioctl`, `receive`, `send` and other
 interfaces. It decouples the applications from the low-level hardware drivers. The applications do not need to know the
 implementation details of the drivers.
 
@@ -59,7 +59,7 @@ drivers. This greatly improves the reusability of software and its extensibility
 
 - Device framework: Provides standardized device access interfaces
 - Memory management: Dynamic memory management
-- Tools: Common data structures like lists, queues, balanced trees etc.
+- Tools: Common buf structures like lists, queues, balanced trees etc.
 - Various functional components
 
  ----------
@@ -68,42 +68,35 @@ drivers. This greatly improves the reusability of software and its extensibility
 
 All operations of the device can be implemented through the following interfaces:
 
-| interface       | describe                  |
-|:----------------|:--------------------------|
-| mr_dev_register | Registered device         |
-| mr_dev_open     | Open device               |
-| mr_dev_close    | Close device              |
-| mr_dev_ioctl    | Control device            |
-| mr_dev_read     | Read data from the device |
-| mr_dev_write    | Writes data to the device |
+| interface          | describe                 |
+|:-------------------|:-------------------------|
+| mr_device_register | Registered device        |
+| mr_device_open     | Open device              |
+| mr_device_close    | Close device             |
+| mr_device_ioctl    | Control device           |
+| mr_device_read     | Read buf from the device |
+| mr_device_write    | Writes buf to the device |
 
 Example:
 
 ```c
 int main(void)
 {
-    /* Open SPI10 device under SPI1 bus line */
-    int ds = mr_dev_open("spi1/spi10", MR_O_RDWR);
+    /* Open serial1 device */
+    int ds = mr_device_open("serial1", MR_FLAG_RDWR);
     
-    /* Send data */
+    /* Send buf */
     uint8_t wr_buf[] = {0x01, 0x02, 0x03, 0x04};
-    mr_dev_write(ds, wr_buf, sizeof(wr_buf));
+    mr_device_write(ds, wr_buf, sizeof(wr_buf));
     
-    /* Receive data */
+    /* Receive buf */
     uint8_t rd_buf[4] = {0};
-    mr_dev_read(ds, rd_buf, sizeof(rd_buf));
+    mr_device_read(ds, rd_buf, sizeof(rd_buf));
     
     /* Close device */
-    mr_dev_close(ds);
+    mr_device_close(ds);
 }
 ```
-
-Thanks to the standardized device interface, all devices automatically support the `msh` device command, 
-and all device operations can be completed through the command line.
-
-![Device command1](document/picture/readme/msh_device1.png)
-
-![Device command2](document/picture/readme/msh_device2.png)
 
  ----------
 
@@ -116,8 +109,6 @@ code.
 can select the functional components that need to be enabled and set relevant parameters through simple operations.
 
 ![Tool1](document/picture/readme/kconfig_main1.png)
-
-![Tool1](document/picture/readme/kconfig_main2.png)
 
 By modifying parameters, you can quickly tailor the required functions. After the configuration is complete,
 the `Python` script automatically generates the configuration file.
@@ -146,19 +137,7 @@ the `Python` script automatically generates the configuration file.
 
 | Device/Component | Plan | Preview | Stable | Document |
 |:-----------------|:-----|:--------|:-------|:---------|
-| `ADC`            |      |         | [√]    | [√]      |
-| `CAN`            |      | [√]     |        |          |
-| `DAC`            |      |         | [√]    | [√]      |
-| `I2C`            |      |         | [√]    | [√]      |
-| `Soft-I2C`       |      |         | [√]    | [√]      |
-| `Pin`            |      |         | [√]    | [√]      |
-| `PWM`            |      |         | [√]    | [√]      |
-| `Serial`         |      |         | [√]    | [√]      |
-| `SPI`            |      |         | [√]    | [√]      |
-| `Timer`          |      |         | [√]    | [√]      |
-| `msh`            |      |         | [√]    | [√]      |
-| `LCD`            | [√]  |         |        |          |
-| `Senser`         | [√]  |         |        |          |
+| `Serial`         |      |         | [√]    |          |
 
  ----------
 
@@ -179,9 +158,7 @@ Versions later than `3.11.7` are not supported).
    ![CubeMX project](document/picture/readme/cubemx_project.png)
 
 3. Copy the driver of the corresponding chip in the `bsp` directory to `driver`
-   (Please read the documentation in `bsp` carefully):
-
-   ![Driver directory](document/picture/readme/driver.png)
+   (Please receive the documentation in `bsp` carefully).
 
 4. Remove unnecessary files`bsp`, `document`directories (you can also remove `.git `files if you don't
    need`git`). When complete, the directory structure looks like this:
@@ -196,7 +173,7 @@ Versions later than `3.11.7` are not supported).
 
    Note:
    - Supports `MDK5` and `Eclipse`.
-   - `MDK` uncompiled or too low a version can cause the 'GNU' configuration to fail.
+   - Please compile the original project before importing, `MDK` version is too low may cause `GNU` configuration failure.
 
 ## Configure Menu Options
 
@@ -213,48 +190,12 @@ Versions later than `3.11.7` are not supported).
 
    ![Tool2](document/picture/readme/kconfig_main2.png)
 
-3. After configuration is complete, press `Q` to exit the menu configuration interface, press `Y` to save the
-   configuration.
-
-   ![Automatic configuration tool](document/picture/readme/build_m.png)
-
-4. In the project, introduce `#include include/mr_lib.h`and add`mr_auto_init()`to`main`function;
+3. In the project, introduce `#include "../mr-library/include/mr_lib.h`and add`mr_auto_init()`to`main`function;
    Automatically initialize the function and start using it.
 
 Note: More commands can be entered: `python tool.py -h` to view.
 
  ----------
-
-# Let`s Light an LED
-
-```c
-#include "include/mr_lib.h"
-
-/* Define the LED pin-number (PC13) */
-#define LED_PIN_NUMBER                  45
-
-int main(void)
-{
-    /* Automatic initialization */
-    mr_auto_init();
-
-    /* Open the PIN device */
-    int ds = mr_dev_open("pin", MR_O_WRONLY);
-    /* Set to the LED pin */
-    mr_dev_ioctl(ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
-    /* Set the LED pin to push-pull output mode */
-    mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
-
-    while(1)
-    {
-        /* Light up the LED */
-        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, 1), sizeof(uint8_t));
-        mr_delay_ms(500);
-        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, 0), sizeof(uint8_t));
-        mr_delay_ms(500);
-    }
-}
-```
 
 # Hello World
 
@@ -267,9 +208,9 @@ int main(void)
     mr_auto_init();
 
     /* Open the Serial-1 device */
-    int ds = mr_dev_open("serial1", MR_O_RDWR);
+    int ds = mr_device_open("serial1", MR_FLAG_WRONLY);
     /* Output Hello World */
-    mr_dev_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
+    mr_device_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
     
     while(1);
 }

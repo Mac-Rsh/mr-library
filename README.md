@@ -17,7 +17,6 @@
   * [验证Python环境](#验证python环境)
   * [将项目导入工程](#将项目导入工程)
   * [配置菜单选项](#配置菜单选项)
-* [先来点个灯吧](#先来点个灯吧)
 * [Hello World](#hello-world)
 * [现在您已经完成了入门教程，开始使用MR库吧](#现在您已经完成了入门教程开始使用mr库吧)
 <!-- TOC -->
@@ -61,41 +60,35 @@
 
 设备的所有操作都可通过以下接口实现：
 
-| 接口              | 描述      |
-|:----------------|:--------|
-| mr_dev_register | 注册设备    |
-| mr_dev_open     | 打开设备    |
-| mr_dev_close    | 关闭设备    |
-| mr_dev_ioctl    | 控制设备    |
-| mr_dev_read     | 从设备读取数据 |
-| mr_dev_write    | 向设备写入数据 |
+| 接口                 | 描述      |
+|:-------------------|:--------|
+| mr_device_register | 注册设备    |
+| mr_device_open     | 打开设备    |
+| mr_device_close    | 关闭设备    |
+| mr_device_ioctl    | 控制设备    |
+| mr_device_read     | 从设备读取数据 |
+| mr_device_write    | 向设备写入数据 |
 
 示例：
 
 ```c
 int main(void)
 {
-    /* 打开SPI1总线下的SPI10设备 */
-    int ds = mr_dev_open("spi1/spi10", MR_O_RDWR);
+    /* 打开serial1设备 */
+    int ds = mr_device_open("serial1", MR_FLAG_RDWR);
     
     /* 发送数据 */
     uint8_t wr_buf[] = {0x01, 0x02, 0x03, 0x04};
-    mr_dev_write(ds, wr_buf, sizeof(wr_buf));
+    mr_device_write(ds, wr_buf, sizeof(wr_buf));
     
     /* 接收数据 */
     uint8_t rd_buf[4] = {0};
-    mr_dev_read(ds, rd_buf, sizeof(rd_buf));
+    mr_device_read(ds, rd_buf, sizeof(rd_buf));
     
     /* 关闭设备 */
-    mr_dev_close(ds);
+    mr_device_close(ds);
 }
 ```
-
-得益于标准化设备接口，所有设备自动支持 `msh` 设备命令，通过命令行可完成所有设备操作。
-
-![设备命令1](document/picture/readme/msh_device1.png)
-
-![设备命令2](document/picture/readme/msh_device2.png)
 
  ----------
 
@@ -106,8 +99,6 @@ int main(void)
 `Kconfig` 会根据配置文件自动生成配置选项界面。开发者可以通过简单的操作来选择需要启用的功能组件和设置相关参数。
 
 ![配置工具1](document/picture/readme/kconfig_main1.png)
-
-![配置工具2](document/picture/readme/kconfig_main2.png)
 
 通过修改参数，快速裁剪所需功能。配置完成后通过 `Python` 脚本自动生成配置文件。
 
@@ -133,21 +124,9 @@ int main(void)
 
 # 设备/组件支持一览表
 
-| 设备/组件      | 计划  | 预览  | 稳定  | 文档  |
-|:-----------|:----|:----|:----|:----|
-| `ADC`      |     |     | [√] | [√] |
-| `CAN`      |     | [√] |     |     |
-| `DAC`      |     |     | [√] | [√] |
-| `I2C`      |     |     | [√] | [√] |
-| `Soft-I2C` |     |     | [√] | [√] |
-| `Pin`      |     |     | [√] | [√] |
-| `PWM`      |     |     | [√] | [√] |
-| `Serial`   |     |     | [√] | [√] |
-| `SPI`      |     |     | [√] | [√] |
-| `Timer`    |     |     | [√] | [√] |
-| `msh`      |     |     | [√] | [√] |
-| `LCD`      | [√] |     |     |     |
-| `Senser`   | [√] |     |     |     |
+| 设备/组件    | 计划 | 预览 | 稳定  | 文档 |
+|:---------|:---|:---|:----|:---|
+| `Serial` |    |    | [√] |    |
 
  ----------
 
@@ -164,9 +143,7 @@ int main(void)
 
    ![CubeMX工程](document/picture/readme/cubemx_project.png)
 
-3. 将 `bsp` 目录中对应芯片的驱动复制到 `driver`（请仔细阅读`bsp`中的文档）：
-
-   ![Driver目录](document/picture/readme/driver.png)
+3. 将 `bsp` 目录中对应芯片的驱动复制到 `driver`（请仔细阅读`bsp`中的文档）。
 
 4. 移除不需要的文件 `bsp`、`document`目录（如不需要`GIT`也可以移除`.git`文件）。完成后，目录结构如下所示：
 
@@ -180,7 +157,7 @@ int main(void)
 
     注：
     - 支持`MDK5`、`Eclipse`。
-    - `MDK`未先编译或版本过低可能导致`GNU`配置失败。
+    - 请先编译原工程后再进行导入，`MDK`版本过低可能导致`GNU`配置失败。
 
 ## 配置菜单选项
 
@@ -192,65 +169,30 @@ int main(void)
     - 检查`Python`版本（暂不支持`3.11.7`以上的版本，重新安装并删除已安装的模块）。
     - 命令行工具不支持，推荐使用`powershell(win10及以上)`、`git bash(较新版本)`等。
 
-2. 选中 `Device configure` 回车进入菜单，配置功能。
-
-   ![配置工具2](document/picture/readme/kconfig_main2.png)
-
-3. 配置完成后，按 `Q` 退出菜单配置界面，按`Y` 保存配置，脚本将自动生成配置文件。
+2. 配置完成后，按 `Q` 退出菜单配置界面，按`Y` 保存配置，脚本将自动生成配置文件。
 
    ![自动配置工具](document/picture/readme/build_m.png)
 
-4. 工程中引入 `#include "include/mr_lib.h"` 并在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数，即可开始使用。
+3. 工程中引入 `#include "../mr-library/include/mr_lib.h"` ，并在 `main` 函数中添加 `mr_auto_init();` 自动初始化函数，即可开始使用。
 
 注：更多命令可输入：`python tool.py -h` 查看。
 
- ----------
-
-# 先来点个灯吧
-
-```c
-#include "include/mr_lib.h"
-
-/* 定义LED引脚（PC13）*/
-#define LED_PIN_NUMBER                  45
-
-int main(void)
-{
-    /* 自动初始化 */
-    mr_auto_init();
-
-    /* 打开PIN设备 */
-    int ds = mr_dev_open("pin", MR_O_WRONLY);
-    /* 设置到LED引脚 */
-    mr_dev_ioctl(ds, MR_IOC_PIN_SET_NUMBER, MR_MAKE_LOCAL(int, LED_PIN_NUMBER));
-    /* 设置LED引脚为推挽输出模式 */
-    mr_dev_ioctl(ds, MR_IOC_PIN_SET_MODE, MR_MAKE_LOCAL(int, MR_PIN_MODE_OUTPUT));
-
-    while(1)
-    {
-        /* 点亮LED */
-        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, 1), sizeof(uint8_t));
-        mr_delay_ms(500);
-        mr_dev_write(ds, MR_MAKE_LOCAL(uint8_t, 0), sizeof(uint8_t));
-        mr_delay_ms(500);
-    }
-}
-```
+---
 
 # Hello World
 
 ```c
-#include "include/mr_lib.h"
+#include "../mr-library/include/mr_lib.h"
 
 int main(void)
 {
     /* 自动初始化 */
     mr_auto_init();
 
-    /* 打开Serial-1设备 */
-    int ds = mr_dev_open("serial1", MR_O_RDWR);
+    /* 打开Serial1设备 */
+    int ds = mr_device_open("serial1", MR_FLAG_WRONLY);
     /* 输出Hello World */
-    mr_dev_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
+    mr_device_write(ds, "Hello World\r\n", sizeof("Hello World\r\n"));
     
     while(1);
 }

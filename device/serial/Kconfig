@@ -1,0 +1,25 @@
+menu "Serial configure"
+    config MR_USE_SERIAL
+        bool "Use serial"
+        default y
+        help
+            "Use this option allows for the use of serial."
+
+    # RD-FIFO
+    config MR_CFG_SERIAL_RD_FIFO_SIZE
+        depends on MR_USE_SERIAL
+        int "Serial read FIFO size"
+        range 0 2147483647
+        default 64
+        help
+            "This option sets the size of the read FIFO."
+
+    # WR-FIFO
+    config MR_CFG_SERIAL_WR_FIFO_SIZE
+        depends on MR_USE_SERIAL
+        int "Serial write FIFO size"
+        range 0 2147483647
+        default 0
+        help
+            "This option sets the size of the write FIFO."
+endmenu

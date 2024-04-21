@@ -6,17 +6,18 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include "include/mr_api.h"
+#include "../mr-library/include/mr_api.h"
+#include <stdio.h>
+
+static volatile int _mr_critical_level = 0;
 
 static void start(void)
 {
-
 }
 MR_INIT_EXPORT(start, "0");
 
 static void end(void)
 {
-
 }
 MR_INIT_EXPORT(end, "5.end");
 
@@ -26,7 +27,9 @@ MR_INIT_EXPORT(end, "5.end");
 void mr_auto_init(void)
 {
     /* Auto-initialization */
-    for (const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++) {
+    for (const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end;
+         fn++)
+    {
         (*fn)();
     }
 }
@@ -36,7 +39,6 @@ void mr_auto_init(void)
  */
 MR_WEAK void mr_interrupt_disable(void)
 {
-
 }
 
 /**
@@ -44,40 +46,121 @@ MR_WEAK void mr_interrupt_disable(void)
  */
 MR_WEAK void mr_interrupt_enable(void)
 {
-
 }
+
+/**
+ * @brief This function enter the critical section.
+ */
+void mr_critical_enter(void)
+{
+    if (_mr_critical_level == 0)
+    {
+        mr_interrupt_disable();
+        _mr_critical_level++;
+    }
+}
+
+/**
+ * @brief This function exit the critical section.
+ */
+void mr_critical_exit(void)
+{
+    if (_mr_critical_level > 0)
+    {
+        _mr_critical_level--;
+        if (_mr_critical_level == 0)
+        {
+            mr_interrupt_enable();
+        }
+    }
+}
+
 
 /**
  * @brief This function delay us.
  *
- * @param us The delay time.
+ * @param us The us to delay.
  */
-MR_WEAK void mr_delay_us(uint32_t us)
+MR_WEAK void mr_delay_us(size_t us)
 {
 #ifndef MR_CFG_SYSCLK_FREQ
-#define MR_CFG_SYSCLK_FREQ              (72000000)
+#define MR_CFG_SYSCLK_FREQ (72000000)
 #endif /* MR_CFG_SYSCLK_FREQ */
-#if (MR_CFG_SYSCLK_FREQ > 1000000)
-#define MR_DELAY_COUNT                  (MR_CFG_SYSCLK_FREQ / 1000000)
-#else
-#define MR_DELAY_COUNT                  (1)
-#endif /* (MR_CFG_SYSCLK_FREQ > 1000000) */
-    for (volatile uint32_t i = 0; i < us * MR_DELAY_COUNT; i++) {
+    for (volatile size_t i = 0; i < us * (MR_CFG_SYSCLK_FREQ / 1000000); i++)
+    {
         __asm__("nop");
     }
-#undef MR_DELAY_COUNT
 #undef MR_CFG_SYSCLK_FREQ
 }
 
 /**
  * @brief This function delay ms.
  *
- * @param ms The delay time.
+ * @param ms The ms to delay.
  */
-MR_WEAK void mr_delay_ms(uint32_t ms)
+MR_WEAK void mr_delay_ms(size_t ms)
 {
-    for (volatile uint32_t i = 0; i < ms; i++) {
+    for (size_t i = 0; i < ms; i++)
+    {
         mr_delay_us(1000);
+    }
+}
+
+/**
+ * @brief This function returns the error message.
+ *
+ * @param error The error code.
+ *
+ * @return The error message.
+ */
+const char *mr_strerror(int error)
+{
+    switch (error)
+    {
+        case MR_EOK:
+        {
+            return "no error";
+        }
+        case MR_EPERM:
+        {
+            return "operation not permitted";
+        }
+        case MR_ENOENT:
+        {
+            return "no such file or directory";
+        }
+        case MR_EIO:
+        {
+            return "input/output error";
+        }
+        case MR_ENOMEM:
+        {
+            return "Out of resources";
+        }
+        case MR_EACCES:
+        {
+            return "permission denied";
+        }
+        case MR_EBUSY:
+        {
+            return "resource busy";
+        }
+        case MR_EEXIST:
+        {
+            return "resource already exists";
+        }
+        case MR_EINVAL:
+        {
+            return "invalid argument";
+        }
+        case MR_ETIMEOUT:
+        {
+            return "operation timed out";
+        }
+        default:
+        {
+            return "unknown error";
+        }
     }
 }
 
@@ -87,30 +170,28 @@ MR_WEAK void mr_delay_ms(uint32_t ms)
  * @param buf The buffer to output.
  * @param size The size of the buffer.
  *
- * @return The actual output size.
+ * @return The size of the actual output, otherwise an error code.
  */
 MR_WEAK int mr_printf_output(const char *buf, size_t size)
 {
-    static int desc = -1;
+    static int descriptor = -1;
 
-    /* Try to open the serial port */
-    if (desc == -1) {
-#ifndef MR_CFG_PRINTF_DEV_NAME
-#define MR_CFG_PRINTF_DEV_NAME          "serial1"
-#endif /* MR_CFG_PRINTF_DEV_NAME */
-#ifndef MR_USING_PRINTF_NONBLOCKING
-        int ret = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_O_RDWR);
-#else
-        int ret = mr_dev_open(MR_CFG_PRINTF_DEV_NAME, MR_O_RDWR | MR_O_NONBLOCK);
-#endif /* MR_USING_PRINTF_NONBLOCKING */
-        if (ret < 0) {
+    /* Try to open the serial device */
+    if (descriptor == -1)
+    {
+#ifndef MR_CFG_PRINTF_NAME
+#define MR_CFG_PRINTF_NAME              ("serial1")
+#endif /* MR_CFG_PRINTF_NAME */
+        int ret = mr_device_open(MR_CFG_PRINTF_NAME, MR_FLAG_WRONLY);
+        if (ret < 0)
+        {
             return ret;
         }
-        desc = ret;
+        descriptor = ret;
     }
 
-    /* Write data to the serial port */
-    return (int)mr_dev_write(desc, buf, size);
+    /* Write data to the serial device */
+    return (int)mr_device_write(descriptor, buf, size);
 }
 
 /**
@@ -124,14 +205,14 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
 int mr_printf(const char *fmt, ...)
 {
 #ifndef MR_CFG_PRINTF_BUFSZ
-#define MR_CFG_PRINTF_BUFSZ             (128)
+#define MR_CFG_PRINTF_BUFSZ             (256)
 #endif /* MR_CFG_PRINTF_BUFSZ */
     char buf[MR_CFG_PRINTF_BUFSZ] = {0};
     va_list args;
 
     /* Format the string */
     va_start(args, fmt);
-    int ret = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
+    int ret = vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
     /* Output the string */
@@ -139,666 +220,400 @@ int mr_printf(const char *fmt, ...)
 }
 
 /**
- * @brief This function get the error string representation.
+ * @brief This function assert handler.
  *
- * @param err The error code.
- *
- * @return A pointer to the error string.
+ * @param ex The assert expression.
+ * @param tag The assert tag.
+ * @param fn The assert function.
+ * @param file The assert file.
+ * @param line The assert line.
  */
-const char *mr_strerror(int err)
+MR_WEAK void mr_assert_handler(const char *ex, const char *tag, const char *fn,
+                               const char *file, int line)
 {
-    switch (err) {
-        case MR_EOK:
-            return "ok";
-        case MR_ENOMEM:
-            return "no enough memory";
-        case MR_EIO:
-            return "I/O error";
-        case MR_ENOTFOUND:
-            return "not found";
-        case MR_EBUSY:
-            return "resource busy";
-        case MR_EEXIST:
-            return "exists";
-        case MR_ENOTSUP:
-            return "operation not supported";
-        case MR_EINVAL:
-            return "invalid argument";
-        case MR_ETIMEOUT:
-            return "timeout";
-        default:
-            return "unknown error";
+    printf("[A/%s] : %s %s %s:%d\n", ex, tag, fn, file, line);
+
+    while (1)
+    {
     }
 }
 
 /**
- * @brief This function get the flags string representation.
+ * @brief This function initializes a fifo.
  *
- * @param flags The flags code.
+ * @param fifo The fifo.
+ * @param buf The fifo buffer.
+ * @param size The fifo buffer size.
  *
- * @return A pointer to the flags string.
- *
- * @note This function returns a pointer to a static string and overwrites the buffer each time it is called.
+ * @return The error code.
  */
-const char *mr_strflags(int flags)
+int mr_fifo_init(struct mr_fifo *fifo, void *buf, size_t size)
 {
-    static char str[6] = {0};
+    MR_ASSERT(fifo != NULL);
+    MR_ASSERT((buf != NULL) || (size == 0));
 
-    strcpy(str, "-----");
-    if (MR_BIT_IS_SET(flags, MR_O_RDONLY)) {
-        str[1] = 'r';
-    }
-    if (MR_BIT_IS_SET(flags, MR_O_WRONLY)) {
-        str[2] = 'w';
-    }
-    if (MR_BIT_IS_SET(flags, MR_O_NONBLOCK)) {
-        str[3] = 'n';
-    }
-    return str;
-}
-
-/**
- * @brief This function initialize the ringbuffer.
- *
- * @param ringbuf The ringbuffer to initialize.
- * @param pool The pool of buf.
- * @param size The size of the pool.
- */
-void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size)
-{
-    MR_ASSERT(ringbuf != MR_NULL);
-    MR_ASSERT((pool != MR_NULL) || (size == 0));
-
-    ringbuf->read_index = 0;
-    ringbuf->write_index = 0;
-    ringbuf->read_mirror = 0;
-    ringbuf->write_mirror = 0;
-    ringbuf->size = size;
-    ringbuf->buffer = pool;
-}
-
-/**
- * @brief This function allocate memory for the ringbuffer.
- *
- * @param ringbuf The ringbuffer to allocate.
- * @param size The size of the memory.
- *
- * @return MR_ERR_OK on success, otherwise an error code.
- */
-int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size)
-{
-    MR_ASSERT(ringbuf != MR_NULL);
-
-    if (size == mr_ringbuf_get_bufsz(ringbuf)) {
-        mr_ringbuf_reset(ringbuf);
-        return MR_EOK;
-    }
-
-    /* Allocate new buffer */
-    void *pool = mr_malloc(size);
-    if ((pool == MR_NULL) && (size != 0)) {
-        return MR_ENOMEM;
-    }
-
-    /* Free old buffer */
-    if (ringbuf->size != 0) {
-        mr_free(ringbuf->buffer);
-    }
-    mr_ringbuf_init(ringbuf, pool, size);
+    /* Initialize the fifo */
+    fifo->in = 0;
+    fifo->out = 0;
+    fifo->in_mirror = false;
+    fifo->out_mirror = false;
+    fifo->dynamic = false;
+    fifo->buf = buf;
+    fifo->size = size;
     return MR_EOK;
 }
 
 /**
- * @brief This function free the ringbuffer.
+ * @brief This function resets a fifo.
  *
- * @param ringbuf The ringbuffer to free.
+ * @param fifo The fifo.
  */
-void mr_ringbuf_free(struct mr_ringbuf *ringbuf)
+void mr_fifo_reset(struct mr_fifo *fifo)
 {
-    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT(fifo != NULL);
 
-    mr_free(ringbuf->buffer);
-    mr_ringbuf_init(ringbuf, MR_NULL, 0);
+    fifo->in = 0;
+    fifo->out = 0;
+    fifo->in_mirror = false;
+    fifo->out_mirror = false;
 }
 
 /**
- * @brief This function reset the ringbuffer.
+ * @brief This function allocates a fifo.
  *
- * @param ringbuf The ringbuffer to reset.
+ * @param fifo The fifo.
+ * @param size The fifo buffer size.
+ *
+ * @return The error code.
  */
-void mr_ringbuf_reset(struct mr_ringbuf *ringbuf)
+int mr_fifo_allocate(struct mr_fifo *fifo, size_t size)
 {
-    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT(fifo != NULL);
 
-    ringbuf->read_index = 0;
-    ringbuf->write_index = 0;
-    ringbuf->read_mirror = 0;
-    ringbuf->write_mirror = 0;
+    /* Free the old buffer, if buffer is dynamic */
+    if ((fifo->dynamic == true) && (fifo->buf != NULL))
+    {
+        mr_free(fifo->buf);
+        mr_fifo_init(fifo, NULL, 0);
+    }
+
+    if (size == 0)
+    {
+        return MR_EOK;
+    }
+
+    /* Allocate a new buffer */
+    void *_buf = mr_malloc(size);
+    if (_buf == NULL)
+    {
+        return MR_ENOMEM;
+    }
+    mr_fifo_init(fifo, _buf, size);
+    fifo->dynamic = true;
+    return MR_EOK;
 }
 
 /**
- * @brief This function get the buf size from the ringbuffer.
+ * @brief This function frees a fifo.
  *
- * @param ringbuf The ringbuffer to get the buf size.
- *
- * @return The buf size.
+ * @param fifo The fifo.
  */
-size_t mr_ringbuf_get_data_size(struct mr_ringbuf *ringbuf)
+void mr_fifo_free(struct mr_fifo *fifo)
 {
-    MR_ASSERT(ringbuf != MR_NULL);
+    MR_ASSERT(fifo != NULL);
 
-    /* Empty or full according to the mirror flag */
-    if (ringbuf->read_index == ringbuf->write_index) {
-        if (ringbuf->read_mirror == ringbuf->write_mirror) {
-            return 0;
-        } else {
-            return ringbuf->size;
+    /* Free the old buffer, if buffer is dynamic */
+    if (fifo->dynamic == true)
+    {
+        mr_free(fifo->buf);
+        mr_fifo_init(fifo, NULL, 0);
+    }
+}
+
+/**
+ * @brief This function gets the used space of a fifo.
+ *
+ * @param fifo The fifo.
+ *
+ * @return The used space.
+ */
+size_t mr_fifo_used_get(struct mr_fifo *fifo)
+{
+    MR_ASSERT(fifo != NULL);
+
+    if (fifo->in == fifo->out)
+    {
+        /* If in/out flags are the same, the fifo is empty */
+        return (fifo->in_mirror == fifo->out_mirror) ? 0 : fifo->size;
+    }
+
+    /* Return the used space */
+    return (fifo->in > fifo->out) ? fifo->in - fifo->out :
+                                    fifo->size - fifo->out + fifo->in;
+}
+
+/**
+ * @brief This function gets the free space of a fifo.
+ *
+ * @param fifo The fifo.
+ *
+ * @return The free space.
+ */
+size_t mr_fifo_space_get(struct mr_fifo *fifo)
+{
+    MR_ASSERT(fifo != NULL);
+
+    return fifo->size - mr_fifo_used_get(fifo);
+}
+
+/**
+ * @brief This function gets the size of a fifo.
+ *
+ * @param fifo The fifo.
+ *
+ * @return The size.
+ */
+size_t mr_fifo_size_get(struct mr_fifo *fifo)
+{
+    MR_ASSERT(fifo != NULL);
+
+    return fifo->size;
+}
+
+/**
+ * @brief This function peeks data from a fifo.
+ *
+ * @param fifo The fifo.
+ * @param buf The buffer to store the data.
+ * @param count The number of bytes to peek.
+ *
+ * @return The number of bytes peeked.
+ */
+size_t mr_fifo_peek(struct mr_fifo *fifo, void *buf, size_t count)
+{
+    MR_ASSERT(fifo != NULL);
+    MR_ASSERT((buf != NULL) || (count == 0));
+
+    uint8_t *_buf = (uint8_t *)buf;
+
+    /* Get used space, limit by count */
+    size_t used = mr_fifo_used_get(fifo);
+    if (used < count)
+    {
+        count = used;
+    }
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    /* Read data */
+    size_t end = fifo->size - fifo->out;
+    if (end > count)
+    {
+        /* If there is enough space at the end, read it all at once */
+        memcpy(_buf, &fifo->buf[fifo->out], count);
+        return count;
+    }
+
+    /* If there is not enough space at the end, read it in two parts */
+    memcpy(_buf, &fifo->buf[fifo->out], end);
+    memcpy(&_buf[end], fifo->buf, count - end);
+    return count;
+}
+
+/**
+ * @brief This function discards data from a fifo.
+ *
+ * @param fifo The fifo.
+ * @param count The number of bytes to discard.
+ *
+ * @return The number of bytes discarded.
+ */
+size_t mr_fifo_discard(struct mr_fifo *fifo, size_t count)
+{
+    MR_ASSERT(fifo != NULL);
+
+    /* Get used space, limit by count */
+    size_t used = mr_fifo_used_get(fifo);
+    if (used < count)
+    {
+        count = used;
+    }
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    /* Read data */
+    size_t end = fifo->size - fifo->out;
+    if (end > count)
+    {
+        fifo->out += count;
+        return count;
+    }
+
+    /* Mirror flag */
+    fifo->out_mirror = ~fifo->out_mirror;
+    fifo->out = count - end;
+    return count;
+}
+
+/**
+ * @brief This function reads data from a fifo.
+ *
+ * @param fifo The fifo.
+ * @param buf The buffer to store the data.
+ * @param count The number of bytes to read.
+ *
+ * @return The number of bytes read.
+ */
+size_t mr_fifo_read(struct mr_fifo *fifo, void *buf, size_t count)
+{
+    MR_ASSERT(fifo != NULL);
+    MR_ASSERT((buf != NULL) || (count == 0));
+
+    uint8_t *_buf = (uint8_t *)buf;
+
+    /* Get used space, limit by count */
+    size_t used = mr_fifo_used_get(fifo);
+    if (used < count)
+    {
+        count = used;
+    }
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    /* Read data */
+    size_t end = fifo->size - fifo->out;
+    if (end > count)
+    {
+        /* If there is enough space at the end, read it all at once */
+        memcpy(_buf, &fifo->buf[fifo->out], count);
+        fifo->out += count;
+        return count;
+    }
+
+    /* If there is not enough space at the end, read it in two parts */
+    memcpy(_buf, &fifo->buf[fifo->out], end);
+    memcpy(&_buf[end], fifo->buf, count - end);
+
+    /* Mirror flag */
+    fifo->out_mirror = ~fifo->out_mirror;
+    fifo->out = count - end;
+    return count;
+}
+
+/**
+ * @brief This function writes data to a fifo.
+ *
+ * @param fifo The fifo.
+ * @param buf The buffer to store the data.
+ * @param count The number of bytes to write.
+ *
+ * @return The number of bytes written.
+ */
+size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count)
+{
+    MR_ASSERT(fifo != NULL);
+    MR_ASSERT((buf != NULL) || (count == 0));
+
+    uint8_t *_buf = (uint8_t *)buf;
+
+    /* Get free space, limit by count */
+    size_t space = mr_fifo_space_get(fifo);
+    if (space < count)
+    {
+        count = space;
+    }
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    /* Write data */
+    size_t end = fifo->size - fifo->in;
+    if (end > count)
+    {
+        /* If there is enough space at the end, write it all at once */
+        memcpy(&fifo->buf[fifo->in], _buf, count);
+        fifo->in += count;
+        return count;
+    }
+
+    /* If there is not enough space at the end, write it in two parts */
+    memcpy(&fifo->buf[fifo->in], _buf, end);
+    memcpy(fifo->buf, &_buf[end], count - end);
+
+    /* Mirror flag */
+    fifo->in_mirror = ~fifo->in_mirror;
+    fifo->in = count - end;
+    return count;
+}
+
+/**
+ * @brief This function writes data to a fifo without checking for space.
+ *
+ * @param fifo The fifo.
+ * @param buf The buffer to store the data.
+ * @param count The number of bytes to write.
+ *
+ * @return The number of bytes written.
+ */
+size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
+{
+    MR_ASSERT(fifo != NULL);
+    MR_ASSERT((buf != NULL) || (count == 0));
+
+    uint8_t *_buf = (uint8_t *)buf;
+
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    /* Skip data that will be overwritten */
+    if (count > fifo->size)
+    {
+        _buf = &_buf[count - fifo->size];
+        count = fifo->size;
+    }
+
+    size_t space = mr_fifo_space_get(fifo);
+    size_t end = fifo->size - fifo->in;
+    if (end > count)
+    {
+        /* If there is enough space at the end, write it all at once */
+        memcpy(&fifo->buf[fifo->in], _buf, count);
+        fifo->in += count;
+
+        /* If free space is exceeded, move the out index to the in index */
+        if (count > space)
+        {
+            fifo->out = fifo->in;
         }
+        return count;
     }
 
-    if (ringbuf->write_index > ringbuf->read_index) {
-        return ringbuf->write_index - ringbuf->read_index;
-    } else {
-        return ringbuf->size - ringbuf->read_index + ringbuf->write_index;
-    }
-}
+    /* If there is not enough space at the end, write it in two parts */
+    memcpy(&fifo->buf[fifo->in], _buf, end);
+    memcpy(fifo->buf, &_buf[end], count - end);
 
-/**
- * @brief This function get the space size from the ringbuffer.
- *
- * @param ringbuf The ringbuffer to get the space size.
- *
- * @return The space size.
- */
-size_t mr_ringbuf_get_space_size(struct mr_ringbuf *ringbuf)
-{
-    MR_ASSERT(ringbuf != MR_NULL);
+    /* Mirror flag */
+    fifo->in_mirror = ~fifo->in_mirror;
+    fifo->in = count - end;
 
-    return ringbuf->size - mr_ringbuf_get_data_size(ringbuf);
-}
-
-/**
- * @brief This function get the buffer size from the ringbuffer.
- *
- * @param ringbuf The ringbuffer to get the buffer size.
- *
- * @return  The buffer size.
- */
-size_t mr_ringbuf_get_bufsz(struct mr_ringbuf *ringbuf)
-{
-    MR_ASSERT(ringbuf != MR_NULL);
-
-    return ringbuf->size;
-}
-
-/**
- * @brief This function pop the buf from the ringbuffer.
- *
- * @param ringbuf The ringbuffer to pop the buf.
- * @param data The buf to pop.
- *
- * @return The size of the actual pop.
- */
-size_t mr_ringbuf_pop(struct mr_ringbuf *ringbuf, uint8_t *data)
-{
-    MR_ASSERT(ringbuf != MR_NULL);
-    MR_ASSERT(data != MR_NULL);
-
-    /* Get the buf size */
-    if (mr_ringbuf_get_data_size(ringbuf) == 0) {
-        return 0;
-    }
-
-    *data = ringbuf->buffer[ringbuf->read_index];
-
-    if (ringbuf->read_index == ringbuf->size - 1) {
-        ringbuf->read_mirror = ~ringbuf->read_mirror;
-        ringbuf->read_index = 0;
-    } else {
-        ringbuf->read_index++;
-    }
-    return 1;
-}
-
-/**
- * @brief This function reads from the ringbuffer.
- *
- * @param ringbuf The ringbuffer to be read.
- * @param buffer The buf buffer to be read from the ringbuffer.
- * @param size The size of the read.
- *
- * @return The size of the actual read.
- */
-size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size)
-{
-    uint8_t *read_buffer = (uint8_t *)buffer;
-
-    MR_ASSERT(ringbuf != MR_NULL);
-    MR_ASSERT((buffer != MR_NULL) || (size == 0));
-
-    /* Get the buf size */
-    size_t data_size = mr_ringbuf_get_data_size(ringbuf);
-    if (data_size == 0) {
-        return 0;
-    }
-
-    /* Adjust the number of bytes to read if it exceeds the available buf */
-    if (size > data_size) {
-        size = data_size;
-    }
-
-    /* Copy the buf from the ringbuf to the buffer */
-    if ((ringbuf->size - ringbuf->read_index) > size) {
-        memcpy(read_buffer, &ringbuf->buffer[ringbuf->read_index], size);
-        ringbuf->read_index += size;
-        return size;
-    }
-
-    memcpy(read_buffer, &ringbuf->buffer[ringbuf->read_index], ringbuf->size - ringbuf->read_index);
-    memcpy(&read_buffer[ringbuf->size - ringbuf->read_index],
-           &ringbuf->buffer[0],
-           size - (ringbuf->size - ringbuf->read_index));
-
-    ringbuf->read_mirror = ~ringbuf->read_mirror;
-    ringbuf->read_index = size - (ringbuf->size - ringbuf->read_index);
-    return size;
-}
-
-/**
- * @brief This function push the buf to the ringbuffer.
- *
- * @param ringbuf The ringbuffer to be pushed.
- * @param data The buf to be pushed.
- *
- * @return The size of the actual write.
- */
-size_t mr_ringbuf_push(struct mr_ringbuf *ringbuf, uint8_t data)
-{
-    MR_ASSERT(ringbuf != MR_NULL);
-
-    /* Get the space size */
-    if (mr_ringbuf_get_space_size(ringbuf) == 0) {
-        return 0;
-    }
-
-    ringbuf->buffer[ringbuf->write_index] = data;
-
-    if (ringbuf->write_index == ringbuf->size - 1) {
-        ringbuf->write_mirror = ~ringbuf->write_mirror;
-        ringbuf->write_index = 0;
-    } else {
-        ringbuf->write_index++;
-    }
-    return 1;
-}
-
-/**
- * @brief This function force to push the buf to the ringbuffer.
- *
- * @param ringbuf The ringbuffer to be pushed.
- * @param data The buf to be pushed.
- *
- * @return The size of the actual write.
- */
-size_t mr_ringbuf_push_force(struct mr_ringbuf *ringbuf, uint8_t data)
-{
-    int state = 0;
-
-    MR_ASSERT(ringbuf != MR_NULL);
-
-    /* Get the buffer size */
-    if (mr_ringbuf_get_bufsz(ringbuf) == 0) {
-        return 0;
-    }
-
-    /* Get the space size */
-    if (mr_ringbuf_get_space_size(ringbuf) == 0) {
-        state = 1;
-    }
-
-    ringbuf->buffer[ringbuf->write_index] = data;
-
-    if (ringbuf->write_index == ringbuf->size - 1) {
-        ringbuf->write_mirror = ~ringbuf->write_mirror;
-        ringbuf->write_index = 0;
-        if (state == 1) {
-            ringbuf->read_mirror = ~ringbuf->read_mirror;
-            ringbuf->read_index = ringbuf->write_index;
+    /* If free space is exceeded, move the out index to the in index */
+    if (count > space)
+    {
+        /* If the in index crosses the out index, the in flag is mirrored */
+        if (fifo->in <= fifo->out)
+        {
+            fifo->in_mirror = ~fifo->in_mirror;
         }
-    } else {
-        ringbuf->write_index++;
-        if (state == 1) {
-            ringbuf->read_index = ringbuf->write_index;
-        }
+        fifo->out = fifo->in;
     }
-    return 1;
-}
-
-/**
- * @brief This function write the ringbuffer.
- *
- * @param ringbuf The ringbuffer to be written.
- * @param buffer The buf buffer to be written to ringbuffer.
- * @param size The size of write.
- *
- * @return The size of the actual write.
- */
-size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t size)
-{
-    uint8_t *write_buffer = (uint8_t *)buffer;
-
-    MR_ASSERT(ringbuf != MR_NULL);
-    MR_ASSERT((buffer != MR_NULL) || (size == 0));
-
-    /* Get the space size */
-    size_t space_size = mr_ringbuf_get_space_size(ringbuf);
-    if (space_size == 0) {
-        return 0;
-    }
-
-    /* Adjust the number of bytes to write if it exceeds the available buf */
-    if (size > space_size) {
-        size = space_size;
-    }
-
-    /* Copy the buf from the buffer to the ringbuf */
-    if ((ringbuf->size - ringbuf->write_index) > size) {
-        memcpy(&ringbuf->buffer[ringbuf->write_index], write_buffer, size);
-        ringbuf->write_index += size;
-
-        return size;
-    }
-
-    memcpy(&ringbuf->buffer[ringbuf->write_index],
-           write_buffer,
-           ringbuf->size - ringbuf->write_index);
-    memcpy(&ringbuf->buffer[0],
-           &write_buffer[ringbuf->size - ringbuf->write_index],
-           size - (ringbuf->size - ringbuf->write_index));
-
-    ringbuf->write_mirror = ~ringbuf->write_mirror;
-    ringbuf->write_index = size - (ringbuf->size - ringbuf->write_index);
-    return size;
-}
-
-/**
- * @brief This function force write the ringbuffer.
- *
- * @param ringbuf The ringbuffer to be written.
- * @param buffer The buf buffer to be written to ringbuffer.
- * @param size The size of write.
- *
- * @return The size of the actual write.
- */
-size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, size_t size)
-{
-    uint8_t *write_buffer = (uint8_t *)buffer;
-
-    MR_ASSERT(ringbuf != MR_NULL);
-    MR_ASSERT((buffer != MR_NULL) || (size == 0));
-
-    if ((mr_ringbuf_get_bufsz(ringbuf) == 0) || (size == 0)) {
-        return 0;
-    }
-
-    /* Get the space size */
-    size_t space_size = mr_ringbuf_get_space_size(ringbuf);
-
-    /* If the buf exceeds the buffer space_size, the front buf is discarded */
-    if (size > ringbuf->size) {
-        write_buffer = &write_buffer[size - ringbuf->size];
-        size = ringbuf->size;
-    }
-
-    /* Copy the buf from the buffer to the ringbuf */
-    if ((ringbuf->size - ringbuf->write_index) > size) {
-        memcpy(&ringbuf->buffer[ringbuf->write_index], write_buffer, size);
-        ringbuf->write_index += size;
-        if (size > space_size) {
-            ringbuf->read_index = ringbuf->write_index;
-        }
-        return size;
-    }
-
-    memcpy(&ringbuf->buffer[ringbuf->write_index],
-           write_buffer,
-           ringbuf->size - ringbuf->write_index);
-    memcpy(&ringbuf->buffer[0],
-           &write_buffer[ringbuf->size - ringbuf->write_index],
-           size - (ringbuf->size - ringbuf->write_index));
-
-    ringbuf->write_mirror = ~ringbuf->write_mirror;
-    ringbuf->write_index = size - (ringbuf->size - ringbuf->write_index);
-
-    if (size > space_size) {
-        if (ringbuf->write_index <= ringbuf->read_index) {
-            ringbuf->read_mirror = ~ringbuf->read_mirror;
-        }
-
-        ringbuf->read_index = ringbuf->write_index;
-    }
-    return size;
-}
-
-static int mr_avl_get_height(struct mr_avl *node)
-{
-    if (node == MR_NULL) {
-        return -1;
-    }
-    return node->height;
-}
-
-static int mr_avl_get_balance(struct mr_avl *node)
-{
-    if (node == MR_NULL) {
-        return 0;
-    }
-    return (mr_avl_get_height(node->left_child) - mr_avl_get_height(node->right_child));
-}
-
-static void mr_avl_left_rotate(struct mr_avl **node)
-{
-    struct mr_avl *right_child = (*node)->right_child;
-
-    (*node)->right_child = right_child->left_child;
-    right_child->left_child = (*node);
-
-    (*node)->height = MR_MAX(mr_avl_get_height((*node)->left_child),
-                             mr_avl_get_height((*node)->right_child)) + 1;
-    right_child->height = MR_MAX(mr_avl_get_height(right_child->left_child),
-                                 mr_avl_get_height(right_child->right_child)) + 1;
-    (*node) = right_child;
-}
-
-static void mr_avl_right_rotate(struct mr_avl **node)
-{
-    struct mr_avl *left_child = (*node)->left_child;
-
-    (*node)->left_child = left_child->right_child;
-    left_child->right_child = (*node);
-
-    (*node)->height = MR_MAX(mr_avl_get_height((*node)->left_child),
-                             mr_avl_get_height((*node)->right_child)) + 1;
-    left_child->height = MR_MAX(mr_avl_get_height(left_child->left_child),
-                                mr_avl_get_height(left_child->right_child)) + 1;
-    (*node) = left_child;
-}
-
-/**
- * @brief This function initialize the avl tree.
- *
- * @param node The node to be initialized.
- * @param value The value to be initialized.
- */
-void mr_avl_init(struct mr_avl *node, uint32_t value)
-{
-    MR_ASSERT(node != MR_NULL);
-
-    node->height = 0;
-    node->value = value;
-    node->left_child = MR_NULL;
-    node->right_child = MR_NULL;
-}
-
-/**
- * @brief This function insert the node in the avl tree.
- *
- * @param tree The tree to be inserted.
- * @param node The node to insert.
- */
-void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node)
-{
-    MR_ASSERT(tree != MR_NULL);
-    MR_ASSERT(node != MR_NULL);
-
-    if ((*tree) == MR_NULL) {
-        (*tree) = node;
-    }
-
-    if (node->value < (*tree)->value) {
-        mr_avl_insert(&(*tree)->left_child, node);
-    } else if (node->value > (*tree)->value) {
-        mr_avl_insert(&(*tree)->right_child, node);
-    } else {
-        return;
-    }
-
-    (*tree)->height = MR_MAX(mr_avl_get_height((*tree)->left_child),
-                             mr_avl_get_height((*tree)->right_child)) + 1;
-
-    int balance = mr_avl_get_balance((*tree));
-    if (balance > 1 && node->value < (*tree)->left_child->value) {
-        mr_avl_right_rotate(&(*tree));
-        return;
-    }
-
-    if (balance < -1 && node->value > (*tree)->right_child->value) {
-        mr_avl_left_rotate(&(*tree));
-        return;
-    }
-
-    if (balance > 1 && node->value > (*tree)->left_child->value) {
-        mr_avl_left_rotate(&(*tree)->left_child);
-        mr_avl_right_rotate(&(*tree));
-        return;
-    }
-
-    if (balance < -1 && node->value < (*tree)->right_child->value) {
-        mr_avl_right_rotate(&(*tree)->right_child);
-        mr_avl_left_rotate(&(*tree));
-        return;
-    }
-}
-
-/**
- * @brief This function remove the node from the avl tree.
- *
- * @param tree The tree to be removed.
- * @param node The node to be removed.
- */
-void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node)
-{
-    MR_ASSERT(tree != MR_NULL);
-    MR_ASSERT(node != MR_NULL);
-
-    if (*tree == MR_NULL) {
-        return;
-    }
-
-    if (node->value < (*tree)->value) {
-        mr_avl_remove(&(*tree)->left_child, node);
-    } else if (node->value > (*tree)->value) {
-        mr_avl_remove(&(*tree)->right_child, node);
-    } else {
-        if ((*tree)->left_child == MR_NULL) {
-            struct mr_avl *temp = (*tree)->right_child;
-            (*tree)->right_child = MR_NULL;
-            (*tree) = temp;
-            return;
-        } else if ((*tree)->right_child == MR_NULL) {
-            struct mr_avl *temp = (*tree)->left_child;
-            (*tree)->left_child = MR_NULL;
-            (*tree) = temp;
-            return;
-        }
-
-        struct mr_avl *temp = (*tree)->right_child->left_child;
-        (*tree)->value = temp->value;
-        mr_avl_remove(&(*tree)->right_child, temp);
-        return;
-    }
-
-    (*tree)->height = MR_MAX(mr_avl_get_height((*tree)->left_child),
-                             mr_avl_get_height((*tree)->right_child)) + 1;
-
-    int balance = mr_avl_get_balance(*tree);
-
-    if (balance > 1 && mr_avl_get_balance((*tree)->left_child) >= 0) {
-        mr_avl_right_rotate(tree);
-    }
-
-    if (balance > 1 && mr_avl_get_balance((*tree)->left_child) < 0) {
-        mr_avl_left_rotate(&(*tree)->left_child);
-        mr_avl_right_rotate(tree);
-    }
-
-    if (balance < -1 && mr_avl_get_balance((*tree)->right_child) <= 0) {
-        mr_avl_left_rotate(tree);
-    }
-
-    if (balance < -1 && mr_avl_get_balance((*tree)->right_child) > 0) {
-        mr_avl_right_rotate(&(*tree)->right_child);
-        mr_avl_left_rotate(tree);
-    }
-}
-
-/**
- * @brief This function find the node in the avl tree.
- *
- * @param tree The tree to be searched.
- * @param value The value to be searched.
- *
- * @return A pointer to the found node, or MR_NULL if not found.
- */
-struct mr_avl *mr_avl_find(struct mr_avl *tree, uint32_t value)
-{
-    if (tree == MR_NULL) {
-        return tree;
-    }
-
-    if (tree->value == value) {
-        return tree;
-    }
-
-    if (value < tree->value) {
-        return mr_avl_find(tree->left_child, value);
-    } else if (value > tree->value) {
-        return mr_avl_find(tree->right_child, value);
-    }
-    return MR_NULL;
-}
-
-/**
- * @brief This function get the length of the avl tree.
- *
- * @param tree The tree to be searched.
- *
- * @return The length of the avl tree.
- */
-size_t mr_avl_get_length(struct mr_avl *tree)
-{
-    size_t length = 1;
-
-    if (tree == MR_NULL) {
-        return 0;
-    }
-
-    if (tree->left_child != MR_NULL) {
-        length += mr_avl_get_length(tree->left_child);
-    }
-
-    if (tree->right_child != MR_NULL) {
-        length += mr_avl_get_length(tree->right_child);
-    }
-    return length;
+    return count;
 }

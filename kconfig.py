@@ -46,9 +46,9 @@ def generate_config_file(kconfig_file, config_in, config_out, header_out):
         header_file.truncate(0)
         header_file.seek(0)
 
-        # Remove CONFIG_ and MR_USING_XXX following number
+        # Remove CONFIG_ and MR_USE_XXX following number
         content = content.replace("#define CONFIG_", "#define ")
-        content = re.sub(r'#define MR_USING_(\w+) (\d+)', r'#define MR_USING_\1', content)
+        content = re.sub(r'#define MR_USE_(\w+) (\d+)', r'#define MR_USE_\1', content)
 
         # Add the micro
         header_file.write("#ifndef _MR_CONFIG_H_\n")

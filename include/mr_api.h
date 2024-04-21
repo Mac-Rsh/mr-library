@@ -1,110 +1,122 @@
 /*
- * @copyright (c) 2023-2024, MR Development Team
- *
- * @license SPDX-License-Identifier: Apache-2.0
- *
- * @date 2023-10-20    MacRsh       First version
- */
+* @copyright (c) 2023-2024, MR Development Team
+*
+* @license SPDX-License-Identifier: Apache-2.0
+*
+* @date 2023-10-20    MacRsh       First version
+*/
 
 #ifndef _MR_API_H_
 #define _MR_API_H_
 
-#include "mr_def.h"
-#include "mr_service.h"
+#include "../mr-library/include/mr_def.h"
+#include "../mr-library/include/mr_service.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 /**
+ * @addtogroup Auto-init
+ * @{
+ */
+
+void mr_auto_init(void);
+
+/** @} */
+
+/**
  * @addtogroup Interrupt
  * @{
  */
+
 void mr_interrupt_disable(void);
 void mr_interrupt_enable(void);
+void mr_critical_enter(void);
+void mr_critical_exit(void);
+
 /** @} */
 
 /**
  * @addtogroup Delay
  * @{
  */
-void mr_delay_us(uint32_t us);
-void mr_delay_ms(uint32_t ms);
-/** @} */
 
-/**
- * @addtogroup Memory
- * @{
- */
-void *mr_malloc(size_t size);
-void mr_free(void *memory);
-size_t mr_malloc_usable_size(void *memory);
-void *mr_calloc(size_t num, size_t size);
-void *mr_realloc(void *memory, size_t size);
+void mr_delay_us(size_t us);
+void mr_delay_ms(size_t ms);
+
 /** @} */
 
 /**
  * @addtogroup String
  * @{
  */
+
+const char *mr_strerror(int error);
+int mr_printf_output(const char *buf, size_t size);
 int mr_printf(const char *fmt, ...);
-const char *mr_strerror(int err);
-const char *mr_strflags(int flags);
+
 /** @} */
 
 /**
- * @addtogroup Auto-init
+ * @addtogroup Assert
  * @{
  */
-void mr_auto_init(void);
+
+void mr_assert_handler(const char *ex, const char *tag, const char *fn,
+                       const char *file, int line);
+
 /** @} */
 
 /**
- * @addtogroup Ringbuffer
+ * @addtogroup Memory
  * @{
  */
-void mr_ringbuf_init(struct mr_ringbuf *ringbuf, void *pool, size_t size);
-int mr_ringbuf_allocate(struct mr_ringbuf *ringbuf, size_t size);
-void mr_ringbuf_free(struct mr_ringbuf *ringbuf);
-void mr_ringbuf_reset(struct mr_ringbuf *ringbuf);
-size_t mr_ringbuf_get_data_size(struct mr_ringbuf *ringbuf);
-size_t mr_ringbuf_get_space_size(struct mr_ringbuf *ringbuf);
-size_t mr_ringbuf_get_bufsz(struct mr_ringbuf *ringbuf);
-size_t mr_ringbuf_pop(struct mr_ringbuf *ringbuf, uint8_t *data);
-size_t mr_ringbuf_read(struct mr_ringbuf *ringbuf, void *buffer, size_t size);
-size_t mr_ringbuf_push(struct mr_ringbuf *ringbuf, uint8_t data);
-size_t mr_ringbuf_push_force(struct mr_ringbuf *ringbuf, uint8_t data);
-size_t mr_ringbuf_write(struct mr_ringbuf *ringbuf, const void *buffer, size_t size);
-size_t mr_ringbuf_write_force(struct mr_ringbuf *ringbuf, const void *buffer, size_t size);
+
+void *mr_malloc(size_t size);
+void mr_free(void *memory);
+size_t mr_malloc_usable_size(void *memory);
+void *mr_calloc(size_t num, size_t size);
+void *mr_realloc(void *memory, size_t size);
+
 /** @} */
 
 /**
- * @addtogroup AVL-tree
+ * @addtogroup FIFO
  * @{
  */
-void mr_avl_init(struct mr_avl *node, uint32_t value);
-void mr_avl_insert(struct mr_avl **tree, struct mr_avl *node);
-void mr_avl_remove(struct mr_avl **tree, struct mr_avl *node);
-struct mr_avl *mr_avl_find(struct mr_avl *tree, uint32_t value);
-size_t mr_avl_get_length(struct mr_avl *tree);
+
+int mr_fifo_init(struct mr_fifo *fifo, void *buf, size_t size);
+void mr_fifo_reset(struct mr_fifo *fifo);
+int mr_fifo_allocate(struct mr_fifo *fifo, size_t size);
+void mr_fifo_free(struct mr_fifo *fifo);
+size_t mr_fifo_used_get(struct mr_fifo *fifo);
+size_t mr_fifo_space_get(struct mr_fifo *fifo);
+size_t mr_fifo_size_get(struct mr_fifo *fifo);
+size_t mr_fifo_peek(struct mr_fifo *fifo, void *_buf, size_t count);
+size_t mr_fifo_discard(struct mr_fifo *fifo, size_t count);
+size_t mr_fifo_read(struct mr_fifo *fifo, void *buf, size_t count);
+size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count);
+size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count);
+
 /** @} */
 
 /**
  * @addtogroup Device
  * @{
  */
-int mr_dev_register(struct mr_dev *dev,
-                    const char *path,
-                    int type,
-                    int flags,
-                    struct mr_dev_ops *ops,
-                    struct mr_drv *drv);
-int mr_dev_isr(struct mr_dev *dev, int event, void *args);
-int mr_dev_open(const char *path, int flags);
-int mr_dev_close(int desc);
-ssize_t mr_dev_read(int desc, void *buf, size_t count);
-ssize_t mr_dev_write(int desc, const void *buf, size_t count);
-int mr_dev_ioctl(int desc, int cmd, void *args);
+
+int mr_device_register(struct mr_device *device, const char *path,
+                       uint32_t type, struct mr_device_ops *ops,
+                       const void *driver);
+int mr_device_unregister(struct mr_device *device);
+int mr_device_isr(struct mr_device *device, uint32_t event, void *args);
+int mr_device_open(const char *path, uint32_t flags);
+int mr_device_close(int descriptor);
+ssize_t mr_device_read(int descriptor, void *buf, size_t count);
+ssize_t mr_device_write(int descriptor, const void *buf, size_t count);
+int mr_device_ioctl(int descriptor, int cmd, void *args);
+
 /** @} */
 
 #ifdef __cplusplus

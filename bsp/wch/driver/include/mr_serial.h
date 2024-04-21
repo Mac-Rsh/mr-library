@@ -9,17 +9,18 @@
 #ifndef _DRV_SERIAL_H_
 #define _DRV_SERIAL_H_
 
-#include "include/device/mr_serial.h"
-#include "mr_board.h"
+#include "../mr-library/device/include/mr_serial.h"
+#include "../mr-library/driver/include/mr_board.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifdef MR_USING_SERIAL
+#ifdef MR_USE_SERIAL
 
-struct drv_serial_data
+struct mr_serial_driver
 {
+    struct mr_driver driver;
     USART_TypeDef *instance;
     uint32_t clock;
     uint32_t gpio_clock;
@@ -31,7 +32,7 @@ struct drv_serial_data
     uint32_t remap;
 };
 
-#endif /* MR_USING_SERIAL */
+#endif /* MR_USE_SERIAL */
 
 #ifdef __cplusplus
 }
