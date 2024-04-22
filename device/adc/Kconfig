@@ -4,4 +4,12 @@ menu "ADC configure"
         default y
         help
             "Use this option allows for the use of adc."
+
+    # Check
+    config MR_USE_ADC_CHECK
+        depends on MR_USE_ADC
+        bool "Use adc check"
+        default y
+        help
+            "This option allows for the use of adc check."
 endmenu

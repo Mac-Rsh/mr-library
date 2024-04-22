@@ -6,8 +6,8 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#ifndef _MR_DEVICE_SERIAL_H_
-#define _MR_DEVICE_SERIAL_H_
+#ifndef _MR_SERIAL_H_
+#define _MR_SERIAL_H_
 
 #include "../mr-library/include/mr_api.h"
 
@@ -121,4 +121,4 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
 }
 #endif /* __cplusplus */
 
-#endif /* _MR_DEVICE_SERIAL_H_ */
+#endif /* _MR_SERIAL_H_ */

@@ -27,7 +27,8 @@ struct _device_event
     struct mr_list list;                                    /**< Event list */
     int descriptor;                                         /**< Event descriptor */
     uint32_t event;                                         /**< Event */
-    void (*callback)(int descriptor, uint32_t event);       /**< Callback */
+    void (*callback)(int descriptor, uint32_t event,
+                     void *args);                           /**< Callback function */
 };
 
 static struct mr_device _root_device = {
@@ -310,7 +311,8 @@ MR_INLINE void _device_event_destroy_all(struct mr_device *device,
     mr_critical_exit();
 }
 
-MR_INLINE void _device_event_handler(struct mr_device *device, uint32_t event)
+MR_INLINE void _device_event_handler(struct mr_device *device, uint32_t event,
+                                     void *args)
 {
     for (struct mr_list *list = device->event_list.next;
          list != &device->event_list; list = list->next)
@@ -321,7 +323,7 @@ MR_INLINE void _device_event_handler(struct mr_device *device, uint32_t event)
         /* Call the callback if the event matches */
         if (_event->event == event)
         {
-            _event->callback(_event->descriptor, _event->event);
+            _event->callback(_event->descriptor, _event->event, args);
         }
     }
 }
@@ -417,29 +419,32 @@ static int _device_isr(struct mr_device *device, uint32_t event, void *args)
     mr_critical_enter();
 
     /* If the device has no references, cannot handle the ISR */
-    if (device->ref_count != 0)
-    {
-        /* Call the device ISR */
-        if (device->ops->isr != NULL)
-        {
-            ret = device->ops->isr(device, event, args);
-        } else
-        {
-            ret = MR_EOK;
-        }
-
-        /* Release the device based on event */
-        uint32_t mask = (event & MR_EVENT_RD_COMPLETE) ? _RD_LOCK_MASK : 0;
-        mask |= (event & MR_EVENT_WR_COMPLETE) ? _WR_LOCK_MASK : 0;
-        _device_release(device, mask);
-
-        /* Call the event handler */
-        _device_event_handler(device, event);
-    } else
+    if (device->ref_count == 0)
     {
         ret = MR_EPERM;
+        goto _exit;
     }
 
+    /* Call the device ISR */
+    if (device->ops->isr != NULL)
+    {
+        ret = device->ops->isr(device, event, args);
+        if (ret < 0)
+        {
+            goto _exit;
+        }
+    }
+
+    /* Release the device based on event */
+    uint32_t mask = (event & MR_EVENT_RD_COMPLETE) ? _RD_LOCK_MASK : 0;
+    mask |= (event & MR_EVENT_WR_COMPLETE) ? _WR_LOCK_MASK : 0;
+    _device_release(device, mask);
+
+    /* Call the event handler */
+    _device_event_handler(device, event, &ret);
+    ret = MR_EOK;
+
+_exit:
     /* Critical section exit */
     mr_critical_exit();
     return ret;

@@ -1,0 +1,15 @@
+menu "PIN configure"
+    config MR_USE_PIN
+        bool "Use pin"
+        default y
+        help
+            "Use this option allows for the use of pin."
+
+    # Check
+    config MR_USE_PIN_CHECK
+        depends on MR_USE_PIN
+        bool "Use pin check"
+        default y
+        help
+            "This option allows for the use of pin check."
+endmenu

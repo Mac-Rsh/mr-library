@@ -252,7 +252,8 @@ struct mr_descriptor
 struct mr_device_event
 {
     uint32_t event;                                         /**< Event */
-    void (*callback)(int descriptor, uint32_t event);       /**< Callback */
+    void (*callback)(int descriptor, uint32_t event,
+                     void *args);                           /**< Callback function */
 };
 
 /** @} */

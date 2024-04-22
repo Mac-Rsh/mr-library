@@ -17,7 +17,12 @@ menu "Device configure"
 
     comment "   Device   "
 
+    # ADC
+    source "device/adc/Kconfig"
+
+    # PIN
+    source "device/pin/Kconfig"
+
     # Serial
     source "device/serial/Kconfig"
-
 endmenu
