@@ -12,7 +12,7 @@
 
 #if !defined(MR_USE_ADC1) && !defined(MR_USE_ADC2)
 #warning "Please enable at least one ADC driver"
-#endif /* !defined(MR_USE_ADC1) && !defined(MR_USE_ADC2) */
+#else
 
 enum _adc_driver_index
 {
@@ -50,6 +50,10 @@ static struct mr_adc _adc_device[MR_ARRAY_NUM(_adc_device_path)];
 
 MR_INLINE struct mr_adc_driver_channel *_adc_channel_get(uint32_t channel)
 {
+    if (channel >= MR_ARRAY_NUM(_adc_driver_channel))
+    {
+        return NULL;
+    }
     return &_adc_driver_channel[channel];
 }
 
@@ -84,6 +88,11 @@ static int adc_driver_channel_configure(struct mr_driver *driver,
     struct mr_adc_driver_channel *adc_channel = _adc_channel_get(channel);
     GPIO_InitTypeDef GPIO_InitStructure = {0};
 
+    if (adc_channel == NULL)
+    {
+        return MR_EINVAL;
+    }
+
     /* Configure clock */
     RCC_APB2PeriphClockCmd(adc_channel->gpio_clock, ENABLE);
 
@@ -113,6 +122,11 @@ static int adc_driver_read(struct mr_driver *driver, uint32_t channel,
     struct mr_adc_driver_channel *adc_channel = _adc_channel_get(channel);
     size_t i = 0;
 
+    if (adc_channel == NULL)
+    {
+        return MR_EINVAL;
+    }
+
     /* Read data */
 #ifdef MR_USE_CH32V00X
     ADC_RegularChannelConfig(adc->instance, adc_channel->channel, 1,
@@ -141,14 +155,20 @@ static void adc_driver_init(void)
                                            .channel_configure =
                                                adc_driver_channel_configure,
                                            .read = adc_driver_read};
+    static struct mr_adc_driver_data data = {
+        .channels = _DRIVER_ADC_CHANNELS,
+        .resolution = _DRIVER_ADC_RESOLUTION};
 
     for (size_t i = 0; i < MR_ARRAY_NUM(_adc_device); i++)
     {
         _adc_driver[i].driver.ops = &ops;
+        _adc_driver[i].driver.data = &data;
         mr_adc_register(&_adc_device[i], _adc_device_path[i],
                         (struct mr_driver *)&_adc_driver[i]);
     }
 }
 MR_INIT_DRIVER_EXPORT(adc_driver_init);
+
+#endif /* !defined(MR_USE_ADC1) && !defined(MR_USE_ADC2) */
 
 #endif /* MR_USE_ADC */

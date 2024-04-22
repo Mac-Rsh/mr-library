@@ -107,7 +107,30 @@ extern "C" {
              .port = NULL,                                                     \
              .pin = 0},                                                        \
     }
+#define _DRIVER_ADC_CHANNELS (0x3ffff)
+#define _DRIVER_ADC_RESOLUTION (12)
 #endif /* defined(MR_USE_ADC1) || defined(MR_USE_ADC2) */
+
+#define _DRIVER_PIN_IRQ_CONFIG                                                 \
+    {                                                                          \
+        EXTI0_IRQn, EXTI1_IRQn, EXTI2_IRQn, EXTI3_IRQn, EXTI4_IRQn,            \
+            EXTI9_5_IRQn, EXTI9_5_IRQn, EXTI9_5_IRQn, EXTI9_5_IRQn,            \
+            EXTI9_5_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,      \
+            EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,                    \
+    }
+
+#define _DRIVER_PIN_PORT_CONFIG                                                \
+    {                                                                          \
+        GPIOA, GPIOB, GPIOC, GPIOD, GPIOE,                                     \
+    }
+
+#define _DRIVER_PIN_PIN_CONFIG                                                 \
+    {                                                                          \
+        GPIO_Pin_0, GPIO_Pin_1, GPIO_Pin_2, GPIO_Pin_3, GPIO_Pin_4,            \
+            GPIO_Pin_5, GPIO_Pin_6, GPIO_Pin_7, GPIO_Pin_8, GPIO_Pin_9,        \
+            GPIO_Pin_10, GPIO_Pin_11, GPIO_Pin_12, GPIO_Pin_13, GPIO_Pin_14,   \
+            GPIO_Pin_15,                                                       \
+    }
 
 #if (MR_CFG_UART1_GROUP == 1)
 #define _DRIVER_UART1_CONFIG                                                   \

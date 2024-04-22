@@ -6,8 +6,8 @@
  * @date 2023-11-11    MacRsh       First version
  */
 
-#ifndef _MR_DRIVER_ADC_H_
-#define _MR_DRIVER_ADC_H_
+#ifndef _MR_ADC_DRIVER_H_
+#define _MR_ADC_DRIVER_H_
 
 #include "../mr-library/device/include/mr_adc.h"
 #include "../mr-library/driver/include/mr_board.h"
@@ -39,4 +39,4 @@ struct mr_adc_driver_channel
 }
 #endif /* __cplusplus */
 
-#endif /* _MR_DRIVER_ADC_H_ */
+#endif /* _MR_ADC_DRIVER_H_ */

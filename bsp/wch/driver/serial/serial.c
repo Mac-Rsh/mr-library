@@ -15,10 +15,7 @@
     !defined(MR_USE_UART5) && !defined(MR_USE_UART6) &&                        \
     !defined(MR_USE_UART7) && !defined(MR_USE_UART8)
 #warning "Please enable at least one Serial driver"
-#endif /* !defined(MR_USE_UART1) && !defined(MR_USE_UART2) &&                  \
-        * !defined(MR_USE_UART3) && !defined(MR_USE_UART4) &&                  \
-        * !defined(MR_USE_UART5) && !defined(MR_USE_UART6) &&                  \
-        * !defined(MR_USE_UART7) && !defined(MR_USE_UART8) */
+#else
 
 enum _serial_driver_index
 {
@@ -410,5 +407,10 @@ static void serial_driver_init(void)
     }
 }
 MR_INIT_DRIVER_EXPORT(serial_driver_init);
+
+#endif /* !defined(MR_USE_UART1) && !defined(MR_USE_UART2) &&                  \
+        * !defined(MR_USE_UART3) && !defined(MR_USE_UART4) &&                  \
+        * !defined(MR_USE_UART5) && !defined(MR_USE_UART6) &&                  \
+        * !defined(MR_USE_UART7) && !defined(MR_USE_UART8) */
 
 #endif /* MR_USE_SERIAL */
