@@ -256,9 +256,7 @@ static int pin_isr(struct mr_device *device, uint32_t event, void *args)
                 /* This EXTI will be ignored */
                 return MR_EINVAL;
             }
-
-            /* Returns the number that triggered the EXTI interrupt */
-            return *number;
+            return MR_EOK;
         }
         default:
         {

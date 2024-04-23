@@ -351,16 +351,16 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
         {
             int count = 1;
 
-            /* If FIFO is empty, the read operation is abandoned */
-            if (mr_fifo_size_get(&serial->rfifo) == 0)
-            {
-                return MR_EOK;
-            }
-
             if (args != NULL)
             {
                 /* Hardware FIFO is considered to be used */
                 count = *((int *)args);
+            }
+
+            /* If FIFO is empty, the read operation is abandoned */
+            if (mr_fifo_size_get(&serial->rfifo) == 0)
+            {
+                return MR_EOK;
             }
 
             /* Read all data from hardware FIFO */
@@ -378,9 +378,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 /* Force write data to FIFO */
                 mr_fifo_write_force(&serial->rfifo, &data, sizeof(data));
             }
-
-            /* Return number of bytes received */
-            return count;
+            return MR_EOK;
         }
         case MR_EVENT_SERIAL_WR_COMPLETE_INT:
         {

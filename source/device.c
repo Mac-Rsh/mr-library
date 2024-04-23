@@ -15,9 +15,9 @@
 
 #define _MAGIC_NUMBER                   (0xdeadbeef)        /**< Magic number */
 
-#define _RD_LOCK_MASK                   (0xffff0000)        /**< Read lock mask */
-#define _WR_LOCK_MASK                   (0x0000ffff)        /**< Write lock mask */
-#define _RDWR_LOCK_MASK                 (0xffffffff)        /**< Read/write lock mask */
+#define _LOCK_RD_MASK                   (0xffff0000)        /**< Read lock mask */
+#define _LOCK_WR_MASK                   (0x0000ffff)        /**< Write lock mask */
+#define _LOCK_ALL_MASK                  (0xffffffff)        /**< Read/write lock mask */
 
 /**
  * @brief Device event complete structure.
@@ -43,8 +43,8 @@ static struct mr_device _root_device = {
 #endif /* MR_CFG_DESCRIPTOR_MAX */
 static struct mr_descriptor _descriptor_map[MR_CFG_DESCRIPTOR_MAX] = {0};
 
-static struct mr_device *_device_find_from(const char *name,
-                                           struct mr_device *parent)
+MR_INLINE struct mr_device *_device_find_from(const char *name,
+                                              struct mr_device *parent)
 {
     /* Deal with special names */
     if (strcmp(name, "..") == 0)
@@ -68,8 +68,8 @@ static struct mr_device *_device_find_from(const char *name,
     return NULL;
 }
 
-static struct mr_device *_device_next_find(const char **path,
-                                           struct mr_device *parent)
+MR_INLINE struct mr_device *_device_next_find(const char **path,
+                                              struct mr_device *parent)
 {
     /* Skip the leading '/' */
     if ((*path)[0] == '/')
@@ -134,6 +134,21 @@ static struct mr_device *_device_find_iter(const char *path,
     }
 }
 
+MR_INLINE struct mr_device *_device_find(const char *path)
+{
+    struct mr_device *device;
+
+    /* Critical section enter */
+    mr_critical_enter();
+
+    /* Find the device */
+    device = _device_find_iter(path, &_root_device);
+
+    /* Critical section exit */
+    mr_critical_exit();
+    return device;
+}
+
 MR_INLINE bool _device_flags_is_valid(struct mr_device *device, uint32_t flags)
 {
     return MR_BIT_IS_SET(device->flags, flags);
@@ -150,21 +165,6 @@ MR_INLINE bool _descriptor_flags_is_valid(int descriptor, uint32_t flags)
     return MR_BIT_IS_SET(_descriptor_map[descriptor].flags, flags);
 }
 
-MR_INLINE struct mr_device *_device_find(const char *path)
-{
-    struct mr_device *device;
-
-    /* Critical section enter */
-    mr_critical_enter();
-
-    /* Find the device */
-    device = _device_find_iter(path, &_root_device);
-
-    /* Critical section exit */
-    mr_critical_exit();
-    return device;
-}
-
 MR_INLINE int _device_take(struct mr_device *device, int descriptor,
                            uint32_t mask)
 {
@@ -172,7 +172,7 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
     int ret;
 
     /* If the device is not FDX, the read/write must be locked */
-    mask = (device->fdx == true) ? mask : _RDWR_LOCK_MASK;
+    mask = (device->fdx == true) ? mask : _LOCK_ALL_MASK;
 
     /* Calculate the lock mask, since the descriptor can be 0, need to add 1 */
     lock = (((descriptor + 1) << 16) | (descriptor + 1)) & mask;
@@ -180,9 +180,10 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
     /* Critical section enter */
     mr_critical_enter();
 
-    /* Take the device lock */
-    if (((device->lock & mask) == 0) &&
-        (_descriptor_is_valid(descriptor) == true))
+    if (_descriptor_is_valid(descriptor) == false)
+    {
+        ret = MR_EINVAL;
+    } else if ((device->lock & mask) == 0)
     {
         MR_BIT_SET(device->lock, lock);
         ret = MR_EOK;
@@ -199,7 +200,7 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
 MR_INLINE void _device_release(struct mr_device *device, uint32_t mask)
 {
     /* If the device is not FDX, the read/write must be locked */
-    mask = (device->fdx == true) ? mask : _RDWR_LOCK_MASK;
+    mask = (device->fdx == true) ? mask : _LOCK_ALL_MASK;
 
     /* Release the device lock */
     MR_BIT_CLR(device->lock, mask);
@@ -413,6 +414,7 @@ static int _device_unregister(struct mr_device *device)
 
 static int _device_isr(struct mr_device *device, uint32_t event, void *args)
 {
+    uint32_t mask;
     int ret;
 
     /* Critical section enter */
@@ -436,12 +438,12 @@ static int _device_isr(struct mr_device *device, uint32_t event, void *args)
     }
 
     /* Release the device based on event */
-    uint32_t mask = (event & MR_EVENT_RD_COMPLETE) ? _RD_LOCK_MASK : 0;
-    mask |= (event & MR_EVENT_WR_COMPLETE) ? _WR_LOCK_MASK : 0;
+    mask = (event & MR_EVENT_RD_COMPLETE) ? _LOCK_RD_MASK : 0;
+    mask |= (event & MR_EVENT_WR_COMPLETE) ? _LOCK_WR_MASK : 0;
     _device_release(device, mask);
 
     /* Call the event handler */
-    _device_event_handler(device, event, &ret);
+    _device_event_handler(device, event, args);
     ret = MR_EOK;
 
 _exit:
@@ -467,13 +469,12 @@ static int _device_open(const char *path, uint32_t flags)
     descriptor = _descriptor_allocate(device, flags);
     if (descriptor < 0)
     {
-        ret = descriptor;
-        goto _exit;
+        return descriptor;
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _RDWR_LOCK_MASK);
-    if (ret != MR_EOK)
+    ret = _device_take(device, descriptor, _LOCK_ALL_MASK);
+    if (ret < 0)
     {
         _descriptor_free(descriptor);
         return ret;
@@ -498,7 +499,7 @@ static int _device_open(const char *path, uint32_t flags)
 
 _exit:
     /* Release the device */
-    _device_release(device, _RDWR_LOCK_MASK);
+    _device_release(device, _LOCK_ALL_MASK);
     return ret;
 }
 
@@ -515,8 +516,8 @@ static int _device_close(int descriptor)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _RDWR_LOCK_MASK);
-    if (ret != MR_EOK)
+    ret = _device_take(device, descriptor, _LOCK_ALL_MASK);
+    if (ret < 0)
     {
         return ret;
     }
@@ -525,7 +526,7 @@ static int _device_close(int descriptor)
     if ((device->ref_count == 1) && (device->ops->close != NULL))
     {
         ret = device->ops->close(device);
-        if (ret != MR_EOK)
+        if (ret < 0)
         {
             goto _exit;
         }
@@ -542,7 +543,7 @@ static int _device_close(int descriptor)
 
 _exit:
     /* Release the device */
-    _device_release(device, _RDWR_LOCK_MASK);
+    _device_release(device, _LOCK_ALL_MASK);
     return ret;
 }
 
@@ -560,8 +561,8 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _RD_LOCK_MASK);
-    if (ret != MR_EOK)
+    ret = _device_take(device, descriptor, _LOCK_RD_MASK);
+    if (ret < 0)
     {
         return ret;
     }
@@ -590,7 +591,7 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     }
 
     /* Release the device */
-    _device_release(device, _RD_LOCK_MASK);
+    _device_release(device, _LOCK_RD_MASK);
     return ret;
 }
 
@@ -608,8 +609,8 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _WR_LOCK_MASK);
-    if (ret != MR_EOK)
+    ret = _device_take(device, descriptor, _LOCK_WR_MASK);
+    if (ret < 0)
     {
         return ret;
     }
@@ -638,11 +639,11 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     }
 
     /* Release the device */
-    _device_release(device, _WR_LOCK_MASK);
+    _device_release(device, _LOCK_WR_MASK);
     return ret;
 }
 
-static int _device_ioctl(int descriptor, int cmd, void *arg)
+static int _device_ioctl(int descriptor, int cmd, void *args)
 {
     struct mr_device *device;
     int pos, ret;
@@ -655,8 +656,8 @@ static int _device_ioctl(int descriptor, int cmd, void *arg)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _RDWR_LOCK_MASK);
-    if (ret != MR_EOK)
+    ret = _device_take(device, descriptor, _LOCK_ALL_MASK);
+    if (ret < 0)
     {
         return ret;
     }
@@ -670,68 +671,68 @@ static int _device_ioctl(int descriptor, int cmd, void *arg)
         case MR_CTRL_SET(MR_CMD_POS):
         {
             /* Check the argument */
-            if (arg == NULL)
+            if (args == NULL)
             {
                 ret = MR_EINVAL;
                 goto _exit;
             }
 
             /* Set the position */
-            _descriptor_map[descriptor].pos = *(int *)arg;
+            _descriptor_map[descriptor].pos = *(int *)args;
             ret = MR_EOK;
             break;
         }
         case MR_CTRL_GET(MR_CMD_POS):
         {
             /* Check the argument */
-            if (arg == NULL)
+            if (args == NULL)
             {
                 ret = MR_EINVAL;
                 goto _exit;
             }
 
             /* Get the position */
-            *(int *)arg = pos;
+            *(int *)args = pos;
             ret = MR_EOK;
             break;
         }
         case MR_CTRL_NEW(MR_CMD_EVENT):
         {
             /* Check the argument */
-            if (arg == NULL)
+            if (args == NULL)
             {
                 ret = MR_EINVAL;
                 goto _exit;
             }
 
-            struct mr_device_event *event = (struct mr_device_event *)arg;
-            ret = _device_event_create(device, descriptor, event);
+            /* Create the event */
+            ret = _device_event_create(device, descriptor,args);
             break;
         }
         case MR_CTRL_DEL(MR_CMD_EVENT):
         {
             /* Check the argument */
-            if (arg == NULL)
+            if (args == NULL)
             {
                 ret = MR_EINVAL;
                 goto _exit;
             }
 
-            struct mr_device_event *event = (struct mr_device_event *)arg;
-            ret = _device_event_destroy(device, descriptor, event);
+            /* Destroy the event */
+            ret = _device_event_destroy(device, descriptor, args);
             break;
         }
         default:
         {
             /* CMD is defined by the device */
-            ret = device->ops->ioctl(device, pos, cmd, arg);
+            ret = device->ops->ioctl(device, pos, cmd, args);
             break;
         }
     }
 
 _exit:
     /* Release the device */
-    _device_release(device, _RDWR_LOCK_MASK);
+    _device_release(device, _LOCK_ALL_MASK);
     return ret;
 }
 
