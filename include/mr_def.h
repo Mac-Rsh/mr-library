@@ -214,6 +214,9 @@ struct mr_device_ops
                            size_t count);
     int (*ioctl)(struct mr_device *device, int pos, int cmd, void *args);
     int (*isr)(struct mr_device *device, uint32_t event, void *args);
+
+    int (*attach)(struct mr_device *device, struct mr_device *source);
+    int (*detach)(struct mr_device *device, struct mr_device *source);
 };
 
 /**

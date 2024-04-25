@@ -192,8 +192,7 @@ static ssize_t serial_write(struct mr_device *device, int pos, const void *buf,
 static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 {
     struct mr_serial *serial = (struct mr_serial *)device;
-    struct mr_driver *driver =
-        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
+    struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
     struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
     switch (cmd)
@@ -469,7 +468,7 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
     serial->wfifo_size = MR_CFG_SERIAL_WR_FIFO_SIZE;
     serial->state = 0;
 
-    /* Register the serial device */
+    /* Register the serial */
     return mr_device_register(
         (struct mr_device *)serial, path,
         MR_DEVICE_TYPE_SERIAL | MR_DEVICE_TYPE_FULL_DUPLEX, &ops, driver);

@@ -110,6 +110,16 @@ static int _device_register_iter(struct mr_device *device, const char *path,
             return MR_EEXIST;
         }
 
+        /* Notify the parent device that the child device will be attached */
+        if (parent->ops->attach != NULL)
+        {
+            int ret = parent->ops->attach(parent, device);
+            if (ret < 0)
+            {
+                return ret;
+            }
+        }
+
         /* Register the device */
         device->magic = _MAGIC_NUMBER;
         strncpy(device->name, path, sizeof(device->name));
@@ -292,7 +302,7 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
     uint32_t lock;
     int ret;
 
-    /* If the device is not FDX, the read/write must be locked */
+    /* If the device is not FDX, the read/writing must be locked */
     mask = (device->full_duplex == true) ? mask : _MR_OPERATE_MASK_ALL;
 
     /* Calculate the lock mask, since the descriptor can be 0, need to add 1 */
@@ -321,7 +331,7 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
 
 MR_INLINE void _device_release(struct mr_device *device, uint32_t mask)
 {
-    /* If the device is not FDX, the read/write must be locked */
+    /* If the device is not FDX, the read/writing must be locked */
     mask = (device->full_duplex == true) ? mask : _MR_OPERATE_MASK_ALL;
 
     /* Release the device lock */
@@ -418,28 +428,46 @@ static int _device_register(struct mr_device *device, const char *path,
 
     /* Critical section exit */
     mr_critical_exit();
+
     return ret;
 }
 
 static int _device_unregister(struct mr_device *device)
 {
+    struct mr_device *parent = device->parent;
     int ret;
 
     /* Critical section enter */
     mr_critical_enter();
 
     /* Unregister the device only when there are no more references to it */
-    if (device->ref_count == 0)
-    {
-        device->magic = 0;
-        mr_list_remove(&device->list);
-        device->parent = NULL;
-        ret = MR_EOK;
-    } else
+    if (device->ref_count > 0)
     {
         ret = MR_EBUSY;
+        goto _exit;
     }
 
+    /* Try to detach the device from its parent */
+    mr_list_remove(&device->list);
+
+    /* Notify the parent device that the child device will be detached */
+    if (parent->ops->detach != NULL)
+    {
+        ret = parent->ops->detach(parent, device);
+        if (ret < 0)
+        {
+            /* Revert the list operation */
+            mr_list_insert_before(&parent->clist, &device->list);
+            goto _exit;
+        }
+    }
+
+    /* Unregister the device */
+    device->magic = 0;
+    device->parent = NULL;
+    ret = MR_EOK;
+
+_exit:
     /* Critical section exit */
     mr_critical_exit();
     return ret;
@@ -513,7 +541,7 @@ static int _device_open(const char *path, uint32_t flags)
         return ret;
     }
 
-    /* Device will only be opened the first time it is accessed */
+    /* The Device will only be opened the first time it is accessed */
     if ((device->ref_count == 0) && (device->ops->open != NULL))
     {
         ret = device->ops->open(device);
@@ -555,7 +583,7 @@ static int _device_close(int descriptor)
         return ret;
     }
 
-    /* Device will only be closed the last time it is accessed */
+    /* The Device will only be closed the last time it is accessed */
     if ((device->ref_count == 1) && (device->ops->close != NULL))
     {
         ret = device->ops->close(device);
@@ -651,7 +679,7 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     /* Get the position */
     pos = _descriptor_map[descriptor].pos;
 
-    /* Async or sync write */
+    /* Async or sync writes */
     if (_descriptor_flags_is_valid(descriptor, MR_FLAG_WRONLY_ASYNC) == true)
     {
         /* Async write */

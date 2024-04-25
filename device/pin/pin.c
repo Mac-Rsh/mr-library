@@ -288,7 +288,7 @@ int mr_pin_register(struct mr_pin *pin, const char *path,
     MR_ASSERT(path != NULL);
     MR_ASSERT((driver != NULL) && (driver->ops != NULL));
 
-    /* Register the pin device */
+    /* Register the pin */
     return mr_device_register((struct mr_device *)pin, path,
                               MR_DEVICE_TYPE_PIN | MR_DEVICE_TYPE_FULL_DUPLEX,
                               &ops, driver);
