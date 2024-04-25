@@ -290,8 +290,8 @@ int mr_pin_register(struct mr_pin *pin, const char *path,
 
     /* Register the pin device */
     return mr_device_register((struct mr_device *)pin, path,
-                              MR_DEVICE_TYPE_PIN | MR_DEVICE_TYPE_FDX, &ops,
-                              driver);
+                              MR_DEVICE_TYPE_PIN | MR_DEVICE_TYPE_FULL_DUPLEX,
+                              &ops, driver);
 }
 
 #endif /* MR_USE_PIN */

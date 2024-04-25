@@ -231,7 +231,7 @@ int mr_printf(const char *fmt, ...)
 MR_WEAK void mr_assert_handler(const char *ex, const char *tag, const char *fn,
                                const char *file, int line)
 {
-    printf("[A/%s] : %s %s %s:%d\n", ex, tag, fn, file, line);
+    mr_printf("[A/%s] : %s %s %s:%d\n", ex, tag, fn, file, line);
 
     while (1)
     {

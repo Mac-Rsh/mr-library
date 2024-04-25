@@ -175,6 +175,10 @@ struct mr_fifo
 #define MR_EVENT_RD_COMPLETE            (0x01 << 24)        /**< Read complete event */
 #define MR_EVENT_WR_COMPLETE            (0x02 << 24)        /**< Write complete event */
 
+#define _MR_OPERATE_MASK_RD             (0xffff0000)        /**< Read lock mask */
+#define _MR_OPERATE_MASK_WR             (0x0000ffff)        /**< Write lock mask */
+#define _MR_OPERATE_MASK_ALL            (0xffffffff)        /**< Read/write lock mask */
+
 /**
  * @brief Device types.
  */
@@ -189,7 +193,7 @@ enum mr_device_type
     MR_DEVICE_TYPE_SPI,                                     /**< SPI device */
     MR_DEVICE_TYPE_TIMER,                                   /**< Timer device */
     MR_DEVICE_TYPE_PWM,                                     /**< PWM device */
-    MR_DEVICE_TYPE_FDX = 0x80000000,                        /**< Full duplex */
+    MR_DEVICE_TYPE_FULL_DUPLEX = 0x80000000,                /**< Full duplex device */
 };
 
 struct mr_device;
@@ -227,7 +231,7 @@ struct mr_device
     void *parent;                                           /**< Parent device */
 
     uint32_t type: 31;                                      /**< Type */
-    uint32_t fdx: 1;                                        /**< Full duplex */
+    uint32_t full_duplex: 1;                                /**< Full duplex */
     uint32_t flags;                                         /**< Flags */
     size_t ref_count;                                       /**< Reference count */
     volatile uint32_t lock;                                 /**< Operation lock */

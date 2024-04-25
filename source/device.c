@@ -15,10 +15,6 @@
 
 #define _MAGIC_NUMBER                   (0xdeadbeef)        /**< Magic number */
 
-#define _LOCK_RD_MASK                   (0xffff0000)        /**< Read lock mask */
-#define _LOCK_WR_MASK                   (0x0000ffff)        /**< Write lock mask */
-#define _LOCK_ALL_MASK                  (0xffffffff)        /**< Read/write lock mask */
-
 /**
  * @brief Device event complete structure.
  */
@@ -100,9 +96,11 @@ MR_INLINE struct mr_device *_device_next_find(const char **path,
 static int _device_register_iter(struct mr_device *device, const char *path,
                                  struct mr_device *parent)
 {
+    /* Find the next path */
     struct mr_device *next_parent = _device_next_find(&path, parent);
     if (next_parent != NULL)
     {
+        /* Continue the registration */
         return _device_register_iter(device, path, next_parent);
     } else
     {
@@ -132,78 +130,6 @@ static struct mr_device *_device_find_iter(const char *path,
     {
         return _device_find_from(path, parent);
     }
-}
-
-MR_INLINE struct mr_device *_device_find(const char *path)
-{
-    struct mr_device *device;
-
-    /* Critical section enter */
-    mr_critical_enter();
-
-    /* Find the device */
-    device = _device_find_iter(path, &_root_device);
-
-    /* Critical section exit */
-    mr_critical_exit();
-    return device;
-}
-
-MR_INLINE bool _device_flags_is_valid(struct mr_device *device, uint32_t flags)
-{
-    return MR_BIT_IS_SET(device->flags, flags);
-}
-
-MR_INLINE bool _descriptor_is_valid(int descriptor)
-{
-    return (descriptor >= 0) && (descriptor < MR_ARRAY_NUM(_descriptor_map)) &&
-           (_descriptor_map[descriptor].device != NULL);
-}
-
-MR_INLINE bool _descriptor_flags_is_valid(int descriptor, uint32_t flags)
-{
-    return MR_BIT_IS_SET(_descriptor_map[descriptor].flags, flags);
-}
-
-MR_INLINE int _device_take(struct mr_device *device, int descriptor,
-                           uint32_t mask)
-{
-    uint32_t lock;
-    int ret;
-
-    /* If the device is not FDX, the read/write must be locked */
-    mask = (device->fdx == true) ? mask : _LOCK_ALL_MASK;
-
-    /* Calculate the lock mask, since the descriptor can be 0, need to add 1 */
-    lock = (((descriptor + 1) << 16) | (descriptor + 1)) & mask;
-
-    /* Critical section enter */
-    mr_critical_enter();
-
-    if (_descriptor_is_valid(descriptor) == false)
-    {
-        ret = MR_EINVAL;
-    } else if ((device->lock & mask) == 0)
-    {
-        MR_BIT_SET(device->lock, lock);
-        ret = MR_EOK;
-    } else
-    {
-        ret = MR_EBUSY;
-    }
-
-    /* Critical section exit */
-    mr_critical_exit();
-    return ret;
-}
-
-MR_INLINE void _device_release(struct mr_device *device, uint32_t mask)
-{
-    /* If the device is not FDX, the read/write must be locked */
-    mask = (device->fdx == true) ? mask : _LOCK_ALL_MASK;
-
-    /* Release the device lock */
-    MR_BIT_CLR(device->lock, mask);
 }
 
 MR_INLINE int _device_event_create(struct mr_device *device, int descriptor,
@@ -329,6 +255,79 @@ MR_INLINE void _device_event_handler(struct mr_device *device, uint32_t event,
     }
 }
 
+MR_INLINE bool _device_flags_is_valid(struct mr_device *device, uint32_t flags)
+{
+    return MR_BIT_IS_SET(device->flags, flags);
+}
+
+MR_INLINE bool _descriptor_is_valid(int descriptor)
+{
+    return (descriptor >= 0) && (descriptor < MR_ARRAY_NUM(_descriptor_map)) &&
+           (_descriptor_map[descriptor].device != NULL);
+}
+
+MR_INLINE bool _descriptor_flags_is_valid(int descriptor, uint32_t flags)
+{
+    return MR_BIT_IS_SET(_descriptor_map[descriptor].flags, flags);
+}
+
+MR_INLINE struct mr_device *_device_find(const char *path)
+{
+    struct mr_device *device;
+
+    /* Critical section enter */
+    mr_critical_enter();
+
+    /* Find the device */
+    device = _device_find_iter(path, &_root_device);
+
+    /* Critical section exit */
+    mr_critical_exit();
+    return device;
+}
+
+MR_INLINE int _device_take(struct mr_device *device, int descriptor,
+                           uint32_t mask)
+{
+    uint32_t lock;
+    int ret;
+
+    /* If the device is not FDX, the read/write must be locked */
+    mask = (device->full_duplex == true) ? mask : _MR_OPERATE_MASK_ALL;
+
+    /* Calculate the lock mask, since the descriptor can be 0, need to add 1 */
+    lock = (((descriptor + 1) << 16) | (descriptor + 1)) & mask;
+
+    /* Critical section enter */
+    mr_critical_enter();
+
+    /* Check if the descriptor and lock are valid */
+    if (_descriptor_is_valid(descriptor) == false)
+    {
+        ret = MR_EINVAL;
+    } else if ((device->lock & mask) == 0)
+    {
+        MR_BIT_SET(device->lock, lock);
+        ret = MR_EOK;
+    } else
+    {
+        ret = MR_EBUSY;
+    }
+
+    /* Critical section exit */
+    mr_critical_exit();
+    return ret;
+}
+
+MR_INLINE void _device_release(struct mr_device *device, uint32_t mask)
+{
+    /* If the device is not FDX, the read/write must be locked */
+    mask = (device->full_duplex == true) ? mask : _MR_OPERATE_MASK_ALL;
+
+    /* Release the device lock */
+    MR_BIT_CLR(device->lock, mask);
+}
+
 MR_INLINE int _descriptor_allocate(struct mr_device *device, uint32_t flags)
 {
     int descriptor = -1;
@@ -374,14 +373,48 @@ MR_INLINE void _descriptor_free(int descriptor)
     mr_critical_exit();
 }
 
-static int _device_register(struct mr_device *device, const char *path)
+static int _device_register(struct mr_device *device, const char *path,
+                            uint32_t type, struct mr_device_ops *ops,
+                            const void *driver, const char *to_path)
 {
+    static struct mr_device_ops null_ops = {NULL};
+    struct mr_device *to_device = &_root_device;
     int ret;
+
+    /* If specify a registration target, find it */
+    if (to_path != NULL)
+    {
+        to_device = _device_find(to_path);
+        if (to_device == NULL)
+        {
+            return MR_ENOENT;
+        }
+    }
+
+    /* Set default ops if not specified */
+    ops = (ops == NULL) ? &null_ops : ops;
+
+    /* Initialize the device */
+    mr_list_init(&device->list);
+    mr_list_init(&device->clist);
+    device->parent = NULL;
+    device->type = type & (~MR_DEVICE_TYPE_FULL_DUPLEX);
+    device->full_duplex = MR_BIT_IS_SET(type, MR_DEVICE_TYPE_FULL_DUPLEX);
+    device->flags = (ops->read != NULL ? MR_FLAG_RDONLY : 0) |
+                    (ops->write != NULL ? MR_FLAG_WRONLY : 0) |
+                    (ops->read_async != NULL ? MR_FLAG_RDONLY_ASYNC : 0) |
+                    (ops->write_async != NULL ? MR_FLAG_WRONLY_ASYNC : 0);
+    device->ref_count = 0;
+    device->lock = 0;
+    device->ops = ops;
+    device->driver = driver;
+    mr_list_init(&device->event_list);
 
     /* Critical section enter */
     mr_critical_enter();
 
-    ret = _device_register_iter(device, path, &_root_device);
+    /* Register the device to the target */
+    ret = _device_register_iter(device, path, to_device);
 
     /* Critical section exit */
     mr_critical_exit();
@@ -438,8 +471,8 @@ static int _device_isr(struct mr_device *device, uint32_t event, void *args)
     }
 
     /* Release the device based on event */
-    mask = (event & MR_EVENT_RD_COMPLETE) ? _LOCK_RD_MASK : 0;
-    mask |= (event & MR_EVENT_WR_COMPLETE) ? _LOCK_WR_MASK : 0;
+    mask = (event & MR_EVENT_RD_COMPLETE) ? _MR_OPERATE_MASK_RD : 0;
+    mask |= (event & MR_EVENT_WR_COMPLETE) ? _MR_OPERATE_MASK_WR : 0;
     _device_release(device, mask);
 
     /* Call the event handler */
@@ -473,7 +506,7 @@ static int _device_open(const char *path, uint32_t flags)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _LOCK_ALL_MASK);
+    ret = _device_take(device, descriptor, _MR_OPERATE_MASK_ALL);
     if (ret < 0)
     {
         _descriptor_free(descriptor);
@@ -499,7 +532,7 @@ static int _device_open(const char *path, uint32_t flags)
 
 _exit:
     /* Release the device */
-    _device_release(device, _LOCK_ALL_MASK);
+    _device_release(device, _MR_OPERATE_MASK_ALL);
     return ret;
 }
 
@@ -508,7 +541,7 @@ static int _device_close(int descriptor)
     struct mr_device *device;
     int ret;
 
-    /* Find the device */
+    /* Get the device */
     device = _descriptor_map[descriptor].device;
     if (device == NULL)
     {
@@ -516,7 +549,7 @@ static int _device_close(int descriptor)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _LOCK_ALL_MASK);
+    ret = _device_take(device, descriptor, _MR_OPERATE_MASK_ALL);
     if (ret < 0)
     {
         return ret;
@@ -543,7 +576,7 @@ static int _device_close(int descriptor)
 
 _exit:
     /* Release the device */
-    _device_release(device, _LOCK_ALL_MASK);
+    _device_release(device, _MR_OPERATE_MASK_ALL);
     return ret;
 }
 
@@ -561,7 +594,7 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _LOCK_RD_MASK);
+    ret = _device_take(device, descriptor, _MR_OPERATE_MASK_RD);
     if (ret < 0)
     {
         return ret;
@@ -591,7 +624,7 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     }
 
     /* Release the device */
-    _device_release(device, _LOCK_RD_MASK);
+    _device_release(device, _MR_OPERATE_MASK_RD);
     return ret;
 }
 
@@ -609,7 +642,7 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _LOCK_WR_MASK);
+    ret = _device_take(device, descriptor, _MR_OPERATE_MASK_WR);
     if (ret < 0)
     {
         return ret;
@@ -639,7 +672,7 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     }
 
     /* Release the device */
-    _device_release(device, _LOCK_WR_MASK);
+    _device_release(device, _MR_OPERATE_MASK_WR);
     return ret;
 }
 
@@ -656,7 +689,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
     }
 
     /* Take the device */
-    ret = _device_take(device, descriptor, _LOCK_ALL_MASK);
+    ret = _device_take(device, descriptor, _MR_OPERATE_MASK_ALL);
     if (ret < 0)
     {
         return ret;
@@ -706,7 +739,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
             }
 
             /* Create the event */
-            ret = _device_event_create(device, descriptor,args);
+            ret = _device_event_create(device, descriptor, args);
             break;
         }
         case MR_CTRL_DEL(MR_CMD_EVENT):
@@ -732,7 +765,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
 
 _exit:
     /* Release the device */
-    _device_release(device, _LOCK_ALL_MASK);
+    _device_release(device, _MR_OPERATE_MASK_ALL);
     return ret;
 }
 
@@ -749,6 +782,66 @@ size_t _mr_descriptor_map_get(struct mr_descriptor **descriptor_map)
 
     *descriptor_map = _descriptor_map;
     return sizeof(_descriptor_map) / sizeof(struct mr_descriptor);
+}
+
+/**
+ * @brief This function gets the operators of the device
+ *
+ * @param device The device.
+ * @param read The read operator.
+ * @param write The write operator.
+ *
+ * @note The operators are device descriptors.
+ */
+void _mr_device_operators_get(struct mr_device *device, int *read, int *write)
+{
+    MR_ASSERT(device != NULL);
+
+    if (read != NULL)
+    {
+        *read = ((int)(device->lock & _MR_OPERATE_MASK_RD) >> 16) - 1;
+    }
+    if (write != NULL)
+    {
+        *write = ((int)(device->lock & _MR_OPERATE_MASK_WR)) - 1;
+    }
+}
+
+/**
+ * @brief This function register a device to a path.
+ *
+ * @param device The device.
+ * @param path The path of the device.
+ * @param type The type of the device.
+ * @param ops The operations of the device.
+ * @param driver The driver of the device.
+ * @param to_path The path of the registration target.
+ *
+ * @return The error code.
+ */
+int mr_device_register_to(struct mr_device *device, const char *path,
+                          uint32_t type, struct mr_device_ops *ops,
+                          const void *driver, const char *to_path)
+{
+    MR_ASSERT((device != NULL) && (device->magic != _MAGIC_NUMBER));
+    MR_ASSERT(path != NULL);
+
+    int ret;
+
+    /* Register the device to the target path */
+    ret = _device_register(device, path, type, ops, driver, to_path);
+    if (ret < 0)
+    {
+        goto _exit;
+    }
+
+    /* Return error code */
+    return ret;
+
+_exit:
+    MR_LOG_E("Register '%s' to '%s' failed: %s.\r\n", path, to_path,
+             mr_strerror(ret));
+    return ret;
 }
 
 /**
@@ -769,30 +862,10 @@ int mr_device_register(struct mr_device *device, const char *path,
     MR_ASSERT((device != NULL) && (device->magic != _MAGIC_NUMBER));
     MR_ASSERT(path != NULL);
 
-    static struct mr_device_ops null_ops = {NULL};
     int ret;
 
-    /* Set default ops if not specified */
-    ops = (ops == NULL) ? &null_ops : ops;
-
-    /* Initialize the device */
-    mr_list_init(&device->list);
-    mr_list_init(&device->clist);
-    device->parent = NULL;
-    device->type = type & (~MR_DEVICE_TYPE_FDX);
-    device->fdx = MR_BIT_IS_SET(type, MR_DEVICE_TYPE_FDX);
-    device->flags = (ops->read != NULL ? MR_FLAG_RDONLY : 0) |
-                    (ops->write != NULL ? MR_FLAG_WRONLY : 0) |
-                    (ops->read_async != NULL ? MR_FLAG_RDONLY_ASYNC : 0) |
-                    (ops->write_async != NULL ? MR_FLAG_WRONLY_ASYNC : 0);
-    device->ref_count = 0;
-    device->lock = 0;
-    device->ops = ops;
-    device->driver = driver;
-    mr_list_init(&device->event_list);
-
     /* Register the device */
-    ret = _device_register(device, path);
+    ret = _device_register(device, path, type, ops, driver, NULL);
     if (ret < 0)
     {
         goto _exit;
@@ -906,7 +979,7 @@ int mr_device_close(int descriptor)
         goto _exit;
     }
 
-    /* Return error code */
+    /* Return ok */
     return ret;
 
 _exit:

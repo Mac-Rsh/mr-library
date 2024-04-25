@@ -396,27 +396,15 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 return MR_EOK;
             }
 
-            /* Write data from FIFO, if FIFO is empty, stop transmit */
-            if (mr_fifo_peek(&serial->wfifo, &data, sizeof(data)) ==
+            /* If FIFO is empty, stop sending */
+            if (mr_fifo_peek(&serial->wfifo, &data, sizeof(data)) !=
                 sizeof(data))
-            {
-                /* Write data to serial */
-                int ret = ops->send(driver, data);
-                if (ret < 0)
-                {
-                    return ret;
-                }
-
-                /* Discard data from FIFO */
-                mr_fifo_discard(&serial->wfifo, sizeof(data));
-                return MR_EBUSY;
-            } else
             {
                 /* Stop sending */
                 int ret = ops->send_int_configure(driver, false);
                 if (ret < 0)
                 {
-                    /* If the stop fails, nothing can do */
+                    /* If the stop is failed, nothing can do */
                     return ret;
                 }
 
@@ -424,6 +412,17 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 MR_BIT_CLR(serial->state, _SERIAL_STATE_SENDING);
                 return MR_EOK;
             }
+
+            /* Write data to serial */
+            int ret = ops->send(driver, data);
+            if (ret < 0)
+            {
+                return ret;
+            }
+
+            /* Discard data from FIFO */
+            mr_fifo_discard(&serial->wfifo, sizeof(data));
+            return MR_EBUSY;
         }
         default:
         {
@@ -471,9 +470,9 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
     serial->state = 0;
 
     /* Register the serial device */
-    return mr_device_register((struct mr_device *)serial, path,
-                              MR_DEVICE_TYPE_SERIAL | MR_DEVICE_TYPE_FDX, &ops,
-                              driver);
+    return mr_device_register(
+        (struct mr_device *)serial, path,
+        MR_DEVICE_TYPE_SERIAL | MR_DEVICE_TYPE_FULL_DUPLEX, &ops, driver);
 }
 
 #endif /* MR_USE_SERIAL */

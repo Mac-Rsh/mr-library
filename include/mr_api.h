@@ -106,6 +106,9 @@ size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count);
  * @{
  */
 
+int mr_device_register_to(struct mr_device *device, const char *path,
+                          uint32_t type, struct mr_device_ops *ops,
+                          const void *driver, const char *to_path);
 int mr_device_register(struct mr_device *device, const char *path,
                        uint32_t type, struct mr_device_ops *ops,
                        const void *driver);
