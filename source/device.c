@@ -403,6 +403,7 @@ static int _device_register(struct mr_device *device, const char *path,
 
     /* Set default ops if not specified */
     ops = (ops == NULL) ? &null_ops : ops;
+    to_device->ops = (to_device->ops == NULL) ? &null_ops : to_device->ops;
 
     /* Initialize the device */
     mr_list_init(&device->list);
@@ -456,8 +457,8 @@ static int _device_unregister(struct mr_device *device)
         ret = parent->ops->detach(parent, device);
         if (ret < 0)
         {
-            /* Revert the list operation */
-            mr_list_insert_before(&parent->clist, &device->list);
+            /* Detach failed, revert the registration */
+            mr_list_insert_after(&parent->clist, &device->list);
             goto _exit;
         }
     }
@@ -810,29 +811,6 @@ size_t _mr_descriptor_map_get(struct mr_descriptor **descriptor_map)
 
     *descriptor_map = _descriptor_map;
     return sizeof(_descriptor_map) / sizeof(struct mr_descriptor);
-}
-
-/**
- * @brief This function gets the operators of the device
- *
- * @param device The device.
- * @param read The read operator.
- * @param write The write operator.
- *
- * @note The operators are device descriptors.
- */
-void _mr_device_operators_get(struct mr_device *device, int *read, int *write)
-{
-    MR_ASSERT(device != NULL);
-
-    if (read != NULL)
-    {
-        *read = ((int)(device->lock & _MR_OPERATE_MASK_RD) >> 16) - 1;
-    }
-    if (write != NULL)
-    {
-        *write = ((int)(device->lock & _MR_OPERATE_MASK_WR)) - 1;
-    }
 }
 
 /**

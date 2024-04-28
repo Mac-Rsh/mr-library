@@ -95,7 +95,7 @@ MR_INLINE ssize_t _serial_write_fifo(struct mr_serial *serial,
         int ret = ops->send_int_configure(driver, true);
         if (ret >= 0)
         {
-            /* Data has been written to the FIFO, if the boot send fails, wait
+            /* Data has been written to the FIFO, if the boot sent fails, wait
              * for the next retry startup */
             return wcount;
         }
@@ -134,7 +134,7 @@ static int serial_open(struct mr_device *device)
         return ret;
     }
 
-    /* Allocate fifo */
+    /* Allocate FIFO */
     mr_fifo_allocate(&serial->rfifo, serial->rfifo_size);
     mr_fifo_allocate(&serial->wfifo, serial->wfifo_size);
     return MR_EOK;
@@ -153,7 +153,7 @@ static int serial_close(struct mr_device *device)
         return ret;
     }
 
-    /* Release fifo */
+    /* Release FIFO */
     mr_fifo_free(&serial->rfifo);
     mr_fifo_free(&serial->wfifo);
     return MR_EOK;
@@ -164,7 +164,7 @@ static ssize_t serial_read(struct mr_device *device, int pos, void *buf,
 {
     struct mr_serial *serial = (struct mr_serial *)device;
 
-    /* If fifo is set, read from fifo */
+    /* If FIFO is set, read from FIFO */
     if (mr_fifo_size_get(&serial->rfifo) != 0)
     {
         return _serial_read_fifo(serial, buf, count);
@@ -179,7 +179,7 @@ static ssize_t serial_write(struct mr_device *device, int pos, const void *buf,
 {
     struct mr_serial *serial = (struct mr_serial *)device;
 
-    /* If fifo is set, write from fifo */
+    /* If FIFO is set, write from FIFO */
     if (mr_fifo_size_get(&serial->wfifo) != 0)
     {
         return _serial_write_fifo(serial, buf, count);

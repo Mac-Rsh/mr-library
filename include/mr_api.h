@@ -55,6 +55,8 @@ void mr_delay_ms(size_t ms);
 const char *mr_strerror(int error);
 int mr_printf_output(const char *buf, size_t size);
 int mr_printf(const char *fmt, ...);
+int mr_log_printf_output(const char *buf, size_t size);
+int mr_log_printf(const char *tag, const char *fmt,  ...);
 
 /** @} */
 

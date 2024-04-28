@@ -193,25 +193,29 @@ extern "C" {
  * @{
  */
 
-#define MR_LOG_TAG "null"
+#define MR_LOG_TAG                      ("null")
 
 #ifdef MR_USE_LOG_ERROR
-#define MR_LOG_E(_fmt, ...) mr_printf("[E/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
+#define MR_LOG_E(_fmt, ...)                                                    \
+    mr_log_printf(MR_LOG_TAG, "[E/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_E(_fmt, ...)
 #endif /* MR_USE_LOG_ERROR */
 #ifdef MR_USE_LOG_WARN
-#define MR_LOG_W(_fmt, ...) mr_printf("[W/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
+#define MR_LOG_W(_fmt, ...)                                                    \
+    mr_log_printf(MR_LOG_TAG, "[W/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_W(_fmt, ...)
 #endif /* MR_USE_LOG_WARN */
 #ifdef MR_USE_LOG_INFO
-#define MR_LOG_I(_fmt, ...) mr_printf("[I/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
+#define MR_LOG_I(_fmt, ...)                                                    \
+    mr_log_printf(MR_LOG_TAG, "[I/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_I(_fmt, ...)
 #endif /* MR_USE_LOG_INFO */
 #ifdef MR_USE_LOG_DEBUG
-#define MR_LOG_D(_fmt, ...) mr_printf("[D/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
+#define MR_LOG_D(_fmt, ...)                                                    \
+    mr_log_printf(MR_LOG_TAG, "[D/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_D(_fmt, ...)
 #endif /* MR_USE_LOG_DEBUG */
@@ -360,6 +364,99 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  * @addtogroup Device
  * @{
  */
+
+/**
+ * @brief This macro function gets the device read operator.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_OPERATOR_RD_GET(_device)                                    \
+    ((((_device)->lock & _MR_OPERATE_MASK_RD) >> 16) - 1)
+
+/**
+ * @brief This macro function gets the device write operator.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_OPERATOR_WR_GET(_device)                                    \
+    (((_device)->lock & _MR_OPERATE_MASK_WR) - 1)
+
+/**
+ * @brief This macro function gets the device operator.
+ *
+ * @param _device The device.
+ *
+ * @note This feature is only available for non-full-duplex devices.
+ */
+#define _MR_DEVICE_OPERATOR_GET(_device)                                       \
+    (((_device)->lock & _MR_OPERATE_MASK_WR) - 1)
+
+/**
+ * @brief This macro function sets the device read operator.
+ *
+ * @param _device The device.
+ * @param _operator The operator.
+ */
+#define _MR_DEVICE_OPERATOR_RD_SET(_device, _operator)                         \
+    (((_device)->lock =                                                        \
+          ((_device)->lock & ~_MR_OPERATE_MASK_RD) | ((_operator + 1) << 16)))
+
+/**
+ * @brief This macro function sets the device write operator.
+ *
+ * @param _device The device.
+ * @param _operator The operator.
+ */
+#define _MR_DEVICE_OPERATOR_WR_SET(_device, _operator)                         \
+    (((_device)->lock =                                                        \
+          ((_device)->lock & ~_MR_OPERATE_MASK_WR) | (_operator + 1)))
+
+/**
+ * @brief This macro function sets the device operator.
+ *
+ * @param _device The device.
+ * @param _operator The operator.
+ *
+ * @note This feature is only available for non-full-duplex devices.
+ */
+#define _MR_DEVICE_OPERATOR_SET(_device, _operator)                            \
+    (_MR_DEVICE_OPERATOR_RD_SET(_device, _operator),                           \
+     _MR_DEVICE_OPERATOR_WR_SET(_device, _operator))
+
+/**
+ * @brief This macro function clears the device operator.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_OPERATOR_RD_CLR(_device)                                    \
+    _MR_DEVICE_OPERATOR_RD_SET(_device, -1)
+
+/**
+ * @brief This macro function clears the device operator.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_OPERATOR_WR_CLR(_device)                                    \
+    _MR_DEVICE_OPERATOR_WR_SET(_device, -1)
+
+/**
+ * @brief This macro function clears the device operator.
+ *
+ * @param _device The device.
+ *
+ * @note This feature is only available for non-full-duplex devices.
+ */
+#define _MR_DEVICE_OPERATOR_CLR(_device)                                       \
+    _MR_DEVICE_OPERATOR_SET(_device, -1)
+
+/**
+ * @brief This macro function gets the device parent.
+ *
+ * @param _device The device.
+ *
+ * @return The device parent.
+ */
+#define _MR_DEVICE_PARENT_GET(_device)  ((void *)((_device)->parent))
 
 /**
  * @brief This macro function gets the device driver.

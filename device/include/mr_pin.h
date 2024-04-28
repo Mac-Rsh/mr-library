@@ -26,8 +26,8 @@ extern "C" {
 #define MR_PIN_MODE_OUTPUT              (1)                 /**< Output push-pull mode */
 #define MR_PIN_MODE_OUTPUT_OD           (2)                 /**< Output open-drain mode */
 #define MR_PIN_MODE_INPUT               (3)                 /**< Input mode */
-#define MR_PIN_MODE_INPUT_DOWN          (4)                 /**< Input pull-down mode */
-#define MR_PIN_MODE_INPUT_UP            (5)                 /**< Input pull-up mode */
+#define MR_PIN_MODE_INPUT_UP            (4)                 /**< Input pull-up mode */
+#define MR_PIN_MODE_INPUT_DOWN          (5)                 /**< Input pull-down mode */
 #define MR_PIN_MODE_IRQ_RISING          (6)                 /**< Interrupt rising edge mode */
 #define MR_PIN_MODE_IRQ_FALLING         (7)                 /**< Interrupt falling edge mode */
 #define MR_PIN_MODE_IRQ_EDGE            (8)                 /**< Interrupt edge mode */

@@ -130,6 +130,9 @@ static ssize_t pin_read(struct mr_device *device, int pos, void *buf,
     uint8_t *rbuf = (uint8_t *)buf;
     ssize_t rcount;
 
+    /* Release the read operator lock */
+    _MR_DEVICE_OPERATOR_RD_CLR(device);
+
 #ifdef MR_USE_PIN_CHECK
     struct mr_pin *pin = (struct mr_pin *)device;
 
@@ -164,6 +167,9 @@ static ssize_t pin_write(struct mr_device *device, int pos, const void *buf,
     struct mr_pin_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
     const uint8_t *wbuf = (const uint8_t *)buf;
     ssize_t wcount;
+
+    /* Release the write operator lock */
+    _MR_DEVICE_OPERATOR_WR_CLR(device);
 
 #ifdef MR_USE_PIN_CHECK
     struct mr_pin *pin = (struct mr_pin *)device;

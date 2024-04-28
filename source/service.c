@@ -190,7 +190,7 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
         descriptor = ret;
     }
 
-    /* Write data to the serial device */
+    /* Write data to the device */
     return (int)mr_device_write(descriptor, buf, size);
 }
 
@@ -217,6 +217,67 @@ int mr_printf(const char *fmt, ...)
 
     /* Output the string */
     return mr_printf_output(buf, ret);
+}
+
+/**
+ * @brief This function log printf output.
+ *
+ * @param buf The buffer to output.
+ * @param size The size of the buffer.
+ *
+ * @return The size of the actual output, otherwise an error code.
+ */
+MR_WEAK int mr_log_printf_output(const char *buf, size_t size)
+{
+    static int descriptor = -1;
+
+    /* Try to open the serial device */
+    if (descriptor == -1)
+    {
+#ifndef MR_CFG_LOG_PRINTF_NAME
+#define MR_CFG_LOG_PRINTF_NAME          ("serial1")
+#endif /* MR_CFG_LOG_PRINTF_NAME */
+        int ret = mr_device_open(MR_CFG_LOG_PRINTF_NAME, MR_FLAG_WRONLY);
+        if (ret < 0)
+        {
+            return ret;
+        }
+        descriptor = ret;
+    }
+
+    /* Write data to the device */
+    return (int)mr_device_write(descriptor, buf, size);
+}
+
+/**
+ * @brief This function log printf.
+ *
+ * @param tag The log tag.
+ * @param fmt The format string.
+ * @param ... The arguments.
+ *
+ * @return The actual output size.
+ */
+int mr_log_printf(const char *tag, const char *fmt,  ...)
+{
+#ifndef MR_CFG_LOG_PRINTF_BUFSZ
+#define MR_CFG_LOG_PRINTF_BUFSZ         (256)
+#endif /* MR_CFG_LOG_PRINTF_BUFSZ */
+    char buf[MR_CFG_LOG_PRINTF_BUFSZ] = {0};
+    va_list args;
+
+    if (strcmp(tag, "null") == 0)
+    {
+        return 0;
+    }
+
+    /* Format the string */
+    va_start(args, fmt);
+    int ret = vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+
+    /* Output the string */
+    return mr_log_printf_output(buf, ret);
 }
 
 /**
