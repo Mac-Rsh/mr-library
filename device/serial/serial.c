@@ -108,7 +108,7 @@ MR_INLINE ssize_t _serial_write_fifo(struct mr_serial *serial,
     return wcount;
 }
 
-MR_INLINE int _serial_fifo_update(struct mr_fifo *fifo, size_t *size)
+MR_INLINE int _serial_fifo_allocate(struct mr_fifo *fifo, size_t *size)
 {
     /* Allocate new buffer for FIFO */
     int ret = mr_fifo_allocate(fifo, *size);
@@ -228,7 +228,8 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 
             /* Update FIFO size */
             serial->rfifo_size = *fifo_size;
-            int ret = _serial_fifo_update(&serial->rfifo, &serial->rfifo_size);
+            int ret =
+                _serial_fifo_allocate(&serial->rfifo, &serial->rfifo_size);
             if (ret < 0)
             {
                 return ret;
@@ -246,7 +247,8 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 
             /* Update FIFO size */
             serial->wfifo_size = *fifo_size;
-            int ret = _serial_fifo_update(&serial->wfifo, &serial->wfifo_size);
+            int ret =
+                _serial_fifo_allocate(&serial->wfifo, &serial->wfifo_size);
             if (ret < 0)
             {
                 return ret;

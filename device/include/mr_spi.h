@@ -37,10 +37,10 @@ extern "C" {
 #define MR_SPI_DATA_BITS_16             (16)                /**< 16 bits data */
 #define MR_SPI_DATA_BITS_32             (32)                /**< 32 bits data */
 
-#define MR_SPI_REG_BITS_0               (0)                 /**< Disable register */
-#define MR_SPI_REG_BITS_8               (8)                 /**< 8 bits register */
-#define MR_SPI_REG_BITS_16              (16)                /**< 16 bits register */
-#define MR_SPI_REG_BITS_32              (32)                /**< 32 bits register */
+#define MR_SPI_ADDR_BITS_0              (0)                 /**< Disable address */
+#define MR_SPI_ADDR_BITS_8              (8)                 /**< 8 bits address */
+#define MR_SPI_ADDR_BITS_16             (16)                /**< 16 bits address */
+#define MR_SPI_ADDR_BITS_32             (32)                /**< 32 bits address */
 
 /**
  * @brief SPI default configuration.
@@ -52,12 +52,12 @@ extern "C" {
     .mode = MR_SPI_MODE_0,                                                     \
     .bit_order = MR_SPI_BIT_ORDER_MSB,                                         \
     .data_bits = MR_SPI_DATA_BITS_8,                                           \
-    .reg_bits = MR_SPI_REG_BITS_0,                                             \
+    .addr_bits = MR_SPI_ADDR_BITS_0,                                           \
     .cs_delay = 0,                                                             \
 }
 
 #define MR_CMD_SPI_CONFIG               MR_CMD_CONFIG       /**< Configuration command */
-#define MR_CMD_SPI_REG                  MR_CMD_POS          /**< Register command */
+#define MR_CMD_SPI_ADDR                 MR_CMD_POS          /**< Address command */
 #define MR_CMD_SPI_RD_FIFO_SIZE         (0x01)              /**< Read FIFO size command */
 #define MR_CMD_SPI_WR_FIFO_SIZE         (0x02)              /**< Write FIFO size command */
 #define MR_CMD_SPI_RD_FIFO_DATA         (0x03)              /**< Read FIFO data command */
@@ -69,9 +69,9 @@ extern "C" {
 #define MR_EVENT_SPI_WR_COMPLETE_INT                                           \
     MR_EVENT_WR_COMPLETE                                    /**< Interrupt on write completion event */
 
-#define MR_SPI_CS_ACTIVE_LOW            (0)                 /**< Active low */
-#define MR_SPI_CS_ACTIVE_HIGH           (1)                 /**< Active high */
-#define MR_SPI_CS_ACTIVE_NONE           (2)                 /**< Active none */
+#define MR_SPI_CS_ACTIVE_LOW            (0)                 /**< CS active low */
+#define MR_SPI_CS_ACTIVE_HIGH           (1)                 /**< CS active high */
+#define MR_SPI_CS_ACTIVE_NONE           (2)                 /**< CS active none */
 
 /**
  * @brief SPI configuration structure.
@@ -83,7 +83,7 @@ struct mr_spi_config
     uint32_t mode;                                          /**< Mode */
     uint32_t bit_order;                                     /**< Bit order */
     uint32_t data_bits;                                     /**< Data bits */
-    uint32_t reg_bits;                                      /**< Register bits */
+    uint32_t addr_bits;                                     /**< Address bits */
     uint32_t cs_delay;                                      /**< CS delay */
 };
 
@@ -128,12 +128,12 @@ struct mr_spi_bus_driver_ops
 {
     int (*configure)(struct mr_driver *driver, bool enable,
                      struct mr_spi_config *config);
-    int (*receive)(struct mr_driver *driver, uint32_t *data);
-    int (*send)(struct mr_driver *driver, uint32_t data);
+    int (*transfer)(struct mr_driver *driver, uint32_t *data);
 
     /* Optional operations */
     int (*cs_configure)(struct mr_driver *driver, uint32_t pin, uint32_t mode);
     int (*cs_set)(struct mr_driver *driver, uint32_t pin, uint8_t level);
+    int (*cs_get)(struct mr_driver *driver, uint32_t pin, uint8_t *level);
 };
 
 /**
@@ -145,7 +145,9 @@ struct mr_spi_device
 
     struct mr_spi_config config;                            /**< Configuration */
     struct mr_fifo rfifo;                                   /**< Read FIFO */
+    struct mr_fifo wfifo;                                   /**< Write FIFO */
     size_t rfifo_size;                                      /**< Read buffer size */
+    size_t wfifo_size;                                      /**< Write buffer size */
     int cs_pin;                                             /**< CS pin */
     int cs_active;                                          /**< CS active level */
 };

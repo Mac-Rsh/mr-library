@@ -366,6 +366,22 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  */
 
 /**
+ * @brief This macro function increases the reference count of the device.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_REF_COUNT_INCREASE(_device)                                 \
+    (_device)->ref_count++
+
+/**
+ * @brief This macro function decreases the reference count of the device.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_REF_COUNT_DECREASE(_device)                                 \
+    (_device)->ref_count--
+
+/**
  * @brief This macro function gets the device read operator.
  *
  * @param _device The device.

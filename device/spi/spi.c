@@ -10,14 +10,9 @@
 
 #ifdef MR_USE_SPI
 
-#ifdef MR_USE_PIN
-#include "../mr-library/device/include/mr_pin.h"
-#endif /* MR_USE_PIN */
-
 static int spi_isr(struct mr_device *device, uint32_t event, void *args)
 {
     struct mr_spi_bus *spi_bus = (struct mr_spi_bus *)device;
-    struct mr_spi_device *spi_device = (struct mr_spi_device *)spi_bus->owner;
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
     struct mr_spi_bus_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
@@ -25,41 +20,83 @@ static int spi_isr(struct mr_device *device, uint32_t event, void *args)
     {
         case MR_EVENT_SPI_RD_COMPLETE_INT:
         {
-            int count = 1;
+            struct mr_spi_device *spi_device =
+                (struct mr_spi_device *)spi_bus->owner;
 
             if (spi_device == NULL)
             {
                 return MR_EINVAL;
             }
 
-            if (args != NULL)
+            /* The master does not support this operation */
+            if (spi_device->config.role == MR_SPI_ROLE_MASTER)
             {
-                /* Hardware FIFO is considered to be used */
-                count = *((int *)args);
+                return MR_EPERM;
             }
 
-            /* If FIFO is empty, the read operation is abandoned */
-            if (mr_fifo_size_get(&spi_device->rfifo) == 0)
+            /* Check the chip select */
+            if (spi_device->cs_active != MR_SPI_CS_ACTIVE_NONE)
+            {
+                uint8_t level;
+
+                if (ops->cs_get != NULL)
+                {
+                    int ret = ops->cs_get(driver, spi_device->cs_pin, &level);
+                    if (ret < 0)
+                    {
+                        return ret;
+                    }
+                }
+#ifdef MR_USE_PIN
+                else if (spi_bus->pin_descriptor >= 0)
+                {
+                    int ret = (int)mr_device_read(spi_bus->pin_descriptor,
+                                                  &level, sizeof(level));
+                    if (ret < 0)
+                    {
+                        return ret;
+                    }
+                }
+#endif /* MR_USE_PIN */
+                else
+                {
+                    return MR_EIO;
+                }
+
+                /* If the chip select is not active, abandon the transfer */
+                if (level != spi_device->cs_active)
+                {
+                    uint32_t data;
+
+                    /* Discard the received data */
+                    ops->transfer(driver, &data);
+                    return MR_EOK;
+                }
+            }
+
+            /* If FIFO is empty, the transfer operation is abandoned */
+            if ((mr_fifo_size_get(&spi_device->rfifo) == 0) &&
+                mr_fifo_size_get(&spi_device->wfifo) == 0)
             {
                 return MR_EOK;
             }
 
-            /* Read all data from hardware FIFO */
             uint32_t data_sizeof = spi_device->config.data_bits / 8;
-            for (size_t rcount = 0; rcount < count; rcount++)
+            uint32_t data = 0;
+
+            /* Read data that needs to be sent from the FIFO */
+            mr_fifo_read(&spi_device->wfifo, &data, data_sizeof);
+
+            /* Send the data that needs to be sent
+             * and get the data that is received */
+            int ret = ops->transfer(driver, &data);
+            if (ret < 0)
             {
-                uint32_t data;
-
-                /* Read data from serial */
-                int ret = ops->receive(driver, &data);
-                if (ret < 0)
-                {
-                    return ret;
-                }
-
-                /* Force write data to FIFO */
-                mr_fifo_write_force(&spi_device->rfifo, &data, data_sizeof);
+                return ret;
             }
+
+            /* Force write data to FIFO */
+            mr_fifo_write_force(&spi_device->rfifo, &data, data_sizeof);
             return MR_EOK;
         }
         default:
@@ -82,13 +119,14 @@ static int spi_bus_attach(struct mr_device *device, struct mr_device *source)
     }
 
     /* In the first attaching, if the driver does not support chip selection
-     * configuration or level setting, try using a pin device */
+     * configuration or level operation, try using a pin device */
     if ((mr_list_is_empty(&device->clist) == true) &&
-        ((ops->cs_configure == NULL) || (ops->cs_set == NULL)))
+        ((ops->cs_configure == NULL) || (ops->cs_set == NULL) ||
+         (ops->cs_get == NULL)))
     {
 #ifdef MR_USE_PIN
 #ifndef MR_CFG_SPI_PIN_NAME
-#define MR_CFG_SPI_PIN_NAME ("pin")
+#define MR_CFG_SPI_PIN_NAME             ("pin")
 #endif /* MR_CFG_SPI_PIN_NAME */
         spi_bus->pin_descriptor =
             mr_device_open(MR_CFG_SPI_PIN_NAME, MR_FLAG_RDWR);
@@ -102,6 +140,7 @@ static int spi_bus_attach(struct mr_device *device, struct mr_device *source)
     }
 
     /* Allow attaching */
+    _MR_DEVICE_REF_COUNT_INCREASE(device);
     return MR_EOK;
 }
 
@@ -140,6 +179,7 @@ static int spi_bus_detach(struct mr_device *device, struct mr_device *source)
     }
 
     /* Allow detaching */
+    _MR_DEVICE_REF_COUNT_DECREASE(device);
     return MR_EOK;
 }
 
@@ -222,8 +262,8 @@ static int _spi_device_cs_configure(struct mr_spi_device *spi_device,
             return ret;
         }
 
-        /* If the mode is none, no need to set the level */
-        if (mode == MR_SPI_CS_MODE_NONE)
+        /* If the mode is not output, there is no need to set the level */
+        if (mode != MR_SPI_CS_MODE_OUTPUT)
         {
             return MR_EOK;
         }
@@ -244,8 +284,8 @@ static int _spi_device_cs_configure(struct mr_spi_device *spi_device,
             return ret;
         }
 
-        /* If the mode is none, no need to set the level */
-        if (mode == MR_SPI_CS_MODE_NONE)
+        /* If the mode is not output, there is no need to set the level */
+        if (mode == MR_SPI_CS_MODE_OUTPUT)
         {
             return MR_EOK;
         }
@@ -407,16 +447,16 @@ MR_INLINE ssize_t _spi_device_master_read(struct mr_spi_device *spi_device,
     ssize_t rcount;
 
     /* Send the address of the register that needs to be read */
-    if (spi_device->config.reg_bits > 0)
+    if (spi_device->config.addr_bits > 0)
     {
-        for (size_t reg_count = 0;
-             reg_count < (spi_device->config.reg_bits / 8);
-             reg_count += data_sizeof)
+        for (size_t addr_count = 0;
+             addr_count < (spi_device->config.addr_bits / 8);
+             addr_count += data_sizeof)
         {
             uint32_t data;
 
-            memcpy(&data, ((uint8_t *)&pos) + reg_count, data_sizeof);
-            int ret = ops->send(driver, data);
+            memcpy(&data, ((uint8_t *)&pos) + addr_count, data_sizeof);
+            int ret = ops->transfer(driver, &data);
             if (ret < 0)
             {
                 /* Return the error code */
@@ -430,7 +470,7 @@ MR_INLINE ssize_t _spi_device_master_read(struct mr_spi_device *spi_device,
     {
         uint32_t data;
 
-        int ret = ops->receive(driver, &data);
+        int ret = ops->transfer(driver, &data);
         if (ret < 0)
         {
             /* If no data received, return the error code */
@@ -448,6 +488,7 @@ MR_INLINE ssize_t _spi_device_master_read(struct mr_spi_device *spi_device,
 MR_INLINE ssize_t _spi_device_slave_read(struct mr_spi_device *spi_device,
                                          int pos, uint8_t *buf, size_t count)
 {
+    /* Read data from the FIFO which master will write */
     return (ssize_t)mr_fifo_read(&spi_device->rfifo, buf, count);
 }
 
@@ -464,16 +505,16 @@ MR_INLINE ssize_t _spi_device_master_write(struct mr_spi_device *spi_device,
     ssize_t wcount;
 
     /* Send the address of the register that needs to be written */
-    if (spi_device->config.reg_bits > 0)
+    if (spi_device->config.addr_bits > 0)
     {
-        for (size_t reg_count = 0;
-             reg_count < (spi_device->config.reg_bits / 8);
-             reg_count += data_sizeof)
+        for (size_t addr_count = 0;
+             addr_count < (spi_device->config.addr_bits / 8);
+             addr_count += data_sizeof)
         {
             uint32_t data;
 
-            memcpy(&data, ((uint8_t *)&pos) + reg_count, data_sizeof);
-            int ret = ops->send(driver, data);
+            memcpy(&data, ((uint8_t *)&pos) + addr_count, data_sizeof);
+            int ret = ops->transfer(driver, &data);
             if (ret < 0)
             {
                 /* Return the error code */
@@ -488,7 +529,7 @@ MR_INLINE ssize_t _spi_device_master_write(struct mr_spi_device *spi_device,
         uint32_t data;
 
         memcpy(&data, buf, data_sizeof);
-        int ret = ops->send(driver, data);
+        int ret = ops->transfer(driver, &data);
         if (ret < 0)
         {
             /* If no data sent, return the error code */
@@ -505,34 +546,11 @@ MR_INLINE ssize_t _spi_device_slave_write(struct mr_spi_device *spi_device,
                                           int pos, const uint8_t *buf,
                                           size_t count)
 {
-    struct mr_spi_bus *spi_bus =
-        _MR_DEVICE_PARENT_GET((struct mr_device *)spi_device);
-    struct mr_driver *driver =
-        _MR_DEVICE_DRIVER_GET((struct mr_device *)spi_bus);
-    struct mr_spi_bus_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
-    uint32_t data_sizeof = spi_device->config.data_bits / 8;
-    ssize_t wcount;
-
-    /* Send data */
-    for (wcount = 0; wcount < count; wcount += data_sizeof)
-    {
-        uint32_t data;
-
-        memcpy(&data, buf, data_sizeof);
-        int ret = ops->send(driver, data);
-        if (ret < 0)
-        {
-            /* If no data sent, return the error code */
-            return (wcount == 0) ? ret : wcount;
-        }
-        buf += data_sizeof;
-    }
-
-    /* Return the number of bytes sent */
-    return wcount;
+    /* Write data to the FIFO which master will read */
+    return (ssize_t)mr_fifo_write(&spi_device->wfifo, buf, count);
 }
 
-MR_INLINE int _spi_device_fifo_update(struct mr_fifo *fifo, size_t *size)
+MR_INLINE int _spi_device_fifo_allocate(struct mr_fifo *fifo, size_t *size)
 {
     /* Allocate new buffer for FIFO */
     int ret = mr_fifo_allocate(fifo, *size);
@@ -559,6 +577,7 @@ static int spi_device_open(struct mr_device *device)
 
     /* Allocate FIFO */
     mr_fifo_allocate(&spi_device->rfifo, spi_device->rfifo_size);
+    mr_fifo_allocate(&spi_device->wfifo, spi_device->wfifo_size);
     return MR_EOK;
 }
 
@@ -571,6 +590,7 @@ static int spi_device_close(struct mr_device *device)
 
     /* Free FIFO */
     mr_fifo_free(&spi_device->rfifo);
+    mr_fifo_free(&spi_device->wfifo);
     return MR_EOK;
 }
 
@@ -665,9 +685,9 @@ static int spi_device_ioctl(struct mr_device *device, int pos, int cmd,
             }
 
             /* Validate the configuration */
-            if ((config->reg_bits > config->data_bits) ||
+            if ((config->addr_bits > config->data_bits) ||
                 (config->data_bits == 0) || ((config->data_bits % 8) != 0) ||
-                (config->data_bits > 32) || ((config->reg_bits % 8) != 0))
+                (config->data_bits > 32) || ((config->addr_bits % 8) != 0))
             {
                 return MR_EINVAL;
             }
@@ -717,8 +737,8 @@ static int spi_device_ioctl(struct mr_device *device, int pos, int cmd,
 
             /* Update FIFO size */
             spi_device->rfifo_size = *fifo_size;
-            int ret = _spi_device_fifo_update(&spi_device->rfifo,
-                                              &spi_device->rfifo_size);
+            int ret = _spi_device_fifo_allocate(&spi_device->rfifo,
+                                                &spi_device->rfifo_size);
             if (ret < 0)
             {
                 return ret;
@@ -803,17 +823,22 @@ int mr_spi_device_register(struct mr_spi_device *spi_device, const char *path,
                                        .ioctl = spi_device_ioctl};
     struct mr_spi_config default_config = MR_SPI_CONFIG_DEFAULT;
 
-    /* Initialize the spi-device */
+    /* Initialize the SPI device */
     spi_device->config = default_config;
     mr_fifo_init(&spi_device->rfifo, NULL, 0);
+    mr_fifo_init(&spi_device->wfifo, NULL, 0);
 #ifndef MR_CFG_SPI_RD_FIFO_SIZE
-#define MR_CFG_SPI_RD_FIFO_SIZE (0)
+#define MR_CFG_SPI_RD_FIFO_SIZE         (32)
 #endif /* MR_CFG_SPI_RD_FIFO_SIZE */
+#ifndef MR_CFG_SPI_WR_FIFO_SIZE
+#define MR_CFG_SPI_WR_FIFO_SIZE         (32)
+#endif /* MR_CFG_SPI_WR_FIFO_SIZE */
     spi_device->rfifo_size = MR_CFG_SPI_RD_FIFO_SIZE;
+    spi_device->wfifo_size = MR_CFG_SPI_WR_FIFO_SIZE;
     spi_device->cs_pin = (cs_active != MR_SPI_CS_ACTIVE_NONE) ? cs_pin : -1;
     spi_device->cs_active = (cs_pin >= 0) ? cs_active : MR_SPI_CS_ACTIVE_NONE;
 
-    /* Register the spi-device to the spi-bus */
+    /* Register the SPI device to the SPI bus */
     return mr_device_register_to((struct mr_device *)spi_device, path,
                                  MR_DEVICE_TYPE_SPI, &ops, NULL, spi_bus_name);
 }
@@ -829,6 +854,7 @@ int mr_spi_device_unregister(struct mr_spi_device *spi_device)
 {
     MR_ASSERT(spi_device != MR_NULL);
 
+    /* Unregister the SPI device from the SPI bus */
     return mr_device_unregister((struct mr_device *)spi_device);
 }
 
