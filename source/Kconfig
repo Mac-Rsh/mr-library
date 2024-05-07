@@ -1,7 +1,7 @@
 menu "Framework configure"
     # Printf
     menu "Printf configure"
-        config MR_CFG_PRINTF_BUFSZ
+        config MR_CFG_PRINTF_BUF_SIZE
             int "Printf buffer size"
             default 256
             range 32 2147483647
@@ -40,6 +40,13 @@ menu "Framework configure"
             default y
             help
                 "Use this option allows for the use of debug log."
+
+        config MR_CFG_LOG_PRINTF_BUF_SIZE
+            int "Log printf buffer size"
+            default 256
+            range 32 2147483647
+            help
+                "This option sets the buffer size used by the log printf function."
     endmenu
 
     # Assert

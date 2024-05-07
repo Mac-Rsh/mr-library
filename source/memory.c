@@ -92,7 +92,6 @@ MR_WEAK void *mr_malloc(size_t size)
 {
     struct mr_heap_block *block_prev = &heap_start;
     struct mr_heap_block *block = block_prev->next;
-    size_t residual;
     void *memory;
 
     /* Critical section enter */
@@ -123,7 +122,7 @@ MR_WEAK void *mr_malloc(size_t size)
 
     /* Allocate memory */
     memory = (void *)((uint8_t *)block + sizeof(struct mr_heap_block));
-    residual = block->size - size;
+    size_t residual = block->size - size;
 
     /* Set the block information */
     block->size = size;
@@ -212,9 +211,8 @@ MR_WEAK size_t mr_malloc_usable_size(void *memory)
 MR_WEAK void *mr_calloc(size_t num, size_t size)
 {
     size_t total = num * size;
-    void *memory;
 
-    memory = mr_malloc(total);
+    void *memory = mr_malloc(total);
     if (memory != NULL)
     {
         memset(memory, 0, total);
@@ -233,9 +231,8 @@ MR_WEAK void *mr_calloc(size_t num, size_t size)
 MR_WEAK void *mr_realloc(void *memory, size_t size)
 {
     size_t old_size = mr_malloc_usable_size(memory);
-    void *new_memory;
 
-    new_memory = mr_malloc(size);
+    void *new_memory = mr_malloc(size);
     if (new_memory != NULL)
     {
         memcpy(new_memory, memory, old_size);

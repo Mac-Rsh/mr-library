@@ -4,6 +4,7 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-10-20    MacRsh       First version
+ * @date 2024-05-07    MacRsh       Modify fifo implementation
  */
 
 #include "../mr-library/include/mr_api.h"
@@ -204,10 +205,10 @@ MR_WEAK int mr_printf_output(const char *buf, size_t size)
  */
 int mr_printf(const char *fmt, ...)
 {
-#ifndef MR_CFG_PRINTF_BUFSZ
-#define MR_CFG_PRINTF_BUFSZ             (256)
-#endif /* MR_CFG_PRINTF_BUFSZ */
-    char buf[MR_CFG_PRINTF_BUFSZ] = {0};
+#ifndef MR_CFG_PRINTF_BUF_SIZE
+#define MR_CFG_PRINTF_BUF_SIZE          (256)
+#endif /* MR_CFG_PRINTF_BUF_SIZE */
+    char buf[MR_CFG_PRINTF_BUF_SIZE] = {0};
     va_list args;
 
     /* Format the string */
@@ -260,10 +261,10 @@ MR_WEAK int mr_log_printf_output(const char *buf, size_t size)
  */
 int mr_log_printf(const char *tag, const char *fmt,  ...)
 {
-#ifndef MR_CFG_LOG_PRINTF_BUFSZ
-#define MR_CFG_LOG_PRINTF_BUFSZ         (256)
-#endif /* MR_CFG_LOG_PRINTF_BUFSZ */
-    char buf[MR_CFG_LOG_PRINTF_BUFSZ] = {0};
+#ifndef MR_CFG_LOG_PRINTF_BUF_SIZE
+#define MR_CFG_LOG_PRINTF_BUF_SIZE      (256)
+#endif /* MR_CFG_LOG_PRINTF_BUF_SIZE */
+    char buf[MR_CFG_LOG_PRINTF_BUF_SIZE] = {0};
     va_list args;
 
     if (strcmp(tag, "null") == 0)
@@ -292,7 +293,7 @@ int mr_log_printf(const char *tag, const char *fmt,  ...)
 MR_WEAK void mr_assert_handler(const char *ex, const char *tag, const char *fn,
                                const char *file, int line)
 {
-    mr_printf("[A/%s] : %s %s %s:%d\n", ex, tag, fn, file, line);
+    mr_log_printf("[A/%s] : %s %s %s:%d\n", ex, tag, fn, file, line);
 
     while (1)
     {
@@ -316,8 +317,6 @@ int mr_fifo_init(struct mr_fifo *fifo, void *buf, size_t size)
     /* Initialize the fifo */
     fifo->in = 0;
     fifo->out = 0;
-    fifo->in_mirror = false;
-    fifo->out_mirror = false;
     fifo->dynamic = false;
     fifo->buf = buf;
     fifo->size = size;
@@ -335,8 +334,6 @@ void mr_fifo_reset(struct mr_fifo *fifo)
 
     fifo->in = 0;
     fifo->out = 0;
-    fifo->in_mirror = false;
-    fifo->out_mirror = false;
 }
 
 /**
@@ -358,18 +355,19 @@ int mr_fifo_allocate(struct mr_fifo *fifo, size_t size)
         mr_fifo_init(fifo, NULL, 0);
     }
 
+    /* If not allocate a new buffer */
     if (size == 0)
     {
         return MR_EOK;
     }
 
     /* Allocate a new buffer */
-    void *_buf = mr_malloc(size);
-    if (_buf == NULL)
+    void *buf = mr_malloc(size);
+    if (buf == NULL)
     {
         return MR_ENOMEM;
     }
-    mr_fifo_init(fifo, _buf, size);
+    mr_fifo_init(fifo, buf, size);
     fifo->dynamic = true;
     return MR_EOK;
 }
@@ -398,19 +396,24 @@ void mr_fifo_free(struct mr_fifo *fifo)
  *
  * @return The used space.
  */
-size_t mr_fifo_used_get(struct mr_fifo *fifo)
+size_t mr_fifo_used_get(const struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
-    if (fifo->in == fifo->out)
+    uint32_t in = fifo->in, out = fifo->out;
+    size_t used;
+
+    /* Calculate the used space */
+    if (in >= out)
     {
-        /* If in/out flags are the same, the fifo is empty */
-        return (fifo->in_mirror == fifo->out_mirror) ? 0 : fifo->size;
+        used = in - out;
+    } else
+    {
+        used = fifo->size - (out - in);
     }
 
     /* Return the used space */
-    return (fifo->in > fifo->out) ? fifo->in - fifo->out :
-                                    fifo->size - fifo->out + fifo->in;
+    return used;
 }
 
 /**
@@ -420,11 +423,24 @@ size_t mr_fifo_used_get(struct mr_fifo *fifo)
  *
  * @return The free space.
  */
-size_t mr_fifo_space_get(struct mr_fifo *fifo)
+size_t mr_fifo_free_get(const struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
-    return fifo->size - mr_fifo_used_get(fifo);
+    uint32_t in = fifo->in, out = fifo->out;
+    uint32_t free;
+
+    /* Calculate the free space */
+    if (in >= out)
+    {
+        free = fifo->size - (in - out);
+    } else
+    {
+        free = out - in;
+    }
+
+    /* Return the free space */
+    return free - 1;
 }
 
 /**
@@ -434,11 +450,12 @@ size_t mr_fifo_space_get(struct mr_fifo *fifo)
  *
  * @return The size.
  */
-size_t mr_fifo_size_get(struct mr_fifo *fifo)
+size_t mr_fifo_size_get(const struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
-    return fifo->size;
+    /* Return the buffer size that can be used */
+    return (fifo->size == 0) ? 0 : fifo->size - 1;
 }
 
 /**
@@ -450,7 +467,7 @@ size_t mr_fifo_size_get(struct mr_fifo *fifo)
  *
  * @return The number of bytes peeked.
  */
-size_t mr_fifo_peek(struct mr_fifo *fifo, void *buf, size_t count)
+size_t mr_fifo_peek(const struct mr_fifo *fifo, void *buf, size_t count)
 {
     MR_ASSERT(fifo != NULL);
     MR_ASSERT((buf != NULL) || (count == 0));
@@ -458,7 +475,7 @@ size_t mr_fifo_peek(struct mr_fifo *fifo, void *buf, size_t count)
     uint8_t *_buf = (uint8_t *)buf;
 
     /* Get used space, limit by count */
-    size_t used = mr_fifo_used_get(fifo);
+    uint32_t used = mr_fifo_used_get(fifo);
     if (used < count)
     {
         count = used;
@@ -468,18 +485,21 @@ size_t mr_fifo_peek(struct mr_fifo *fifo, void *buf, size_t count)
         return 0;
     }
 
-    /* Read data */
-    size_t end = fifo->size - fifo->out;
+    /* Peek data */
+    uint32_t out = fifo->out;
+    uint32_t end = fifo->size - out;
     if (end > count)
     {
-        /* If there is enough space at the end, read it all at once */
-        memcpy(_buf, &fifo->buf[fifo->out], count);
-        return count;
+        /* If there is enough data at the end, peek it all at once */
+        memcpy(_buf, &fifo->buf[out], count);
+    } else
+    {
+        /* If there is not enough data at the end, peek it in two parts */
+        memcpy(_buf, &fifo->buf[out], end);
+        memcpy(&_buf[end], fifo->buf, count - end);
     }
 
-    /* If there is not enough space at the end, read it in two parts */
-    memcpy(_buf, &fifo->buf[fifo->out], end);
-    memcpy(&_buf[end], fifo->buf, count - end);
+    /* Return the number of bytes peeked */
     return count;
 }
 
@@ -496,7 +516,7 @@ size_t mr_fifo_discard(struct mr_fifo *fifo, size_t count)
     MR_ASSERT(fifo != NULL);
 
     /* Get used space, limit by count */
-    size_t used = mr_fifo_used_get(fifo);
+    uint32_t used = mr_fifo_used_get(fifo);
     if (used < count)
     {
         count = used;
@@ -506,17 +526,23 @@ size_t mr_fifo_discard(struct mr_fifo *fifo, size_t count)
         return 0;
     }
 
-    /* Read data */
-    size_t end = fifo->size - fifo->out;
+    /* Discard data */
+    uint32_t out = fifo->out;
+    uint32_t end = fifo->size - out;
     if (end > count)
     {
-        fifo->out += count;
-        return count;
+        /* If there is enough data at the end, discard it all at once */
+        out += count;
+    } else
+    {
+        /* If there is not enough data at the end, discard it in two parts */
+        out = count - end;
     }
 
-    /* Mirror flag */
-    fifo->out_mirror = ~fifo->out_mirror;
-    fifo->out = count - end;
+    /* Update output index */
+    fifo->out = (out >= fifo->size) ? 0 : out;
+
+    /* Return the number of bytes discarded */
     return count;
 }
 
@@ -537,7 +563,7 @@ size_t mr_fifo_read(struct mr_fifo *fifo, void *buf, size_t count)
     uint8_t *_buf = (uint8_t *)buf;
 
     /* Get used space, limit by count */
-    size_t used = mr_fifo_used_get(fifo);
+    uint32_t used = mr_fifo_used_get(fifo);
     if (used < count)
     {
         count = used;
@@ -548,22 +574,25 @@ size_t mr_fifo_read(struct mr_fifo *fifo, void *buf, size_t count)
     }
 
     /* Read data */
-    size_t end = fifo->size - fifo->out;
+    uint32_t out = fifo->out;
+    uint32_t end = fifo->size - out;
     if (end > count)
     {
-        /* If there is enough space at the end, read it all at once */
-        memcpy(_buf, &fifo->buf[fifo->out], count);
-        fifo->out += count;
-        return count;
+        /* If there is enough data at the end, read it all at once */
+        memcpy(_buf, &fifo->buf[out], count);
+        out += count;
+    } else
+    {
+        /* If there is not enough data at the end, read it in two parts */
+        memcpy(_buf, &fifo->buf[out], end);
+        memcpy(&_buf[end], fifo->buf, count - end);
+        out = count - end;
     }
 
-    /* If there is not enough space at the end, read it in two parts */
-    memcpy(_buf, &fifo->buf[fifo->out], end);
-    memcpy(&_buf[end], fifo->buf, count - end);
+    /* Update output index */
+    fifo->out = (out >= fifo->size) ? 0 : out;
 
-    /* Mirror flag */
-    fifo->out_mirror = ~fifo->out_mirror;
-    fifo->out = count - end;
+    /* Return the number of bytes read */
     return count;
 }
 
@@ -584,10 +613,10 @@ size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count)
     uint8_t *_buf = (uint8_t *)buf;
 
     /* Get free space, limit by count */
-    size_t space = mr_fifo_space_get(fifo);
-    if (space < count)
+    uint32_t free = mr_fifo_free_get(fifo);
+    if (free < count)
     {
-        count = space;
+        count = free;
     }
     if (count == 0)
     {
@@ -595,33 +624,39 @@ size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count)
     }
 
     /* Write data */
-    size_t end = fifo->size - fifo->in;
+    uint32_t in = fifo->in;
+    uint32_t end = fifo->size - in;
     if (end > count)
     {
         /* If there is enough space at the end, write it all at once */
-        memcpy(&fifo->buf[fifo->in], _buf, count);
-        fifo->in += count;
-        return count;
+        memcpy(&fifo->buf[in], _buf, count);
+        in += count;
+    } else
+    {
+        /* If there is not enough space at the end, write it in two parts */
+        memcpy(&fifo->buf[in], _buf, end);
+        memcpy(fifo->buf, &_buf[end], count - end);
+        in = count - end;
     }
 
-    /* If there is not enough space at the end, write it in two parts */
-    memcpy(&fifo->buf[fifo->in], _buf, end);
-    memcpy(fifo->buf, &_buf[end], count - end);
+    /* Update input index */
+    fifo->in = (in >= fifo->size) ? 0 : in;
 
-    /* Mirror flag */
-    fifo->in_mirror = ~fifo->in_mirror;
-    fifo->in = count - end;
+    /* Return the number of bytes written */
     return count;
 }
 
 /**
- * @brief This function writes data to a fifo without checking for space.
+ * @brief This function force write data to a fifo.
  *
  * @param fifo The fifo.
  * @param buf The buffer to store the data.
  * @param count The number of bytes to write.
  *
  * @return The number of bytes written.
+ *
+ * @note When you use this function, the single read single write condition of
+ *       an unlocked fifo may not be met.
  */
 size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
 {
@@ -630,51 +665,24 @@ size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
 
     uint8_t *_buf = (uint8_t *)buf;
 
+    /* If there is no data to write, return immediately */
     if (count == 0)
     {
         return 0;
     }
 
-    /* Skip data that will be overwritten */
-    if (count > fifo->size)
+    /* Skip data that exceeds the size */
+    uint32_t size = mr_fifo_size_get(fifo);
+    if (count > size)
     {
-        _buf = &_buf[count - fifo->size];
-        count = fifo->size;
+        _buf = &_buf[count - size];
+        count = size;
     }
 
-    size_t space = mr_fifo_space_get(fifo);
-    size_t end = fifo->size - fifo->in;
-    if (end > count)
-    {
-        /* If there is enough space at the end, write it all at once */
-        memcpy(&fifo->buf[fifo->in], _buf, count);
-        fifo->in += count;
+    /* Discard data that will be overwritten */
+    uint32_t free = mr_fifo_free_get(fifo);
+    mr_fifo_discard(fifo, count - free);
 
-        /* If free space is exceeded, move the out index to the in index */
-        if (count > space)
-        {
-            fifo->out = fifo->in;
-        }
-        return count;
-    }
-
-    /* If there is not enough space at the end, write it in two parts */
-    memcpy(&fifo->buf[fifo->in], _buf, end);
-    memcpy(fifo->buf, &_buf[end], count - end);
-
-    /* Mirror flag */
-    fifo->in_mirror = ~fifo->in_mirror;
-    fifo->in = count - end;
-
-    /* If free space is exceeded, move the out index to the in index */
-    if (count > space)
-    {
-        /* If the in index crosses the out index, the in flag is mirrored */
-        if (fifo->in <= fifo->out)
-        {
-            fifo->in_mirror = ~fifo->in_mirror;
-        }
-        fifo->out = fifo->in;
-    }
-    return count;
+    /* Write data */
+    return mr_fifo_write(fifo, _buf, count);
 }

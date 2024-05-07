@@ -50,7 +50,7 @@ extern "C" {
 #define MR_USED                         __attribute__((used))
 #define MR_WEAK                         __attribute__((weak))
 #define MR_INLINE                       static __inline
-#endif /* __ARMCC_VERSION */
+#endif /* defined(__IAR_SYSTEMS_ICC__) */
 
 /** @} */
 
@@ -140,12 +140,9 @@ struct mr_fifo
 {
     uint32_t in;                                            /**< Input index */
     uint32_t out;                                           /**< Output index */
-    uint32_t in_mirror: 1;                                  /**< Input mirror */
-    uint32_t out_mirror: 1;                                 /**< Output mirror */
-    uint32_t dynamic: 1;                                    /**< Dynamic mode */
-    uint32_t _reserved: 29;                                 /**< Reserved */
     uint8_t *buf;                                           /**< Data buffer */
-    uint32_t size;                                          /**< Buffer size */
+    uint32_t size: 31;                                      /**< Buffer size */
+    uint32_t dynamic: 1;                                    /**< Dynamic mode */
 };
 
 /** @} */
@@ -174,6 +171,7 @@ struct mr_fifo
 
 #define MR_EVENT_RD_COMPLETE            (0x01 << 24)        /**< Read complete event */
 #define MR_EVENT_WR_COMPLETE            (0x02 << 24)        /**< Write complete event */
+#define MR_EVENT_MASK                   (0xff << 24)        /**< Event mask */
 
 #define _MR_OPERATE_MASK_RD             (0xffff0000)        /**< Read lock mask */
 #define _MR_OPERATE_MASK_WR             (0x0000ffff)        /**< Write lock mask */
@@ -258,7 +256,8 @@ struct mr_descriptor
  */
 struct mr_device_event
 {
-    uint32_t event;                                         /**< Event */
+    uint32_t event: 31;                                     /**< Event */
+    uint32_t private: 1;                                    /**< Private flag */
     void (*callback)(int descriptor, uint32_t event,
                      void *args);                           /**< Callback function */
 };

@@ -4,6 +4,7 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-10-20    MacRsh       First version
+ * @date 2024-05-08    MacRsh       Added support for DMA
  */
 
 #ifndef _MR_SERIAL_H_
@@ -65,6 +66,8 @@ extern "C" {
     MR_EVENT_RD_COMPLETE                                    /**< Interrupt on read completion event */
 #define MR_EVENT_SERIAL_WR_COMPLETE_INT                                        \
     MR_EVENT_WR_COMPLETE                                    /**< Interrupt on write completion event */
+#define MR_EVENT_SERIAL_RD_COMPLETE_DMA                                        \
+    (MR_EVENT_RD_COMPLETE | 0x01)                           /**< Interrupt on read DMA completion event */
 
 typedef uint8_t mr_serial_data_t;                           /**< Serial read/write data type */
 
@@ -94,6 +97,16 @@ struct mr_serial
     size_t rfifo_size;                                      /**< Read buffer size */
     size_t wfifo_size;                                      /**< Write buffer size */
     uint32_t state;                                         /**< Transmission state */
+#ifdef MR_USE_SERIAL_DMA
+#ifndef MR_CFG_SERIAL_RD_DMA_FIFO_SIZE
+#define MR_CFG_SERIAL_RD_DMA_FIFO_SIZE  (128)
+#endif /* MR_CFG_SERIAL_RD_DMA_FIFO_SIZE */
+#ifndef MR_CFG_SERIAL_WR_DMA_FIFO_SIZE
+#define MR_CFG_SERIAL_WR_DMA_FIFO_SIZE  (128)
+#endif /* MR_CFG_SERIAL_WR_DMA_FIFO_SIZE */
+    uint8_t rdma[MR_CFG_SERIAL_RD_DMA_FIFO_SIZE];           /**< Read DMA buffer */
+    uint8_t wdma[MR_CFG_SERIAL_WR_DMA_FIFO_SIZE];           /**< Write DMA buffer */
+#endif /* MR_USE_SERIAL_DMA */
 };
 
 /**
@@ -108,10 +121,14 @@ struct mr_serial_driver_ops
 
     /* Optional operations */
     int (*send_int_configure)(struct mr_driver *driver, bool enable);
+    int (*receive_dma)(struct mr_driver *driver, bool enable, void *buf,
+                       size_t count);
+    int (*send_dma)(struct mr_driver *driver, bool enable, const void *buf,
+                    size_t count);
 };
 
 int mr_serial_register(struct mr_serial *serial, const char *path,
-                       struct mr_driver *driver);
+                       const struct mr_driver *driver);
 
 /** @} */
 

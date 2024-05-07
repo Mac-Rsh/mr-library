@@ -4,14 +4,17 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * @date 2023-10-20    MacRsh       First version
- * @date 2024-04-21    MacRsh       Reconstructed
+ * @date 2024-05-08    MacRsh       Added support for DMA
  */
 
 #include "../mr-library/device/include/mr_serial.h"
 
 #ifdef MR_USE_SERIAL
 
-#define _SERIAL_STATE_SENDING           (0x02)              /**< Sending state */
+#define _SERIAL_STATE_SEND_INT          (0x01)
+#define _SERIAL_STATE_RECEIVE_DMA       (0x02 << 8)
+#define _SERIAL_STATE_RECEIVE_DMA_TOP   (0x04 << 8)
+#define _SERIAL_STATE_RECEIVE_DMA_BOT   (0x08 << 8)
 
 MR_INLINE ssize_t _serial_read_poll(struct mr_serial *serial, uint8_t *buf,
                                     size_t count)
@@ -89,7 +92,7 @@ MR_INLINE ssize_t _serial_write_fifo(struct mr_serial *serial,
     }
 
     /* If the serial port is not sending, enable it */
-    if (MR_BIT_IS_SET(serial->state, _SERIAL_STATE_SENDING) == false)
+    if (MR_BIT_IS_SET(serial->state, _SERIAL_STATE_SEND_INT) == false)
     {
         /* Enable serial TX interrupt */
         int ret = ops->send_int_configure(driver, true);
@@ -101,7 +104,7 @@ MR_INLINE ssize_t _serial_write_fifo(struct mr_serial *serial,
         }
 
         /* Set the sending state */
-        MR_BIT_SET(serial->state, _SERIAL_STATE_SENDING);
+        MR_BIT_SET(serial->state, _SERIAL_STATE_SEND_INT);
     }
 
     /* Return the number of bytes sent */
@@ -137,6 +140,16 @@ static int serial_open(struct mr_device *device)
     /* Allocate FIFO */
     mr_fifo_allocate(&serial->rfifo, serial->rfifo_size);
     mr_fifo_allocate(&serial->wfifo, serial->wfifo_size);
+
+#ifdef MR_USE_SERIAL_DMA
+    /* If the driver supports DMA, start DMA to receive data */
+    if (ops->receive_dma != NULL)
+    {
+        MR_BIT_SET(serial->state,
+                   _SERIAL_STATE_RECEIVE_DMA | _SERIAL_STATE_RECEIVE_DMA_TOP);
+        ops->receive_dma(driver, true, serial->rdma, sizeof(serial->rdma) / 2);
+    }
+#endif /* MR_USE_SERIAL_DMA */
     return MR_EOK;
 }
 
@@ -146,8 +159,26 @@ static int serial_close(struct mr_device *device)
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
     struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
 
+    /* Disable serial TX interrupt */
+    if (MR_BIT_IS_SET(serial->state, _SERIAL_STATE_SEND_INT) == true)
+    {
+        ops->send_int_configure(driver, false);
+        MR_BIT_CLR(serial->state, _SERIAL_STATE_SEND_INT);
+    }
+
+#ifdef MR_USE_SERIAL_DMA
+    /* Stop DMA */
+    if (MR_BIT_IS_SET(serial->state, _SERIAL_STATE_RECEIVE_DMA) == true)
+    {
+        ops->receive_dma(driver, false, NULL, 0);
+        MR_BIT_CLR(serial->state, _SERIAL_STATE_RECEIVE_DMA |
+                                      _SERIAL_STATE_RECEIVE_DMA_TOP |
+                                      _SERIAL_STATE_RECEIVE_DMA_BOT);
+    }
+#endif /* MR_USE_SERIAL_DMA */
+
     /* Disable serial */
-    int ret = ops->configure(driver, false, &serial->config);
+    int ret = ops->configure(driver, false, NULL);
     if (ret < 0)
     {
         return ret;
@@ -350,12 +381,12 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
     {
         case MR_EVENT_SERIAL_RD_COMPLETE_INT:
         {
-            int count = 1;
+            size_t count = 1;
 
             if (args != NULL)
             {
                 /* Hardware FIFO is considered to be used */
-                count = *((int *)args);
+                count = *((size_t *)args);
             }
 
             /* If FIFO is empty, the read operation is abandoned */
@@ -410,7 +441,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 }
 
                 /* Clear the sending state */
-                MR_BIT_CLR(serial->state, _SERIAL_STATE_SENDING);
+                MR_BIT_CLR(serial->state, _SERIAL_STATE_SEND_INT);
                 return MR_EOK;
             }
 
@@ -425,6 +456,60 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
             mr_fifo_discard(&serial->wfifo, sizeof(data));
             return MR_EBUSY;
         }
+#ifdef MR_USE_SERIAL_DMA
+        case MR_EVENT_SERIAL_RD_COMPLETE_DMA:
+        {
+            size_t count = sizeof(serial->rdma) / 2;
+            uint8_t *rdma, *ndma;
+
+            /* Driver does not support this function */
+            if (ops->receive_dma == NULL)
+            {
+                return MR_EIO;
+            }
+
+            if (args != NULL)
+            {
+                /* Only partially done */
+                count = *((size_t *)args);
+
+                /* At most half of DMA buffer is used */
+                if (count > sizeof(serial->rdma) / 2)
+                {
+                    count = sizeof(serial->rdma) / 2;
+                }
+            }
+
+            /* Ping-pong operation */
+            if (MR_BIT_IS_SET(serial->state, _SERIAL_STATE_RECEIVE_DMA_TOP) ==
+                true)
+            {
+                /* Top half of DMA buffer is used */
+                rdma = serial->rdma;
+                ndma = &serial->rdma[sizeof(serial->rdma) / 2];
+                MR_BIT_CLR(serial->state, _SERIAL_STATE_RECEIVE_DMA_TOP);
+                MR_BIT_SET(serial->state, _SERIAL_STATE_RECEIVE_DMA_BOT);
+            } else if (MR_BIT_IS_SET(serial->state,
+                                     _SERIAL_STATE_RECEIVE_DMA_BOT) == true)
+            {
+                /* Bottom half of DMA buffer is used */
+                rdma = &serial->rdma[sizeof(serial->rdma) / 2];
+                ndma = serial->rdma;
+                MR_BIT_CLR(serial->state, _SERIAL_STATE_RECEIVE_DMA_BOT);
+                MR_BIT_SET(serial->state, _SERIAL_STATE_RECEIVE_DMA_TOP);
+            } else
+            {
+                return MR_EOK;
+            }
+
+            /* Force write data to FIFO */
+            mr_fifo_write_force(&serial->rfifo, rdma, count);
+
+            /* Start receiving data from DMA */
+            return ops->receive_dma(driver, true, ndma,
+                                    sizeof(serial->rdma) / 2);
+        }
+#endif /* MR_USE_SERIAL_DMA */
         default:
         {
             return MR_EPERM;
@@ -442,7 +527,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
  * @return The error code.
  */
 int mr_serial_register(struct mr_serial *serial, const char *path,
-                       struct mr_driver *driver)
+                       const struct mr_driver *driver)
 {
     MR_ASSERT(serial != NULL);
     MR_ASSERT(path != NULL);
@@ -461,10 +546,10 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
     mr_fifo_init(&serial->rfifo, NULL, 0);
     mr_fifo_init(&serial->wfifo, NULL, 0);
 #ifndef MR_CFG_SERIAL_RD_FIFO_SIZE
-#define MR_CFG_SERIAL_RD_FIFO_SIZE      (64)
+#define MR_CFG_SERIAL_RD_FIFO_SIZE (64)
 #endif /* MR_CFG_SERIAL_RD_FIFO_SIZE */
 #ifndef MR_CFG_SERIAL_WR_FIFO_SIZE
-#define MR_CFG_SERIAL_WR_FIFO_SIZE      (0)
+#define MR_CFG_SERIAL_WR_FIFO_SIZE (0)
 #endif /* MR_CFG_SERIAL_WR_FIFO_SIZE */
     serial->rfifo_size = MR_CFG_SERIAL_RD_FIFO_SIZE;
     serial->wfifo_size = MR_CFG_SERIAL_WR_FIFO_SIZE;
