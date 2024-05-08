@@ -7,14 +7,14 @@
  * @date 2024-05-08    MacRsh       Added support for DMA
  */
 
-#include "../mr-library/device/include/mr_serial.h"
+#include "../mr-library/include/device/mr_serial.h"
 
 #ifdef MR_USE_SERIAL
 
-#define _SERIAL_STATE_SEND_INT          (0x01)
-#define _SERIAL_STATE_RECEIVE_DMA       (0x02 << 8)
-#define _SERIAL_STATE_RECEIVE_DMA_TOP   (0x04 << 8)
-#define _SERIAL_STATE_RECEIVE_DMA_BOT   (0x08 << 8)
+#define _SERIAL_STATE_SEND_INT          (0x01)              /**< Send interrupt */
+#define _SERIAL_STATE_RECEIVE_DMA       (0x02 << 8)         /**< Receive DMA */
+#define _SERIAL_STATE_RECEIVE_DMA_TOP   (0x04 << 8)         /**< Receive DMA top */
+#define _SERIAL_STATE_RECEIVE_DMA_BOT   (0x08 << 8)         /**< Receive DMA bot */
 
 MR_INLINE ssize_t _serial_read_poll(struct mr_serial *serial, uint8_t *buf,
                                     size_t count)
@@ -546,10 +546,10 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
     mr_fifo_init(&serial->rfifo, NULL, 0);
     mr_fifo_init(&serial->wfifo, NULL, 0);
 #ifndef MR_CFG_SERIAL_RD_FIFO_SIZE
-#define MR_CFG_SERIAL_RD_FIFO_SIZE (64)
+#define MR_CFG_SERIAL_RD_FIFO_SIZE      (128)
 #endif /* MR_CFG_SERIAL_RD_FIFO_SIZE */
 #ifndef MR_CFG_SERIAL_WR_FIFO_SIZE
-#define MR_CFG_SERIAL_WR_FIFO_SIZE (0)
+#define MR_CFG_SERIAL_WR_FIFO_SIZE      (0)
 #endif /* MR_CFG_SERIAL_WR_FIFO_SIZE */
     serial->rfifo_size = MR_CFG_SERIAL_RD_FIFO_SIZE;
     serial->wfifo_size = MR_CFG_SERIAL_WR_FIFO_SIZE;

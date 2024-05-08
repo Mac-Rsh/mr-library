@@ -1,4 +1,4 @@
-menu "PIN configure"
+menu "Pin configure"
     config MR_USE_PIN
         bool "Use pin"
         default y

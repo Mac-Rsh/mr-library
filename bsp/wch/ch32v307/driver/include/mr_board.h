@@ -138,7 +138,9 @@ extern "C" {
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
         .rx_pin = GPIO_Pin_10, .tx_port = GPIOA, .tx_pin = GPIO_Pin_9,         \
-        .irq = USART1_IRQn, .remap = 0                                         \
+        .irq = USART1_IRQn, .remap = 0, .rx_dma_channel = DMA1_Channel5,       \
+        .rx_dma_clock = RCC_AHBPeriph_DMA1, .rx_dma_irq = DMA1_Channel5_IRQn,  \
+        .rx_dma_irq_it = DMA1_IT_TC5                                           \
     }
 #elif (MR_CFG_UART1_GROUP == 2)
 #define _DRIVER_UART1_CONFIG                                                   \
@@ -146,7 +148,9 @@ extern "C" {
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
         .rx_pin = GPIO_Pin_7, .tx_port = GPIOB, .tx_pin = GPIO_Pin_6,          \
-        .irq = USART1_IRQn, .remap = GPIO_Remap_USART1                         \
+        .irq = USART1_IRQn, .remap = GPIO_Remap_USART1,                        \
+        .rx_dma_channel = DMA1_Channel5, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel5_IRQn, .rx_dma_irq_it = DMA1_IT_TC5         \
     }
 #elif (MR_CFG_UART1_GROUP == 3)
 #define _DRIVER_UART1_CONFIG                                                   \
@@ -154,7 +158,9 @@ extern "C" {
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB,             \
         .rx_port = GPIOA, .rx_pin = GPIO_Pin_8, .tx_port = GPIOB,              \
-        .tx_pin = GPIO_Pin_15, .irq = USART1_IRQn, .remap = 0                  \
+        .tx_pin = GPIO_Pin_15, .irq = USART1_IRQn, .remap = 0,                 \
+        .rx_dma_channel = DMA1_Channel5, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel5_IRQn, .rx_dma_irq_it = DMA1_IT_TC5         \
     }
 #elif (MR_CFG_UART1_GROUP == 4)
 #define _DRIVER_UART1_CONFIG                                                   \
@@ -162,7 +168,9 @@ extern "C" {
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
         .rx_pin = GPIO_Pin_7, .tx_port = GPIOA, .tx_pin = GPIO_Pin_6,          \
-        .irq = USART1_IRQn, .remap = GPIO_Remap_USART1                         \
+        .irq = USART1_IRQn, .remap = GPIO_Remap_USART1,                        \
+        .rx_dma_channel = DMA1_Channel5, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel5_IRQn, .rx_dma_irq_it = DMA1_IT_TC5         \
     }
 #endif /* MR_CFG_UART1_GROUP */
 
@@ -172,7 +180,9 @@ extern "C" {
         .instance = USART2, .clock = RCC_APB1Periph_USART2,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
         .rx_pin = GPIO_Pin_3, .tx_port = GPIOA, .tx_pin = GPIO_Pin_2,          \
-        .irq = USART2_IRQn, .remap = 0                                         \
+        .irq = USART2_IRQn, .remap = 0, .rx_dma_channel = DMA1_Channel6,       \
+        .rx_dma_clock = RCC_AHBPeriph_DMA1, .rx_dma_irq = DMA1_Channel6_IRQn,  \
+        .rx_dma_irq_it = DMA1_IT_TC6                                           \
     }
 #elif (MR_CFG_UART2_GROUP == 2)
 #define _DRIVER_UART2_CONFIG                                                   \
@@ -180,7 +190,9 @@ extern "C" {
         .instance = USART2, .clock = RCC_APB1Periph_USART2,                    \
         .gpio_clock = RCC_APB2Periph_GPIOD, .rx_port = GPIOD,                  \
         .rx_pin = GPIO_Pin_6, .tx_port = GPIOD, .tx_pin = GPIO_Pin_5,          \
-        .irq = USART2_IRQn, .remap = GPIO_Remap_USART2                         \
+        .irq = USART2_IRQn, .remap = GPIO_Remap_USART2,                        \
+        .rx_dma_channel = DMA1_Channel6, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel6_IRQn, .rx_dma_irq_it = DMA1_IT_TC6         \
     }
 #endif /* MR_CFG_UART2_GROUP */
 
@@ -190,7 +202,9 @@ extern "C" {
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
         .rx_pin = GPIO_Pin_11, .tx_port = GPIOB, .tx_pin = GPIO_Pin_10,        \
-        .irq = USART3_IRQn, .remap = 0                                         \
+        .irq = USART3_IRQn, .remap = 0, .rx_dma_channel = DMA1_Channel3,       \
+        .rx_dma_clock = RCC_AHBPeriph_DMA1, .rx_dma_irq = DMA1_Channel3_IRQn,  \
+        .rx_dma_irq_it = DMA1_IT_TC3                                           \
     }
 #elif (MR_CFG_UART3_GROUP == 2)
 #define _DRIVER_UART3_CONFIG                                                   \
@@ -198,7 +212,9 @@ extern "C" {
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
         .rx_pin = GPIO_Pin_11, .tx_port = GPIOC, .tx_pin = GPIO_Pin_10,        \
-        .irq = USART3_IRQn, .remap = GPIO_PartialRemap_USART3                  \
+        .irq = USART3_IRQn, .remap = GPIO_PartialRemap_USART3,                 \
+        .rx_dma_channel = DMA1_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel3_IRQn, .rx_dma_irq_it = DMA1_IT_TC3         \
     }
 #elif (MR_CFG_UART3_GROUP == 3)
 #define _DRIVER_UART3_CONFIG                                                   \
@@ -206,7 +222,9 @@ extern "C" {
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
         .rx_pin = GPIO_Pin_14, .tx_port = GPIOA, .tx_pin = GPIO_Pin_13,        \
-        .irq = USART3_IRQn, .remap = GPIO_PartialRemap1_USART3                 \
+        .irq = USART3_IRQn, .remap = GPIO_PartialRemap1_USART3,                \
+        .rx_dma_channel = DMA1_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel3_IRQn, .rx_dma_irq_it = DMA1_IT_TC3         \
     }
 #elif (MR_CFG_UART3_GROUP == 4)
 #define _DRIVER_UART3_CONFIG                                                   \
@@ -214,7 +232,9 @@ extern "C" {
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOD, .rx_port = GPIOD,                  \
         .rx_pin = GPIO_Pin_9, .tx_port = GPIOD, .tx_pin = GPIO_Pin_8,          \
-        .irq = USART3_IRQn, .remap = GPIO_FullRemap_USART3                     \
+        .irq = USART3_IRQn, .remap = GPIO_FullRemap_USART3,                    \
+        .rx_dma_channel = DMA1_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
+        .rx_dma_irq = DMA1_Channel3_IRQn, .rx_dma_irq_it = DMA1_IT_TC3         \
     }
 #endif /* MR_CFG_UART3_GROUP */
 
@@ -224,7 +244,9 @@ extern "C" {
         .nstance = UART4, .clock = RCC_APB1Periph_UART4,                       \
         .pio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                   \
         .rx_pin = GPIO_Pin_11, .x_port = GPIOC, .tx_pin = GPIO_Pin_10,         \
-        .irq = UART4_IRQn, .remap = 0                                          \
+        .irq = UART4_IRQn, .remap = 0, .rx_dma_channel = DMA2_Channel3,        \
+        .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel3_IRQn,  \
+        .rx_dma_irq_it = DMA2_IT_TC3                                           \
     }
 #elif (MR_CFG_UART4_GROUP == 2)
 #define _DRIVER_UART4_CONFIG                                                   \
@@ -232,7 +254,9 @@ extern "C" {
         .instance = UART4, .clock = RCC_APB1Periph_UART4,                      \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
         .rx_pin = GPIO_Pin_1, .tx_port = GPIOB, .tx_pin = GPIO_Pin_0,          \
-        .irq = UART4_IRQn, .remap = GPIO_PartialRemap_USART4                   \
+        .irq = UART4_IRQn, .remap = GPIO_PartialRemap_USART4,                  \
+        .rx_dma_channel = DMA2_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel3_IRQn, .rx_dma_irq_it = DMA2_IT_TC3         \
     }
 #elif (MR_CFG_UART4_GROUP == 3)
 #define _DRIVER_UART4_CONFIG                                                   \
@@ -240,7 +264,9 @@ extern "C" {
         .instance = UART4, .clock = RCC_APB1Periph_UART4,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
         .rx_pin = GPIO_Pin_1, .tx_port = GPIOE, .tx_pin = GPIO_Pin_0,          \
-        .irq = UART4_IRQn, .remap = GPIO_FullRemap_USART4                      \
+        .irq = UART4_IRQn, .remap = GPIO_FullRemap_USART4,                     \
+        .rx_dma_channel = DMA2_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel3_IRQn, .rx_dma_irq_it = DMA2_IT_TC3         \
     }
 #endif /* MR_CFG_UART4_GROUP */
 
@@ -250,7 +276,9 @@ extern "C" {
         .instance = UART5, .clock = RCC_APB1Periph_UART5,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD,             \
         .rx_port = GPIOD, .rx_pin = GPIO_Pin_2, .tx_port = GPIOC,              \
-        .tx_pin = GPIO_Pin_12, .irq = UART5_IRQn, .remap = 0                   \
+        .tx_pin = GPIO_Pin_12, .irq = UART5_IRQn, .remap = 0,                  \
+        .rx_dma_channel = DMA2_Channel2, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel2_IRQn, .rx_dma_irq_it = DMA2_IT_TC2         \
     }
 #elif (MR_CFG_UART5_GROUP == 2)
 #define _DRIVER_UART5_CONFIG                                                   \
@@ -258,7 +286,9 @@ extern "C" {
         .instance = UART5, .clock = RCC_APB1Periph_UART5,                      \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
         .rx_pin = GPIO_Pin_5, .tx_port = GPIOB, .tx_pin = GPIO_Pin_4,          \
-        .irq = UART5_IRQn, .remap = GPIO_PartialRemap_USART5                   \
+        .irq = UART5_IRQn, .remap = GPIO_PartialRemap_USART5,                  \
+        .rx_dma_channel = DMA2_Channel2, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel2_IRQn, .rx_dma_irq_it = DMA2_IT_TC2         \
     }
 #elif (MR_CFG_UART5_GROUP == 3)
 #define _DRIVER_UART5_CONFIG                                                   \
@@ -266,7 +296,9 @@ extern "C" {
         .instance = UART5, .clock = RCC_APB1Periph_UART5,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
         .rx_pin = GPIO_Pin_9, .tx_port = GPIOE, .tx_pin = GPIO_Pin_8,          \
-        .irq = UART5_IRQn, .remap = GPIO_FullRemap_USART5                      \
+        .irq = UART5_IRQn, .remap = GPIO_FullRemap_USART5,                     \
+        .rx_dma_channel = DMA2_Channel2, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel2_IRQn, .rx_dma_irq_it = DMA2_IT_TC2         \
     }
 #endif /* MR_CFG_UART5_GROUP */
 
@@ -276,7 +308,9 @@ extern "C" {
         .instance = UART6, .clock = RCC_APB1Periph_UART6,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
         .rx_pin = GPIO_Pin_1, .tx_port = GPIOC, .tx_pin = GPIO_Pin_0,          \
-        .irq = UART6_IRQn, .remap = 0                                          \
+        .irq = UART6_IRQn, .remap = 0, .rx_dma_channel = DMA2_Channel7,        \
+        .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel7_IRQn,  \
+        .rx_dma_irq_it = DMA2_IT_TC7                                           \
     }
 #elif (MR_CFG_UART6_GROUP == 2)
 #define _DRIVER_UART6_CONFIG                                                   \
@@ -284,7 +318,9 @@ extern "C" {
         .instance = UART6, .clock = RCC_APB1Periph_UART6,                      \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
         .rx_pin = GPIO_Pin_9, .tx_port = GPIOB, .tx_pin = GPIO_Pin_8,          \
-        .irq = UART6_IRQn, .remap = GPIO_PartialRemap_USART6                   \
+        .irq = UART6_IRQn, .remap = GPIO_PartialRemap_USART6,                  \
+        .rx_dma_channel = DMA2_Channel7, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel7_IRQn, .rx_dma_irq_it = DMA2_IT_TC7         \
     }
 #elif (MR_CFG_UART6_GROUP == 3)
 #define _DRIVER_UART6_CONFIG                                                   \
@@ -292,7 +328,9 @@ extern "C" {
         .instance = UART6, .clock = RCC_APB1Periph_UART6,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
         .rx_pin = GPIO_Pin_11, .tx_port = GPIOE, .tx_pin = GPIO_Pin_10,        \
-        .irq = UART6_IRQn, .remap = GPIO_FullRemap_USART6                      \
+        .irq = UART6_IRQn, .remap = GPIO_FullRemap_USART6,                     \
+        .rx_dma_channel = DMA2_Channel7, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel7_IRQn, .rx_dma_irq_it = DMA2_IT_TC7         \
     }
 #endif /* MR_CFG_UART6_GROUP */
 
@@ -302,7 +340,9 @@ extern "C" {
         .instance = UART7, .clock = RCC_APB1Periph_UART7,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
         .rx_pin = GPIO_Pin_3, .tx_port = GPIOC, .tx_pin = GPIO_Pin_2,          \
-        .irq = UART7_IRQn, .remap = 0                                          \
+        .irq = UART7_IRQn, .remap = 0, .rx_dma_channel = DMA2_Channel9,        \
+        .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel9_IRQn,  \
+        .rx_dma_irq_it = DMA2_IT_TC9                                           \
     }
 #elif (MR_CFG_UART7_GROUP == 2)
 #define _DRIVER_UART7_CONFIG                                                   \
@@ -310,7 +350,9 @@ extern "C" {
         .instance = UART7, .clock = RCC_APB1Periph_UART7,                      \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
         .rx_pin = GPIO_Pin_7, .tx_port = GPIOA, .tx_pin = GPIO_Pin_6,          \
-        .irq = UART7_IRQn, .remap = GPIO_PartialRemap_USART7                   \
+        .irq = UART7_IRQn, .remap = GPIO_PartialRemap_USART7,                  \
+        .rx_dma_channel = DMA2_Channel9, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel9_IRQn, .rx_dma_irq_it = DMA2_IT_TC9         \
     }
 #elif (MR_CFG_UART7_GROUP == 3)
 #define _DRIVER_UART7_CONFIG                                                   \
@@ -318,7 +360,9 @@ extern "C" {
         .instance = UART7, .clock = RCC_APB1Periph_UART7,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
         .rx_pin = GPIO_Pin_13, .tx_port = GPIOE, .tx_pin = GPIO_Pin_12,        \
-        .irq = UART7_IRQn, .remap = GPIO_FullRemap_USART7                      \
+        .irq = UART7_IRQn, .remap = GPIO_FullRemap_USART7,                     \
+        .rx_dma_channel = DMA2_Channel9, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
+        .rx_dma_irq = DMA2_Channel9_IRQn, .rx_dma_irq_it = DMA2_IT_TC9         \
     }
 #endif /* MR_CFG_UART7_GROUP */
 
@@ -328,7 +372,9 @@ extern "C" {
         .instance = UART8, .clock = RCC_APB1Periph_UART8,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
         .rx_pin = GPIO_Pin_5, .tx_port = GPIOC, .tx_pin = GPIO_Pin_4,          \
-        .irq = UART8_IRQn, .remap = 0                                          \
+        .irq = UART8_IRQn, .remap = 0, .rx_dma_channel = DMA2_Channel11,       \
+        .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel11_IRQn, \
+        .rx_dma_irq_it = DMA2_IT_TC11                                          \
     }
 #elif (MR_CFG_UART8_GROUP == 2)
 #define _DRIVER_UART8_CONFIG                                                   \
@@ -336,7 +382,9 @@ extern "C" {
         .instance = UART8, .clock = RCC_APB1Periph_UART8,                      \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
         .rx_pin = GPIO_Pin_15, .tx_port = GPIOA, .tx_pin = GPIO_Pin_14,        \
-        .irq = UART8_IRQn, .remap = GPIO_PartialRemap_USART8                   \
+        .irq = UART8_IRQn, .remap = GPIO_PartialRemap_USART8,                  \
+        .rx_dma_channel = DMA2_Channel11, .rx_dma_clock = RCC_AHBPeriph_DMA2,  \
+        .rx_dma_irq = DMA2_Channel11_IRQn, .rx_dma_irq_it = DMA2_IT_TC11       \
     }
 #elif (MR_CFG_UART8_GROUP == 3)
 #define _DRIVER_UART8_CONFIG                                                   \
@@ -344,7 +392,9 @@ extern "C" {
         .instance = UART8, .clock = RCC_APB1Periph_UART8,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
         .rx_pin = GPIO_Pin_15, .tx_port = GPIOE, .tx_pin = GPIO_Pin_14,        \
-        .irq = UART8_IRQn, .remap = GPIO_FullRemap_USART8                      \
+        .irq = UART8_IRQn, .remap = GPIO_FullRemap_USART8,                     \
+        .rx_dma_channel = DMA2_Channel11, .rx_dma_clock = RCC_AHBPeriph_DMA2,  \
+        .rx_dma_irq = DMA2_Channel11_IRQn, .rx_dma_irq_it = DMA2_IT_TC11       \
     }
 #endif /* MR_CFG_UART8_GROUP */
 

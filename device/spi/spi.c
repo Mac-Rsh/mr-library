@@ -6,7 +6,7 @@
  * @date 2023-11-01    MacRsh       First version
  */
 
-#include "../mr-library/device/include/mr_spi.h"
+#include "../mr-library/include/device/mr_spi.h"
 
 #ifdef MR_USE_SPI
 

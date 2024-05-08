@@ -8,44 +8,44 @@ menu "Serial configure"
     # RD-FIFO
     config MR_CFG_SERIAL_RD_FIFO_SIZE
         depends on MR_USE_SERIAL
-        int "Serial read FIFO size"
+        int "Serial read fifo size"
         range 0 2147483647
-        default 64
+        default 128
         help
-            "This option sets the size of the read FIFO."
+            "This option sets the size of the read fifo."
 
     # WR-FIFO
     config MR_CFG_SERIAL_WR_FIFO_SIZE
         depends on MR_USE_SERIAL
-        int "Serial write FIFO size"
+        int "Serial write fifo size"
         range 0 2147483647
         default 0
         help
-            "This option sets the size of the write FIFO."
+            "This option sets the size of the write fifo."
 
     # DMA
     config MR_USE_SERIAL_DMA
         depends on MR_USE_SERIAL
-        bool "Use serial DMA"
+        bool "Use serial dma"
         default n
         help
-            "Use this option allows for the use of serial DMA."
+            "Use this option allows for the use of serial dma."
 
     # DMA RD-FIFO
     config MR_CFG_SERIAL_RD_DMA_FIFO_SIZE
         depends on MR_USE_SERIAL_DMA
-        int "Serial read DMA FIFO size"
+        int "Serial read dma fifo size"
         range 0 2147483647
         default 128
         help
-            "This option sets the size of the read DMA FIFO."
+            "This option sets the size of the read dma fifo."
 
     # DMA WR-FIFO
     config MR_CFG_SERIAL_WR_DMA_FIFO_SIZE
         depends on MR_USE_SERIAL_DMA
-        int "Serial write DMA FIFO size"
+        int "Serial write dma fifo size"
         range 0 2147483647
         default 128
         help
-            "This option sets the size of the write DMA FIFO."
+            "This option sets the size of the write dma fifo."
 endmenu

@@ -9,7 +9,7 @@
 #ifndef _MR_SERIAL_DRIVER_H_
 #define _MR_SERIAL_DRIVER_H_
 
-#include "../mr-library/device/include/mr_serial.h"
+#include "../mr-library/include/device/mr_serial.h"
 #include "../mr-library/driver/include/mr_board.h"
 
 #ifdef __cplusplus
@@ -30,6 +30,12 @@ struct mr_serial_driver
     uint32_t tx_pin;
     IRQn_Type irq;
     uint32_t remap;
+
+    DMA_Channel_TypeDef *rx_dma_channel;
+    uint32_t rx_dma_clock;
+    IRQn_Type rx_dma_irq;
+    uint32_t rx_dma_irq_it;
+    size_t rx_dma_count;
 };
 
 #endif /* MR_USE_SERIAL */

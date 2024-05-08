@@ -9,7 +9,7 @@
 #ifndef _MR_ADC_DRIVER_H_
 #define _MR_ADC_DRIVER_H_
 
-#include "../mr-library/device/include/mr_adc.h"
+#include "../mr-library/include/device/mr_adc.h"
 #include "../mr-library/driver/include/mr_board.h"
 
 #ifdef __cplusplus

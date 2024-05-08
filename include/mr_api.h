@@ -93,7 +93,7 @@ void mr_fifo_reset(struct mr_fifo *fifo);
 int mr_fifo_allocate(struct mr_fifo *fifo, size_t size);
 void mr_fifo_free(struct mr_fifo *fifo);
 size_t mr_fifo_used_get(const struct mr_fifo *fifo);
-size_t mr_fifo_space_get(const struct mr_fifo *fifo);
+size_t mr_fifo_free_get(const struct mr_fifo *fifo);
 size_t mr_fifo_size_get(const struct mr_fifo *fifo);
 size_t mr_fifo_peek(const struct mr_fifo *fifo, void *_buf, size_t count);
 size_t mr_fifo_discard(struct mr_fifo *fifo, size_t count);

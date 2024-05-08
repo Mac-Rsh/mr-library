@@ -9,7 +9,7 @@
 #ifndef _MR_PIN_DRIVER_H_
 #define _MR_PIN_DRIVER_H_
 
-#include "../mr-library/device/include/mr_pin.h"
+#include "../mr-library/include/device/mr_pin.h"
 #include "../mr-library/driver/include/mr_board.h"
 
 #ifdef __cplusplus

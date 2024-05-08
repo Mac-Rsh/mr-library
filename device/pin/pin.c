@@ -6,7 +6,7 @@
  * @date 2023-11-08    MacRsh       First version
  */
 
-#include "../mr-library/device/include/mr_pin.h"
+#include "../mr-library/include/device/mr_pin.h"
 
 #ifdef MR_USE_PIN
 

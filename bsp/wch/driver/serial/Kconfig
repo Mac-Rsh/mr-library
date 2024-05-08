@@ -1,4 +1,4 @@
-menu "UART driver configure"
+menu "Uart driver configure"
     # Use Serial
     if MR_USE_SERIAL
         # UART1
@@ -13,6 +13,10 @@ menu "UART driver configure"
                 int "Uart1 group"
                 default 1
                 range 1 4
+
+            config MR_USE_UART1_DMA
+                bool "Use uart1 dma"
+                default n
         endmenu
     
         # UART2
@@ -27,6 +31,10 @@ menu "UART driver configure"
                 int "Uart2 group"
                 default 1
                 range 1 2
+
+            config MR_USE_UART2_DMA
+                bool "Use uart2 dma"
+                default n
         endmenu
     
         # UART3
@@ -41,6 +49,10 @@ menu "UART driver configure"
                 int "Uart3 group"
                 default 1
                 range 1 4
+
+            config MR_USE_UART3_DMA
+                bool "Use uart3 dma"
+                default n
         endmenu
     
         # UART4
@@ -55,6 +67,10 @@ menu "UART driver configure"
                 int "Uart4 group"
                 default 1
                 range 1 3
+
+            config MR_USE_UART4_DMA
+                bool "Use uart4 dma"
+                default n
         endmenu
     
         # UART5
@@ -69,6 +85,10 @@ menu "UART driver configure"
                 int "Uart5 group"
                 default 1
                 range 1 3
+
+            config MR_USE_UART5_DMA
+                bool "Use uart5 dma"
+                default n
         endmenu
     
         # UART6
@@ -83,6 +103,10 @@ menu "UART driver configure"
                 int "Uart6 group"
                 default 1
                 range 1 3
+
+            config MR_USE_UART6_DMA
+                bool "Use uart6 dma"
+                default n
         endmenu
     
         # UART7
@@ -97,6 +121,10 @@ menu "UART driver configure"
                 int "Uart7 group"
                 default 1
                 range 1 3
+
+            config MR_USE_UART7_DMA
+                bool "Use uart7 dma"
+                default n
         endmenu
     
         # UART8
@@ -111,6 +139,10 @@ menu "UART driver configure"
                 int "Uart8 group"
                 default 1
                 range 1 3
+
+            config MR_USE_UART8_DMA
+                bool "Use uart8 dma"
+                default n
         endmenu
     endif
 

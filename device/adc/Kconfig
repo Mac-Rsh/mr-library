@@ -1,4 +1,4 @@
-menu "ADC configure"
+menu "Adc configure"
     config MR_USE_ADC
         bool "Use adc"
         default y

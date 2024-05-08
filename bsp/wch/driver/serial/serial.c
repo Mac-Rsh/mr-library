@@ -244,7 +244,7 @@ static int serial_driver_configure(struct mr_driver *driver, bool enable,
     USART_Init(serial->instance, &USART_InitStructure);
     USART_Cmd(serial->instance, enable);
     USART_ClearFlag(serial->instance, USART_FLAG_RXNE);
-    USART_ClearFlag(serial->instance, USART_FLAG_TC);
+    USART_ClearFlag(serial->instance, USART_FLAG_TXE);
 
     /* Configure NVIC */
     NVIC_InitStructure.NVIC_IRQChannel = serial->irq;
@@ -285,8 +285,7 @@ static int serial_driver_send(struct mr_driver *driver, uint8_t data)
     size_t i = 0;
 
     /* Write data to register */
-    USART_SendData(serial->instance, data);
-    while (USART_GetFlagStatus(serial->instance, USART_FLAG_TC) == RESET)
+    while (USART_GetFlagStatus(serial->instance, USART_FLAG_TXE) == RESET)
     {
         i++;
         if (i > UINT16_MAX)
@@ -294,6 +293,7 @@ static int serial_driver_send(struct mr_driver *driver, uint8_t data)
             return MR_ETIMEOUT;
         }
     }
+    USART_SendData(serial->instance, data);
     return MR_EOK;
 }
 
@@ -308,6 +308,58 @@ static int serial_driver_send_int_configure(struct mr_driver *driver,
     return MR_EOK;
 }
 
+static int serial_driver_receive_dma(struct mr_driver *driver, bool enable,
+                                     void *buf, size_t count)
+{
+    struct mr_serial_driver *serial = (struct mr_serial_driver *)driver;
+    DMA_InitTypeDef DMA_InitStructure = {0};
+    NVIC_InitTypeDef NVIC_InitStructure = {0};
+
+    /* Configure clock */
+    RCC_AHBPeriphClockCmd(serial->rx_dma_clock, ENABLE);
+
+    /* Configure NVIC */
+    NVIC_InitStructure.NVIC_IRQChannel = serial->rx_dma_irq;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = enable;
+    NVIC_Init(&NVIC_InitStructure);
+    USART_ClearITPendingBit(serial->instance, USART_IT_RXNE);
+    USART_ITConfig(serial->instance, USART_IT_RXNE, !enable);
+    USART_ITConfig(serial->instance, USART_IT_IDLE, enable);
+    DMA_ClearITPendingBit(serial->rx_dma_irq_it);
+    DMA_ITConfig(serial->rx_dma_channel, DMA_IT_TC, enable);
+
+    if (enable == true)
+    {
+        USART_DMACmd(serial->instance, USART_DMAReq_Rx, ENABLE);
+        DMA_Cmd(serial->rx_dma_channel, DISABLE);
+        serial->rx_dma_count = count;
+
+        DMA_InitStructure.DMA_PeripheralBaseAddr =
+            (uint32_t)(&serial->instance->DATAR);
+        DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)buf;
+        DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
+        DMA_InitStructure.DMA_BufferSize = count;
+        DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+        DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+        DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+        DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+        DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+        DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+        DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
+        DMA_Init(serial->rx_dma_channel, &DMA_InitStructure);
+
+        DMA_Cmd(serial->rx_dma_channel, ENABLE);
+        USART_DMACmd(serial->instance, USART_DMAReq_Rx, ENABLE);
+    } else
+    {
+        USART_DMACmd(serial->instance, USART_DMAReq_Rx, ENABLE);
+        DMA_Cmd(serial->rx_dma_channel, DISABLE);
+    }
+    return MR_EOK;
+}
+
 MR_INLINE void serial_device_isr(struct mr_serial *serial)
 {
     struct mr_device *device = (struct mr_device *)serial;
@@ -319,11 +371,29 @@ MR_INLINE void serial_device_isr(struct mr_serial *serial)
         mr_device_isr(device, MR_EVENT_SERIAL_RD_COMPLETE_INT, NULL);
         USART_ClearITPendingBit(_serial->instance, USART_IT_RXNE);
     }
-
     if (USART_GetITStatus(_serial->instance, USART_IT_TXE) != RESET)
     {
         mr_device_isr(device, MR_EVENT_SERIAL_WR_COMPLETE_INT, NULL);
         USART_ClearITPendingBit(_serial->instance, USART_IT_TXE);
+    }
+    if (USART_GetITStatus(_serial->instance, USART_IT_IDLE) != RESET)
+    {
+        size_t count = _serial->rx_dma_count -
+                       DMA_GetCurrDataCounter(_serial->rx_dma_channel);
+
+        mr_device_isr(device, MR_EVENT_SERIAL_RD_COMPLETE_DMA, &count);
+
+        /* Clear IDLE */
+        _serial->instance->STATR;
+        _serial->instance->DATAR;
+    }
+    if (DMA_GetITStatus(_serial->rx_dma_irq_it) != RESET)
+    {
+        size_t count = _serial->rx_dma_count -
+                       DMA_GetCurrDataCounter(_serial->rx_dma_channel);
+
+        mr_device_isr(device, MR_EVENT_SERIAL_RD_COMPLETE_DMA, &count);
+        DMA_ClearITPendingBit(_serial->rx_dma_irq_it);
     }
 }
 
@@ -333,6 +403,14 @@ void USART1_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART1_INDEX]);
 }
+#ifdef MR_USE_UART1_DMA
+void DMA1_Channel5_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA1_Channel5_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART1_INDEX]);
+}
+#endif /* MR_USE_UART1_DMA */
 #endif /* MR_USE_UART1 */
 
 #ifdef MR_USE_UART2
@@ -341,6 +419,14 @@ void USART2_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART2_INDEX]);
 }
+#ifdef MR_USE_UART2_DMA
+void DMA1_Channel6_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA1_Channel6_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART2_INDEX]);
+}
+#endif /* MR_USE_UART2_DMA */
 #endif /* MR_USE_UART2 */
 
 #ifdef MR_USE_UART3
@@ -349,6 +435,14 @@ void USART3_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART3_INDEX]);
 }
+#ifdef MR_USE_UART3_DMA
+void DMA1_Channel3_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA1_Channel3_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART3_INDEX]);
+}
+#endif /* MR_USE_UART3_DMA */
 #endif /* MR_USE_UART3 */
 
 #ifdef MR_USE_UART4
@@ -357,6 +451,14 @@ void UART4_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART4_INDEX]);
 }
+#ifdef MR_USE_UART4_DMA
+void DMA2_Channel3_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA2_Channel3_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART4_INDEX]);
+}
+#endif /* MR_USE_UART4_DMA */
 #endif /* MR_USE_UART4 */
 
 #ifdef MR_USE_UART5
@@ -365,6 +467,14 @@ void UART5_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART5_INDEX]);
 }
+#ifdef MR_USE_UART5_DMA
+void DMA2_Channel2_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA2_Channel2_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART5_INDEX]);
+}
+#endif /* MR_USE_UART5_DMA */
 #endif /* MR_USE_UART5 */
 
 #ifdef MR_USE_UART6
@@ -373,6 +483,14 @@ void UART6_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART6_INDEX]);
 }
+#ifdef MR_USE_UART6_DMA
+void DMA2_Channel7_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA2_Channel7_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART6_INDEX]);
+}
+#endif /* MR_USE_UART6_DMA */
 #endif /* MR_USE_UART6 */
 
 #ifdef MR_USE_UART7
@@ -381,6 +499,14 @@ void UART7_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART7_INDEX]);
 }
+#ifdef MR_USE_UART7_DMA
+void DMA2_Channel9_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA2_Channel9_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART7_INDEX]);
+}
+#endif /* MR_USE_UART7_DMA */
 #endif /* MR_USE_UART7 */
 
 #ifdef MR_USE_UART8
@@ -389,6 +515,14 @@ void UART8_IRQHandler(void)
 {
     serial_device_isr(&_serial_device[_DRIVER_UART8_INDEX]);
 }
+#ifdef MR_USE_UART8_DMA
+void DMA2_Channel11_IRQHandler(void)
+    __attribute__((interrupt("WCH-Interrupt-fast")));
+void DMA2_Channel11_IRQHandler(void)
+{
+    serial_device_isr(&_serial_device[_DRIVER_UART8_INDEX]);
+}
+#endif /* MR_USE_UART8_DMA */
 #endif /* MR_USE_UART8 */
 
 static void serial_driver_init(void)
@@ -397,7 +531,8 @@ static void serial_driver_init(void)
         .configure = serial_driver_configure,
         .receive = serial_driver_receive,
         .send = serial_driver_send,
-        .send_int_configure = serial_driver_send_int_configure};
+        .send_int_configure = serial_driver_send_int_configure,
+        .receive_dma = serial_driver_receive_dma};
 
     for (size_t i = 0; i < MR_ARRAY_NUM(_serial_device); i++)
     {
