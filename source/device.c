@@ -690,7 +690,7 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     {
         /* Async read */
         ret = device->ops->read_async(device, pos, buf, count);
-        if (ret > 0)
+        if ((ret == 0) && (count > 0))
         {
             /* If the operation is successful, the device will not be released
              * until the operation is finished */
@@ -734,7 +734,7 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     {
         /* Async write */
         ret = device->ops->write_async(device, pos, buf, count);
-        if (ret > 0)
+        if ((ret == 0) && (count > 0))
         {
             /* If the operation is successful, the device will not be released
              * until the operation is finished */

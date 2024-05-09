@@ -681,7 +681,10 @@ size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
 
     /* Discard data that will be overwritten */
     uint32_t free = mr_fifo_free_get(fifo);
-    mr_fifo_discard(fifo, count - free);
+    if (free < count)
+    {
+        mr_fifo_discard(fifo, count - free);
+    }
 
     /* Write data */
     return mr_fifo_write(fifo, _buf, count);

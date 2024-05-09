@@ -107,6 +107,12 @@ struct mr_serial
     uint8_t rdma[MR_CFG_SERIAL_RD_DMA_FIFO_SIZE];           /**< Read DMA buffer */
     uint8_t wdma[MR_CFG_SERIAL_WR_DMA_FIFO_SIZE];           /**< Write DMA buffer */
 #endif /* MR_USE_SERIAL_DMA */
+#ifdef MR_USE_SERIAL_ASYNC
+    uint8_t *rabuf;                                         /**< Read async buffer */
+    size_t racount;                                         /**< Read async count */
+    uint8_t *wabuf;                                         /**< Write async buffer */
+    size_t wacount;                                         /**< Write async count */
+#endif /* MR_USE_SERIAL_ASYNC */
 };
 
 /**
