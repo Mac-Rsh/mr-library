@@ -155,9 +155,9 @@ struct mr_fifo
 #define MR_FLAG_RDONLY                  (0x01 << 24)        /**< Read only flag */
 #define MR_FLAG_WRONLY                  (0x02 << 24)        /**< Write only flag */
 #define MR_FLAG_RDWR                    (0x03 << 24)        /**< Read/write flag */
-#define MR_FLAG_RDONLY_ASYNC            (0x04 << 24)        /**< Async read only flag */
-#define MR_FLAG_WRONLY_ASYNC            (0x08 << 24)        /**< Async write only flag */
-#define MR_FLAG_RDWR_ASYNC              (0x0c << 24)        /**< Async read/write flag */
+#define MR_FLAG_ARDONLY                 (0x04 << 24)        /**< Async read only flag */
+#define MR_FLAG_AWRONLY                 (0x08 << 24)        /**< Async write only flag */
+#define MR_FLAG_ARDWR                   (0x0c << 24)        /**< Async read/write flag */
 
 #define MR_CTRL_SET(_cmd)               (_cmd)              /**< Set operation */
 #define MR_CTRL_GET(_cmd)               (-(_cmd))           /**< Get operation */
@@ -191,7 +191,7 @@ enum mr_device_type
     MR_DEVICE_TYPE_SPI,                                     /**< SPI device */
     MR_DEVICE_TYPE_TIMER,                                   /**< Timer device */
     MR_DEVICE_TYPE_PWM,                                     /**< PWM device */
-    MR_DEVICE_TYPE_FULL_DUPLEX = 0x80000000,                /**< Full duplex device */
+    MR_DEVICE_TYPE_FDX = 0x80000000,                        /**< Full duplex device */
 };
 
 struct mr_device;
@@ -206,10 +206,10 @@ struct mr_device_ops
     ssize_t (*read)(struct mr_device *device, int pos, void *buf, size_t count);
     ssize_t (*write)(struct mr_device *device, int pos, const void *buf,
                      size_t count);
-    ssize_t (*read_async)(struct mr_device *device, int pos, void *buf,
-                          size_t count);
-    ssize_t (*write_async)(struct mr_device *device, int pos, const void *buf,
-                           size_t count);
+    ssize_t (*aread)(struct mr_device *device, int pos, void *buf,
+                     size_t count);
+    ssize_t (*awrite)(struct mr_device *device, int pos, const void *buf,
+                      size_t count);
     int (*ioctl)(struct mr_device *device, int pos, int cmd, void *args);
     int (*isr)(struct mr_device *device, uint32_t event, void *args);
 
@@ -232,13 +232,13 @@ struct mr_device
     void *parent;                                           /**< Parent device */
 
     uint32_t type: 31;                                      /**< Type */
-    uint32_t full_duplex: 1;                                /**< Full duplex */
+    uint32_t fdx: 1;                                        /**< Full duplex */
     uint32_t flags;                                         /**< Flags */
     size_t ref_count;                                       /**< Reference count */
     volatile uint32_t lock;                                 /**< Operation lock */
     const struct mr_device_ops *ops;                        /**< Operations */
     const void *driver;                                     /**< Driver */
-    struct mr_list event_list;                              /**< Event list */
+    struct mr_list elist;                                   /**< Event list */
 };
 
 /**

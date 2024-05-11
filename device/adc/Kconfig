@@ -1,15 +1,17 @@
-menu "Adc configure"
-    config MR_USE_ADC
-        bool "Use adc"
-        default y
-        help
-            "Use this option allows for the use of adc."
+menu "ADC configure"
 
-    # Check
+    # ADC
+    config MR_USE_ADC
+        bool "Use ADC"
+        default n
+        help
+            Use this option allows for the use of ADC.
+
     config MR_USE_ADC_CHECK
         depends on MR_USE_ADC
-        bool "Use adc check"
+        bool "Use ADC check"
         default y
         help
-            "This option allows for the use of adc check."
+            This option allows for the use of ADC check.
+
 endmenu

@@ -136,6 +136,9 @@ static int serial_driver_configure(struct mr_driver *driver, bool enable,
     if (enable == true)
     {
         /* Configure baud rate */
+        USART_InitStructure.USART_BaudRate = config->baud_rate;
+
+        /* Configure data bits */
         switch (config->data_bits)
         {
             case MR_SERIAL_DATA_BITS_8:
@@ -238,7 +241,6 @@ static int serial_driver_configure(struct mr_driver *driver, bool enable,
     }
 
     /* Configure UART */
-    USART_InitStructure.USART_BaudRate = config->baud_rate;
     USART_InitStructure.USART_HardwareFlowControl = 0;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
     USART_Init(serial->instance, &USART_InitStructure);

@@ -18,7 +18,7 @@
     (MR_BIT_IS_SET((_adc)->channels, (1 << (_channel))))
 
 MR_INLINE int _adc_channel_configure_set(struct mr_adc *adc, int channel,
-                                         struct mr_adc_config *config)
+                                         const struct mr_adc_config *config)
 {
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET((struct mr_device *)adc);
     struct mr_adc_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
@@ -60,7 +60,7 @@ MR_INLINE int _adc_channel_configure_set(struct mr_adc *adc, int channel,
     return MR_EOK;
 }
 
-MR_INLINE int _adc_channel_configure_get(struct mr_adc *adc, int channel,
+MR_INLINE int _adc_channel_configure_get(const struct mr_adc *adc, int channel,
                                          struct mr_adc_config *config)
 {
     /* Check if the channel is valid */
@@ -228,7 +228,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
  * @return The error code.
  */
 int mr_adc_register(struct mr_adc *adc, const char *path,
-                    struct mr_driver *driver)
+                    const struct mr_driver *driver)
 {
     MR_ASSERT(adc != NULL);
     MR_ASSERT(path != NULL);

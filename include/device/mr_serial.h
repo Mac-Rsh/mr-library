@@ -68,6 +68,8 @@ extern "C" {
     MR_EVENT_WR_COMPLETE                                    /**< Interrupt on write completion event */
 #define MR_EVENT_SERIAL_RD_COMPLETE_DMA                                        \
     (MR_EVENT_RD_COMPLETE | 0x01)                           /**< Interrupt on read DMA completion event */
+#define MR_EVENT_SERIAL_WR_COMPLETE_DMA                                        \
+    (MR_EVENT_WR_COMPLETE | 0x01)                           /**< Interrupt on write DMA completion event */
 
 typedef uint8_t mr_serial_data_t;                           /**< Serial read/write data type */
 
@@ -110,7 +112,7 @@ struct mr_serial
 #ifdef MR_USE_SERIAL_ASYNC
     uint8_t *rabuf;                                         /**< Read async buffer */
     size_t racount;                                         /**< Read async count */
-    uint8_t *wabuf;                                         /**< Write async buffer */
+    const uint8_t *wabuf;                                   /**< Write async buffer */
     size_t wacount;                                         /**< Write async count */
 #endif /* MR_USE_SERIAL_ASYNC */
 };

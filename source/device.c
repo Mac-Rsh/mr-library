@@ -157,8 +157,8 @@ MR_INLINE int _device_event_create(struct mr_device *device, int descriptor,
     mr_critical_enter();
 
     /* Check if the event exists */
-    for (struct mr_list *list = device->event_list.next;
-         list != &device->event_list; list = list->next)
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
     {
         struct _device_event *_event =
             MR_CONTAINER_OF(list, struct _device_event, list);
@@ -186,7 +186,7 @@ MR_INLINE int _device_event_create(struct mr_device *device, int descriptor,
     _event->event = event->event;
     _event->private = event->private;
     _event->callback = event->callback;
-    mr_list_insert_before(&device->event_list, &_event->list);
+    mr_list_insert_before(&device->elist, &_event->list);
     ret = MR_EOK;
 
 _exit:
@@ -205,8 +205,8 @@ MR_INLINE int _device_event_destroy(const struct mr_device *device,
     mr_critical_enter();
 
     /* Find the event */
-    for (struct mr_list *list = device->event_list.next;
-         list != &device->event_list; list = list->next)
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
     {
         struct _device_event *_event =
             MR_CONTAINER_OF(list, struct _device_event, list);
@@ -246,8 +246,8 @@ MR_INLINE void _device_event_destroy_all(const struct mr_device *device,
     mr_critical_enter();
 
     /* Destroy all events for the specified descriptor */
-    for (struct mr_list *list = device->event_list.next;
-         list != &device->event_list; list = list->next)
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
     {
         struct _device_event *_event =
             MR_CONTAINER_OF(list, struct _device_event, list);
@@ -277,8 +277,8 @@ MR_INLINE void _device_event_handler(const struct mr_device *device,
                                      uint32_t event, void *args)
 {
     /* Trigger events */
-    for (struct mr_list *list = device->event_list.next;
-         list != &device->event_list; list = list->next)
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
     {
         struct _device_event *_event =
             MR_CONTAINER_OF(list, struct _device_event, list);
@@ -310,8 +310,8 @@ MR_INLINE void _device_event_handler(const struct mr_device *device,
     }
 
     /* Destroy free events */
-    for (struct mr_list *list = device->event_list.next;
-         list != &device->event_list; list = list->next)
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
     {
         struct _device_event *_event =
             MR_CONTAINER_OF(list, struct _device_event, list);
@@ -363,7 +363,7 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
     int ret;
 
     /* If the device is not FDX, the read/writing must be locked */
-    mask = (device->full_duplex == true) ? mask : _MR_OPERATE_MASK_ALL;
+    mask = (device->fdx == true) ? mask : _MR_OPERATE_MASK_ALL;
 
     /* Calculate the lock mask, since the descriptor can be 0, need to add 1 */
     uint32_t lock = (((descriptor + 1) << 16) | (descriptor + 1)) & mask;
@@ -392,7 +392,7 @@ MR_INLINE int _device_take(struct mr_device *device, int descriptor,
 MR_INLINE void _device_release(struct mr_device *device, uint32_t mask)
 {
     /* If the device is not FDX, the read/writing must be locked */
-    mask = (device->full_duplex == true) ? mask : _MR_OPERATE_MASK_ALL;
+    mask = (device->fdx == true) ? mask : _MR_OPERATE_MASK_ALL;
 
     /* Release the device lock */
     MR_BIT_CLR(device->lock, mask);
@@ -468,17 +468,17 @@ static int _device_register(struct mr_device *device, const char *path,
     mr_list_init(&device->list);
     mr_list_init(&device->clist);
     device->parent = NULL;
-    device->type = type & (~MR_DEVICE_TYPE_FULL_DUPLEX);
-    device->full_duplex = MR_BIT_IS_SET(type, MR_DEVICE_TYPE_FULL_DUPLEX);
+    device->type = type & (~MR_DEVICE_TYPE_FDX);
+    device->fdx = MR_BIT_IS_SET(type, MR_DEVICE_TYPE_FDX);
     device->flags = (ops->read != NULL ? MR_FLAG_RDONLY : 0) |
                     (ops->write != NULL ? MR_FLAG_WRONLY : 0) |
-                    (ops->read_async != NULL ? MR_FLAG_RDONLY_ASYNC : 0) |
-                    (ops->write_async != NULL ? MR_FLAG_WRONLY_ASYNC : 0);
+                    (ops->aread != NULL ? MR_FLAG_ARDONLY : 0) |
+                    (ops->awrite != NULL ? MR_FLAG_AWRONLY : 0);
     device->ref_count = 0;
     device->lock = 0;
     device->ops = ops;
     device->driver = driver;
-    mr_list_init(&device->event_list);
+    mr_list_init(&device->elist);
 
     /* Critical section enter */
     mr_critical_enter();
@@ -566,7 +566,7 @@ static int _device_isr(struct mr_device *device, uint32_t event, void *args)
     _device_release(device, mask);
 
     /* Call the event handler */
-    _device_event_handler(device, event, args);
+    _device_event_handler(device, event, &ret);
     ret = MR_EOK;
 
 _exit:
@@ -686,10 +686,10 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     int pos = _descriptor_map[descriptor].pos;
 
     /* Async or sync read */
-    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_RDONLY_ASYNC) == true)
+    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_ARDONLY) == true)
     {
         /* Async read */
-        ret = device->ops->read_async(device, pos, buf, count);
+        ret = device->ops->aread(device, pos, buf, count);
         if ((ret == 0) && (count > 0))
         {
             /* If the operation is successful, the device will not be released
@@ -730,10 +730,10 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     int pos = _descriptor_map[descriptor].pos;
 
     /* Async or sync writes */
-    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_WRONLY_ASYNC) == true)
+    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_AWRONLY) == true)
     {
         /* Async write */
-        ret = device->ops->write_async(device, pos, buf, count);
+        ret = device->ops->awrite(device, pos, buf, count);
         if ((ret == 0) && (count > 0))
         {
             /* If the operation is successful, the device will not be released

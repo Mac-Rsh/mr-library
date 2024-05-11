@@ -32,7 +32,7 @@
     (_PIN_MODE_GET(_pin, _number) != MR_PIN_MODE_NONE)
 
 MR_INLINE int _pin_configure_set(struct mr_pin *pin, int number,
-                                 struct mr_pin_config *config)
+                                 const struct mr_pin_config *config)
 {
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET((struct mr_device *)pin);
     struct mr_pin_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
@@ -68,7 +68,7 @@ MR_INLINE int _pin_configure_set(struct mr_pin *pin, int number,
     return MR_EOK;
 }
 
-MR_INLINE int _pin_configure_get(struct mr_pin *pin, int number,
+MR_INLINE int _pin_configure_get(const struct mr_pin *pin, int number,
                                  struct mr_pin_config *config)
 {
     /* Check if the pin is valid */
@@ -257,12 +257,14 @@ static int pin_isr(struct mr_device *device, uint32_t event, void *args)
 
             /* Check if the pin is enabled */
             if ((_PIN_IS_VALID(pin, *number) == false) ||
-                _PIN_IS_ENABLED(pin, *number) == false)
+                (_PIN_IS_ENABLED(pin, *number) == false))
             {
                 /* This EXTI will be ignored */
                 return MR_EINVAL;
             }
-            return MR_EOK;
+
+            /* Return the interrupt source pin number */
+            return *number;
         }
         default:
         {
@@ -281,7 +283,7 @@ static int pin_isr(struct mr_device *device, uint32_t event, void *args)
  * @return The error code.
  */
 int mr_pin_register(struct mr_pin *pin, const char *path,
-                    struct mr_driver *driver)
+                    const struct mr_driver *driver)
 {
     static struct mr_device_ops ops = {.open = pin_open,
                                        .close = pin_close,
@@ -296,8 +298,8 @@ int mr_pin_register(struct mr_pin *pin, const char *path,
 
     /* Register the pin */
     return mr_device_register((struct mr_device *)pin, path,
-                              MR_DEVICE_TYPE_PIN | MR_DEVICE_TYPE_FULL_DUPLEX,
-                              &ops, driver);
+                              MR_DEVICE_TYPE_PIN | MR_DEVICE_TYPE_FDX, &ops,
+                              driver);
 }
 
 #endif /* MR_USE_PIN */

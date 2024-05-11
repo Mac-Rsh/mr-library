@@ -310,7 +310,7 @@ class MrLib:
             # Link include
             for hf in header_files:
                 if hf != os.path.basename(header_out):
-                    header_file.write('#include "' + hf + '"\n')
+                    header_file.write('#include "../mr-library/include/' + hf + '"\n')
 
             # Add the micro
             header_file.write("\n#ifdef __cplusplus\n")

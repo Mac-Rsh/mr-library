@@ -1,51 +1,58 @@
 menu "Serial configure"
+
+    # Serial
     config MR_USE_SERIAL
         bool "Use serial"
-        default y
+        default n
         help
-            "Use this option allows for the use of serial."
+            Use this option allows for the use of serial.
 
-    # RD-FIFO
     config MR_CFG_SERIAL_RD_FIFO_SIZE
         depends on MR_USE_SERIAL
-        int "Serial read fifo size"
+        int "Serial read FIFO size"
         range 0 2147483647
         default 128
         help
-            "This option sets the size of the read fifo."
+            This option sets the size of the read FIFO.
 
-    # WR-FIFO
     config MR_CFG_SERIAL_WR_FIFO_SIZE
         depends on MR_USE_SERIAL
-        int "Serial write fifo size"
+        int "Serial write FIFO size"
         range 0 2147483647
         default 0
         help
-            "This option sets the size of the write fifo."
+            This option sets the size of the write FIFO.
 
     # DMA
     config MR_USE_SERIAL_DMA
         depends on MR_USE_SERIAL
-        bool "Use serial dma"
+        bool "Use serial DMA"
         default n
         help
-            "Use this option allows for the use of serial dma."
+            Use this option allows for the use of serial DMA.
 
-    # DMA RD-FIFO
     config MR_CFG_SERIAL_RD_DMA_FIFO_SIZE
         depends on MR_USE_SERIAL_DMA
-        int "Serial read dma fifo size"
+        int "Serial read DMA FIFO size"
         range 0 2147483647
         default 128
         help
-            "This option sets the size of the read dma fifo."
+            This option sets the size of the read DMA FIFO.
 
-    # DMA WR-FIFO
     config MR_CFG_SERIAL_WR_DMA_FIFO_SIZE
         depends on MR_USE_SERIAL_DMA
-        int "Serial write dma fifo size"
+        int "Serial write DMA FIFO size"
         range 0 2147483647
         default 128
         help
-            "This option sets the size of the write dma fifo."
+            This option sets the size of the write DMA FIFO.
+
+    # Async
+    config MR_USE_SERIAL_ASYNC
+        depends on MR_USE_SERIAL
+        bool "Use serial async"
+        default n
+        help
+            Use this option allows for the use of serial async.
+
 endmenu

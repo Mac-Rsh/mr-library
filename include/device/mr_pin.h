@@ -78,8 +78,8 @@ struct mr_pin_driver_data
     uint32_t pins[16];                                      /**< Pins exists mask */
 };
 
-int mr_pin_register(struct mr_pin *pin, const char *path,
-                    struct mr_driver *driver);
+  int mr_pin_register(struct mr_pin *pin, const char *path,
+                      const struct mr_driver *driver);
 
 /** @} */
 

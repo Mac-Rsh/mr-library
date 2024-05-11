@@ -69,8 +69,8 @@ struct mr_adc_driver_data
     uint32_t resolution;                                    /**< Resolution */
 };
 
-int mr_adc_register(struct mr_adc *adc, const char *path,
-                    struct mr_driver *driver);
+ int mr_adc_register(struct mr_adc *adc, const char *path,
+                     const struct mr_driver *driver);
 
 /** @} */
 
