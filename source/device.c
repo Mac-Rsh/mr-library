@@ -28,9 +28,10 @@ struct _device_event
     uint32_t descriptor: 31;                                /**< Event descriptor */
     uint32_t free: 1;                                       /**< Free flag */
     uint32_t event: 31;                                     /**< Event */
-    uint32_t private: 1;                                    /**< Private flag */
+    uint32_t self: 1;                                       /**< Self-defined flag */
     void (*callback)(int descriptor, uint32_t event,
-                     void *args);                           /**< Callback function */
+                     void *args, void *op_data);            /**< Callback function */
+    void *op_data;                                          /**< Operator data */
 };
 
 static struct mr_device _root_device = {
@@ -184,8 +185,9 @@ MR_INLINE int _device_event_create(struct mr_device *device, int descriptor,
     _event->descriptor = descriptor;
     _event->free = false;
     _event->event = event->event;
-    _event->private = event->private;
+    _event->self = event->self;
     _event->callback = event->callback;
+    _event->op_data = event->op_data;
     mr_list_insert_before(&device->elist, &_event->list);
     ret = MR_EOK;
 
@@ -283,8 +285,8 @@ MR_INLINE void _device_event_handler(const struct mr_device *device,
         struct _device_event *_event =
             MR_CONTAINER_OF(list, struct _device_event, list);
 
-        /* If the event is not private, take the mask */
-        event = (_event->private == false) ? event & MR_EVENT_MASK : event;
+        /* If the event is not self-defined, take the mask */
+        event = (_event->self == false) ? event & MR_EVENT_MASK : event;
 
         /* Check if the event is free */
         if (_event->free == true)
@@ -295,7 +297,8 @@ MR_INLINE void _device_event_handler(const struct mr_device *device,
         /* Call the callback if the event matches */
         if (_event->event == event)
         {
-            _event->callback(_event->descriptor, _event->event, args);
+            _event->callback(_event->descriptor, _event->event, args,
+                             _event->op_data);
 
             /* Make the event free if it is in ISR */
             if (_event->free == true)

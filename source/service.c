@@ -423,7 +423,7 @@ size_t mr_fifo_used_get(const struct mr_fifo *fifo)
  *
  * @return The free space.
  */
-size_t mr_fifo_free_get(const struct mr_fifo *fifo)
+size_t mr_fifo_space_get(const struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
@@ -613,7 +613,7 @@ size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count)
     uint8_t *_buf = (uint8_t *)buf;
 
     /* Get free space, limit by count */
-    uint32_t free = mr_fifo_free_get(fifo);
+    uint32_t free = mr_fifo_space_get(fifo);
     if (free < count)
     {
         count = free;
@@ -680,7 +680,7 @@ size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
     }
 
     /* Discard data that will be overwritten */
-    uint32_t free = mr_fifo_free_get(fifo);
+    uint32_t free = mr_fifo_space_get(fifo);
     if (free < count)
     {
         mr_fifo_discard(fifo, count - free);

@@ -257,9 +257,10 @@ struct mr_descriptor
 struct mr_device_event
 {
     uint32_t event: 31;                                     /**< Event */
-    uint32_t private: 1;                                    /**< Private flag */
+    uint32_t self: 1;                                       /**< Self-defined flag */
     void (*callback)(int descriptor, uint32_t event,
-                     void *args);                           /**< Callback function */
+                     void *args, void *op_data);            /**< Callback function */
+    void *op_data;                                          /**< Operator data */
 };
 
 /** @} */

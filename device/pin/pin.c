@@ -11,7 +11,7 @@
 #ifdef MR_USE_PIN
 
 #define _PIN_IS_VALID(_pin, _number)                                           \
-    (((_number) >= 0) && ((_number) < (sizeof(_pin->pins) * 4)))
+    (((_number) >= 0) && ((_number) < (sizeof((_pin)->pins) * 4)))
 #define _PIN_IS_RDONLY(_data, _number)                                         \
     (((_data)->pins[(_number) / 16] & (0x1 << (_number))) != 0)
 #define _PIN_IS_WRONLY(_data, _number)                                         \
@@ -29,7 +29,7 @@
 #define _PIN_MODE_GET(_pin, _number)                                           \
     ((uint32_t)((_pin)->pins[(_number) / 16] & (0x3 << (((_number) % 16) * 2))))
 #define _PIN_IS_ENABLED(_pin, _number)                                         \
-    (_PIN_MODE_GET(_pin, _number) != MR_PIN_MODE_NONE)
+    (_PIN_MODE_GET((_pin), _number) != MR_PIN_MODE_NONE)
 
 MR_INLINE int _pin_configure_set(struct mr_pin *pin, int number,
                                  const struct mr_pin_config *config)

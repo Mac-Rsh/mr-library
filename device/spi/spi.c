@@ -811,8 +811,8 @@ static int spi_device_ioctl(struct mr_device *device, int pos, int cmd,
 int mr_spi_device_register(struct mr_spi_device *spi_device, const char *path,
                            int cs_pin, int cs_active, const char *spi_bus_name)
 {
-    MR_ASSERT(spi_device != MR_NULL);
-    MR_ASSERT(path != MR_NULL);
+    MR_ASSERT(spi_device != NULL);
+    MR_ASSERT(path != NULL);
     MR_ASSERT((cs_active >= MR_SPI_CS_ACTIVE_LOW) &&
               (cs_active <= MR_SPI_CS_ACTIVE_NONE));
 
@@ -852,7 +852,7 @@ int mr_spi_device_register(struct mr_spi_device *spi_device, const char *path,
  */
 int mr_spi_device_unregister(struct mr_spi_device *spi_device)
 {
-    MR_ASSERT(spi_device != MR_NULL);
+    MR_ASSERT(spi_device != NULL);
 
     /* Unregister the SPI device from the SPI bus */
     return mr_device_unregister((struct mr_device *)spi_device);
