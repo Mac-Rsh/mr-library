@@ -1,4 +1,4 @@
-menu "Adc driver configure"
+menu "ADC driver configure"
     # Use ADC
     if MR_USE_ADC
         # ADC1

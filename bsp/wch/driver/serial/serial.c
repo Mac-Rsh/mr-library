@@ -10,94 +10,94 @@
 
 #ifdef MR_USE_SERIAL
 
-#if !defined(MR_USE_UART1) && !defined(MR_USE_UART2) &&                        \
-    !defined(MR_USE_UART3) && !defined(MR_USE_UART4) &&                        \
-    !defined(MR_USE_UART5) && !defined(MR_USE_UART6) &&                        \
-    !defined(MR_USE_UART7) && !defined(MR_USE_UART8)
-#warning "Please enable at least one Serial driver"
+#if !defined(MR_USE_SERIAL1) && !defined(MR_USE_SERIAL2) &&                    \
+    !defined(MR_USE_SERIAL3) && !defined(MR_USE_SERIAL4) &&                    \
+    !defined(MR_USE_SERIAL5) && !defined(MR_USE_SERIAL6) &&                    \
+    !defined(MR_USE_SERIAL7) && !defined(MR_USE_SERIAL8)
+#warning "Please enable at least one serial driver"
 #else
 
 enum _serial_driver_index
 {
-#ifdef MR_USE_UART1
-    _DRIVER_UART1_INDEX,
-#endif /* MR_USE_UART1 */
-#ifdef MR_USE_UART2
-    _DRIVER_UART2_INDEX,
-#endif /* MR_USE_UART2 */
-#ifdef MR_USE_UART3
-    _DRIVER_UART3_INDEX,
-#endif /* MR_USE_UART3 */
-#ifdef MR_USE_UART4
-    _DRIVER_UART4_INDEX,
-#endif /* MR_USE_UART4 */
-#ifdef MR_USE_UART5
-    _DRIVER_UART5_INDEX,
-#endif /* MR_USE_UART5 */
-#ifdef MR_USE_UART6
-    _DRIVER_UART6_INDEX,
-#endif /* MR_USE_UART6 */
-#ifdef MR_USE_UART7
-    _DRIVER_UART7_INDEX,
-#endif /* MR_USE_UART7 */
-#ifdef MR_USE_UART8
-    _DRIVER_UART8_INDEX,
-#endif /* MR_USE_UART8 */
-    _DRIVER_UART_INDEX_MAX
+#ifdef MR_USE_SERIAL1
+    _DRIVER_SERIAL1_INDEX,
+#endif /* MR_USE_SERIAL1 */
+#ifdef MR_USE_SERIAL2
+    _DRIVER_SERIAL2_INDEX,
+#endif /* MR_USE_SERIAL2 */
+#ifdef MR_USE_SERIAL3
+    _DRIVER_SERIAL3_INDEX,
+#endif /* MR_USE_SERIAL3 */
+#ifdef MR_USE_SERIAL4
+    _DRIVER_SERIAL4_INDEX,
+#endif /* MR_USE_SERIAL4 */
+#ifdef MR_USE_SERIAL5
+    _DRIVER_SERIAL5_INDEX,
+#endif /* MR_USE_SERIAL5 */
+#ifdef MR_USE_SERIAL6
+    _DRIVER_SERIAL6_INDEX,
+#endif /* MR_USE_SERIAL6 */
+#ifdef MR_USE_SERIAL7
+    _DRIVER_SERIAL7_INDEX,
+#endif /* MR_USE_SERIAL7 */
+#ifdef MR_USE_SERIAL8
+    _DRIVER_SERIAL8_INDEX,
+#endif /* MR_USE_SERIAL8 */
+    _DRIVER_SERIAL_INDEX_MAX
 };
 
 static struct mr_serial_driver _serial_driver[] = {
-#ifdef MR_USE_UART1
-    _DRIVER_UART1_CONFIG,
-#endif /* MR_USE_UART1 */
-#ifdef MR_USE_UART2
-    _DRIVER_UART2_CONFIG,
-#endif /* MR_USE_UART2 */
-#ifdef MR_USE_UART3
-    _DRIVER_UART3_CONFIG,
-#endif /* MR_USE_UART3 */
-#ifdef MR_USE_UART4
-    _DRIVER_UART4_CONFIG,
-#endif /* MR_USE_UART4 */
-#ifdef MR_USE_UART5
-    _DRIVER_UART5_CONFIG,
-#endif /* MR_USE_UART5 */
-#ifdef MR_USE_UART6
-    _DRIVER_UART6_CONFIG,
-#endif /* MR_USE_UART6 */
-#ifdef MR_USE_UART7
-    _DRIVER_UART7_CONFIG,
-#endif /* MR_USE_UART7 */
-#ifdef MR_USE_UART8
-    _DRIVER_UART8_CONFIG,
-#endif /* MR_USE_UART8 */
+#ifdef MR_USE_SERIAL1
+    _DRIVER_SERIAL1_CONFIG,
+#endif /* MR_USE_SERIAL1 */
+#ifdef MR_USE_SERIAL2
+    _DRIVER_SERIAL2_CONFIG,
+#endif /* MR_USE_SERIAL2 */
+#ifdef MR_USE_SERIAL3
+    _DRIVER_SERIAL3_CONFIG,
+#endif /* MR_USE_SERIAL3 */
+#ifdef MR_USE_SERIAL4
+    _DRIVER_SERIAL4_CONFIG,
+#endif /* MR_USE_SERIAL4 */
+#ifdef MR_USE_SERIAL5
+    _DRIVER_SERIAL5_CONFIG,
+#endif /* MR_USE_SERIAL5 */
+#ifdef MR_USE_SERIAL6
+    _DRIVER_SERIAL6_CONFIG,
+#endif /* MR_USE_SERIAL6 */
+#ifdef MR_USE_SERIAL7
+    _DRIVER_SERIAL7_CONFIG,
+#endif /* MR_USE_SERIAL7 */
+#ifdef MR_USE_SERIAL8
+    _DRIVER_SERIAL8_CONFIG,
+#endif /* MR_USE_SERIAL8 */
 };
 
 static const char *_serial_device_path[] = {
-#ifdef MR_USE_UART1
+#ifdef MR_USE_SERIAL1
     "serial1",
-#endif /* MR_USE_UART1 */
-#ifdef MR_USE_UART2
+#endif /* MR_USE_SERIAL1 */
+#ifdef MR_USE_SERIAL2
     "serial2",
-#endif /* MR_USE_UART2 */
-#ifdef MR_USE_UART3
+#endif /* MR_USE_SERIAL2 */
+#ifdef MR_USE_SERIAL3
     "serial3",
-#endif /* MR_USE_UART3 */
-#ifdef MR_USE_UART4
+#endif /* MR_USE_SERIAL3 */
+#ifdef MR_USE_SERIAL4
     "serial4",
-#endif /* MR_USE_UART4 */
-#ifdef MR_USE_UART5
+#endif /* MR_USE_SERIAL4 */
+#ifdef MR_USE_SERIAL5
     "serial5",
-#endif /* MR_USE_UART5 */
-#ifdef MR_USE_UART6
+#endif /* MR_USE_SERIAL5 */
+#ifdef MR_USE_SERIAL6
     "serial6",
-#endif /* MR_USE_UART6 */
-#ifdef MR_USE_UART7
+#endif /* MR_USE_SERIAL6 */
+#ifdef MR_USE_SERIAL7
     "serial7",
-#endif /* MR_USE_UART7 */
-#ifdef MR_USE_UART8
+#endif /* MR_USE_SERIAL7 */
+#ifdef MR_USE_SERIAL8
     "serial8",
-#endif /* MR_USE_UART8 */
+#endif /* MR_USE_SERIAL8 */
 };
 
 static struct mr_serial _serial_device[MR_ARRAY_NUM(_serial_device_path)];
@@ -126,12 +126,12 @@ static int serial_driver_configure(struct mr_driver *driver, bool enable,
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
         GPIO_PinRemapConfig(serial->remap, enable);
     }
-#if defined(MR_USE_CH32V30X) && (MR_USE_UART1_GROUP >= 3)
+#if defined(MR_USE_CH32V30X) && (MR_USE_SERIAL1_GROUP >= 3)
     if (serial->instance == USART1)
     {
         GPIO_PinRemapConfig(GPIO_Remap_USART1_HighBit, enable);
     }
-#endif /* defined(MR_USE_CH32V30X) && (MR_USE_UART1_GROUP >= 3) */
+#endif /* defined(MR_USE_CH32V30X) && (MR_USE_SERIAL1_GROUP >= 3) */
 
     if (enable == true)
     {
@@ -370,12 +370,12 @@ MR_INLINE void serial_device_isr(struct mr_serial *serial)
 
     if (USART_GetITStatus(_serial->instance, USART_IT_RXNE) != RESET)
     {
-        mr_device_isr(device, MR_EVENT_SERIAL_RD_COMPLETE_INT, NULL);
+        mr_device_isr(device, MR_EVENT_SERIAL_RD_DATA_INT, NULL);
         USART_ClearITPendingBit(_serial->instance, USART_IT_RXNE);
     }
     if (USART_GetITStatus(_serial->instance, USART_IT_TXE) != RESET)
     {
-        mr_device_isr(device, MR_EVENT_SERIAL_WR_COMPLETE_INT, NULL);
+        mr_device_isr(device, MR_EVENT_SERIAL_WR_DATA_INT, NULL);
         USART_ClearITPendingBit(_serial->instance, USART_IT_TXE);
     }
     if (USART_GetITStatus(_serial->instance, USART_IT_IDLE) != RESET)
@@ -383,7 +383,7 @@ MR_INLINE void serial_device_isr(struct mr_serial *serial)
         size_t count = _serial->rx_dma_count -
                        DMA_GetCurrDataCounter(_serial->rx_dma_channel);
 
-        mr_device_isr(device, MR_EVENT_SERIAL_RD_COMPLETE_DMA, &count);
+        mr_device_isr(device, MR_EVENT_SERIAL_RD_DATA_DMA, &count);
 
         /* Clear IDLE */
         _serial->instance->STATR;
@@ -394,138 +394,138 @@ MR_INLINE void serial_device_isr(struct mr_serial *serial)
         size_t count = _serial->rx_dma_count -
                        DMA_GetCurrDataCounter(_serial->rx_dma_channel);
 
-        mr_device_isr(device, MR_EVENT_SERIAL_RD_COMPLETE_DMA, &count);
+        mr_device_isr(device, MR_EVENT_SERIAL_WR_DATA_DMA, &count);
         DMA_ClearITPendingBit(_serial->rx_dma_irq_it);
     }
 }
 
-#ifdef MR_USE_UART1
+#ifdef MR_USE_SERIAL1
 void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART1_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART1_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL1_INDEX]);
 }
-#ifdef MR_USE_UART1_DMA
+#ifdef MR_USE_SERIAL1_DMA
 void DMA1_Channel5_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA1_Channel5_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART1_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL1_INDEX]);
 }
-#endif /* MR_USE_UART1_DMA */
-#endif /* MR_USE_UART1 */
+#endif /* MR_USE_SERIAL1_DMA */
+#endif /* MR_USE_SERIAL1 */
 
-#ifdef MR_USE_UART2
+#ifdef MR_USE_SERIAL2
 void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART2_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART2_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL2_INDEX]);
 }
-#ifdef MR_USE_UART2_DMA
+#ifdef MR_USE_SERIAL2_DMA
 void DMA1_Channel6_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA1_Channel6_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART2_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL2_INDEX]);
 }
-#endif /* MR_USE_UART2_DMA */
-#endif /* MR_USE_UART2 */
+#endif /* MR_USE_SERIAL2_DMA */
+#endif /* MR_USE_SERIAL2 */
 
-#ifdef MR_USE_UART3
+#ifdef MR_USE_SERIAL3
 void USART3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void USART3_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART3_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL3_INDEX]);
 }
-#ifdef MR_USE_UART3_DMA
+#ifdef MR_USE_SERIAL3_DMA
 void DMA1_Channel3_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA1_Channel3_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART3_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL3_INDEX]);
 }
-#endif /* MR_USE_UART3_DMA */
-#endif /* MR_USE_UART3 */
+#endif /* MR_USE_SERIAL3_DMA */
+#endif /* MR_USE_SERIAL3 */
 
-#ifdef MR_USE_UART4
+#ifdef MR_USE_SERIAL4
 void UART4_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART4_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART4_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL4_INDEX]);
 }
-#ifdef MR_USE_UART4_DMA
+#ifdef MR_USE_SERIAL4_DMA
 void DMA2_Channel3_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA2_Channel3_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART4_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL4_INDEX]);
 }
-#endif /* MR_USE_UART4_DMA */
-#endif /* MR_USE_UART4 */
+#endif /* MR_USE_SERIAL4_DMA */
+#endif /* MR_USE_SERIAL4 */
 
-#ifdef MR_USE_UART5
+#ifdef MR_USE_SERIAL5
 void UART5_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART5_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART5_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL5_INDEX]);
 }
-#ifdef MR_USE_UART5_DMA
+#ifdef MR_USE_SERIAL5_DMA
 void DMA2_Channel2_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA2_Channel2_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART5_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL5_INDEX]);
 }
-#endif /* MR_USE_UART5_DMA */
-#endif /* MR_USE_UART5 */
+#endif /* MR_USE_SERIAL5_DMA */
+#endif /* MR_USE_SERIAL5 */
 
-#ifdef MR_USE_UART6
+#ifdef MR_USE_SERIAL6
 void UART6_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART6_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART6_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL6_INDEX]);
 }
-#ifdef MR_USE_UART6_DMA
+#ifdef MR_USE_SERIAL6_DMA
 void DMA2_Channel7_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA2_Channel7_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART6_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL6_INDEX]);
 }
-#endif /* MR_USE_UART6_DMA */
-#endif /* MR_USE_UART6 */
+#endif /* MR_USE_SERIAL6_DMA */
+#endif /* MR_USE_SERIAL6 */
 
-#ifdef MR_USE_UART7
+#ifdef MR_USE_SERIAL7
 void UART7_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART7_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART7_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL7_INDEX]);
 }
-#ifdef MR_USE_UART7_DMA
+#ifdef MR_USE_SERIAL7_DMA
 void DMA2_Channel9_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA2_Channel9_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART7_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL7_INDEX]);
 }
-#endif /* MR_USE_UART7_DMA */
-#endif /* MR_USE_UART7 */
+#endif /* MR_USE_SERIAL7_DMA */
+#endif /* MR_USE_SERIAL7 */
 
-#ifdef MR_USE_UART8
+#ifdef MR_USE_SERIAL8
 void UART8_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void UART8_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART8_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL8_INDEX]);
 }
-#ifdef MR_USE_UART8_DMA
+#ifdef MR_USE_SERIAL8_DMA
 void DMA2_Channel11_IRQHandler(void)
     __attribute__((interrupt("WCH-Interrupt-fast")));
 void DMA2_Channel11_IRQHandler(void)
 {
-    serial_device_isr(&_serial_device[_DRIVER_UART8_INDEX]);
+    serial_device_isr(&_serial_device[_DRIVER_SERIAL8_INDEX]);
 }
-#endif /* MR_USE_UART8_DMA */
-#endif /* MR_USE_UART8 */
+#endif /* MR_USE_SERIAL8_DMA */
+#endif /* MR_USE_SERIAL8 */
 
 static void serial_driver_init(void)
 {
@@ -545,9 +545,9 @@ static void serial_driver_init(void)
 }
 MR_INIT_DRIVER_EXPORT(serial_driver_init);
 
-#endif /* !defined(MR_USE_UART1) && !defined(MR_USE_UART2) &&                  \
-        * !defined(MR_USE_UART3) && !defined(MR_USE_UART4) &&                  \
-        * !defined(MR_USE_UART5) && !defined(MR_USE_UART6) &&                  \
-        * !defined(MR_USE_UART7) && !defined(MR_USE_UART8) */
+#endif /* !defined(MR_USE_SERIAL1) && !defined(MR_USE_SERIAL2) &&              \
+        * !defined(MR_USE_SERIAL3) && !defined(MR_USE_SERIAL4) &&              \
+        * !defined(MR_USE_SERIAL5) && !defined(MR_USE_SERIAL6) &&              \
+        * !defined(MR_USE_SERIAL7) && !defined(MR_USE_SERIAL8) */
 
 #endif /* MR_USE_SERIAL */

@@ -132,8 +132,8 @@ extern "C" {
             GPIO_Pin_15,                                                       \
     }
 
-#if (MR_CFG_UART1_GROUP == 1)
-#define _DRIVER_UART1_CONFIG                                                   \
+#if (MR_CFG_SERIAL1_GROUP == 1)
+#define _DRIVER_SERIAL1_CONFIG                                                 \
     {                                                                          \
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
@@ -142,8 +142,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA1, .rx_dma_irq = DMA1_Channel5_IRQn,  \
         .rx_dma_irq_it = DMA1_IT_TC5                                           \
     }
-#elif (MR_CFG_UART1_GROUP == 2)
-#define _DRIVER_UART1_CONFIG                                                   \
+#elif (MR_CFG_SERIAL1_GROUP == 2)
+#define _DRIVER_SERIAL1_CONFIG                                                 \
     {                                                                          \
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
@@ -152,8 +152,8 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel5, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel5_IRQn, .rx_dma_irq_it = DMA1_IT_TC5         \
     }
-#elif (MR_CFG_UART1_GROUP == 3)
-#define _DRIVER_UART1_CONFIG                                                   \
+#elif (MR_CFG_SERIAL1_GROUP == 3)
+#define _DRIVER_SERIAL1_CONFIG                                                 \
     {                                                                          \
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB,             \
@@ -162,8 +162,8 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel5, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel5_IRQn, .rx_dma_irq_it = DMA1_IT_TC5         \
     }
-#elif (MR_CFG_UART1_GROUP == 4)
-#define _DRIVER_UART1_CONFIG                                                   \
+#elif (MR_CFG_SERIAL1_GROUP == 4)
+#define _DRIVER_SERIAL1_CONFIG                                                 \
     {                                                                          \
         .instance = USART1, .clock = RCC_APB2Periph_USART1,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
@@ -172,10 +172,10 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel5, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel5_IRQn, .rx_dma_irq_it = DMA1_IT_TC5         \
     }
-#endif /* MR_CFG_UART1_GROUP */
+#endif /* MR_CFG_SERIAL1_GROUP */
 
-#if (MR_CFG_UART2_GROUP == 1)
-#define _DRIVER_UART2_CONFIG                                                   \
+#if (MR_CFG_SERIAL2_GROUP == 1)
+#define _DRIVER_SERIAL2_CONFIG                                                 \
     {                                                                          \
         .instance = USART2, .clock = RCC_APB1Periph_USART2,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
@@ -184,8 +184,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA1, .rx_dma_irq = DMA1_Channel6_IRQn,  \
         .rx_dma_irq_it = DMA1_IT_TC6                                           \
     }
-#elif (MR_CFG_UART2_GROUP == 2)
-#define _DRIVER_UART2_CONFIG                                                   \
+#elif (MR_CFG_SERIAL2_GROUP == 2)
+#define _DRIVER_SERIAL2_CONFIG                                                 \
     {                                                                          \
         .instance = USART2, .clock = RCC_APB1Periph_USART2,                    \
         .gpio_clock = RCC_APB2Periph_GPIOD, .rx_port = GPIOD,                  \
@@ -194,10 +194,10 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel6, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel6_IRQn, .rx_dma_irq_it = DMA1_IT_TC6         \
     }
-#endif /* MR_CFG_UART2_GROUP */
+#endif /* MR_CFG_SERIAL2_GROUP */
 
-#if (MR_CFG_UART3_GROUP == 1)
-#define _DRIVER_UART3_CONFIG                                                   \
+#if (MR_CFG_SERIAL3_GROUP == 1)
+#define _DRIVER_SERIAL3_CONFIG                                                 \
     {                                                                          \
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
@@ -206,8 +206,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA1, .rx_dma_irq = DMA1_Channel3_IRQn,  \
         .rx_dma_irq_it = DMA1_IT_TC3                                           \
     }
-#elif (MR_CFG_UART3_GROUP == 2)
-#define _DRIVER_UART3_CONFIG                                                   \
+#elif (MR_CFG_SERIAL3_GROUP == 2)
+#define _DRIVER_SERIAL3_CONFIG                                                 \
     {                                                                          \
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
@@ -216,8 +216,8 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel3_IRQn, .rx_dma_irq_it = DMA1_IT_TC3         \
     }
-#elif (MR_CFG_UART3_GROUP == 3)
-#define _DRIVER_UART3_CONFIG                                                   \
+#elif (MR_CFG_SERIAL3_GROUP == 3)
+#define _DRIVER_SERIAL3_CONFIG                                                 \
     {                                                                          \
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
@@ -226,8 +226,8 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel3_IRQn, .rx_dma_irq_it = DMA1_IT_TC3         \
     }
-#elif (MR_CFG_UART3_GROUP == 4)
-#define _DRIVER_UART3_CONFIG                                                   \
+#elif (MR_CFG_SERIAL3_GROUP == 4)
+#define _DRIVER_SERIAL3_CONFIG                                                 \
     {                                                                          \
         .instance = USART3, .clock = RCC_APB1Periph_USART3,                    \
         .gpio_clock = RCC_APB2Periph_GPIOD, .rx_port = GPIOD,                  \
@@ -236,10 +236,10 @@ extern "C" {
         .rx_dma_channel = DMA1_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA1,   \
         .rx_dma_irq = DMA1_Channel3_IRQn, .rx_dma_irq_it = DMA1_IT_TC3         \
     }
-#endif /* MR_CFG_UART3_GROUP */
+#endif /* MR_CFG_SERIAL3_GROUP */
 
-#if (MR_CFG_UART4_GROUP == 1)
-#define _DRIVER_UART4_CONFIG                                                   \
+#if (MR_CFG_SERIAL4_GROUP == 1)
+#define _DRIVER_SERIAL4_CONFIG                                                 \
     {                                                                          \
         .nstance = UART4, .clock = RCC_APB1Periph_UART4,                       \
         .pio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                   \
@@ -248,8 +248,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel3_IRQn,  \
         .rx_dma_irq_it = DMA2_IT_TC3                                           \
     }
-#elif (MR_CFG_UART4_GROUP == 2)
-#define _DRIVER_UART4_CONFIG                                                   \
+#elif (MR_CFG_SERIAL4_GROUP == 2)
+#define _DRIVER_SERIAL4_CONFIG                                                 \
     {                                                                          \
         .instance = UART4, .clock = RCC_APB1Periph_UART4,                      \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
@@ -258,8 +258,8 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel3_IRQn, .rx_dma_irq_it = DMA2_IT_TC3         \
     }
-#elif (MR_CFG_UART4_GROUP == 3)
-#define _DRIVER_UART4_CONFIG                                                   \
+#elif (MR_CFG_SERIAL4_GROUP == 3)
+#define _DRIVER_SERIAL4_CONFIG                                                 \
     {                                                                          \
         .instance = UART4, .clock = RCC_APB1Periph_UART4,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
@@ -268,10 +268,10 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel3, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel3_IRQn, .rx_dma_irq_it = DMA2_IT_TC3         \
     }
-#endif /* MR_CFG_UART4_GROUP */
+#endif /* MR_CFG_SERIAL4_GROUP */
 
-#if (MR_CFG_UART5_GROUP == 1)
-#define _DRIVER_UART5_CONFIG                                                   \
+#if (MR_CFG_SERIAL5_GROUP == 1)
+#define _DRIVER_SERIAL5_CONFIG                                                 \
     {                                                                          \
         .instance = UART5, .clock = RCC_APB1Periph_UART5,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD,             \
@@ -280,8 +280,8 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel2, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel2_IRQn, .rx_dma_irq_it = DMA2_IT_TC2         \
     }
-#elif (MR_CFG_UART5_GROUP == 2)
-#define _DRIVER_UART5_CONFIG                                                   \
+#elif (MR_CFG_SERIAL5_GROUP == 2)
+#define _DRIVER_SERIAL5_CONFIG                                                 \
     {                                                                          \
         .instance = UART5, .clock = RCC_APB1Periph_UART5,                      \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
@@ -290,8 +290,8 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel2, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel2_IRQn, .rx_dma_irq_it = DMA2_IT_TC2         \
     }
-#elif (MR_CFG_UART5_GROUP == 3)
-#define _DRIVER_UART5_CONFIG                                                   \
+#elif (MR_CFG_SERIAL5_GROUP == 3)
+#define _DRIVER_SERIAL5_CONFIG                                                 \
     {                                                                          \
         .instance = UART5, .clock = RCC_APB1Periph_UART5,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
@@ -300,10 +300,10 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel2, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel2_IRQn, .rx_dma_irq_it = DMA2_IT_TC2         \
     }
-#endif /* MR_CFG_UART5_GROUP */
+#endif /* MR_CFG_SERIAL5_GROUP */
 
-#if (MR_CFG_UART6_GROUP == 1)
-#define _DRIVER_UART6_CONFIG                                                   \
+#if (MR_CFG_SERIAL6_GROUP == 1)
+#define _DRIVER_SERIAL6_CONFIG                                                 \
     {                                                                          \
         .instance = UART6, .clock = RCC_APB1Periph_UART6,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
@@ -312,8 +312,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel7_IRQn,  \
         .rx_dma_irq_it = DMA2_IT_TC7                                           \
     }
-#elif (MR_CFG_UART6_GROUP == 2)
-#define _DRIVER_UART6_CONFIG                                                   \
+#elif (MR_CFG_SERIAL6_GROUP == 2)
+#define _DRIVER_SERIAL6_CONFIG                                                 \
     {                                                                          \
         .instance = UART6, .clock = RCC_APB1Periph_UART6,                      \
         .gpio_clock = RCC_APB2Periph_GPIOB, .rx_port = GPIOB,                  \
@@ -322,8 +322,8 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel7, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel7_IRQn, .rx_dma_irq_it = DMA2_IT_TC7         \
     }
-#elif (MR_CFG_UART6_GROUP == 3)
-#define _DRIVER_UART6_CONFIG                                                   \
+#elif (MR_CFG_SERIAL6_GROUP == 3)
+#define _DRIVER_SERIAL6_CONFIG                                                 \
     {                                                                          \
         .instance = UART6, .clock = RCC_APB1Periph_UART6,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
@@ -332,10 +332,10 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel7, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel7_IRQn, .rx_dma_irq_it = DMA2_IT_TC7         \
     }
-#endif /* MR_CFG_UART6_GROUP */
+#endif /* MR_CFG_SERIAL6_GROUP */
 
-#if (MR_CFG_UART7_GROUP == 1)
-#define _DRIVER_UART7_CONFIG                                                   \
+#if (MR_CFG_SERIAL7_GROUP == 1)
+#define _DRIVER_SERIAL7_CONFIG                                                 \
     {                                                                          \
         .instance = UART7, .clock = RCC_APB1Periph_UART7,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
@@ -344,8 +344,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel9_IRQn,  \
         .rx_dma_irq_it = DMA2_IT_TC9                                           \
     }
-#elif (MR_CFG_UART7_GROUP == 2)
-#define _DRIVER_UART7_CONFIG                                                   \
+#elif (MR_CFG_SERIAL7_GROUP == 2)
+#define _DRIVER_SERIAL7_CONFIG                                                 \
     {                                                                          \
         .instance = UART7, .clock = RCC_APB1Periph_UART7,                      \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
@@ -354,8 +354,8 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel9, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel9_IRQn, .rx_dma_irq_it = DMA2_IT_TC9         \
     }
-#elif (MR_CFG_UART7_GROUP == 3)
-#define _DRIVER_UART7_CONFIG                                                   \
+#elif (MR_CFG_SERIAL7_GROUP == 3)
+#define _DRIVER_SERIAL7_CONFIG                                                 \
     {                                                                          \
         .instance = UART7, .clock = RCC_APB1Periph_UART7,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
@@ -364,10 +364,10 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel9, .rx_dma_clock = RCC_AHBPeriph_DMA2,   \
         .rx_dma_irq = DMA2_Channel9_IRQn, .rx_dma_irq_it = DMA2_IT_TC9         \
     }
-#endif /* MR_CFG_UART7_GROUP */
+#endif /* MR_CFG_SERIAL7_GROUP */
 
-#if (MR_CFG_UART8_GROUP == 1)
-#define _DRIVER_UART8_CONFIG                                                   \
+#if (MR_CFG_SERIAL8_GROUP == 1)
+#define _DRIVER_SERIAL8_CONFIG                                                 \
     {                                                                          \
         .instance = UART8, .clock = RCC_APB1Periph_UART8,                      \
         .gpio_clock = RCC_APB2Periph_GPIOC, .rx_port = GPIOC,                  \
@@ -376,8 +376,8 @@ extern "C" {
         .rx_dma_clock = RCC_AHBPeriph_DMA2, .rx_dma_irq = DMA2_Channel11_IRQn, \
         .rx_dma_irq_it = DMA2_IT_TC11                                          \
     }
-#elif (MR_CFG_UART8_GROUP == 2)
-#define _DRIVER_UART8_CONFIG                                                   \
+#elif (MR_CFG_SERIAL8_GROUP == 2)
+#define _DRIVER_SERIAL8_CONFIG                                                 \
     {                                                                          \
         .instance = UART8, .clock = RCC_APB1Periph_UART8,                      \
         .gpio_clock = RCC_APB2Periph_GPIOA, .rx_port = GPIOA,                  \
@@ -386,8 +386,8 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel11, .rx_dma_clock = RCC_AHBPeriph_DMA2,  \
         .rx_dma_irq = DMA2_Channel11_IRQn, .rx_dma_irq_it = DMA2_IT_TC11       \
     }
-#elif (MR_CFG_UART8_GROUP == 3)
-#define _DRIVER_UART8_CONFIG                                                   \
+#elif (MR_CFG_SERIAL8_GROUP == 3)
+#define _DRIVER_SERIAL8_CONFIG                                                 \
     {                                                                          \
         .instance = UART8, .clock = RCC_APB1Periph_UART8,                      \
         .gpio_clock = RCC_APB2Periph_GPIOE, .rx_port = GPIOE,                  \
@@ -396,7 +396,7 @@ extern "C" {
         .rx_dma_channel = DMA2_Channel11, .rx_dma_clock = RCC_AHBPeriph_DMA2,  \
         .rx_dma_irq = DMA2_Channel11_IRQn, .rx_dma_irq_it = DMA2_IT_TC11       \
     }
-#endif /* MR_CFG_UART8_GROUP */
+#endif /* MR_CFG_SERIAL8_GROUP */
 
 #ifdef __cplusplus
 }

@@ -155,9 +155,9 @@ static void adc_driver_init(void)
                                            .channel_configure =
                                                adc_driver_channel_configure,
                                            .read = adc_driver_read};
-    static struct mr_adc_driver_data data = {
-        .channels = _DRIVER_ADC_CHANNELS,
-        .resolution = _DRIVER_ADC_RESOLUTION};
+    static struct mr_adc_driver_data data = {.channels = _DRIVER_ADC_CHANNELS,
+                                             .resolution =
+                                                 _DRIVER_ADC_RESOLUTION};
 
     for (size_t i = 0; i < MR_ARRAY_NUM(_adc_device); i++)
     {
