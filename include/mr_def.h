@@ -40,7 +40,17 @@ extern "C" {
  * @{
  */
 
-#if defined(__IAR_SYSTEMS_ICC__)
+#if defined(__GNUC__) || defined(__clang__)
+#define MR_SECTION(x)                   __attribute__((section(x)))
+#define MR_USED                         __attribute__((used))
+#define MR_WEAK                         __attribute__((weak))
+#define MR_INLINE                       static __inline
+#elif defined(__CC_ARM) || defined(__ARMCC_VERSION)
+#define MR_SECTION(x)                   __attribute__((section(x)))
+#define MR_USED                         __attribute__((used))
+#define MR_WEAK                         __attribute__((weak))
+#define MR_INLINE                       __inline
+#elif defined(__IAR_SYSTEMS_ICC__)
 #define MR_SECTION(x)                   @x
 #define MR_USED                         __root
 #define MR_WEAK                         __weak
@@ -50,7 +60,7 @@ extern "C" {
 #define MR_USED                         __attribute__((used))
 #define MR_WEAK                         __attribute__((weak))
 #define MR_INLINE                       static __inline
-#endif /* defined(__IAR_SYSTEMS_ICC__) */
+#endif /* __GNUC__ */
 
 /** @} */
 
@@ -119,7 +129,6 @@ struct mr_heap_block
 /**
  * @brief List structure.
  */
-
 struct mr_list
 {
     struct mr_list *next;                                   /**< Point to next node */
@@ -155,23 +164,15 @@ struct mr_fifo
 #define MR_FLAG_RDONLY                  (0x01 << 24)        /**< Read only flag */
 #define MR_FLAG_WRONLY                  (0x02 << 24)        /**< Write only flag */
 #define MR_FLAG_RDWR                    (0x03 << 24)        /**< Read/write flag */
-#define MR_FLAG_ARDONLY                 (0x04 << 24)        /**< Async read only flag */
-#define MR_FLAG_AWRONLY                 (0x08 << 24)        /**< Async write only flag */
-#define MR_FLAG_ARDWR                   (0x0c << 24)        /**< Async read/write flag */
-
-#define MR_CTRL_SET(_cmd)               (_cmd)              /**< Set operation */
-#define MR_CTRL_GET(_cmd)               (-(_cmd))           /**< Get operation */
-#define MR_CTRL_NEW(_cmd)               MR_CTRL_SET(_cmd)   /**< New operation */
-#define MR_CTRL_DEL(_cmd)               MR_CTRL_GET(_cmd)   /**< Delete operation */
-#define MR_CTRL_CLR(_cmd)               (_cmd)              /**< Clear operation */
 
 #define MR_CMD_POS                      (0x01 << 24)        /**< Position command */
 #define MR_CMD_EVENT                    (0x02 << 24)        /**< Event command */
 #define MR_CMD_CONFIG                   (0x03 << 24)        /**< Configuration command */
 
-#define MR_EVENT_RD_COMPLETE            (0x01 << 24)        /**< Read complete event */
-#define MR_EVENT_WR_COMPLETE            (0x02 << 24)        /**< Write complete event */
-#define MR_EVENT_MASK                   (0xff << 24)        /**< Event mask */
+#define MR_EVENT_DATA                   (0x01 << 24)        /**< Data event */
+#define MR_EVENT_RD                     (0x10 << 24)        /**< Read event */
+#define MR_EVENT_WR                     (0x20 << 24)        /**< Write event */
+#define _MR_EVENT_MASK                  (0xff << 24)        /**< Event mask */
 
 #define _MR_OPERATE_MASK_RD             (0xffff0000)        /**< Read lock mask */
 #define _MR_OPERATE_MASK_WR             (0x0000ffff)        /**< Write lock mask */
@@ -201,20 +202,21 @@ struct mr_device;
  */
 struct mr_device_ops
 {
+    int (*attach)(struct mr_device *device, struct mr_device *source);
+    int (*detach)(struct mr_device *device, struct mr_device *source);
     int (*open)(struct mr_device *device);
     int (*close)(struct mr_device *device);
     ssize_t (*read)(struct mr_device *device, int pos, void *buf, size_t count);
     ssize_t (*write)(struct mr_device *device, int pos, const void *buf,
                      size_t count);
+    int (*ioctl)(struct mr_device *device, int pos, int cmd, void *args);
+    int (*isr)(struct mr_device *device, uint32_t event, void *args);
+#ifdef MR_USE_AIO_EXT
     ssize_t (*aread)(struct mr_device *device, int pos, void *buf,
                      size_t count);
     ssize_t (*awrite)(struct mr_device *device, int pos, const void *buf,
                       size_t count);
-    int (*ioctl)(struct mr_device *device, int pos, int cmd, void *args);
-    int (*isr)(struct mr_device *device, uint32_t event, void *args);
-
-    int (*attach)(struct mr_device *device, struct mr_device *source);
-    int (*detach)(struct mr_device *device, struct mr_device *source);
+#endif /* MR_USE_AIO_EXT */
 };
 
 /**
@@ -227,8 +229,8 @@ struct mr_device
 #define MR_CFG_DEVICE_NAME_MAX          (12)
 #endif /* MR_CFG_DEVICE_NAME_MAX */
     char name[MR_CFG_DEVICE_NAME_MAX];                      /**< Name */
-    struct mr_list list;                                    /**< Same level device list */
-    struct mr_list clist;                                   /**< Child device list */
+    struct mr_list list;                                    /**< Same level list */
+    struct mr_list clist;                                   /**< Children list */
     void *parent;                                           /**< Parent device */
 
     uint32_t type: 31;                                      /**< Type */
@@ -237,8 +239,9 @@ struct mr_device
     size_t ref_count;                                       /**< Reference count */
     volatile uint32_t lock;                                 /**< Operation lock */
     const struct mr_device_ops *ops;                        /**< Operations */
-    const void *driver;                                     /**< Driver */
     struct mr_list elist;                                   /**< Event list */
+
+    const void *driver;                                     /**< Driver */
 };
 
 /**
@@ -252,12 +255,12 @@ struct mr_descriptor
 };
 
 /**
- * @brief Device event structure.
+ * @brief Event structure.
  */
-struct mr_device_event
+struct mr_event
 {
     uint32_t event: 31;                                     /**< Event */
-    uint32_t self: 1;                                       /**< Self-defined flag */
+    uint32_t self: 1;                                       /**< Self-defined event */
     void (*callback)(int descriptor, uint32_t event,
                      void *args, void *op_data);            /**< Callback function */
     void *op_data;                                          /**< Operator data */

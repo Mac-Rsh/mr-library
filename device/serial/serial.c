@@ -52,75 +52,6 @@ MR_INLINE ssize_t _serial_read_fifo(struct mr_serial *serial, uint8_t *buf,
     return (ssize_t)mr_fifo_read(&serial->rfifo, buf, count);
 }
 
-#ifdef MR_USE_SERIAL_ASYNC
-MR_INLINE ssize_t _serial_aread_int(struct mr_serial *serial, uint8_t *buf,
-                                    size_t count)
-{
-    /* Receive data from FIFO */
-    size_t rcount = mr_fifo_read(&serial->rfifo, buf, count);
-
-    /* If there is enough data to read from the FIFO, async operations are not
-     * required */
-    if (rcount == count)
-    {
-        return rcount;
-    }
-
-    /* Set the async receive buffer and count */
-    serial->rabuf = buf + rcount;
-    serial->racount = count - rcount;
-    MR_BIT_SET(serial->state, _STATE_RECEIVE_INT_ASYNC);
-    return MR_EOK;
-}
-
-#ifdef MR_USE_SERIAL_DMA
-MR_INLINE ssize_t _serial_aread_dma(struct mr_serial *serial, uint8_t *buf,
-                                    size_t count)
-{
-    struct mr_driver *driver =
-        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
-
-    /* Receive data from FIFO */
-    size_t rcount = mr_fifo_read(&serial->rfifo, buf, count);
-
-    /* If there is enough data to read from the FIFO, async operations are not
-     * required */
-    if (rcount == count)
-    {
-        return rcount;
-    }
-
-    /* Stop the current transmission */
-    if (MR_BIT_IS_SET(serial->state, _STATE_RECEIVE_DMA) == true)
-    {
-        int ret = ops->receive_dma(driver, false, NULL, 0);
-        if (ret < 0)
-        {
-            return ret;
-        }
-        MR_BIT_CLR(serial->state, _STATE_RECEIVE_DMA | _STATE_RECEIVE_DMA_TOP |
-                                      _STATE_RECEIVE_DMA_BOT);
-    }
-
-    /* Set the async receive buffer and count */
-    serial->rabuf = buf + rcount;
-    serial->racount = count - rcount;
-
-    /* Start the receive DMA */
-    MR_BIT_SET(serial->state, _STATE_RECEIVE_DMA | _STATE_RECEIVE_DMA_ASYNC);
-    int ret = ops->receive_dma(driver, true, serial->rabuf, serial->racount);
-    if (ret < 0)
-    {
-        MR_BIT_CLR(serial->state,
-                   _STATE_RECEIVE_DMA | _STATE_RECEIVE_DMA_ASYNC);
-        return ret;
-    }
-    return MR_EOK;
-}
-#endif /* MR_USE_SERIAL_DMA */
-#endif /* MR_USE_SERIAL_ASYNC */
-
 MR_INLINE ssize_t _serial_write_poll(struct mr_serial *serial,
                                      const uint8_t *buf, size_t count)
 {
@@ -210,54 +141,6 @@ MR_INLINE ssize_t _serial_write_fifo(struct mr_serial *serial,
     /* Return the number of bytes sent */
     return wcount;
 }
-
-#ifdef MR_USE_SERIAL_ASYNC
-MR_INLINE ssize_t _serial_awrite_int(struct mr_serial *serial,
-                                     const uint8_t *buf, size_t count)
-{
-    struct mr_driver *driver =
-        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
-
-    /* Set the async send buffer and count */
-    serial->wabuf = buf;
-    serial->wacount = count;
-    MR_BIT_SET(serial->state, _STATE_SEND_INT | _STATE_SEND_INT_ASYNC);
-
-    /* Start the send interrupt */
-    int ret = ops->send_int_configure(driver, true);
-    if (ret < 0)
-    {
-        MR_BIT_CLR(serial->state, _STATE_SEND_INT | _STATE_SEND_INT_ASYNC);
-        return ret;
-    }
-    return MR_EOK;
-}
-
-#ifdef MR_USE_SERIAL_DMA
-MR_INLINE ssize_t _serial_awrite_dma(struct mr_serial *serial,
-                                     const uint8_t *buf, size_t count)
-{
-    struct mr_driver *driver =
-        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
-    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
-
-    /* Set the async send buffer and count */
-    serial->wabuf = buf;
-    serial->wacount = count;
-    MR_BIT_SET(serial->state, _STATE_SEND_DMA | _STATE_SEND_DMA_ASYNC);
-
-    /* Start the send DMA */
-    int ret = ops->send_dma(driver, true, serial->wabuf, serial->wacount);
-    if (ret < 0)
-    {
-        MR_BIT_CLR(serial->state, _STATE_SEND_DMA | _STATE_SEND_DMA_ASYNC);
-        return ret;
-    }
-    return MR_EOK;
-}
-#endif /* MR_USE_SERIAL_DMA */
-#endif /* MR_USE_SERIAL_ASYNC */
 
 MR_INLINE int _serial_fifo_allocate(struct mr_fifo *fifo, size_t *size)
 {
@@ -351,34 +234,6 @@ static ssize_t serial_read(struct mr_device *device, int pos, void *buf,
     return _serial_read_poll(serial, buf, count);
 }
 
-#ifdef MR_USE_SERIAL_ASYNC
-static ssize_t serial_aread(struct mr_device *device, int pos, void *buf,
-                            size_t count)
-{
-    struct mr_serial *serial = (struct mr_serial *)device;
-
-    /* Check if the serial port is busy */
-    if (serial->state & (_STATE_RECEIVE_INT_ASYNC | _STATE_RECEIVE_DMA_ASYNC))
-    {
-        return MR_EBUSY;
-    }
-
-#ifdef MR_USE_SERIAL_DMA
-    struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
-    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
-
-    /* If the driver supports DMA, start DMA to async read data */
-    if (ops->receive_dma != NULL)
-    {
-        return _serial_aread_dma(serial, buf, count);
-    }
-#endif /* MR_USE_SERIAL_DMA */
-
-    /* Interrupt async read data */
-    return _serial_aread_int(serial, buf, count);
-}
-#endif /* MR_USE_SERIAL_ASYNC */
-
 static ssize_t serial_write(struct mr_device *device, int pos, const void *buf,
                             size_t count)
 {
@@ -401,34 +256,6 @@ static ssize_t serial_write(struct mr_device *device, int pos, const void *buf,
     return _serial_write_poll(serial, buf, count);
 }
 
-#ifdef MR_USE_SERIAL_ASYNC
-static ssize_t serial_awrite(struct mr_device *device, int pos, const void *buf,
-                             size_t count)
-{
-    struct mr_serial *serial = (struct mr_serial *)device;
-
-    /* Check if the serial port is busy */
-    if (serial->state & (_STATE_SEND_INT | _STATE_SEND_DMA))
-    {
-        return MR_EBUSY;
-    }
-
-#ifdef MR_USE_SERIAL_DMA
-    struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
-    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
-
-    /* If the driver supports DMA, start DMA to async write data */
-    if (ops->send_dma != NULL)
-    {
-        return _serial_awrite_dma(serial, buf, count);
-    }
-#endif /* MR_USE_SERIAL_DMA */
-
-    /* Interrupt async write data */
-    return _serial_awrite_int(serial, buf, count);
-}
-#endif /* MR_USE_SERIAL_ASYNC */
-
 static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 {
     struct mr_serial *serial = (struct mr_serial *)device;
@@ -437,7 +264,7 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET(MR_CMD_SERIAL_CONFIG):
+        case MR_CMD_SERIAL_CONFIG:
         {
             struct mr_serial_config *config = (struct mr_serial_config *)args;
 
@@ -457,7 +284,20 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             serial->config = *config;
             return sizeof(*config);
         }
-        case MR_CTRL_SET(MR_CMD_SERIAL_RD_FIFO_SIZE):
+        case (-MR_CMD_SERIAL_CONFIG):
+        {
+            struct mr_serial_config *config = (struct mr_serial_config *)args;
+
+            if (config == NULL)
+            {
+                return MR_EINVAL;
+            }
+
+            /* Get configuration */
+            *config = serial->config;
+            return sizeof(*config);
+        }
+        case MR_CMD_SERIAL_RD_FIFO_SIZE:
         {
             size_t *fifo_size = (size_t *)args;
 
@@ -476,7 +316,20 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             }
             return sizeof(*fifo_size);
         }
-        case MR_CTRL_SET(MR_CMD_SERIAL_WR_FIFO_SIZE):
+        case (-MR_CMD_SERIAL_RD_FIFO_SIZE):
+        {
+            size_t *fifo_size = (size_t *)args;
+
+            if (fifo_size == NULL)
+            {
+                return MR_EINVAL;
+            }
+
+            /* Get FIFO size */
+            *fifo_size = serial->rfifo_size;
+            return sizeof(*fifo_size);
+        }
+        case MR_CMD_SERIAL_WR_FIFO_SIZE:
         {
             size_t *fifo_size = (size_t *)args;
 
@@ -495,45 +348,7 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             }
             return sizeof(*fifo_size);
         }
-        case MR_CTRL_CLR(MR_CMD_SERIAL_RD_FIFO_DATA):
-        {
-            /* Reset FIFO */
-            mr_fifo_reset(&serial->rfifo);
-            return MR_EOK;
-        }
-        case MR_CTRL_CLR(MR_CMD_SERIAL_WR_FIFO_DATA):
-        {
-            /* Reset FIFO */
-            mr_fifo_reset(&serial->wfifo);
-            return MR_EOK;
-        }
-        case MR_CTRL_GET(MR_CMD_SERIAL_CONFIG):
-        {
-            struct mr_serial_config *config = (struct mr_serial_config *)args;
-
-            if (config == NULL)
-            {
-                return MR_EINVAL;
-            }
-
-            /* Get configuration */
-            *config = serial->config;
-            return sizeof(*config);
-        }
-        case MR_CTRL_GET(MR_CMD_SERIAL_RD_FIFO_SIZE):
-        {
-            size_t *fifo_size = (size_t *)args;
-
-            if (fifo_size == NULL)
-            {
-                return MR_EINVAL;
-            }
-
-            /* Get FIFO size */
-            *fifo_size = serial->rfifo_size;
-            return sizeof(*fifo_size);
-        }
-        case MR_CTRL_GET(MR_CMD_SERIAL_WR_FIFO_SIZE):
+        case (-MR_CMD_SERIAL_WR_FIFO_SIZE):
         {
             size_t *fifo_size = (size_t *)args;
 
@@ -546,7 +361,13 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             *fifo_size = serial->wfifo_size;
             return sizeof(*fifo_size);
         }
-        case MR_CTRL_GET(MR_CMD_SERIAL_RD_FIFO_DATA):
+        case MR_CMD_SERIAL_RD_FIFO_DATA:
+        {
+            /* Reset FIFO */
+            mr_fifo_reset(&serial->rfifo);
+            return MR_EOK;
+        }
+        case (-MR_CMD_SERIAL_RD_FIFO_DATA):
         {
             size_t *data_size = (size_t *)args;
 
@@ -559,7 +380,13 @@ static int serial_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             *data_size = mr_fifo_used_get(&serial->rfifo);
             return sizeof(*data_size);
         }
-        case MR_CTRL_GET(MR_CMD_SERIAL_WR_FIFO_DATA):
+        case MR_CMD_SERIAL_WR_FIFO_DATA:
+        {
+            /* Reset FIFO */
+            mr_fifo_reset(&serial->wfifo);
+            return MR_EOK;
+        }
+        case (-MR_CMD_SERIAL_WR_FIFO_DATA):
         {
             size_t *data_size = (size_t *)args;
 
@@ -588,7 +415,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
 
     switch (event)
     {
-        case MR_EVENT_SERIAL_RD_COMPLETE_INT:
+        case MR_EVENT_SERIAL_RD_DATA_INT:
         {
             size_t count = 1;
 
@@ -598,7 +425,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 count = *((size_t *)args);
             }
 
-#ifdef MR_USE_SERIAL_ASYNC
+#ifdef MR_USE_SERIAL_AIO_EXT
             if (MR_BIT_IS_SET(serial->state, _STATE_RECEIVE_INT_ASYNC) == true)
             {
                 size_t rcount;
@@ -638,7 +465,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                     return mr_fifo_used_get(&serial->rfifo);
                 }
             }
-#endif /* MR_USE_SERIAL_ASYNC */
+#endif /* MR_USE_SERIAL_AIO_EXT */
 
             /* If FIFO is empty, the read operation is abandoned */
             if (mr_fifo_size_get(&serial->rfifo) == 0)
@@ -665,7 +492,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
             /* Returns the number of data in the read FIFO */
             return mr_fifo_used_get(&serial->rfifo);
         }
-        case MR_EVENT_SERIAL_WR_COMPLETE_INT:
+        case MR_EVENT_SERIAL_WR_DATA_INT:
         {
             size_t count = 1;
 
@@ -681,7 +508,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 count = *((size_t *)args);
             }
 
-#ifdef MR_USE_SERIAL_ASYNC
+#ifdef MR_USE_SERIAL_AIO_EXT
             if (MR_BIT_IS_SET(serial->state, _STATE_SEND_INT_ASYNC) == true)
             {
                 size_t wcount;
@@ -721,7 +548,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                     return mr_fifo_used_get(&serial->wfifo);
                 }
             }
-#endif /* MR_USE_SERIAL_ASYNC */
+#endif /* MR_USE_SERIAL_AIO_EXT */
 
             /* Write all data to hardware FIFO */
             for (size_t wcount = 0; wcount < count; wcount++)
@@ -761,7 +588,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
             return mr_fifo_used_get(&serial->wfifo);
         }
 #ifdef MR_USE_SERIAL_DMA
-        case MR_EVENT_SERIAL_RD_COMPLETE_DMA:
+        case MR_EVENT_SERIAL_RD_DATA_DMA:
         {
             size_t count = sizeof(serial->rdma) / 2;
             uint8_t *rdma, *ndma;
@@ -801,7 +628,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 MR_BIT_CLR(serial->state, _STATE_RECEIVE_DMA_BOT);
                 MR_BIT_SET(serial->state, _STATE_RECEIVE_DMA_TOP);
             }
-#ifdef MR_USE_SERIAL_ASYNC
+#ifdef MR_USE_SERIAL_AIO_EXT
             else if (MR_BIT_IS_SET(serial->state, _STATE_RECEIVE_DMA_ASYNC) ==
                      true)
             {
@@ -849,7 +676,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 }
                 return MR_EBUSY;
             }
-#endif /* MR_USE_SERIAL_ASYNC */
+#endif /* MR_USE_SERIAL_AIO_EXT */
             else
             {
                 return MR_EINVAL;
@@ -862,7 +689,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
             return ops->receive_dma(driver, true, ndma,
                                     sizeof(serial->rdma) / 2);
         }
-        case MR_EVENT_SERIAL_WR_COMPLETE_DMA:
+        case MR_EVENT_SERIAL_WR_DATA_DMA:
         {
             /* Driver does not support this function */
             if (ops->send_dma == NULL)
@@ -870,7 +697,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 return MR_EIO;
             }
 
-#ifdef MR_USE_SERIAL_ASYNC
+#ifdef MR_USE_SERIAL_AIO_EXT
             if (MR_BIT_IS_SET(serial->state, _STATE_SEND_DMA_ASYNC) == true)
             {
                 /* Async write operation is complete */
@@ -883,7 +710,7 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
                 MR_BIT_CLR(serial->state, _STATE_SEND_DMA);
                 return 0;
             }
-#endif /* MR_USE_SERIAL_ASYNC */
+#endif /* MR_USE_SERIAL_AIO_EXT */
 
             size_t count = mr_fifo_peek(&serial->wfifo, serial->wdma,
                                         sizeof(serial->wdma));
@@ -909,6 +736,171 @@ static int serial_isr(struct mr_device *device, uint32_t event, void *args)
     }
 }
 
+#ifdef MR_USE_SERIAL_AIO_EXT
+MR_INLINE ssize_t _serial_aread_int(struct mr_serial *serial, uint8_t *buf,
+                                    size_t count)
+{
+    /* Receive data from FIFO */
+    size_t rcount = mr_fifo_read(&serial->rfifo, buf, count);
+
+    /* If there is enough data to read from the FIFO, async operations are not
+     * required */
+    if (rcount == count)
+    {
+        return rcount;
+    }
+
+    /* Set the async receive buffer and count */
+    serial->rabuf = buf + rcount;
+    serial->racount = count - rcount;
+    MR_BIT_SET(serial->state, _STATE_RECEIVE_INT_ASYNC);
+    return MR_EOK;
+}
+
+MR_INLINE ssize_t _serial_awrite_int(struct mr_serial *serial,
+                                     const uint8_t *buf, size_t count)
+{
+    struct mr_driver *driver =
+        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
+
+    /* Set the async send buffer and count */
+    serial->wabuf = buf;
+    serial->wacount = count;
+    MR_BIT_SET(serial->state, _STATE_SEND_INT | _STATE_SEND_INT_ASYNC);
+
+    /* Start the send interrupt */
+    int ret = ops->send_int_configure(driver, true);
+    if (ret < 0)
+    {
+        MR_BIT_CLR(serial->state, _STATE_SEND_INT | _STATE_SEND_INT_ASYNC);
+        return ret;
+    }
+    return MR_EOK;
+}
+
+#ifdef MR_USE_SERIAL_DMA
+MR_INLINE ssize_t _serial_aread_dma(struct mr_serial *serial, uint8_t *buf,
+                                    size_t count)
+{
+    struct mr_driver *driver =
+        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
+
+    /* Receive data from FIFO */
+    size_t rcount = mr_fifo_read(&serial->rfifo, buf, count);
+
+    /* If there is enough data to read from the FIFO, async operations are not
+     * required */
+    if (rcount == count)
+    {
+        return rcount;
+    }
+
+    /* Stop the current transmission */
+    if (MR_BIT_IS_SET(serial->state, _STATE_RECEIVE_DMA) == true)
+    {
+        int ret = ops->receive_dma(driver, false, NULL, 0);
+        if (ret < 0)
+        {
+            return ret;
+        }
+        MR_BIT_CLR(serial->state, _STATE_RECEIVE_DMA | _STATE_RECEIVE_DMA_TOP |
+                                      _STATE_RECEIVE_DMA_BOT);
+    }
+
+    /* Set the async receive buffer and count */
+    serial->rabuf = buf + rcount;
+    serial->racount = count - rcount;
+
+    /* Start the receive DMA */
+    MR_BIT_SET(serial->state, _STATE_RECEIVE_DMA | _STATE_RECEIVE_DMA_ASYNC);
+    int ret = ops->receive_dma(driver, true, serial->rabuf, serial->racount);
+    if (ret < 0)
+    {
+        MR_BIT_CLR(serial->state,
+                   _STATE_RECEIVE_DMA | _STATE_RECEIVE_DMA_ASYNC);
+        return ret;
+    }
+    return MR_EOK;
+}
+
+MR_INLINE ssize_t _serial_awrite_dma(struct mr_serial *serial,
+                                     const uint8_t *buf, size_t count)
+{
+    struct mr_driver *driver =
+        _MR_DEVICE_DRIVER_GET((struct mr_device *)serial);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
+
+    /* Set the async send buffer and count */
+    serial->wabuf = buf;
+    serial->wacount = count;
+    MR_BIT_SET(serial->state, _STATE_SEND_DMA | _STATE_SEND_DMA_ASYNC);
+
+    /* Start the send DMA */
+    int ret = ops->send_dma(driver, true, serial->wabuf, serial->wacount);
+    if (ret < 0)
+    {
+        MR_BIT_CLR(serial->state, _STATE_SEND_DMA | _STATE_SEND_DMA_ASYNC);
+        return ret;
+    }
+    return MR_EOK;
+}
+#endif /* MR_USE_SERIAL_DMA */
+
+static ssize_t serial_aread(struct mr_device *device, int pos, void *buf,
+                            size_t count)
+{
+    struct mr_serial *serial = (struct mr_serial *)device;
+
+    /* Check if the serial port is busy */
+    if (serial->state & (_STATE_RECEIVE_INT_ASYNC | _STATE_RECEIVE_DMA_ASYNC))
+    {
+        return MR_EBUSY;
+    }
+
+#ifdef MR_USE_SERIAL_DMA
+    struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
+
+    /* If the driver supports DMA, start DMA to async read data */
+    if (ops->receive_dma != NULL)
+    {
+        return _serial_aread_dma(serial, buf, count);
+    }
+#endif /* MR_USE_SERIAL_DMA */
+
+    /* Interrupt async read data */
+    return _serial_aread_int(serial, buf, count);
+}
+
+static ssize_t serial_awrite(struct mr_device *device, int pos, const void *buf,
+                             size_t count)
+{
+    struct mr_serial *serial = (struct mr_serial *)device;
+
+    /* Check if the serial port is busy */
+    if (serial->state & (_STATE_SEND_INT | _STATE_SEND_DMA))
+    {
+        return MR_EBUSY;
+    }
+
+#ifdef MR_USE_SERIAL_DMA
+    struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
+    struct mr_serial_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
+
+    /* If the driver supports DMA, start DMA to async write data */
+    if (ops->send_dma != NULL)
+    {
+        return _serial_awrite_dma(serial, buf, count);
+    }
+#endif /* MR_USE_SERIAL_DMA */
+
+    /* Interrupt async write data */
+    return _serial_awrite_int(serial, buf, count);
+}
+#endif /* MR_USE_SERIAL_AIO_EXT */
+
 /**
  * @brief This function register a serial.
  *
@@ -928,13 +920,14 @@ int mr_serial_register(struct mr_serial *serial, const char *path,
     static struct mr_device_ops ops = {.open = serial_open,
                                        .close = serial_close,
                                        .read = serial_read,
-#ifdef MR_USE_SERIAL_ASYNC
-                                       .aread = serial_aread,
-                                       .awrite = serial_awrite,
-#endif /* MR_USE_SERIAL_ASYNC */
                                        .write = serial_write,
                                        .ioctl = serial_ioctl,
-                                       .isr = serial_isr};
+                                       .isr = serial_isr,
+#ifdef MR_USE_SERIAL_AIO_EXT
+                                       .aread = serial_aread,
+                                       .awrite = serial_awrite
+#endif /* MR_USE_SERIAL_AIO_EXT */
+    };
     struct mr_serial_config default_config = MR_SERIAL_CONFIG_DEFAULT;
 
     /* Initialize the serial */

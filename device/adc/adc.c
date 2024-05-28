@@ -156,7 +156,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET(MR_CMD_ADC_CHANNEL_STATE):
+        case MR_CMD_ADC_CHANNEL_STATE:
         {
             struct mr_adc_config *config = (struct mr_adc_config *)args;
 
@@ -173,7 +173,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             }
             return sizeof(*config);
         }
-        case MR_CTRL_GET(MR_CMD_ADC_CHANNEL_STATE):
+        case (-MR_CMD_ADC_CHANNEL_STATE):
         {
             struct mr_adc_config *config = (struct mr_adc_config *)args;
 
@@ -190,7 +190,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             }
             return sizeof(*config);
         }
-        case MR_CTRL_GET(MR_CMD_ADC_RESOLUTION):
+        case (-MR_CMD_ADC_RESOLUTION):
         {
             struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
             struct mr_adc_driver_data *data = _MR_DRIVER_DATA_GET(driver);

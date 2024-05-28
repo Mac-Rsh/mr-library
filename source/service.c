@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 static volatile int _mr_critical_level = 0;
+static volatile uint32_t _mr_interrupt_mask = 0;
 
 static void start(void)
 {
@@ -38,14 +39,15 @@ void mr_auto_init(void)
 /**
  * @brief This function disable the interrupt.
  */
-MR_WEAK void mr_interrupt_disable(void)
+MR_WEAK uint32_t mr_interrupt_disable(void)
 {
+    return 0;
 }
 
 /**
  * @brief This function enable the interrupt.
  */
-MR_WEAK void mr_interrupt_enable(void)
+MR_WEAK void mr_interrupt_enable(uint32_t mask)
 {
 }
 
@@ -56,7 +58,7 @@ void mr_critical_enter(void)
 {
     if (_mr_critical_level == 0)
     {
-        mr_interrupt_disable();
+        _mr_interrupt_mask = mr_interrupt_disable();
         _mr_critical_level++;
     }
 }
@@ -71,7 +73,7 @@ void mr_critical_exit(void)
         _mr_critical_level--;
         if (_mr_critical_level == 0)
         {
-            mr_interrupt_enable();
+            mr_interrupt_enable(_mr_interrupt_mask);
         }
     }
 }

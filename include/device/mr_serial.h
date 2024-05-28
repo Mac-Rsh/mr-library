@@ -62,14 +62,14 @@ extern "C" {
 #define MR_CMD_SERIAL_RD_FIFO_DATA      (0x03)              /**< Read FIFO data command */
 #define MR_CMD_SERIAL_WR_FIFO_DATA      (0x04)              /**< Write FIFO data command */
 
-#define MR_EVENT_SERIAL_RD_COMPLETE_INT                                        \
-    MR_EVENT_RD_COMPLETE                                    /**< Interrupt on read completion event */
-#define MR_EVENT_SERIAL_WR_COMPLETE_INT                                        \
-    MR_EVENT_WR_COMPLETE                                    /**< Interrupt on write completion event */
-#define MR_EVENT_SERIAL_RD_COMPLETE_DMA                                        \
-    (MR_EVENT_RD_COMPLETE | 0x01)                           /**< Interrupt on read DMA completion event */
-#define MR_EVENT_SERIAL_WR_COMPLETE_DMA                                        \
-    (MR_EVENT_WR_COMPLETE | 0x01)                           /**< Interrupt on write DMA completion event */
+#define MR_EVENT_SERIAL_RD_DATA_INT                                            \
+    (MR_EVENT_RD | MR_EVENT_DATA | (0x01))                  /**< Interrupt on read completion event */
+#define MR_EVENT_SERIAL_WR_DATA_INT                                            \
+    (MR_EVENT_WR | MR_EVENT_DATA | (0x01))                  /**< Interrupt on write completion event */
+#define MR_EVENT_SERIAL_RD_DATA_DMA                                            \
+    (MR_EVENT_RD | MR_EVENT_DATA | (0x02))                  /**< Interrupt on read DMA completion event */
+#define MR_EVENT_SERIAL_WR_DATA_DMA                                            \
+    (MR_EVENT_WR | MR_EVENT_DATA | (0x02))                  /**< Interrupt on write DMA completion event */
 
 typedef uint8_t mr_serial_data_t;                           /**< Serial read/write data type */
 
@@ -109,12 +109,12 @@ struct mr_serial
     uint8_t rdma[MR_CFG_SERIAL_RD_DMA_FIFO_SIZE];           /**< Read DMA buffer */
     uint8_t wdma[MR_CFG_SERIAL_WR_DMA_FIFO_SIZE];           /**< Write DMA buffer */
 #endif /* MR_USE_SERIAL_DMA */
-#ifdef MR_USE_SERIAL_ASYNC
+#ifdef MR_USE_SERIAL_AIO_EXT
     uint8_t *rabuf;                                         /**< Read async buffer */
     size_t racount;                                         /**< Read async count */
     const uint8_t *wabuf;                                   /**< Write async buffer */
     size_t wacount;                                         /**< Write async count */
-#endif /* MR_USE_SERIAL_ASYNC */
+#endif /* MR_USE_SERIAL_AIO_EXT */
 };
 
 /**

@@ -17,15 +17,15 @@
 #endif /* MR_USE_DEVICE_LOG */
 
 #define _MAGIC_NUMBER                   (0xdeadbeef)        /**< Magic number */
-#define _FLAG_IN_ISR                    (0x80 << 24)        /**< In ISR */
 
 /**
  * @brief Device event complete structure.
  */
-struct _device_event
+struct _event
 {
     struct mr_list list;                                    /**< Event list */
-    uint32_t descriptor: 31;                                /**< Event descriptor */
+    uint32_t descriptor: 30;                                /**< Descriptor */
+    uint32_t hold: 1;                                       /**< Hold flag */
     uint32_t free: 1;                                       /**< Free flag */
     uint32_t event: 31;                                     /**< Event */
     uint32_t self: 1;                                       /**< Self-defined flag */
@@ -149,187 +149,6 @@ static struct mr_device *_device_find_iter(const char *path,
     return _device_find_from(path, parent);
 }
 
-MR_INLINE int _device_event_create(struct mr_device *device, int descriptor,
-                                   const struct mr_device_event *event)
-{
-    int ret;
-
-    /* Critical section enter */
-    mr_critical_enter();
-
-    /* Check if the event exists */
-    for (struct mr_list *list = device->elist.next; list != &device->elist;
-         list = list->next)
-    {
-        struct _device_event *_event =
-            MR_CONTAINER_OF(list, struct _device_event, list);
-
-        if ((_event->descriptor == descriptor) &&
-            (_event->event == event->event))
-        {
-            ret = MR_EEXIST;
-            goto _exit;
-        }
-    }
-
-    /* Create the new event */
-    struct _device_event *_event = mr_malloc(sizeof(struct _device_event));
-    if (_event == NULL)
-    {
-        ret = MR_ENOMEM;
-        goto _exit;
-    }
-
-    /* Add the event */
-    mr_list_init(&_event->list);
-    _event->descriptor = descriptor;
-    _event->free = false;
-    _event->event = event->event;
-    _event->self = event->self;
-    _event->callback = event->callback;
-    _event->op_data = event->op_data;
-    mr_list_insert_before(&device->elist, &_event->list);
-    ret = MR_EOK;
-
-_exit:
-    /* Critical section exit */
-    mr_critical_exit();
-    return ret;
-}
-
-MR_INLINE int _device_event_destroy(const struct mr_device *device,
-                                    int descriptor,
-                                    const struct mr_device_event *event)
-{
-    int ret;
-
-    /* Critical section enter */
-    mr_critical_enter();
-
-    /* Find the event */
-    for (struct mr_list *list = device->elist.next; list != &device->elist;
-         list = list->next)
-    {
-        struct _device_event *_event =
-            MR_CONTAINER_OF(list, struct _device_event, list);
-
-        if ((_event->descriptor == descriptor) &&
-            (_event->event == event->event))
-        {
-            /* Destroy the event */
-            if (MR_BIT_IS_SET(device->flags, _FLAG_IN_ISR) == true)
-            {
-                /* The device is in ISR, make the event free */
-                _event->free = true;
-            } else
-            {
-                /* The device is not in ISR, destroy the event */
-                mr_list_remove(&_event->list);
-                mr_free(_event);
-            }
-            ret = MR_EOK;
-            goto _exit;
-        }
-    }
-
-    /* Not found the event */
-    ret = MR_ENOENT;
-
-_exit:
-    /* Critical section exit */
-    mr_critical_exit();
-    return ret;
-}
-
-MR_INLINE void _device_event_destroy_all(const struct mr_device *device,
-                                         int descriptor)
-{
-    /* Critical section enter */
-    mr_critical_enter();
-
-    /* Destroy all events for the specified descriptor */
-    for (struct mr_list *list = device->elist.next; list != &device->elist;
-         list = list->next)
-    {
-        struct _device_event *_event =
-            MR_CONTAINER_OF(list, struct _device_event, list);
-
-        if (_event->descriptor == descriptor)
-        {
-            /* Destroy the event */
-            if (MR_BIT_IS_SET(device->flags, _FLAG_IN_ISR) == true)
-            {
-                /* The device is in ISR, make the event free */
-                _event->free = true;
-            } else
-            {
-                /* The device is not in ISR, destroy the event */
-                list = list->prev;
-                mr_list_remove(&_event->list);
-                mr_free(_event);
-            }
-        }
-    }
-
-    /* Critical section exit */
-    mr_critical_exit();
-}
-
-MR_INLINE void _device_event_handler(const struct mr_device *device,
-                                     uint32_t event, void *args)
-{
-    /* Trigger events */
-    for (struct mr_list *list = device->elist.next; list != &device->elist;
-         list = list->next)
-    {
-        struct _device_event *_event =
-            MR_CONTAINER_OF(list, struct _device_event, list);
-
-        /* If the event is not self-defined, take the mask */
-        event = (_event->self == false) ? event & MR_EVENT_MASK : event;
-
-        /* Check if the event is free */
-        if (_event->free == true)
-        {
-            goto _free;
-        }
-
-        /* Call the callback if the event matches */
-        if (_event->event == event)
-        {
-            _event->callback(_event->descriptor, _event->event, args,
-                             _event->op_data);
-
-            /* Make the event free if it is in ISR */
-            if (_event->free == true)
-            {
-            _free:
-                /* Destroy the event */
-                list = list->prev;
-                mr_list_remove(&_event->list);
-                mr_free(_event);
-            }
-        }
-    }
-
-    /* Destroy free events */
-    for (struct mr_list *list = device->elist.next; list != &device->elist;
-         list = list->next)
-    {
-        struct _device_event *_event =
-            MR_CONTAINER_OF(list, struct _device_event, list);
-
-        /* Make the event free if it is in ISR */
-        if (_event->free == true)
-        {
-            /* Destroy the event */
-            list = list->prev;
-            mr_list_remove(&_event->list);
-            mr_free(_event);
-        }
-    }
-}
-
 MR_INLINE bool _device_flags_is_valid(const struct mr_device *device,
                                       uint32_t flags)
 {
@@ -446,6 +265,170 @@ MR_INLINE void _descriptor_free(int descriptor)
     mr_critical_exit();
 }
 
+MR_INLINE int _event_create(struct mr_device *device, int descriptor,
+                            const struct mr_event *event)
+{
+    int ret;
+
+    /* Critical section enter */
+    mr_critical_enter();
+
+    /* Check if the event exists */
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
+    {
+        struct _event *_event = MR_CONTAINER_OF(list, struct _event, list);
+
+        if ((_event->descriptor == descriptor) &&
+            (_event->event == event->event))
+        {
+            ret = MR_EEXIST;
+            goto _exit;
+        }
+    }
+
+    /* Create the new event */
+    struct _event *_event = mr_malloc(sizeof(struct _event));
+    if (_event == NULL)
+    {
+        ret = MR_ENOMEM;
+        goto _exit;
+    }
+
+    /* Initialize the event */
+    mr_list_init(&_event->list);
+    _event->descriptor = descriptor;
+    _event->hold = false;
+    _event->free = false;
+    _event->event = event->event;
+    _event->self = event->self;
+    _event->callback = event->callback;
+    _event->op_data = event->op_data;
+
+    /* Add the event to the device event list */
+    mr_list_insert_before(&device->elist, &_event->list);
+    ret = MR_EOK;
+
+_exit:
+    /* Critical section exit */
+    mr_critical_exit();
+    return ret;
+}
+
+MR_INLINE int _event_destroy(const struct mr_device *device, int descriptor,
+                             const struct mr_event *event)
+{
+    int ret;
+
+    /* Critical section enter */
+    mr_critical_enter();
+
+    /* Find the event */
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
+    {
+        struct _event *_event = MR_CONTAINER_OF(list, struct _event, list);
+
+        if ((_event->descriptor != descriptor) ||
+            (_event->event != event->event))
+        {
+            continue;
+        }
+
+        /* Destroy the event */
+        if (_event->hold == true)
+        {
+            /* The event is held, destroy it later */
+            _event->free = true;
+        } else
+        {
+            /* The device is not in ISR, destroy the event */
+            mr_list_remove(&_event->list);
+            mr_free(_event);
+        }
+        ret = MR_EOK;
+        goto _exit;
+    }
+
+    /* Not found the event */
+    ret = MR_ENOENT;
+
+_exit:
+    /* Critical section exit */
+    mr_critical_exit();
+    return ret;
+}
+
+MR_INLINE void _event_destroy_all(const struct mr_device *device, int descriptor)
+{
+    /* Critical section enter */
+    mr_critical_enter();
+
+    /* Destroy all events for the specified descriptor */
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
+    {
+        struct _event *_event = MR_CONTAINER_OF(list, struct _event, list);
+
+        if (_event->descriptor != descriptor)
+        {
+            continue;
+        }
+
+        /* Destroy the event */
+        if (_event->hold == true)
+        {
+            /* The event is held, destroy it later */
+            _event->free = true;
+        } else
+        {
+            /* The device is not in ISR, destroy the event */
+            list = list->prev;
+            mr_list_remove(&_event->list);
+            mr_free(_event);
+        }
+    }
+
+    /* Critical section exit */
+    mr_critical_exit();
+}
+
+MR_INLINE void _event_handler(const struct mr_device *device, uint32_t event,
+                              void *args)
+{
+    /* Trigger events */
+    for (struct mr_list *list = device->elist.next; list != &device->elist;
+         list = list->next)
+    {
+        struct _event *_event = MR_CONTAINER_OF(list, struct _event, list);
+        uint32_t mask = (_event->self == true) ? event : event & _MR_EVENT_MASK;
+
+        /* Check if the event matches */
+        if (_event->event != mask)
+        {
+            continue;
+        }
+
+        /* Hold the event */
+        _event->hold = true;
+
+        /* Call the callback if the event matches */
+        _event->callback(_event->descriptor, _event->event, args,
+                         _event->op_data);
+
+        /* Release the event */
+        _event->hold = false;
+
+        /* Destroy the event */
+        if (_event->free == true)
+        {
+            list = list->prev;
+            mr_list_remove(&_event->list);
+            mr_free(_event);
+        }
+    }
+}
+
 static int _device_register(struct mr_device *device, const char *path,
                             uint32_t type, struct mr_device_ops *ops,
                             const void *driver, const char *to_path)
@@ -474,14 +457,12 @@ static int _device_register(struct mr_device *device, const char *path,
     device->type = type & (~MR_DEVICE_TYPE_FDX);
     device->fdx = MR_BIT_IS_SET(type, MR_DEVICE_TYPE_FDX);
     device->flags = (ops->read != NULL ? MR_FLAG_RDONLY : 0) |
-                    (ops->write != NULL ? MR_FLAG_WRONLY : 0) |
-                    (ops->aread != NULL ? MR_FLAG_ARDONLY : 0) |
-                    (ops->awrite != NULL ? MR_FLAG_AWRONLY : 0);
+                    (ops->write != NULL ? MR_FLAG_WRONLY : 0);
     device->ref_count = 0;
     device->lock = 0;
     device->ops = ops;
-    device->driver = driver;
     mr_list_init(&device->elist);
+    device->driver = driver;
 
     /* Critical section enter */
     mr_critical_enter();
@@ -550,9 +531,6 @@ static int _device_isr(struct mr_device *device, uint32_t event, void *args)
         goto _exit;
     }
 
-    /* Set the device ISR flag */
-    MR_BIT_SET(device->flags, _FLAG_IN_ISR);
-
     /* Call the device ISR */
     if (device->ops->isr != NULL)
     {
@@ -563,19 +541,18 @@ static int _device_isr(struct mr_device *device, uint32_t event, void *args)
         }
     }
 
+#ifdef MR_USE_AIO_EXT
     /* Release the device based on event */
-    uint32_t mask = (event & MR_EVENT_RD_COMPLETE) ? _MR_OPERATE_MASK_RD : 0;
-    mask |= (event & MR_EVENT_WR_COMPLETE) ? _MR_OPERATE_MASK_WR : 0;
+    uint32_t mask = (event & MR_EVENT_RD) ? _MR_OPERATE_MASK_RD : 0;
+    mask |= (event & MR_EVENT_WR) ? _MR_OPERATE_MASK_WR : 0;
     _device_release(device, mask);
+#endif /* MR_USE_AIO_EXT */
 
     /* Call the event handler */
-    _device_event_handler(device, event, &ret);
+    _event_handler(device, event, &ret);
     ret = MR_EOK;
 
 _exit:
-    /* Clear the device ISR flag */
-    MR_BIT_CLR(device->flags, _FLAG_IN_ISR);
-
     /* Critical section exit */
     mr_critical_exit();
     return ret;
@@ -658,7 +635,7 @@ static int _device_close(int descriptor)
     device->ref_count--;
 
     /* Destroy events associated with the descriptor */
-    _device_event_destroy_all(device, descriptor);
+    _event_destroy_all(device, descriptor);
 
     /* Free the descriptor */
     _descriptor_free(descriptor);
@@ -669,13 +646,19 @@ _exit:
     return ret;
 }
 
-static ssize_t _device_read(int descriptor, void *buf, size_t count)
+static ssize_t _device_read(int descriptor, void *buf, size_t count, bool async)
 {
     /* Find the device */
     struct mr_device *device = _descriptor_map[descriptor].device;
     if (device == NULL)
     {
         return MR_EINVAL;
+    }
+
+    /* Check read permission */
+    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_RDONLY) == false)
+    {
+        return MR_EACCES;
     }
 
     /* Take the device */
@@ -688,38 +671,56 @@ static ssize_t _device_read(int descriptor, void *buf, size_t count)
     /* Get the position */
     int pos = _descriptor_map[descriptor].pos;
 
-    /* Async or sync read */
-    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_ARDONLY) == true)
+#ifdef MR_USE_AIO_EXT
+    if (async == true)
     {
-        /* Async read */
+        /* Check if the asynchronous operation is supported */
+        if (device->ops->aread == NULL)
+        {
+            ret = MR_EPERM;
+            goto _exit;
+        }
+
+        /* Asynchronous operation */
         ret = device->ops->aread(device, pos, buf, count);
+
+        /* If the asynchronous operation succeeds, the device is released only
+         * after the operation is completed */
         if ((ret == 0) && (count > 0))
         {
-            /* If the operation is successful, the device will not be released
-             * until the operation is finished */
             return ret;
         }
-    } else if (_descriptor_flags_is_valid(descriptor, MR_FLAG_RDONLY) == true)
-    {
-        /* Sync read */
-        ret = device->ops->read(device, pos, buf, count);
-    } else
-    {
-        ret = MR_EACCES;
-    }
 
+        /* Skip synchronous operation */
+        goto _exit;
+    }
+#endif /* MR_USE_AIO_EXT */
+
+    /* Synchronous operation */
+    ret = device->ops->read(device, pos, buf, count);
+
+#ifdef MR_USE_AIO_EXT
+_exit:
+#endif /* MR_USE_AIO_EXT */
     /* Release the device */
     _device_release(device, _MR_OPERATE_MASK_RD);
     return ret;
 }
 
-static ssize_t _device_write(int descriptor, const void *buf, size_t count)
+static ssize_t _device_write(int descriptor, const void *buf, size_t count,
+                             bool async)
 {
     /* Find the device */
     struct mr_device *device = _descriptor_map[descriptor].device;
     if (device == NULL)
     {
         return MR_EINVAL;
+    }
+
+    /* Check write permission */
+    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_WRONLY) == false)
+    {
+        return MR_EACCES;
     }
 
     /* Take the device */
@@ -732,26 +733,37 @@ static ssize_t _device_write(int descriptor, const void *buf, size_t count)
     /* Get the position */
     int pos = _descriptor_map[descriptor].pos;
 
-    /* Async or sync writes */
-    if (_descriptor_flags_is_valid(descriptor, MR_FLAG_AWRONLY) == true)
+#ifdef MR_USE_AIO_EXT
+    if (async == true)
     {
-        /* Async write */
+        /* Check if the asynchronous operation is supported */
+        if (device->ops->awrite == NULL)
+        {
+            ret = MR_EPERM;
+            goto _exit;
+        }
+
+        /* Asynchronous operation */
         ret = device->ops->awrite(device, pos, buf, count);
+
+        /* If the asynchronous operation succeeds, the device is released only
+         * after the operation is completed */
         if ((ret == 0) && (count > 0))
         {
-            /* If the operation is successful, the device will not be released
-             * until the operation is finished */
             return ret;
         }
-    } else if (_descriptor_flags_is_valid(descriptor, MR_FLAG_WRONLY) == true)
-    {
-        /* Sync write */
-        ret = device->ops->write(device, pos, buf, count);
-    } else
-    {
-        ret = MR_EACCES;
-    }
 
+        /* Skip synchronous operation */
+        goto _exit;
+    }
+#endif /* MR_USE_AIO_EXT */
+
+    /* Synchronous operation */
+    ret = device->ops->write(device, pos, buf, count);
+
+#ifdef MR_USE_AIO_EXT
+_exit:
+#endif /* MR_USE_AIO_EXT */
     /* Release the device */
     _device_release(device, _MR_OPERATE_MASK_WR);
     return ret;
@@ -779,7 +791,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
     /* Control the device */
     switch (cmd)
     {
-        case MR_CTRL_SET(MR_CMD_POS):
+        case MR_CMD_POS:
         {
             /* Check the argument */
             if (args == NULL)
@@ -793,7 +805,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
             ret = MR_EOK;
             break;
         }
-        case MR_CTRL_GET(MR_CMD_POS):
+        case (-MR_CMD_POS):
         {
             /* Check the argument */
             if (args == NULL)
@@ -807,7 +819,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
             ret = MR_EOK;
             break;
         }
-        case MR_CTRL_NEW(MR_CMD_EVENT):
+        case MR_CMD_EVENT:
         {
             /* Check the argument */
             if (args == NULL)
@@ -817,10 +829,10 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
             }
 
             /* Create the event */
-            ret = _device_event_create(device, descriptor, args);
+            ret = _event_create(device, descriptor, args);
             break;
         }
-        case MR_CTRL_DEL(MR_CMD_EVENT):
+        case (-MR_CMD_EVENT):
         {
             /* Check the argument */
             if (args == NULL)
@@ -830,7 +842,7 @@ static int _device_ioctl(int descriptor, int cmd, void *args)
             }
 
             /* Destroy the event */
-            ret = _device_event_destroy(device, descriptor, args);
+            ret = _event_destroy(device, descriptor, args);
             break;
         }
         default:
@@ -1039,12 +1051,11 @@ _exit:
  * @param count The count of read.
  *
  * @return The size of the actual read, otherwise an error code.
- *
- * @note If the async operation is successful, the device will not be released
- *       until the operation is complete.
  */
 ssize_t mr_device_read(int descriptor, void *buf, size_t count)
 {
+    MR_ASSERT((buf != NULL) || (count == 0));
+
     /* Check if the descriptor is valid */
     if (_descriptor_is_valid(descriptor) == false)
     {
@@ -1052,7 +1063,7 @@ ssize_t mr_device_read(int descriptor, void *buf, size_t count)
     }
 
     /* Read the device */
-    ssize_t ret = _device_read(descriptor, buf, count);
+    ssize_t ret = _device_read(descriptor, buf, count, false);
     if (ret < 0)
     {
         goto _exit;
@@ -1074,12 +1085,11 @@ _exit:
  * @param count The count of write.
  *
  * @return The size of the actual write, otherwise an error code.
- *
- * @note If the async operation is successful, the device will not be released
- *       until the operation is complete.
  */
 ssize_t mr_device_write(int descriptor, const void *buf, size_t count)
 {
+    MR_ASSERT((buf != NULL) || (count == 0));
+
     /* Check if the descriptor is valid */
     if (_descriptor_is_valid(descriptor) == false)
     {
@@ -1087,7 +1097,7 @@ ssize_t mr_device_write(int descriptor, const void *buf, size_t count)
     }
 
     /* Write the device */
-    ssize_t ret = _device_write(descriptor, buf, count);
+    ssize_t ret = _device_write(descriptor, buf, count, false);
     if (ret < 0)
     {
         goto _exit;
@@ -1132,3 +1142,77 @@ _exit:
     MR_LOG_E("Ioctl '%d' failed: %s.\r\n", descriptor, mr_strerror(ret));
     return ret;
 }
+
+#ifdef MR_USE_AIO_EXT
+
+/**
+ * @brief This function read data asynchronously from a device.
+ *
+ * @param descriptor The descriptor of the device.
+ * @param buf The buffer to be read.
+ * @param count The count of read.
+ *
+ * @return The size of the actual read if the operation is completed, 0 if the
+ *         operation is not completed, otherwise an error code.
+ */
+ssize_t mr_device_aread(int descriptor, void *buf, size_t count)
+{
+    MR_ASSERT((buf != NULL) || (count == 0));
+
+    /* Check if the descriptor is valid */
+    if (_descriptor_is_valid(descriptor) == false)
+    {
+        return MR_EINVAL;
+    }
+
+    /* Read the device */
+    ssize_t ret = _device_read(descriptor, buf, count, true);
+    if (ret < 0)
+    {
+        goto _exit;
+    }
+
+    /* Return actual read size */
+    return ret;
+
+_exit:
+    MR_LOG_E("Aread '%d' failed: %s.\r\n", descriptor, mr_strerror((int)ret));
+    return ret;
+}
+
+/**
+ * @brief This function write data to a device.
+ *
+ * @param descriptor The descriptor of the device.
+ * @param buf The buffer to be written.
+ * @param count The count of write.
+ *
+* @return The size of the actual write if the operation is completed, 0 if the
+ *        operation is not completed, otherwise an error code.
+ */
+ssize_t mr_device_awrite(int descriptor, const void *buf, size_t count)
+{
+    MR_ASSERT((buf != NULL) || (count == 0));
+
+    /* Check if the descriptor is valid */
+    if (_descriptor_is_valid(descriptor) == false)
+    {
+        return MR_EINVAL;
+    }
+
+    /* Write the device */
+    ssize_t ret = _device_write(descriptor, buf, count, true);
+    if (ret < 0)
+    {
+        goto _exit;
+    }
+
+    /* Return actual write size */
+    return ret;
+
+_exit:
+    MR_LOG_E("Awrite '%d' failed: %s.\r\n", descriptor, mr_strerror((int)ret));
+    return ret;
+}
+
+#endif /* MR_USE_AIO_EXT */

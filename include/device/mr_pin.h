@@ -38,7 +38,7 @@ extern "C" {
 #define MR_CMD_PIN_MODE                 MR_CMD_CONFIG       /**< PIN mode command */
 
 #define MR_EVENT_PIN_EXTI_INT                                                  \
-    MR_EVENT_RD_COMPLETE                                    /**< Interrupt on EXTI event */
+    (MR_EVENT_RD | MR_EVENT_DATA | (0x01))                  /**< Interrupt on EXTI event */
 
 /**
  * @brief PIN configuration structure.

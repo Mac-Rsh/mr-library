@@ -204,7 +204,7 @@ static int pin_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CTRL_SET(MR_CMD_PIN_MODE):
+        case MR_CMD_PIN_MODE:
         {
             struct mr_pin_config *config = (struct mr_pin_config *)args;
 
@@ -221,7 +221,7 @@ static int pin_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             }
             return sizeof(*config);
         }
-        case MR_CTRL_GET(MR_CMD_PIN_MODE):
+        case (-MR_CMD_PIN_MODE):
         {
             struct mr_pin_config *config = (struct mr_pin_config *)args;
 

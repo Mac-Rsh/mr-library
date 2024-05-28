@@ -30,8 +30,8 @@ void mr_auto_init(void);
  * @{
  */
 
-void mr_interrupt_disable(void);
-void mr_interrupt_enable(void);
+uint32_t mr_interrupt_disable(void);
+void mr_interrupt_enable(uint32_t mask);
 void mr_critical_enter(void);
 void mr_critical_exit(void);
 
@@ -121,6 +121,11 @@ int mr_device_close(int descriptor);
 ssize_t mr_device_read(int descriptor, void *buf, size_t count);
 ssize_t mr_device_write(int descriptor, const void *buf, size_t count);
 int mr_device_ioctl(int descriptor, int cmd, void *args);
+
+#ifdef MR_USE_AIO_EXT
+ssize_t mr_device_aread(int descriptor, void *buf, size_t count);
+ ssize_t mr_device_awrite(int descriptor, const void *buf, size_t count);
+#endif /* MR_USE_AIO_EXT */
 
 /** @} */
 
