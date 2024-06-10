@@ -1,0 +1,10 @@
+menu "Timer configure"
+
+    # Timer
+    config MR_USE_TIMER
+        bool "Use timer"
+        default n
+        help
+            Use this option allows for the use of timer.
+
+endmenu

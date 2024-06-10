@@ -9,7 +9,7 @@ menu "Serial configure"
 
     config MR_CFG_SERIAL_RD_FIFO_SIZE
         depends on MR_USE_SERIAL
-        int "Serial read fifo size"
+        int "Serial read FIFO size"
         range 0 2147483647
         default 128
         help
@@ -17,7 +17,7 @@ menu "Serial configure"
 
     config MR_CFG_SERIAL_WR_FIFO_SIZE
         depends on MR_USE_SERIAL
-        int "Serial write fifo size"
+        int "Serial write FIFO size"
         range 0 2147483647
         default 0
         help
@@ -26,14 +26,14 @@ menu "Serial configure"
     # DMA
     config MR_USE_SERIAL_DMA
         depends on MR_USE_SERIAL
-        bool "Use serial dma"
+        bool "Use serial DMA"
         default n
         help
             Use this option allows for the use of serial DMA.
 
     config MR_CFG_SERIAL_RD_DMA_FIFO_SIZE
         depends on MR_USE_SERIAL_DMA
-        int "Serial read dma fifo size"
+        int "Serial read DMA FIFO size"
         range 0 2147483647
         default 128
         help
@@ -41,18 +41,10 @@ menu "Serial configure"
 
     config MR_CFG_SERIAL_WR_DMA_FIFO_SIZE
         depends on MR_USE_SERIAL_DMA
-        int "Serial write dma fifo size"
+        int "Serial write DMA FIFO size"
         range 0 2147483647
         default 128
         help
             This option sets the size of the write DMA FIFO.
-
-    # AIO
-    config MR_USE_SERIAL_AIO_EXT
-        depends on MR_USE_SERIAL and MR_USE_AIO_EXT
-        bool "Use serial extended AIO"
-        default n
-        help
-            This option uses extended asynchronous I/O
 
 endmenu

@@ -6,19 +6,27 @@
  * @date 2023-11-06    MacRsh       First version
  */
 
-#include "../mr-library/include/device/mr_adc.h"
+#include <include/device/mr_adc.h>
 
 #ifdef MR_USE_ADC
 
-#define _ADC_CHANNEL_IS_VALID(_adc, _channel)                                  \
+#define _ADC_CHANNEL_IS_VALID(_adc, _channel)                                                      \
     (((_channel) >= 0) && ((_channel) < (sizeof((_adc)->channels) * 8)))
-#define _ADC_CHANNEL_IS_EXISTED(_data, _channel)                               \
-    (((_data)->channels & (1 << (_channel))) != 0)
-#define _ADC_CHANNEL_IS_ENABLED(_adc, _channel)                                \
-    (MR_BIT_IS_SET((_adc)->channels, (1 << (_channel))))
+#define _ADC_CHANNEL_IS_EXISTED(_data, _channel)                                                   \
+    (((_data)->channels & (0x1 << (_channel))) != 0)
+#define _ADC_CHANNEL_STATE_GET(_adc, _channel)                                                     \
+    (MR_BIT_IS_SET((_adc)->channels, (0x1 << (_channel))))
+#define _ADC_CHANNEL_STATE_SET(_adc, _channel, _state)                                             \
+    do                                                                                             \
+    {                                                                                              \
+        MR_BIT_CLR(adc->channels, (0x1 << channel));                                               \
+        MR_BIT_SET(adc->channels, ((_state) << channel));                                          \
+    } while (0);
+#define _ADC_CHANNEL_IS_ENABLED(_adc, _channel)                                                    \
+    (_ADC_CHANNEL_STATE_GET((_adc), (_channel)) != MR_ADC_CHANNEL_STATE_DISABLE)
 
-MR_INLINE int _adc_channel_configure_set(struct mr_adc *adc, int channel,
-                                         const struct mr_adc_config *config)
+static int _adc_channel_configure_set(struct mr_adc *adc, int channel,
+                                      const struct mr_adc_config *config)
 {
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET((struct mr_device *)adc);
     struct mr_adc_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
@@ -49,19 +57,13 @@ MR_INLINE int _adc_channel_configure_set(struct mr_adc *adc, int channel,
         return ret;
     }
 
-    /* Enable or disable the channel */
-    if (config->channel_state == true)
-    {
-        MR_BIT_SET(adc->channels, (1 << channel));
-    } else
-    {
-        MR_BIT_CLR(adc->channels, (1 << channel));
-    }
+    /* Set the channel state */
+    _ADC_CHANNEL_STATE_SET(adc, channel, config->channel_state);
     return MR_EOK;
 }
 
-MR_INLINE int _adc_channel_configure_get(const struct mr_adc *adc, int channel,
-                                         struct mr_adc_config *config)
+static int _adc_channel_configure_get(const struct mr_adc *adc, int channel,
+                                      struct mr_adc_config *config)
 {
     /* Check if the channel is valid */
     if (_ADC_CHANNEL_IS_VALID(adc, channel) == false)
@@ -69,8 +71,8 @@ MR_INLINE int _adc_channel_configure_get(const struct mr_adc *adc, int channel,
         return MR_EINVAL;
     }
 
-    /* Get the channel configure */
-    config->channel_state = _ADC_CHANNEL_IS_ENABLED(adc, channel);
+    /* Get the channel state */
+    config->channel_state = _ADC_CHANNEL_STATE_GET(adc, channel);
     return MR_EOK;
 }
 
@@ -104,8 +106,8 @@ static int adc_close(struct mr_device *device)
     {
         if (_ADC_CHANNEL_IS_ENABLED(adc, i) == true)
         {
-            /* Just close the channel, without clearing the channel mask, and
-             * the channel will be restored when opened */
+            /* Just close the channel, without clearing the channel mask, and the channel will be
+             * restored when opened */
             ops->channel_configure(driver, i, false);
         }
     }
@@ -114,8 +116,7 @@ static int adc_close(struct mr_device *device)
     return ops->configure(driver, false);
 }
 
-static ssize_t adc_read(struct mr_device *device, int pos, void *buf,
-                        size_t count)
+static ssize_t adc_read(struct mr_device *device, int pos, void *buf, size_t count)
 {
     struct mr_driver *driver = _MR_DEVICE_DRIVER_GET(device);
     struct mr_adc_driver_ops *ops = _MR_DRIVER_OPS_GET(driver);
@@ -126,18 +127,16 @@ static ssize_t adc_read(struct mr_device *device, int pos, void *buf,
     struct mr_adc *adc = (struct mr_adc *)device;
 
     /* Check if the channel is enabled */
-    if ((_ADC_CHANNEL_IS_VALID(adc, pos) == false) ||
-        (_ADC_CHANNEL_IS_ENABLED(adc, pos) == false))
+    if ((_ADC_CHANNEL_IS_VALID(adc, pos) == false) || (_ADC_CHANNEL_IS_ENABLED(adc, pos) == false))
     {
         return MR_EINVAL;
     }
 #endif /* MR_USE_ADC_CHECK */
 
     /* Read data */
-    for (rcount = 0; rcount < MR_ALIGN_DOWN(count, sizeof(*rbuf));
-         rcount += sizeof(*rbuf))
+    for (rcount = 0; rcount < MR_ALIGN_DOWN(count, sizeof(*rbuf)); rcount += sizeof(*rbuf))
     {
-        int ret = ops->read(driver, pos, rbuf);
+        int ret = ops->get(driver, pos, rbuf);
         if (ret < 0)
         {
             /* If no data is read, return the error code */
@@ -156,7 +155,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
 
     switch (cmd)
     {
-        case MR_CMD_ADC_CHANNEL_STATE:
+        case MR_CMD_ADC_CONFIG:
         {
             struct mr_adc_config *config = (struct mr_adc_config *)args;
 
@@ -165,7 +164,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
                 return MR_EINVAL;
             }
 
-            /* Set the channel configure */
+            /* Set the adc channel configure */
             int ret = _adc_channel_configure_set(adc, pos, config);
             if (ret < 0)
             {
@@ -173,7 +172,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             }
             return sizeof(*config);
         }
-        case (-MR_CMD_ADC_CHANNEL_STATE):
+        case (-MR_CMD_ADC_CONFIG):
         {
             struct mr_adc_config *config = (struct mr_adc_config *)args;
 
@@ -182,7 +181,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
                 return MR_EINVAL;
             }
 
-            /* Get the channel configure */
+            /* Get the adc channel configure */
             int ret = _adc_channel_configure_get(adc, pos, config);
             if (ret < 0)
             {
@@ -204,7 +203,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
             /* Driver does not provide the corresponding information */
             if (data == NULL)
             {
-                return MR_EPERM;
+                return MR_EIO;
             }
 
             /* Get the resolution */
@@ -227,8 +226,7 @@ static int adc_ioctl(struct mr_device *device, int pos, int cmd, void *args)
  *
  * @return The error code.
  */
-int mr_adc_register(struct mr_adc *adc, const char *path,
-                    const struct mr_driver *driver)
+int mr_adc_register(struct mr_adc *adc, const char *path, const struct mr_driver *driver)
 {
     MR_ASSERT(adc != NULL);
     MR_ASSERT(path != NULL);
@@ -243,8 +241,7 @@ int mr_adc_register(struct mr_adc *adc, const char *path,
     adc->channels = 0;
 
     /* Register the adc device */
-    return mr_device_register((struct mr_device *)adc, path, MR_DEVICE_TYPE_ADC,
-                              &ops, driver);
+    return mr_device_register((struct mr_device *)adc, path, MR_DEVICE_TYPE_ADC, &ops, driver);
 }
 
 #endif /* MR_USE_ADC */

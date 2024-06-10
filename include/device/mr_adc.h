@@ -1,4 +1,4 @@
-/*
+/**
  * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
@@ -9,7 +9,7 @@
 #ifndef _MR_ADC_H_
 #define _MR_ADC_H_
 
-#include "../mr-library/include/mr_api.h"
+#include <include/mr_api.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,21 +22,21 @@ extern "C" {
  * @{
  */
 
-#define MR_ADC_CHANNEL_STATE_ENABLE     true                /**< Channel enable */
-#define MR_ADC_CHANNEL_STATE_DISABLE    false               /**< Channel disable */
+#define MR_ADC_CHANNEL_STATE_DISABLE    (false)                     /**< Channel disable */
+#define MR_ADC_CHANNEL_STATE_ENABLE     (true)                      /**< Channel enable */
 
-#define MR_CMD_ADC_CHANNEL              MR_CMD_POS          /**< ADC channel command */
-#define MR_CMD_ADC_CHANNEL_STATE        MR_CMD_CONFIG       /**< ADC channel state command */
-#define MR_CMD_ADC_RESOLUTION           (0x01)              /**< ADC resolution command */
+#define MR_CMD_ADC_CHANNEL              MR_CMD_POS                  /**< Channel command */
+#define MR_CMD_ADC_CONFIG               MR_CMD_CONFIG               /**< Configuration command */
+#define MR_CMD_ADC_RESOLUTION           (0x01)                      /**< Resolution command */
 
-typedef uint32_t mr_adc_data_t;                             /**< ADC read data type */
+typedef uint32_t mr_adc_data_t;                                     /**< ADC read data type */
 
 /**
  * @brief ADC configuration structure.
  */
 struct mr_adc_config
 {
-    uint32_t channel_state;                                 /**< Channel state */
+    uint32_t channel_state;                                         /**< Channel state */
 };
 
 /**
@@ -44,9 +44,9 @@ struct mr_adc_config
  */
 struct mr_adc
 {
-    struct mr_device device;                                /**< Device */
+    struct mr_device device;                                        /**< Device */
 
-    uint32_t channels;                                      /**< Channels state mask */
+    uint32_t channels;                                              /**< Channels state mask */
 };
 
 /**
@@ -55,9 +55,8 @@ struct mr_adc
 struct mr_adc_driver_ops
 {
     int (*configure)(struct mr_driver *driver, bool enable);
-    int (*channel_configure)(struct mr_driver *driver, uint32_t channel,
-                             bool enable);
-    int (*read)(struct mr_driver *driver, uint32_t channel, uint32_t *data);
+    int (*channel_configure)(struct mr_driver *driver, uint32_t channel, bool enable);
+    int (*get)(struct mr_driver *driver, uint32_t channel, uint32_t *data);
 };
 
 /**
@@ -65,12 +64,11 @@ struct mr_adc_driver_ops
  */
 struct mr_adc_driver_data
 {
-    uint32_t channels;                                      /**< Channels exists mask */
-    uint32_t resolution;                                    /**< Resolution */
+    uint32_t channels;                                              /**< Channels exists mask */
+    uint32_t resolution;                                            /**< Resolution */
 };
 
- int mr_adc_register(struct mr_adc *adc, const char *path,
-                     const struct mr_driver *driver);
+int mr_adc_register(struct mr_adc *adc, const char *path, const struct mr_driver *driver);
 
 /** @} */
 

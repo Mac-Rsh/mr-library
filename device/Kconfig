@@ -16,13 +16,6 @@ menu "Device configure"
         help
             This option sets the max number of descriptors.
 
-    # AIO
-    config MR_USE_AIO_EXT
-        bool "Use extended AIO"
-        default n
-        help
-            This option uses extended asynchronous I/O.
-
     comment "--- Device ---"
 
     # ADC
@@ -31,7 +24,16 @@ menu "Device configure"
     # PIN
     source "device/pin/Kconfig"
 
+    # PWM
+    source "device/pwm/Kconfig"
+
     # Serial
     source "device/serial/Kconfig"
+
+    # SPI
+    source "device/spi/Kconfig"
+
+    # Timer
+    source "device/timer/Kconfig"
 
 endmenu
