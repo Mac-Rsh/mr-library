@@ -1,4 +1,4 @@
-/*
+/**
  * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
@@ -9,8 +9,7 @@
 #ifndef _MR_SERVICE_H_
 #define _MR_SERVICE_H_
 
-#include "../mr-library/include/mr_def.h"
-#include <string.h>
+#include <include/mr_def.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,37 +21,6 @@ extern "C" {
  */
 
 /**
- * @brief This macro function concatenates two strings.
- *
- * @param _a The first string.
- * @param _b The second string.
- *
- * @return The concatenated string.
- */
-#define MR_CONCAT(_a, _b)               _a##_b
-
-/**
- * @brief This macro function converts an integer to a string.
- *
- * @param _a The integer to convert.
- *
- * @return The string representation of the integer.
- */
-#define MR_STR(_a)                      #_a
-
-/**
- * @brief This macro function gets its structure from its member.
- *
- * @param _pointer The pointer to the structure.
- * @param _type The type of the structure.
- * @param _member The member of the structure.
- *
- * @return A pointer to the structure.
- */
-#define MR_CONTAINER_OF(_pointer, _type, _member)                              \
-    ((_type *)((char *)(_pointer) - (size_t)(&((_type *)0)->_member)))
-
-/**
  * @brief This macro function aligns a value upwards.
  *
  * @param _value The value to align.
@@ -60,8 +28,7 @@ extern "C" {
  *
  * @return The aligned value.
  */
-#define MR_ALIGN_UP(_value, _align)                                            \
-    (((_value) + (_align)-1) & ~((_align)-1))
+#define MR_ALIGN_UP(_value, _align)     (((_value) + (_align)-1) & ~((_align)-1))
 
 /**
  * @brief This macro function aligns a value downwards.
@@ -72,6 +39,17 @@ extern "C" {
  * @return The aligned value.
  */
 #define MR_ALIGN_DOWN(_value, _align)   ((_value) & ~((_align)-1))
+
+/**
+ * @brief This macro function gets the number of elements in an array.
+ *
+ * @param _array The array.
+ *
+ * @return The number of elements in the array.
+ *
+ * @note The array must be an array, not a pointer.
+ */
+#define MR_ARRAY_NUM(_array)            (sizeof(_array) / sizeof((_array)[0]))
 
 /**
  * @brief This macro function checks if a value is set.
@@ -98,6 +76,40 @@ extern "C" {
 #define MR_BIT_CLR(_value, _mask)       ((_value) &= ~(_mask))
 
 /**
+ * @brief This macro function ensures that a value is within a specified range.
+ *
+ * @param _value The value.
+ * @param _min The minimum value.
+ * @param _max The maximum value.
+ *
+ * @return The value within the specified range.
+ */
+#define MR_BOUND(_value, _min, _max)                                                               \
+    ((_value) < (_min) ? (_min) : ((_value) > (_max) ? (_max) : (_value)))
+
+/**
+ * @brief This macro function concatenates two strings.
+ *
+ * @param _a The first string.
+ * @param _b The second string.
+ *
+ * @return The concatenated string.
+ */
+#define MR_CONCAT(_a, _b)               _a##_b
+
+/**
+ * @brief This macro function gets its structure from its member.
+ *
+ * @param _pointer The pointer to the structure.
+ * @param _type The type of the structure.
+ * @param _member The member of the structure.
+ *
+ * @return A pointer to the structure.
+ */
+#define MR_CONTAINER_OF(_pointer, _type, _member)                                                  \
+    ((_type *)((char *)(_pointer) - (size_t)(&((_type *)0)->_member)))
+
+/**
  * @brief This macro function creates a local variable.
  *
  * @param _type The type of the variable.
@@ -110,15 +122,6 @@ extern "C" {
 #define MR_MAKE_LOCAL(_type, ...)       (&((_type){__VA_ARGS__}))
 
 /**
- * @brief This macro function gets the number of elements in an array.
- *
- * @param _array The array.
- *
- * @return The number of elements in the array.
- */
-#define MR_ARRAY_NUM(_array)            (sizeof(_array) / sizeof((_array)[0]))
-
-/**
  * @brief This macro function gets the maximum of two values.
  *
  * @param _a The first value.
@@ -127,11 +130,11 @@ extern "C" {
  *
  * @return The maximum of the two values.
  */
-#define MR_MAX(_a, _b, _type)                                                  \
-    ({                                                                         \
-        _type __a = (_a);                                                      \
-        _type __b = (_b);                                                      \
-        __a > __b ? __a : __b;                                                 \
+#define MR_MAX(_a, _b, _type)                                                                      \
+    ({                                                                                             \
+        _type __a = (_a);                                                                          \
+        _type __b = (_b);                                                                          \
+        __a > __b ? __a : __b;                                                                     \
     })
 
 /**
@@ -143,24 +146,21 @@ extern "C" {
  *
  * @return The minimum of the two values.
  */
-#define MR_MIN(_a, _b, _type)                                                  \
-    ({                                                                         \
-        _type __a = (_a);                                                      \
-        _type __b = (_b);                                                      \
-        __a < __b ? __a : __b;                                                 \
+#define MR_MIN(_a, _b, _type)                                                                      \
+    ({                                                                                             \
+        _type __a = (_a);                                                                          \
+        _type __b = (_b);                                                                          \
+        __a < __b ? __a : __b;                                                                     \
     })
 
 /**
- * @brief This macro function ensures that a value is within a specified range.
+ * @brief This macro function converts an integer to a string.
  *
- * @param _value The value.
- * @param _min The minimum value.
- * @param _max The maximum value.
+ * @param _a The integer to convert.
  *
- * @return The value within the specified range.
+ * @return The string representation of the integer.
  */
-#define MR_BOUND(_value, _min, _max)                                           \
-    ({ (_value) < (_min) ? (_min) : ((_value) > (_max) ? (_max) : (_value)); })
+#define MR_STR(_a)                      #_a
 
 /**
  * @brief This macro function swaps two values.
@@ -169,12 +169,12 @@ extern "C" {
  * @param _b The second value.
  * @param _type The type of the values.
  */
-#define MR_SWAP(_a, _b, _type)                                                 \
-    do                                                                         \
-    {                                                                          \
-        _type _tmp = (_a);                                                     \
-        (_a) = (_b);                                                           \
-        (_b) = _tmp;                                                           \
+#define MR_SWAP(_a, _b, _type)                                                                     \
+    do                                                                                             \
+    {                                                                                              \
+        _type __tmp = (_a);                                                                        \
+        (_a) = (_b);                                                                               \
+        (_b) = __tmp;                                                                              \
     } while (0)
 
 /**
@@ -186,6 +186,17 @@ extern "C" {
  */
 #define MR_TO_BOOL(_value)              (!!(_value))
 
+/**
+ * @brief This macro function provides a with-like construct for execution blocks.
+ * 
+ * @param _begin The beginning of the block.
+ * @param _end The end of the block.
+ * 
+ * @note Using the 'break' or 'return' may caused 'end' not to executed.
+ */
+#define MR_WITH(_begin, _end)                                                                              \
+    for (bool __with = ({(_begin); false;}); __with != true; __with = true, (_end))
+
 /** @} */
 
 /**
@@ -193,28 +204,28 @@ extern "C" {
  * @{
  */
 
-#define MR_LOG_TAG                      ("null")
+#define MR_LOG_TAG ("null")
 
 #ifdef MR_USE_LOG_ERROR
-#define MR_LOG_E(_fmt, ...)                                                    \
+#define MR_LOG_E(_fmt, ...)                                                                        \
     mr_log_printf(MR_LOG_TAG, "[E/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_E(_fmt, ...)
 #endif /* MR_USE_LOG_ERROR */
 #ifdef MR_USE_LOG_WARN
-#define MR_LOG_W(_fmt, ...)                                                    \
+#define MR_LOG_W(_fmt, ...)                                                                        \
     mr_log_printf(MR_LOG_TAG, "[W/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_W(_fmt, ...)
 #endif /* MR_USE_LOG_WARN */
 #ifdef MR_USE_LOG_INFO
-#define MR_LOG_I(_fmt, ...)                                                    \
+#define MR_LOG_I(_fmt, ...)                                                                        \
     mr_log_printf(MR_LOG_TAG, "[I/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_I(_fmt, ...)
 #endif /* MR_USE_LOG_INFO */
 #ifdef MR_USE_LOG_DEBUG
-#define MR_LOG_D(_fmt, ...)                                                    \
+#define MR_LOG_D(_fmt, ...)                                                                        \
     mr_log_printf(MR_LOG_TAG, "[D/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)
 #else
 #define MR_LOG_D(_fmt, ...)
@@ -233,14 +244,13 @@ extern "C" {
  *
  * @param _ex The assert expression.
  */
-#define MR_ASSERT(_ex)                                                         \
-    do                                                                         \
-    {                                                                          \
-        if (!(_ex))                                                            \
-        {                                                                      \
-            mr_assert_handler(#_ex, MR_LOG_TAG, (__FUNCTION__), (__FILE__),    \
-                              (__LINE__));                                     \
-        }                                                                      \
+#define MR_ASSERT(_ex)                                                                             \
+    do                                                                                             \
+    {                                                                                              \
+        if (!(_ex))                                                                                \
+        {                                                                                          \
+            mr_assert_handler(#_ex, MR_LOG_TAG, (__func__), (__FILE__), (__LINE__));               \
+        }                                                                                          \
     } while (0)
 #else
 #define MR_ASSERT(_ex)
@@ -258,9 +268,9 @@ extern "C" {
  *
  * @param _list The list to initialize.
  */
-#define MR_LIST_INIT(_list)                                                    \
-    {                                                                          \
-        (_list), (_list)                                                       \
+#define MR_LIST_INIT(_list)                                                                        \
+    {                                                                                              \
+        (_list), (_list)                                                                           \
     }
 
 /**
@@ -341,7 +351,7 @@ MR_INLINE size_t mr_list_len_get(struct mr_list *list)
  *
  * @return True if the list is empty, mr_false otherwise.
  */
-MR_INLINE int mr_list_is_empty(struct mr_list *list)
+MR_INLINE int mr_list_is_empty(const struct mr_list *list)
 {
     return list->next == list;
 }
@@ -353,7 +363,7 @@ MR_INLINE int mr_list_is_empty(struct mr_list *list)
  *
  * @return True if the list is inited, mr_false otherwise.
  */
-MR_INLINE int mr_list_is_inited(struct mr_list *list)
+MR_INLINE int mr_list_is_inited(const struct mr_list *list)
 {
     return (list->next != NULL) && (list->prev != NULL);
 }
@@ -370,32 +380,40 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  *
  * @param _device The device.
  */
-#define _MR_DEVICE_REF_COUNT_INCREASE(_device)                                 \
-    (_device)->ref_count++
+#define _MR_DEVICE_REF_COUNT_INCREASE(_device)                                                     \
+    ((_device)->ref_count++)
 
 /**
  * @brief This macro function decreases the reference count of the device.
  *
  * @param _device The device.
  */
-#define _MR_DEVICE_REF_COUNT_DECREASE(_device)                                 \
-    (_device)->ref_count--
+#define _MR_DEVICE_REF_COUNT_DECREASE(_device)                                                     \
+    ((_device)->ref_count--)
+
+/**
+ * @brief This macro function gets the reference count of the device.
+ *
+ * @param _device The device.
+ */
+#define _MR_DEVICE_REF_COUNT_GET(_device)                                                          \
+    ((_device)->ref_count)
 
 /**
  * @brief This macro function gets the device read operator.
  *
  * @param _device The device.
  */
-#define _MR_DEVICE_OPERATOR_RD_GET(_device)                                    \
-    ((((_device)->lock & _MR_OPERATE_MASK_RD) >> 16) - 1)
+#define _MR_DEVICE_OPERATOR_RD_GET(_device)                                                        \
+    ((int)(((_device)->lock & _MR_OPERATE_MASK_RD) >> 16) - 1)
 
 /**
  * @brief This macro function gets the device write operator.
  *
  * @param _device The device.
  */
-#define _MR_DEVICE_OPERATOR_WR_GET(_device)                                    \
-    (((_device)->lock & _MR_OPERATE_MASK_WR) - 1)
+#define _MR_DEVICE_OPERATOR_WR_GET(_device)                                                        \
+    ((int)((_device)->lock & _MR_OPERATE_MASK_WR) - 1)
 
 /**
  * @brief This macro function gets the device operator.
@@ -404,8 +422,8 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  *
  * @note This feature is only available for non-full-duplex devices.
  */
-#define _MR_DEVICE_OPERATOR_GET(_device)                                       \
-    (((_device)->lock & _MR_OPERATE_MASK_WR) - 1)
+#define _MR_DEVICE_OPERATOR_GET(_device)                                                           \
+    ((int)((_device)->lock & _MR_OPERATE_MASK_WR) - 1)
 
 /**
  * @brief This macro function sets the device read operator.
@@ -413,9 +431,8 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  * @param _device The device.
  * @param _operator The operator.
  */
-#define _MR_DEVICE_OPERATOR_RD_SET(_device, _operator)                         \
-    (((_device)->lock =                                                        \
-          ((_device)->lock & ~_MR_OPERATE_MASK_RD) | ((_operator + 1) << 16)))
+#define _MR_DEVICE_OPERATOR_RD_SET(_device, _operator)                                             \
+    (((_device)->lock = ((_device)->lock & ~_MR_OPERATE_MASK_RD) | ((_operator + 1) << 16)))
 
 /**
  * @brief This macro function sets the device write operator.
@@ -423,9 +440,8 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  * @param _device The device.
  * @param _operator The operator.
  */
-#define _MR_DEVICE_OPERATOR_WR_SET(_device, _operator)                         \
-    (((_device)->lock =                                                        \
-          ((_device)->lock & ~_MR_OPERATE_MASK_WR) | (_operator + 1)))
+#define _MR_DEVICE_OPERATOR_WR_SET(_device, _operator)                                             \
+    (((_device)->lock = ((_device)->lock & ~_MR_OPERATE_MASK_WR) | ((_operator) + 1)))
 
 /**
  * @brief This macro function sets the device operator.
@@ -435,25 +451,25 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  *
  * @note This feature is only available for non-full-duplex devices.
  */
-#define _MR_DEVICE_OPERATOR_SET(_device, _operator)                            \
-    (_MR_DEVICE_OPERATOR_RD_SET(_device, _operator),                           \
-     _MR_DEVICE_OPERATOR_WR_SET(_device, _operator))
+#define _MR_DEVICE_OPERATOR_SET(_device, _operator)                                                \
+    (_MR_DEVICE_OPERATOR_RD_SET((_device), (_operator)),                                           \
+     _MR_DEVICE_OPERATOR_WR_SET((_device), (_operator)))
 
 /**
  * @brief This macro function clears the device operator.
  *
  * @param _device The device.
  */
-#define _MR_DEVICE_OPERATOR_RD_CLR(_device)                                    \
-    _MR_DEVICE_OPERATOR_RD_SET(_device, -1)
+#define _MR_DEVICE_OPERATOR_RD_CLR(_device)                                                        \
+    _MR_DEVICE_OPERATOR_RD_SET((_device), -1)
 
 /**
  * @brief This macro function clears the device operator.
  *
  * @param _device The device.
  */
-#define _MR_DEVICE_OPERATOR_WR_CLR(_device)                                    \
-    _MR_DEVICE_OPERATOR_WR_SET(_device, -1)
+#define _MR_DEVICE_OPERATOR_WR_CLR(_device)                                                        \
+    _MR_DEVICE_OPERATOR_WR_SET((_device), -1)
 
 /**
  * @brief This macro function clears the device operator.
@@ -462,8 +478,8 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  *
  * @note This feature is only available for non-full-duplex devices.
  */
-#define _MR_DEVICE_OPERATOR_CLR(_device)                                       \
-    _MR_DEVICE_OPERATOR_SET(_device, -1)
+#define _MR_DEVICE_OPERATOR_CLR(_device)                                                           \
+    _MR_DEVICE_OPERATOR_SET((_device), -1)
 
 /**
  * @brief This macro function gets the device parent.
@@ -490,8 +506,7 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  *
  * @return The driver ops.
  */
-#define _MR_DRIVER_OPS_GET(_driver)                                            \
-    ((void *)(((struct mr_driver *)(_driver))->ops))
+#define _MR_DRIVER_OPS_GET(_driver)     ((void *)(((struct mr_driver *)(_driver))->ops))
 
 /**
  * @brief This macro function gets the driver data.
@@ -500,8 +515,7 @@ MR_INLINE int mr_list_is_inited(struct mr_list *list)
  *
  * @return The driver data.
  */
-#define _MR_DRIVER_DATA_GET(_driver)                                           \
-    ((void *)(((struct mr_driver *)(_driver))->data))
+#define _MR_DRIVER_DATA_GET(_driver)    ((void *)(((struct mr_driver *)(_driver))->data))
 
 /** @} */
 

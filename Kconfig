@@ -8,6 +8,3 @@ source "device/Kconfig"
 
 # Driver
 source "driver/Kconfig"
-
-# Components
-source "components/Kconfig"

@@ -1,4 +1,4 @@
-/*
+/**
  * @copyright (c) 2023-2024, MR Development Team
  *
  * @license SPDX-License-Identifier: Apache-2.0
@@ -7,11 +7,10 @@
  * @date 2024-05-07    MacRsh       Modify fifo implementation
  */
 
-#include "../mr-library/include/mr_api.h"
-#include <stdio.h>
+#include <include/mr_api.h>
 
-static volatile int _mr_critical_level = 0;
-static volatile uint32_t _mr_interrupt_mask = 0;
+static volatile int _critical_level = 0;                            /**< Critical level */
+static volatile uint32_t _interrupt_mask = 0;                       /**< Interrupt mask */
 
 static void start(void)
 {
@@ -29,8 +28,7 @@ MR_INIT_EXPORT(end, "5.end");
 void mr_auto_init(void)
 {
     /* Auto-initialization */
-    for (const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end;
-         fn++)
+    for (const mr_init_fn_t *fn = &_mr_auto_init_start; fn < &_mr_auto_init_end; fn++)
     {
         (*fn)();
     }
@@ -56,10 +54,11 @@ MR_WEAK void mr_interrupt_enable(uint32_t mask)
  */
 void mr_critical_enter(void)
 {
-    if (_mr_critical_level == 0)
+    /* Disable the interrupt */
+    if (_critical_level == 0)
     {
-        _mr_interrupt_mask = mr_interrupt_disable();
-        _mr_critical_level++;
+        _interrupt_mask = mr_interrupt_disable();
+        _critical_level++;
     }
 }
 
@@ -68,16 +67,17 @@ void mr_critical_enter(void)
  */
 void mr_critical_exit(void)
 {
-    if (_mr_critical_level > 0)
+    if (_critical_level > 0)
     {
-        _mr_critical_level--;
-        if (_mr_critical_level == 0)
+        _critical_level--;
+
+        /* Enable the interrupt */
+        if (_critical_level == 0)
         {
-            mr_interrupt_enable(_mr_interrupt_mask);
+            mr_interrupt_enable(_interrupt_mask);
         }
     }
 }
-
 
 /**
  * @brief This function delay us.
@@ -87,7 +87,7 @@ void mr_critical_exit(void)
 MR_WEAK void mr_delay_us(size_t us)
 {
 #ifndef MR_CFG_SYSCLK_FREQ
-#define MR_CFG_SYSCLK_FREQ (72000000)
+#define MR_CFG_SYSCLK_FREQ              (100000000)
 #endif /* MR_CFG_SYSCLK_FREQ */
     for (volatile size_t i = 0; i < us * (MR_CFG_SYSCLK_FREQ / 1000000); i++)
     {
@@ -261,7 +261,7 @@ MR_WEAK int mr_log_printf_output(const char *buf, size_t size)
  *
  * @return The actual output size.
  */
-int mr_log_printf(const char *tag, const char *fmt,  ...)
+int mr_log_printf(const char *tag, const char *fmt, ...)
 {
 #ifndef MR_CFG_LOG_PRINTF_BUF_SIZE
 #define MR_CFG_LOG_PRINTF_BUF_SIZE      (256)
@@ -292,8 +292,8 @@ int mr_log_printf(const char *tag, const char *fmt,  ...)
  * @param file The assert file.
  * @param line The assert line.
  */
-MR_WEAK void mr_assert_handler(const char *ex, const char *tag, const char *fn,
-                               const char *file, int line)
+MR_WEAK void mr_assert_handler(const char *ex, const char *tag, const char *fn, const char *file,
+                               int line)
 {
     mr_log_printf("[A/%s] : %s %s %s:%d\n", ex, tag, fn, file, line);
 
@@ -425,7 +425,7 @@ size_t mr_fifo_used_get(const struct mr_fifo *fifo)
  *
  * @return The free space.
  */
-size_t mr_fifo_space_get(const struct mr_fifo *fifo)
+size_t mr_fifo_free_get(const struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
@@ -615,7 +615,7 @@ size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count)
     uint8_t *_buf = (uint8_t *)buf;
 
     /* Get free space, limit by count */
-    uint32_t free = mr_fifo_space_get(fifo);
+    uint32_t free = mr_fifo_free_get(fifo);
     if (free < count)
     {
         count = free;
@@ -682,7 +682,7 @@ size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
     }
 
     /* Discard data that will be overwritten */
-    uint32_t free = mr_fifo_space_get(fifo);
+    uint32_t free = mr_fifo_free_get(fifo);
     if (free < count)
     {
         mr_fifo_discard(fifo, count - free);

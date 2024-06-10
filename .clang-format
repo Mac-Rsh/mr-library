@@ -72,7 +72,7 @@ BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
-ColumnLimit: 80
+ColumnLimit: 100
 CompactNamespaces: false
 ContinuationIndentWidth: 4
 EmptyLineAfterAccessModifier: Leave
