@@ -9,28 +9,10 @@
 """
 
 import re
+import logging
+from kconfiglib import Kconfig
 
-try:
-    from tool import install_package
-except ImportError:
-    exit(1)
-
-try:
-    from kconfiglib import Kconfig
-except ImportError:
-    install_package('kconfiglib')
-    from kconfiglib import Kconfig
-
-try:
-    import curses
-except ImportError:
-    install_package('windows-curses')
-    import curses
-
-try:
-    from tool import log_print
-except ImportError:
-    exit(1)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 
 def generate_config_file(kconfig_file, config_in, config_out, header_out):
@@ -68,7 +50,7 @@ def generate_config_file(kconfig_file, config_in, config_out, header_out):
         header_file.write("#endif /* _MR_CONFIG_H_ */\n")
 
         header_file.close()
-        log_print('success', "mr-library config file make success")
+        logging.info("Build mr-library config file successfully")
 
 
 def main():
