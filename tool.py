@@ -211,51 +211,16 @@ class MrLib:
         self.h_files = list(self.path.rglob('*.h'))
         self.proj_path = self.path.parent
 
-    def generate_include_file(self):
-        header_out = self.path / "include/mr_lib.h"
-        include_path = next((p for p in self.path.glob('**/include')), None)
-        header_files = [f.relative_to(include_path).as_posix() for f in
-                        include_path.rglob('*.h')] if include_path else []
-
-        with open(header_out, "w+") as header_file:
-            header_file.truncate(0)
-            header_file.seek(0)
-
-            # Add the micro
-            header_file.write("#ifndef _MR_LIB_H_\n")
-            header_file.write("#define _MR_LIB_H_\n\n")
-
-            header_file.write("#ifdef __cplusplus\n")
-            header_file.write("extern \"C\" {\n")
-            header_file.write("#endif /* __cplusplus */\n\n")
-
-            # Link include
-            for hf in header_files:
-                if hf != os.path.basename(header_out):
-                    header_file.write('#include <include/' + hf + '>\n')
-
-            # Add the micro
-            header_file.write("\n#ifdef __cplusplus\n")
-            header_file.write("}\n")
-            header_file.write("#endif /* __cplusplus */\n\n")
-            header_file.write("#endif /* _MR_LIB_H_ */\n")
-
-        logging.info(f"Generate include file successfully")
-
 
 def show_logo():
-    print("__  __                  _   _   _                              "
-          "   ")
-    print(
-        "|  \\/  |  _ __          | | (_) | |__    _ __    __ _   _ __   _   _")
-    print(
-        "| |\\/| | | '__|  _____  | | | | | '_ \\  | '__|  / _` | | '__| | | | |")
-    print(
-        "| |  | | | |    |_____| | | | | | |_) | | |    | (_| | | |    | |_| |")
-    print(
-        "|_|  |_| |_|            |_| |_| |_.__/  |_|     \\__,_| |_|     \\__, |")
-    print(
-        "                                                               |___/")
+    logo = """
+ __  __                  _   _   _
+|  \/  |  _ __          | | (_) | |__    _ __    __ _   _ __   _   _
+| |\/| | | '__|  _____  | | | | | '_ \  | '__|  / _` | | '__| | | | |
+| |  | | | |    |_____| | | | | | |_) | | |    | (_| | | |    | |_| |
+|_|  |_| |_|            |_| |_| |_.__/  |_|     \__,_| |_|     \__, |
+                                                               |___/"""
+    print(logo)
 
 
 def show_license():
@@ -289,7 +254,7 @@ def menuconfig():
         logging.error("Config menuconfig failed")
         exit(1)
     try:
-        subprocess.run(["python", "kconfig.py"], check=True)
+        subprocess.run(["python", "tools/kconfig.py"], check=True)
     except subprocess.CalledProcessError:
         logging.error("Config menuconfig failed, 'kconfig.py' not found")
         exit(1)
@@ -297,7 +262,6 @@ def menuconfig():
 
 def build():
     mr_lib = MrLib()
-    mr_lib.generate_include_file()
 
     mdk5 = MDK5(mr_lib.proj_path)
     if mdk5.exist:
@@ -334,4 +298,3 @@ if __name__ == '__main__':
         show_license()
     if args.generate:
         mr = MrLib()
-        mr.generate_include_file()

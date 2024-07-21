@@ -1,8 +1,0 @@
-menu "Driver configure"
-
-    # ADC
-    source "driver/adc/Kconfig"
-
-    # Serial
-    source "driver/serial/Kconfig"
-endmenu

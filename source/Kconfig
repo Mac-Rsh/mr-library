@@ -1,66 +1,8 @@
-menu "Framework configure"
-
-    # Printf
-    menu "Printf configure"
-        config MR_CFG_PRINTF_BUF_SIZE
-            int "Printf buffer size"
-            default 256
-            range 32 2147483647
-            help
-                This option sets the buffer size used by the printf function.
-
-        config MR_CFG_PRINTF_NAME
-            string "Printf port device name"
-            default "serial1"
-            help
-                This option sets the name of the device used by the printf function.
-    endmenu
-
-    # Log
-    menu "Log configure"
-        config MR_USE_LOG_ERROR
-            bool "Use error log"
-            default y
-            help
-                Use this option allows for the use of error log.
-
-        config MR_USE_LOG_WARN
-            bool "Use warning log"
-            default y
-            help
-                Use this option allows for the use of warning log.
-
-        config MR_USE_LOG_INFO
-            bool "Use info log"
-            default y
-            help
-                Use this option allows for the use of info log.
-
-        config MR_USE_LOG_DEBUG
-            bool "Use debug log"
-            default y
-            help
-                Use this option allows for the use of debug log.
-
-        config MR_CFG_LOG_PRINTF_BUF_SIZE
-            int "Log printf buffer size"
-            default 256
-            range 32 2147483647
-            help
-                This option sets the buffer size used by the log printf function.
-    endmenu
-
-    # Assert
-    config MR_USE_ASSERT
-        bool "Use assert"
-        default y
-        help
-            Use this option allows the use of assert statements in the code.
-
+menu "System configure"
     # Heap
     config MR_CFG_HEAP_SIZE
         int "Heap size (bytes)"
-        default 8192
+        default 4096
         range 32 2147483647
         help
             This option sets the size of the heap used by the library.

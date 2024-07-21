@@ -1,4 +1,0 @@
-menu "Driver configure"
-    # Replace driver prompt
-    comment "Please use the driver of the corresponding model to replace the driver"
-endmenu

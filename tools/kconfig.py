@@ -33,8 +33,8 @@ def generate_config_file(kconfig_file, config_in, config_out, header_out):
         content = re.sub(r'#define MR_USE_(\w+) (\d+)', r'#define MR_USE_\1', content)
 
         # Add the micro
-        header_file.write("#ifndef _MR_CONFIG_H_\n")
-        header_file.write("#define _MR_CONFIG_H_\n\n")
+        header_file.write("#ifndef __MR_CONFIG_H__\n")
+        header_file.write("#define __MR_CONFIG_H__\n\n")
 
         header_file.write("#ifdef __cplusplus\n")
         header_file.write("extern \"C\" {\n")
@@ -47,7 +47,7 @@ def generate_config_file(kconfig_file, config_in, config_out, header_out):
         header_file.write("\n#ifdef __cplusplus\n")
         header_file.write("}\n")
         header_file.write("#endif /* __cplusplus */\n\n")
-        header_file.write("#endif /* _MR_CONFIG_H_ */\n")
+        header_file.write("#endif /* __MR_CONFIG_H__ */\n")
 
         header_file.close()
         logging.info("Build mr-library config file successfully")
