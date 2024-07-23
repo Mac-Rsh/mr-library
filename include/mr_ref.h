@@ -84,7 +84,7 @@ MR_INLINE bool mr_ref_put(mr_ref_t *ref, void (*release)(mr_ref_t *))
  *
  * @return The reference count.
  */
-MR_INLINE mr_atomic_t mr_ref_count_get(mr_ref_t *ref)
+MR_INLINE mr_atomic_t mr_ref_get_count(mr_ref_t *ref)
 {
     /* Get reference count */
     return ref->count;

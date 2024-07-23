@@ -41,19 +41,19 @@ void mr_auto_init(void)
 }
 
 /**
- * @brief This function disable the interrupt.
+ * @brief This function disable interrupt.
  */
-MR_WEAK size_t mr_interrupt_disable(void)
+MR_WEAK size_t mr_irq_disable(void)
 {
     return 0;
 }
 
 /**
- * @brief This function enable the interrupt.
+ * @brief This function enable interrupt.
  *
  * @param mask The interrupt mask.
  */
-MR_WEAK void mr_interrupt_enable(MR_UNUSED size_t mask)
+MR_WEAK void mr_irq_enable(MR_UNUSED size_t mask)
 {
 
 }

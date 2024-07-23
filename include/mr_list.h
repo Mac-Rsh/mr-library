@@ -202,7 +202,7 @@ MR_INLINE void mr_list_concat(mr_list_t *list1, mr_list_t *list2)
  *
  * @return The length of the list.
  */
-MR_INLINE size_t mr_list_length_get(mr_list_t *list)
+MR_INLINE size_t mr_list_get_length(mr_list_t *list)
 {
     mr_list_t *node;
     size_t len;

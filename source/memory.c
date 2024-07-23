@@ -91,7 +91,7 @@ MR_WEAK void *mr_malloc(size_t size)
     size_t mask;
 
     /* Disable interrupt */
-    mask = mr_interrupt_disable();
+    mask = mr_irq_disable();
 
     /* Check size and residual memory */
     prev = &__heap_start;
@@ -143,7 +143,7 @@ MR_WEAK void *mr_malloc(size_t size)
 
 _exit:
     /* Enable interrupt */
-    mr_interrupt_enable(mask);
+    mr_irq_enable(mask);
     return memory;
 }
 
@@ -163,7 +163,7 @@ MR_WEAK void mr_free(void *memory)
     }
 
     /* Disable interrupt */
-    mask = mr_interrupt_disable();
+    mask = mr_irq_disable();
 
     /* Check the block */
     block = (mr_heap_block_t *)((uint8_t *)memory - sizeof(mr_heap_block_t));
@@ -176,7 +176,7 @@ MR_WEAK void mr_free(void *memory)
     }
 
     /* Enable interrupt */
-    mr_interrupt_enable(mask);
+    mr_irq_enable(mask);
 }
 
 /**

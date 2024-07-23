@@ -32,19 +32,6 @@ int mr_fifo_init(mr_fifo_t *fifo, void *buf, size_t size)
 }
 
 /**
- * @brief This function resets a fifo.
- *
- * @param fifo The fifo.
- */
-void mr_fifo_reset(mr_fifo_t *fifo)
-{
-    MR_ASSERT(fifo != NULL);
-
-    fifo->in = 0;
-    fifo->out = 0;
-}
-
-/**
  * @brief This function allocates a fifo.
  *
  * @param fifo The fifo.
@@ -97,60 +84,16 @@ void mr_fifo_free(mr_fifo_t *fifo)
 }
 
 /**
- * @brief This function gets the used space of a fifo.
+ * @brief This function resets a fifo.
  *
  * @param fifo The fifo.
- *
- * @return The used space.
  */
-size_t mr_fifo_used_get(const mr_fifo_t *fifo)
-{
-    uint32_t in, out;
-
-    MR_ASSERT(fifo != NULL);
-
-    /* Get the in and out */
-    in = fifo->in;
-    out = fifo->out;
-
-    /* Calculate the used space */
-    return (in >= out) ? in - out : fifo->size - (out - in);
-}
-
-/**
- * @brief This function gets the free space of a fifo.
- *
- * @param fifo The fifo.
- *
- * @return The free space.
- */
-size_t mr_fifo_space_get(const mr_fifo_t *fifo)
-{
-    uint32_t in, out;
-
-    MR_ASSERT(fifo != NULL);
-
-    /* Get the in and out */
-    in = fifo->in;
-    out = fifo->out;
-
-    /* Calculate the free space */
-    return (in >= out) ? fifo->size - (in - out) - 1 : out - in - 1;
-}
-
-/**
- * @brief This function gets the size of a fifo.
- *
- * @param fifo The fifo.
- *
- * @return The size.
- */
-size_t mr_fifo_size_get(const mr_fifo_t *fifo)
+void mr_fifo_reset(mr_fifo_t *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
-    /* Return the buffer size that can be used */
-    return (fifo->size == 0) ? 0 : fifo->size - 1;
+    fifo->in = 0;
+    fifo->out = 0;
 }
 
 /**
@@ -170,7 +113,7 @@ size_t mr_fifo_peek(const mr_fifo_t *fifo, void *buf, size_t count)
     MR_ASSERT((buf != NULL) || (count == 0));
 
     /* Get used space, limit by count */
-    used = mr_fifo_used_get(fifo);
+    used = mr_fifo_get_used(fifo);
     if (used < count)
     {
         count = used;
@@ -211,7 +154,7 @@ size_t mr_fifo_discard(mr_fifo_t *fifo, size_t count)
     MR_ASSERT(fifo != NULL);
 
     /* Get used space, limit by count */
-    used = mr_fifo_used_get(fifo);
+    used = mr_fifo_get_used(fifo);
     if (used < count)
     {
         count = used;
@@ -256,7 +199,7 @@ size_t mr_fifo_read(mr_fifo_t *fifo, void *buf, size_t count)
     MR_ASSERT((buf != NULL) || (count == 0));
 
     /* Get used space, limit by count */
-    used = mr_fifo_used_get(fifo);
+    used = mr_fifo_get_used(fifo);
     if (used < count)
     {
         count = used;
@@ -304,7 +247,7 @@ size_t mr_fifo_write(mr_fifo_t *fifo, const void *buf, size_t count)
     MR_ASSERT((buf != NULL) || (count == 0));
 
     /* Get free space, limit by count */
-    free = mr_fifo_space_get(fifo);
+    free = mr_fifo_get_free(fifo);
     if (free < count)
     {
         count = free;
@@ -355,7 +298,7 @@ size_t mr_fifo_write_force(mr_fifo_t *fifo, const void *buf, size_t count)
     MR_ASSERT((buf != NULL) || (count == 0));
 
     /* Skip data that exceeds the size */
-    size = mr_fifo_size_get(fifo);
+    size = mr_fifo_get_size(fifo);
     if (count > size)
     {
         buf = &((const uint8_t *)buf)[count - size];
@@ -363,7 +306,7 @@ size_t mr_fifo_write_force(mr_fifo_t *fifo, const void *buf, size_t count)
     }
 
     /* Discard data that will be overwritten */
-    free = mr_fifo_space_get(fifo);
+    free = mr_fifo_get_free(fifo);
     if (free < count)
     {
         mr_fifo_discard(fifo, count - free);
@@ -371,4 +314,61 @@ size_t mr_fifo_write_force(mr_fifo_t *fifo, const void *buf, size_t count)
 
     /* Write data */
     return mr_fifo_write(fifo, buf, count);
+}
+
+/**
+ * @brief This function gets the used space of a fifo.
+ *
+ * @param fifo The fifo.
+ *
+ * @return The used space.
+ */
+size_t mr_fifo_get_used(const mr_fifo_t *fifo)
+{
+    uint32_t in, out;
+
+    MR_ASSERT(fifo != NULL);
+
+    /* Get the in and out */
+    in = fifo->in;
+    out = fifo->out;
+
+    /* Calculate the used space */
+    return (in >= out) ? in - out : fifo->size - (out - in);
+}
+
+/**
+ * @brief This function gets the free space of a fifo.
+ *
+ * @param fifo The fifo.
+ *
+ * @return The free space.
+ */
+size_t mr_fifo_get_free(const mr_fifo_t *fifo)
+{
+    uint32_t in, out;
+
+    MR_ASSERT(fifo != NULL);
+
+    /* Get the in and out */
+    in = fifo->in;
+    out = fifo->out;
+
+    /* Calculate the free space */
+    return (in >= out) ? fifo->size - (in - out) - 1 : out - in - 1;
+}
+
+/**
+ * @brief This function gets the size of a fifo.
+ *
+ * @param fifo The fifo.
+ *
+ * @return The size.
+ */
+size_t mr_fifo_get_size(const mr_fifo_t *fifo)
+{
+    MR_ASSERT(fifo != NULL);
+
+    /* Return the buffer size that can be used */
+    return (fifo->size == 0) ? 0 : fifo->size - 1;
 }

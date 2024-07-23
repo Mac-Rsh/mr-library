@@ -47,6 +47,326 @@ static mr_class_t *__class_find(mr_class_t *parent, const char *name)
 }
 
 /**
+ * @brief This function initialize the class.
+ *
+ * @param class The class to initialize.
+ * @param name The name of the class.
+ * @param privsize The size of the private data.
+ * @param release The release function(released when ref-count is 0).
+ * @param methods The methods of the class.
+ *
+ * @note priv_size must be 0 if methods is NULL.
+ */
+void mr_class_init(mr_class_t *class, const char *name, size_t privsize,
+                   void (*release)(mr_class_t *), void *methods)
+{
+    MR_ASSERT(class != NULL);
+    MR_ASSERT(name != NULL);
+    MR_ASSERT((privsize == 0) || (methods != NULL));
+
+    /* Initialize the class */
+    class->name = name;
+    class->parent = NULL;
+    mr_list_init(&class->list);
+    mr_list_init(&class->clist);
+    mr_spin_lock_init(&class->lock);
+    class->privdata = NULL;
+    class->privsize = privsize;
+    mr_ref_init(&class->refcount);
+    class->release = release;
+    class->methods = methods;
+}
+
+static void __class_release(mr_class_t *class)
+{
+    /* Release the class */
+    mr_free(class);
+}
+
+/**
+ * @brief This function create the class.
+ *
+ * @param name The name of the class.
+ * @param privsize The size of the private data.
+ * @param methods The methods of the class.
+ *
+ * @return The class, or NULL if failed.
+ *
+ * @note priv_size must be 0 if methods is NULL.
+ */
+mr_class_t *mr_class_create(const char *name, uint32_t privsize, void *methods)
+{
+    mr_class_t *class;
+
+    MR_ASSERT(name != NULL);
+    MR_ASSERT((privsize == 0) || (methods != NULL));
+
+    /* Create the class */
+    class = mr_malloc(sizeof(mr_class_t));
+    if (class == NULL)
+    {
+        return NULL;
+    }
+
+    /* Initialize the class */
+    mr_class_init(class, name, privsize, __class_release, methods);
+    return class;
+}
+
+/**
+ * @brief This function add the class to the parent class.
+ *
+ * @param class The class to add.
+ * @param parent The parent class.
+ *
+ * @return The error code.
+ */
+int mr_class_add(mr_class_t *class, mr_class_t *parent)
+{
+    size_t mask;
+    int ret;
+
+    MR_ASSERT(class != NULL);
+    MR_ASSERT(parent != NULL);
+
+    /* Lock the class */
+    mask = mr_spin_lock_irqsave(&class->lock);
+    mr_spin_lock(&parent->lock);
+
+    /* Check if the same name class already exists */
+    if (__class_find(parent, class->name) == NULL)
+    {
+        ret = MR_EEXIST;
+        goto _exit;
+    }
+
+    /* Inherit parent class's implementation if current class has no methods */
+    if (class->methods == NULL)
+    {
+        class->privsize = parent->privsize;
+        class->methods = parent->methods;
+
+        /* Child class's private data must be larger than parent's */
+    } else if (class->privsize < parent->privsize)
+    {
+        ret = MR_EINVAL;
+        goto _exit;
+    }
+
+    /* Add the class to the parent */
+    class->parent = parent;
+    mr_list_append(&parent->clist, &class->list);
+    mr_ref_get(&parent->refcount);
+    ret = MR_EOK;
+
+_exit:
+    /* Unlock the class */
+    mr_spin_unlock(&parent->lock);
+    mr_spin_unlock_irqrestore(&class->lock, mask);
+    return ret;
+}
+
+static void __ref_release(struct mr_ref *ref)
+{
+    mr_class_t *class;
+
+    /* Get the class from the reference */
+    class = MR_CONTAINER_OF(ref, mr_class_t, refcount);
+
+    /* Remove the class from the list and release the private data */
+    mr_list_remove(&class->list);
+    mr_list_remove(&class->clist);
+    if (class->privdata != NULL)
+    {
+        mr_free(class->privdata);
+    }
+
+    /* Release the class */
+    if (class->release != NULL)
+    {
+        class->release(class);
+    }
+}
+
+/**
+ * @brief This function delete the class.
+ *
+ * @param class The class to delete.
+ *
+ * @note 1.The class will not be visited.
+ *       2.If the class reference count is 0, it will be released.
+ */
+void mr_class_delete(mr_class_t *class)
+{
+    mr_class_t *parent;
+    size_t mask;
+
+    MR_ASSERT(class != NULL);
+
+    /* Lock the class */
+    mask = mr_spin_lock_irqsave(&class->lock);
+    parent = class->parent;
+    if (parent != NULL)
+    {
+        mr_spin_lock(&parent->lock);
+    }
+
+    /* Remove the class */
+    mr_list_remove(&class->list);
+
+    /* Unlock the class */
+    if (parent != NULL)
+    {
+        /* Put the reference */
+        if (mr_ref_put(&parent->refcount, __ref_release) == false)
+        {
+            mr_spin_unlock(&parent->lock);
+        }
+    }
+
+    /* Put the reference */
+    if (mr_ref_put(&class->refcount, __ref_release) == true)
+    {
+        /* Enable interrupt */
+        mr_irq_enable(mask);
+        return;
+    }
+
+    /* Unlock the class if not release */
+    mr_spin_unlock_irqrestore(&class->lock, mask);
+}
+
+/**
+ * @brief This function rename the class.
+ *
+ * @param class The class to rename.
+ * @param name The new name of the class.
+ *
+ * @return The error code.
+ */
+int mr_class_rename(mr_class_t *class, const char *name)
+{
+    mr_class_t *parent;
+    size_t mask;
+
+    MR_ASSERT(class != NULL);
+    MR_ASSERT(name != NULL);
+
+    /* Lock the class */
+    mask = mr_spin_lock_irqsave(&class->lock);
+    parent = class->parent;
+    if (parent != NULL)
+    {
+        mr_spin_lock(&parent->lock);
+
+        /* Check if the same name class already exists */
+        if (__class_find(parent, name) != NULL)
+        {
+            /* Unlock the class */
+            mr_spin_unlock(&parent->lock);
+            mr_spin_unlock_irqrestore(&class->lock, mask);
+            return MR_EEXIST;
+        }
+    }
+
+    /* Rename the class */
+    class->name = name;
+
+    /* Unlock the class */
+    if (parent != NULL)
+    {
+        mr_spin_unlock(&parent->lock);
+    }
+    mr_spin_unlock_irqrestore(&class->lock, mask);
+    return MR_EOK;
+}
+
+/**
+ * @brief This function register the class to the directory.
+ *
+ * @param class The class to register.
+ * @param parent The parent class.
+ * @param dir The directory of the class.
+ *
+ * @return The error code.
+ *
+ * @note 1.If parent is NULL, path is resolved as an absolute path.
+ *       2.If dir is NULL, the class will be registered to the parent.
+ */
+int mr_class_register(mr_class_t *class, mr_class_t *parent, const char *dir)
+{
+    MR_ASSERT(class != NULL);
+
+    /* Find the directory class */
+    parent = mr_class_find(parent, dir);
+    if (parent == NULL)
+    {
+        return MR_ENOENT;
+    }
+
+    /* Add the class to the directory */
+    return mr_class_add(class, parent);
+}
+
+/**
+ * @brief This function unregister the class.
+ *
+ * @param class The class to unregister.
+ *
+ * @note 1.The class will not be visited.
+ *       2.If the class reference count is 0, it will be released.
+ */
+void mr_class_unregister(mr_class_t *class)
+{
+    MR_ASSERT(class != NULL);
+
+    /* Delete the class from the root class */
+    mr_class_delete(class);
+}
+
+/**
+ * @brief This function get the reference of the class.
+ *
+ * @param class The class.
+ *
+ * @return The class.
+ */
+mr_class_t *mr_class_get(mr_class_t *class)
+{
+    MR_ASSERT(class != NULL);
+
+    /* Get the reference */
+    mr_ref_get(&class->refcount);
+    return class;
+}
+
+/**
+ * @brief This function put the reference of the class.
+ *
+ * @param class The class.
+ */
+void mr_class_put(mr_class_t *class)
+{
+    size_t mask;
+
+    MR_ASSERT(class != NULL);
+
+    /* Lock the class */
+    mask = mr_spin_lock_irqsave(&class->lock);
+
+    /* Put the reference */
+    if (mr_ref_put(&class->refcount, __ref_release) == true)
+    {
+        /* Enable interrupt */
+        mr_irq_enable(mask);
+        return;
+    }
+
+    /* Unlock the class if not release */
+    mr_spin_unlock_irqrestore(&class->lock, mask);
+}
+
+/**
  * @brief This function find the class.
  *
  * @param parent The parent class.
@@ -54,8 +374,7 @@ static mr_class_t *__class_find(mr_class_t *parent, const char *name)
  *
  * @return The class.
  *
- * @note 1.If parent is NULL, path is resolved as an absolute path.
- *       2.If parent is not NULL, path is resolved as a relative path.
+ * @note If parent is NULL, path is resolved as an absolute path.
  */
 mr_class_t *mr_class_find(mr_class_t *parent, const char *path)
 {
@@ -115,346 +434,66 @@ mr_class_t *mr_class_find(mr_class_t *parent, const char *path)
 }
 
 /**
- * @brief This function initialize the class.
- *
- * @param class The class to initialize.
- * @param name The name of the class.
- * @param priv_size The size of the private data.
- * @param release The release function(released when ref-count is 0).
- * @param methods The methods of the class.
- *
- * @note priv_size must be 0 if methods is NULL.
- */
-void mr_class_init(mr_class_t *class, const char *name, size_t priv_size,
-                   void (*release)(mr_class_t *), void *methods)
-{
-    MR_ASSERT(class != NULL);
-    MR_ASSERT(name != NULL);
-    MR_ASSERT((priv_size == 0) || (methods != NULL));
-
-    /* Initialize the class */
-    class->name = name;
-    class->parent = NULL;
-    mr_list_init(&class->list);
-    mr_list_init(&class->clist);
-    mr_spin_lock_init(&class->lock);
-    class->priv_data = NULL;
-    class->priv_size = priv_size;
-    mr_ref_init(&class->ref_count);
-    class->release = release;
-    class->methods = methods;
-}
-
-static void __class_release(mr_class_t *class)
-{
-    /* Release the class */
-    mr_free(class);
-}
-
-/**
- * @brief This function create the class.
- *
- * @param name The name of the class.
- * @param priv_size The size of the private data.
- * @param methods The methods of the class.
- *
- * @return The class, or NULL if failed.
- *
- * @note priv_size must be 0 if methods is NULL.
- */
-mr_class_t *mr_class_create(const char *name, uint32_t priv_size, void *methods)
-{
-    mr_class_t *class;
-
-    MR_ASSERT(name != NULL);
-    MR_ASSERT((priv_size == 0) || (methods != NULL));
-
-    /* Create the class */
-    class = mr_malloc(sizeof(mr_class_t));
-    if (class == NULL)
-    {
-        return NULL;
-    }
-
-    /* Initialize the class */
-    mr_class_init(class, name, priv_size, __class_release, methods);
-    return class;
-}
-
-/**
- * @brief This function add the class to the parent class.
- *
- * @param class The class to add.
- * @param parent The parent class.
- *
- * @return The error code.
- */
-int mr_class_add(mr_class_t *class, mr_class_t *parent)
-{
-    size_t mask;
-    int ret;
-
-    MR_ASSERT(class != NULL);
-    MR_ASSERT(parent != NULL);
-
-    /* Lock the class */
-    mask = mr_spin_lock_irqsave(&class->lock);
-    mr_spin_lock(&parent->lock);
-
-    /* Add the class if not exist same name class */
-    if (__class_find(parent, class->name) == NULL)
-    {
-        /* Add the class to the list */
-        class->parent = parent;
-        mr_list_append(&parent->clist, &class->list);
-
-        /* Inherit parent class's implementation if current class has no methods */
-        if (class->methods == NULL)
-        {
-            class->priv_size = parent->priv_size;
-            class->methods = parent->methods;
-        }
-
-        /* Get the reference */
-        mr_ref_get(&parent->ref_count);
-        ret = MR_EOK;
-    } else
-    {
-        ret = MR_EEXIST;
-    }
-
-    /* Unlock the class */
-    mr_spin_unlock(&parent->lock);
-    mr_spin_unlock_irqrestore(&class->lock, mask);
-    return ret;
-}
-
-static void __ref_release(struct mr_ref *ref)
-{
-    mr_class_t *class;
-
-    /* Get the class from the reference */
-    class = MR_CONTAINER_OF(ref, mr_class_t, ref_count);
-
-    /* Remove the class from the list and release the private data */
-    mr_list_remove(&class->list);
-    mr_list_remove(&class->clist);
-    if (class->priv_data != NULL)
-    {
-        mr_free(class->priv_data);
-    }
-
-    /* Release the class */
-    if (class->release != NULL)
-    {
-        class->release(class);
-    }
-}
-
-/**
- * @brief This function delete the class.
- *
- * @param class The class to delete.
- *
- * @note 1.The class will not be visited.
- *       2.If the class reference count is 0, it will be released.
- */
-void mr_class_delete(mr_class_t *class)
-{
-    mr_class_t *parent;
-    size_t mask;
-
-    MR_ASSERT(class != NULL);
-
-    /* Lock the class */
-    mask = mr_spin_lock_irqsave(&class->lock);
-    parent = class->parent;
-    if (parent != NULL)
-    {
-        mr_spin_lock(&parent->lock);
-    }
-
-    /* Remove the class */
-    mr_list_remove(&class->list);
-
-    /* Unlock the class */
-    if (parent != NULL)
-    {
-        /* Put the reference */
-        if (mr_ref_put(&parent->ref_count, __ref_release) == false)
-        {
-            mr_spin_unlock(&parent->lock);
-        }
-    }
-
-    /* Put the reference */
-    if (mr_ref_put(&class->ref_count, __ref_release) == true)
-    {
-        /* Enable interrupt */
-        mr_interrupt_enable(mask);
-        return;
-    }
-
-    /* Unlock the class if not release */
-    mr_spin_unlock_irqrestore(&class->lock, mask);
-}
-
-/**
- * @brief This function register the class to the directory.
- *
- * @param class The class to register.
- * @param parent The parent class.
- * @param dir The directory of the class.
- *
- * @return The error code.
- *
- * @note 1.If parent is NULL, path is resolved as an absolute path.
- *       2.If parent is not NULL, path is resolved as a relative path.
- *       3.If dir is NULL, the class will be registered to the parent.
- */
-int mr_class_register(mr_class_t *class, mr_class_t *parent, const char *dir)
-{
-    MR_ASSERT(class != NULL);
-
-    /* Find the directory class */
-    parent = mr_class_find(parent, dir);
-    if (parent == NULL)
-    {
-        return MR_ENOENT;
-    }
-
-    /* Add the class to the directory */
-    return mr_class_add(class, parent);
-}
-
-/**
- * @brief This function unregister the class.
- *
- * @param class The class to unregister.
- *
- * @note 1.The class will not be visited.
- *       2.If the class reference count is 0, it will be released.
- */
-void mr_class_unregister(mr_class_t *class)
-{
-    MR_ASSERT(class != NULL);
-
-    /* Delete the class from the root class */
-    mr_class_delete(class);
-}
-
-/**
- * @brief This function get the reference of the class.
+ * @brief This function check if the class is a subclass of the base class.
  *
  * @param class The class.
+ * @param base The base class.
  *
- * @return The class.
+ * @return True if the class is a subclass of the base class, False otherwise.
  */
-mr_class_t *mr_class_get(mr_class_t *class)
+bool mr_class_is_subclass(mr_class_t *class, mr_class_t *base)
 {
     MR_ASSERT(class != NULL);
+    MR_ASSERT(base != NULL);
 
-    /* Get the reference */
-    mr_ref_get(&class->ref_count);
-    return class;
-}
-
-/**
- * @brief This function put the reference of the class.
- *
- * @param class The class.
- */
-void mr_class_put(mr_class_t *class)
-{
-    size_t mask;
-
-    MR_ASSERT(class != NULL);
-
-    /* Lock the class */
-    mask = mr_spin_lock_irqsave(&class->lock);
-
-    /* Put the reference */
-    if (mr_ref_put(&class->ref_count, __ref_release) == true)
+    /* Check if the class is a subclass of the base class */
+    while (class != NULL)
     {
-        /* Enable interrupt */
-        mr_interrupt_enable(mask);
-        return;
-    }
-
-    /* Unlock the class if not release */
-    mr_spin_unlock_irqrestore(&class->lock, mask);
-}
-
-/**
- * @brief This function rename the class.
- *
- * @param class The class to rename.
- * @param name The new name of the class.
- *
- * @return The error code.
- */
-int mr_class_rename(mr_class_t *class, const char *name)
-{
-    mr_class_t *parent;
-    size_t mask;
-
-    MR_ASSERT(class != NULL);
-    MR_ASSERT(name != NULL);
-
-    /* Lock the class */
-    mask = mr_spin_lock_irqsave(&class->lock);
-    parent = class->parent;
-    if (parent != NULL)
-    {
-        mr_spin_lock(&parent->lock);
-
-        /* Check if the same name class already exists */
-        if (__class_find(parent, name) != NULL)
+        if (class == base)
         {
-            /* Unlock the class */
-            mr_spin_unlock(&parent->lock);
-            mr_spin_unlock_irqrestore(&class->lock, mask);
-            return MR_EEXIST;
+            return true;
         }
+        class = class->parent;
     }
-
-    /* Rename the class */
-    class->name = name;
-
-    /* Unlock the class */
-    if (parent != NULL)
-    {
-        mr_spin_unlock(&parent->lock);
-    }
-    mr_spin_unlock_irqrestore(&class->lock, mask);
-    return MR_EOK;
+    return false;
 }
 
 /**
  * @brief This function get the private data of the class.
  *
+ * @param class The class.
+ *
  * @return The private data.
  */
-void *mr_class_priv_data_get(mr_class_t *class)
+void *mr_class_get_privdata(mr_class_t *class)
 {
+    uint32_t mask;
+
     MR_ASSERT(class != NULL);
 
+    /* Lock the class */
+    mask = mr_spin_lock_irqsave(&class->lock);
+
     /* Allocate the private data */
-    if ((class->priv_data == NULL) && (class->priv_size > 0))
+    if ((class->privdata == NULL) && (class->privsize > 0))
     {
-        class->priv_data = mr_malloc(class->priv_size);
+        class->privdata = mr_malloc(class->privsize);
+        memset(class->privdata, 0, class->privsize);
     }
 
-    /* Get the private data */
-    return class->priv_data;
+    /* Unlock the class */
+    mr_spin_unlock_irqrestore(&class->lock, mask);
+    return class->privdata;
 }
 
 /**
  * @brief This function get the methods of the class.
- * 
+ *
+ * @param class The class.
+ *
  * @return The methods.
  */
-void *mr_class_methods_get(mr_class_t *class)
+void *mr_class_get_methods(mr_class_t *class)
 {
     MR_ASSERT(class != NULL);
 

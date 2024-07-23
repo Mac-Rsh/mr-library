@@ -75,6 +75,7 @@ extern "C" {
 #define MR_EINVAL                           (-22)                                                       /**< Invalid argument */
 #define MR_ENOSYS                           (-38)                                                       /**< Not supported */
 #define MR_ETIMEOUT                         (-110)                                                      /**< Operation timed */
+
 /** @} */
 
 /**
@@ -209,9 +210,9 @@ typedef struct mr_class
     struct mr_class *parent;                                                                            /**< Parent */
     mr_list_t list, clist;                                                                              /**< List */
     mr_spinlock_t lock;                                                                                 /**< List lock */
-    void *priv_data;                                                                                    /**< Private data */
-    size_t priv_size;                                                                                   /**< Private data size */
-    mr_ref_t ref_count;                                                                                 /**< Reference count */
+    void *privdata;                                                                                     /**< Private data */
+    size_t privsize;                                                                                    /**< Private data size */
+    mr_ref_t refcount;                                                                                  /**< Reference count */
     void (*release)(struct mr_class *);                                                                 /**< Release function */
     void *methods;                                                                                      /**< Methods */
 } mr_class_t;

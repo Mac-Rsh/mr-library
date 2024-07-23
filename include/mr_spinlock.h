@@ -24,7 +24,7 @@ extern "C" {
 /**
  * @brief This macro function initializes the spinlock.
  */
-#define MR_SPINLOCK_INIT()                                                                         \
+#define MR_SPIN_LOCK_INIT()                                                                        \
     {                                                                                              \
         .lock = 0                                                                                  \
     }
@@ -86,7 +86,7 @@ MR_INLINE size_t mr_spin_lock_irqsave(mr_spinlock_t *lock)
     size_t mask;
 
     /* Disable interrupt */
-    mask = mr_interrupt_disable();
+    mask = mr_irq_disable();
 
     /* Lock spinlock */
     mr_spin_lock(lock);
@@ -107,7 +107,7 @@ MR_INLINE void mr_spin_unlock_irqrestore(mr_spinlock_t *lock, size_t mask)
     mr_spin_unlock(lock);
 
     /* Enable mask */
-    mr_interrupt_enable(mask);
+    mr_irq_enable(mask);
 }
 
 /** @} */
