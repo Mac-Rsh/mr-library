@@ -9,6 +9,8 @@
 #ifndef __MR_SERVICE_H__
 #define __MR_SERVICE_H__
 
+#include <include/mr_def.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -76,38 +78,32 @@ extern "C" {
 /**
  * @brief This macro function gets the maximum of two values.
  *
- * @param _type The type of the value.
  * @param _a The first value.
  * @param _b The second value.
  *
  * @return The maximum of the two values.
  */
-#define MR_MAX(_type, _a, _b)                                                                      \
-    ((_type){(_a)} > (_type){(_b)} ? (_type){(_a)} : (_type){(_b)})
+#define MR_MAX(_a, _b)                      ((_a) > (_b) ? (_a) : (_b))
 
 /**
  * @brief This macro function gets the minimum of two values.
  *
- * @param _type The type of the value.
  * @param _a The first value.
  * @param _b The second value.
  *
  * @return The minimum of the two values.
  */
-#define MR_MIN(_type, _a, _b)                                                                      \
-    ((_type){(_a)} < (_type){(_b)} ? (_type){(_a)} : (_type){(_b)})
+#define MR_MIN(_a, _b)                      ((_a) < (_b) ? (_a) : (_b))
 
 /**
  * @brief This macro function ensures that a value is within a specified range.
  *
- * @param _value The value.
  * @param _min The minimum value.
  * @param _max The maximum value.
  *
  * @return The value within the specified range.
  */
-#define MR_CLAMP(_type, _value, _min, _max)                                                        \
-    (MR_MAX(_type, MR_MIN(_type, _value, _max), _min))
+#define MR_CLAMP(_value, _min, _max)        (MR_MAX(MR_MIN((_value), (_max)), (_min)))
 
 /**
  * @brief This macro function swaps two values.

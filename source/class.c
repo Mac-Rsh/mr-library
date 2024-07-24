@@ -134,7 +134,7 @@ int mr_class_add(mr_class_t *class, mr_class_t *parent)
     mr_spin_lock(&parent->lock);
 
     /* Check if the same name class already exists */
-    if (__class_find(parent, class->name) == NULL)
+    if (__class_find(parent, class->name) != NULL)
     {
         ret = MR_EEXIST;
         goto _exit;
@@ -145,7 +145,15 @@ int mr_class_add(mr_class_t *class, mr_class_t *parent)
     {
         class->privsize = parent->privsize;
         class->methods = parent->methods;
-
+        if (class->privsize > 0)
+        {
+            class->privdata = mr_malloc(class->privsize);
+            if (class->privdata == NULL)
+            {
+                ret = MR_ENOMEM;
+                goto _exit;
+            }
+        }
         /* Child class's private data must be larger than parent's */
     } else if (class->privsize < parent->privsize)
     {
@@ -428,8 +436,6 @@ mr_class_t *mr_class_find(mr_class_t *parent, const char *path)
     {
         return mr_class_find(class, slash + 1);
     }
-
-    /* Return the found class */
     return class;
 }
 
@@ -467,22 +473,9 @@ bool mr_class_is_subclass(mr_class_t *class, mr_class_t *base)
  */
 void *mr_class_get_privdata(mr_class_t *class)
 {
-    uint32_t mask;
-
     MR_ASSERT(class != NULL);
 
-    /* Lock the class */
-    mask = mr_spin_lock_irqsave(&class->lock);
-
-    /* Allocate the private data */
-    if ((class->privdata == NULL) && (class->privsize > 0))
-    {
-        class->privdata = mr_malloc(class->privsize);
-        memset(class->privdata, 0, class->privsize);
-    }
-
-    /* Unlock the class */
-    mr_spin_unlock_irqrestore(&class->lock, mask);
+    /* Get the private data */
     return class->privdata;
 }
 

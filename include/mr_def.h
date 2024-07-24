@@ -10,13 +10,12 @@
 #ifndef __MR_DEF_H__
 #define __MR_DEF_H__
 
+#include <include/mr_config.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <include/mr_config.h>
 #include <string.h>
-#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +35,7 @@ extern "C" {
  * @{
  */
 
-#if defined(__GNUC__) || defined(__clang__) || defined(__CC_ARM)
+#if defined(__CC_ARM) || defined(__GNUC__) || defined(__clang__)
 #define MR_SECTION(x)                       __attribute__((section(x)))
 #define MR_UNUSED                           __attribute__((unused))
 #define MR_USED                             __attribute__((used))
@@ -54,7 +53,7 @@ extern "C" {
 #define MR_USED                             __attribute__((used))
 #define MR_WEAK                             __attribute__((weak))
 #define MR_INLINE                           static __inline
-#endif /* __GNUC__ */
+#endif /* defined(__CC_ARM) || defined(__GNUC__) */
 
 /** @} */
 
@@ -213,7 +212,7 @@ typedef struct mr_class
     void *privdata;                                                                                     /**< Private data */
     size_t privsize;                                                                                    /**< Private data size */
     mr_ref_t refcount;                                                                                  /**< Reference count */
-    void (*release)(struct mr_class *);                                                                 /**< Release function */
+    void (*release)(struct mr_class *class);                                                            /**< Release function */
     void *methods;                                                                                      /**< Methods */
 } mr_class_t;
 

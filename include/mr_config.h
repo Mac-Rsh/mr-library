@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MR_CFG_HEAP_SIZE 8192
+#define MR_CFG_HEAP_SIZE 4096
 
 #ifdef __cplusplus
 }

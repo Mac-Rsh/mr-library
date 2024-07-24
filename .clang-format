@@ -46,11 +46,11 @@ BreakStringLiterals: true
 ColumnLimit: 100
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '^<std.*>'
+  - Regex: '.*'
     Priority: 1
   - Regex: '^<.*>'
     Priority: 2
-  - Regex: '.*'
+  - Regex: '^<std.*>'
     Priority: 3
 IndentCaseBlocks: false
 IndentCaseLabels: true
