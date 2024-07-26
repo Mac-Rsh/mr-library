@@ -1,0 +1,2 @@
+kconfiglib==14.1.0
+lxml==5.2.2
