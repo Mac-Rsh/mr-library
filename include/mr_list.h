@@ -21,6 +21,15 @@ extern "C" {
  */
 
 /**
+ * @brief Double list structure.
+ */
+struct mr_list
+{
+    struct mr_list *next;                                                                               /**< Point to next nod */
+    struct mr_list *prev;                                                                               /**< Point to prev nod */
+};
+
+/**
  * @brief This macro function initializes a double list.
  *
  * @param _list The list to initialize.
@@ -65,7 +74,7 @@ extern "C" {
  *
  * @param list The list to initialize.
  */
-MR_INLINE void mr_list_init(mr_list_t *list)
+MR_INLINE void mr_list_init(struct mr_list *list)
 {
     list->next = list;
     list->prev = list;
@@ -77,7 +86,7 @@ MR_INLINE void mr_list_init(mr_list_t *list)
  * @param list The list to prepend.
  * @param node The node to prepend.
  */
-MR_INLINE void mr_list_prepend(mr_list_t *list, mr_list_t *node)
+MR_INLINE void mr_list_prepend(struct mr_list *list, struct mr_list *node)
 {
     list->next->prev = node;
     node->next = list->next;
@@ -91,7 +100,7 @@ MR_INLINE void mr_list_prepend(mr_list_t *list, mr_list_t *node)
  * @param list The list to append.
  * @param node The node to append.
  */
-MR_INLINE void mr_list_append(mr_list_t *list, mr_list_t *node)
+MR_INLINE void mr_list_append(struct mr_list *list, struct mr_list *node)
 {
     list->prev->next = node;
     node->prev = list->prev;
@@ -104,7 +113,7 @@ MR_INLINE void mr_list_append(mr_list_t *list, mr_list_t *node)
  *
  * @param node The node to remove.
  */
-MR_INLINE void mr_list_remove(mr_list_t *node)
+MR_INLINE void mr_list_remove(struct mr_list *node)
 {
     node->next->prev = node->prev;
     node->prev->next = node->next;
@@ -118,9 +127,9 @@ MR_INLINE void mr_list_remove(mr_list_t *node)
  *
  * @return The node that was popped.
  */
-MR_INLINE mr_list_t *mr_list_pop_front(mr_list_t *list)
+MR_INLINE struct mr_list *mr_list_pop_front(struct mr_list *list)
 {
-    mr_list_t *node;
+    struct mr_list *node;
 
     /* Get the first node in the list */
     node = list->next;
@@ -141,9 +150,9 @@ MR_INLINE mr_list_t *mr_list_pop_front(mr_list_t *list)
  *
  * @return The node that was popped.
  */
-MR_INLINE mr_list_t *mr_list_pop_back(mr_list_t *list)
+MR_INLINE struct mr_list *mr_list_pop_back(struct mr_list *list)
 {
-    mr_list_t *node;
+    struct mr_list *node;
 
     /* Get the last node in the list */
     node = list->prev;
@@ -162,9 +171,9 @@ MR_INLINE mr_list_t *mr_list_pop_back(mr_list_t *list)
  *
  * @param list The list to reverse.
  */
-MR_INLINE void mr_list_reverse(mr_list_t *list)
+MR_INLINE void mr_list_reverse(struct mr_list *list)
 {
-    mr_list_t *node, *next;
+    struct mr_list *node, *next;
 
     /* Get the first node in the list */
     node = list->next;
@@ -187,7 +196,7 @@ MR_INLINE void mr_list_reverse(mr_list_t *list)
  * @param list1 The first list to concat.
  * @param list2 The second list to concat.
  */
-MR_INLINE void mr_list_concat(mr_list_t *list1, mr_list_t *list2)
+MR_INLINE void mr_list_concat(struct mr_list *list1, struct mr_list *list2)
 {
     list1->next->prev = list2->prev;
     list2->prev->next = list1->next;
@@ -202,9 +211,9 @@ MR_INLINE void mr_list_concat(mr_list_t *list1, mr_list_t *list2)
  *
  * @return The length of the list.
  */
-MR_INLINE size_t mr_list_get_length(mr_list_t *list)
+MR_INLINE size_t mr_list_get_length(struct mr_list *list)
 {
-    mr_list_t *node;
+    struct mr_list *node;
     size_t len;
 
     /* Get the length of the list */
@@ -225,7 +234,7 @@ MR_INLINE size_t mr_list_get_length(mr_list_t *list)
  *
  * @return True if the list is empty, False otherwise.
  */
-MR_INLINE int mr_list_is_empty(const mr_list_t *list)
+MR_INLINE int mr_list_is_empty(const struct mr_list *list)
 {
     return list->next == list;
 }
@@ -237,7 +246,7 @@ MR_INLINE int mr_list_is_empty(const mr_list_t *list)
  *
  * @return True if the list is inited, False otherwise.
  */
-MR_INLINE int mr_list_is_inited(const mr_list_t *list)
+MR_INLINE int mr_list_is_inited(const struct mr_list *list)
 {
     return (list->next != NULL) && (list->prev != NULL);
 }

@@ -10,6 +10,7 @@
 #define __MR_REF_H__
 
 #include <include/mr_atomic.h>
+#include <include/mr_def.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +20,8 @@ extern "C" {
  * @addtogroup Reference
  * @{
  */
+
+typedef mr_atomic_t                         mr_ref_t;                                                   /**< Reference type */
 
 /**
  * @brief This macro function initializes a reference.
@@ -38,7 +41,7 @@ extern "C" {
 MR_INLINE void mr_ref_init(mr_ref_t *ref)
 {
     /* Initialize reference count */
-    mr_atomic_store(&ref->count, 1);
+    mr_atomic_store(ref, 1);
 }
 
 /**
@@ -49,7 +52,7 @@ MR_INLINE void mr_ref_init(mr_ref_t *ref)
 MR_INLINE void mr_ref_get(mr_ref_t *ref)
 {
     /* Increment reference count */
-    mr_atomic_fetch_add(&ref->count, 1);
+    mr_atomic_fetch_add(ref, 1);
 }
 
 /**
@@ -63,7 +66,7 @@ MR_INLINE void mr_ref_get(mr_ref_t *ref)
 MR_INLINE bool mr_ref_put(mr_ref_t *ref, void (*release)(mr_ref_t *))
 {
     /* Decrement reference count */
-    if (mr_atomic_fetch_sub(&ref->count, 1) == 1)
+    if (mr_atomic_fetch_sub(ref, 1) == 1)
     {
         /* If reference count will be 0, release it */
         if (release != NULL)
@@ -87,7 +90,7 @@ MR_INLINE bool mr_ref_put(mr_ref_t *ref, void (*release)(mr_ref_t *))
 MR_INLINE mr_atomic_t mr_ref_get_count(mr_ref_t *ref)
 {
     /* Get reference count */
-    return ref->count;
+    return *ref;
 }
 
 /** @} */

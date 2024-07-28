@@ -6,7 +6,9 @@
  * @date 2023-10-20    MacRsh       First version
  */
 
-#include <include/mr_library.h>
+#include <include/mr_fifo.h>
+#include <include/mr_memory.h>
+#include <include/mr_service.h>
 
 /**
  * @brief This function initializes a fifo.
@@ -17,7 +19,7 @@
  *
  * @return The error code.
  */
-int mr_fifo_init(mr_fifo_t *fifo, void *buf, size_t size)
+int mr_fifo_init(struct mr_fifo *fifo, void *buf, size_t size)
 {
     MR_ASSERT(fifo != NULL);
     MR_ASSERT((buf != NULL) || (size == 0));
@@ -25,7 +27,6 @@ int mr_fifo_init(mr_fifo_t *fifo, void *buf, size_t size)
     /* Initialize the fifo */
     fifo->in = 0;
     fifo->out = 0;
-    fifo->dynamic = false;
     fifo->buf = buf;
     fifo->size = size;
     return MR_EOK;
@@ -39,18 +40,14 @@ int mr_fifo_init(mr_fifo_t *fifo, void *buf, size_t size)
  *
  * @return The error code.
  */
-int mr_fifo_allocate(mr_fifo_t *fifo, size_t size)
+int mr_fifo_allocate(struct mr_fifo *fifo, size_t size)
 {
     void *buf;
 
     MR_ASSERT(fifo != NULL);
 
-    /* Free the old buffer, if buffer is dynamic */
-    if ((fifo->dynamic == true) && (fifo->buf != NULL))
-    {
-        mr_free(fifo->buf);
-        mr_fifo_init(fifo, NULL, 0);
-    }
+    /* Free the old buffer */
+    mr_fifo_free(fifo);
 
     /* Allocate a new buffer */
     if (size != 0)
@@ -61,7 +58,6 @@ int mr_fifo_allocate(mr_fifo_t *fifo, size_t size)
             return MR_ENOMEM;
         }
         mr_fifo_init(fifo, buf, size);
-        fifo->dynamic = true;
     }
     return MR_EOK;
 }
@@ -71,12 +67,12 @@ int mr_fifo_allocate(mr_fifo_t *fifo, size_t size)
  *
  * @param fifo The fifo.
  */
-void mr_fifo_free(mr_fifo_t *fifo)
+void mr_fifo_free(struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
-    /* Free the old buffer, if buffer is dynamic */
-    if (fifo->dynamic == true)
+    /* Free the old buffer */
+    if (fifo->buf != NULL)
     {
         mr_free(fifo->buf);
         mr_fifo_init(fifo, NULL, 0);
@@ -88,7 +84,7 @@ void mr_fifo_free(mr_fifo_t *fifo)
  *
  * @param fifo The fifo.
  */
-void mr_fifo_reset(mr_fifo_t *fifo)
+void mr_fifo_reset(struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 
@@ -105,7 +101,7 @@ void mr_fifo_reset(mr_fifo_t *fifo)
  *
  * @return The number of bytes peeked.
  */
-size_t mr_fifo_peek(const mr_fifo_t *fifo, void *buf, size_t count)
+size_t mr_fifo_peek(const struct mr_fifo *fifo, void *buf, size_t count)
 {
     uint32_t used, out, end;
 
@@ -134,8 +130,6 @@ size_t mr_fifo_peek(const mr_fifo_t *fifo, void *buf, size_t count)
         memcpy(buf, &fifo->buf[out], end);
         memcpy(&((uint8_t *)buf)[end], fifo->buf, count - end);
     }
-
-    /* Return the number of bytes peeked */
     return count;
 }
 
@@ -147,7 +141,7 @@ size_t mr_fifo_peek(const mr_fifo_t *fifo, void *buf, size_t count)
  *
  * @return The number of bytes discarded.
  */
-size_t mr_fifo_discard(mr_fifo_t *fifo, size_t count)
+size_t mr_fifo_discard(struct mr_fifo *fifo, size_t count)
 {
     uint32_t used, out, end;
 
@@ -177,8 +171,6 @@ size_t mr_fifo_discard(mr_fifo_t *fifo, size_t count)
 
     /* Update output index */
     fifo->out = (out >= fifo->size) ? 0 : out;
-
-    /* Return the number of bytes discarded */
     return count;
 }
 
@@ -191,7 +183,7 @@ size_t mr_fifo_discard(mr_fifo_t *fifo, size_t count)
  *
  * @return The number of bytes read.
  */
-size_t mr_fifo_read(mr_fifo_t *fifo, void *buf, size_t count)
+size_t mr_fifo_read(struct mr_fifo *fifo, void *buf, size_t count)
 {
     uint32_t used, out, end;
 
@@ -225,8 +217,6 @@ size_t mr_fifo_read(mr_fifo_t *fifo, void *buf, size_t count)
 
     /* Update output index */
     fifo->out = (out >= fifo->size) ? 0 : out;
-
-    /* Return the number of bytes read */
     return count;
 }
 
@@ -239,7 +229,7 @@ size_t mr_fifo_read(mr_fifo_t *fifo, void *buf, size_t count)
  *
  * @return The number of bytes written.
  */
-size_t mr_fifo_write(mr_fifo_t *fifo, const void *buf, size_t count)
+size_t mr_fifo_write(struct mr_fifo *fifo, const void *buf, size_t count)
 {
     uint32_t free, in, end;
 
@@ -273,8 +263,6 @@ size_t mr_fifo_write(mr_fifo_t *fifo, const void *buf, size_t count)
 
     /* Update input index */
     fifo->in = (in >= fifo->size) ? 0 : in;
-
-    /* Return the number of bytes written */
     return count;
 }
 
@@ -290,7 +278,7 @@ size_t mr_fifo_write(mr_fifo_t *fifo, const void *buf, size_t count)
  * @note When you use this function, the single read single write condition of
  *       an unlocked fifo may not be met.
  */
-size_t mr_fifo_write_force(mr_fifo_t *fifo, const void *buf, size_t count)
+size_t mr_fifo_write_force(struct mr_fifo *fifo, const void *buf, size_t count)
 {
     uint32_t size, free;
 
@@ -323,7 +311,7 @@ size_t mr_fifo_write_force(mr_fifo_t *fifo, const void *buf, size_t count)
  *
  * @return The used space.
  */
-size_t mr_fifo_get_used(const mr_fifo_t *fifo)
+size_t mr_fifo_get_used(const struct mr_fifo *fifo)
 {
     uint32_t in, out;
 
@@ -344,7 +332,7 @@ size_t mr_fifo_get_used(const mr_fifo_t *fifo)
  *
  * @return The free space.
  */
-size_t mr_fifo_get_free(const mr_fifo_t *fifo)
+size_t mr_fifo_get_free(const struct mr_fifo *fifo)
 {
     uint32_t in, out;
 
@@ -365,7 +353,7 @@ size_t mr_fifo_get_free(const mr_fifo_t *fifo)
  *
  * @return The size.
  */
-size_t mr_fifo_get_size(const mr_fifo_t *fifo)
+size_t mr_fifo_get_size(const struct mr_fifo *fifo)
 {
     MR_ASSERT(fifo != NULL);
 

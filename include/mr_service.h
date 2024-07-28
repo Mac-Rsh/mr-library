@@ -16,6 +16,77 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
+ * @addtogroup Interrupt
+ * @{
+ */
+
+size_t mr_irq_disable(void);
+void mr_irq_enable(size_t mask);
+
+/** @} */
+
+/**
+ * @addtogroup Initialization
+ * @{
+ */
+
+/**
+ * @brief Initialization item structure.
+ * 
+ */
+struct mr_init_item
+{
+    const char *name;                                                                                   /**< Name */
+    int (*fn)(void);                                                                                    /**< Function */
+};
+
+#define __MR_INIT_EXPORT(_name, _fn, _level)                                                       \
+    MR_USED MR_SECTION("mr_init." _level) const struct mr_init_item _mr_init_item_##_fn            \
+        = {(_name), (_fn)}                                                                              /**< Initialization item export */
+
+/**
+ * @brief This macro exports initialization items to the board level.
+ * 
+ * @param _name The name of the initialization item.
+ * @param _fn The function of the initialization item.
+ */
+#define MR_INIT_BOARD_EXPORT(_name, _fn)    __MR_INIT_EXPORT(_name, _fn, "1")
+
+/**
+ * @brief This macro exports initialization items to the system level.
+ * 
+ * @param _name The name of the initialization item.
+ * @param _fn The function of the initialization item.
+ */
+#define MR_INIT_SYSTEM_EXPORT(_name, _fn)   __MR_INIT_EXPORT(_name, _fn, "2")
+
+/**
+ * @brief This macro exports initialization items to the driver level.
+ * 
+ * @param _name The name of the initialization item.
+ * @param _fn The function of the initialization item.
+ */
+#define MR_INIT_DRIVER_EXPORT(_name, _fn)   __MR_INIT_EXPORT(_name, _fn, "3")
+
+/**
+ * @brief This macro exports initialization items to the device level.
+ * 
+ * @param _name The name of the initialization item.
+ * @param _fn The function of the initialization item.
+ */
+#define MR_INIT_DEVICE_EXPORT(_name, _fn)   __MR_INIT_EXPORT(_name, _fn, "4")
+
+/**
+ * @brief This macro exports initialization items to the application level.
+ * 
+ * @param _name The name of the initialization item.
+ * @param _fn The function of the initialization item.
+ */
+#define MR_INIT_APP_EXPORT(_name, _fn)      __MR_INIT_EXPORT(_name, _fn, "5")
+
+/** @} */
+
+/**
  * @addtogroup Service-Macros
  * @{
  */
@@ -41,7 +112,7 @@ extern "C" {
 #define MR_ALIGN_DOWN(_value, _align)       ((_value) & ~((_align) - 1))
 
 /**
- * @brief This macro function gets the number of elements in an array.
+ * @brief This macro gets the number of elements in an array.
  *
  * @param _array The array.
  *
@@ -121,7 +192,7 @@ extern "C" {
     } while (0)
 
 /**
- * @brief This macro function concatenates two strings.
+ * @brief This macro concatenates two strings.
  *
  * @param _a The first string.
  * @param _b The second string.
@@ -131,7 +202,7 @@ extern "C" {
 #define MR_CONCAT(_a, _b)                   _a##_b
 
 /**
- * @brief This macro function converts an integer to a string.
+ * @brief This macro converts an integer to a string.
  *
  * @param _a The integer to convert.
  *
@@ -163,70 +234,19 @@ extern "C" {
  */
 #define MR_LOCAL_MAKE(_type, ...)           (&((_type){__VA_ARGS__}))
 
-/** @} */
-
 /**
- * @addtogroup Log
- * @{
+ * @brief This macro function asserts a condition.
+ * 
+ * @param _cond The condition to assert.
  */
-
-#define MR_LOG_TAG ("null")
-#define __MR_LOG_PRINTF(_tag, _fmt, ...)                                                           \
-    do                                                                                             \
-    {                                                                                              \
-        if (strcmp(_tag, "null") != 0)                                                             \
-        {                                                                                          \
-            printf(_fmt, ##__VA_ARGS__);                                                           \
-        }                                                                                          \
-    } while (0)
-#ifdef MR_USE_LOG_ERROR
-#define MR_LOG_E(_fmt, ...)                                                                        \
-    __MR_LOG_PRINTF(MR_LOG_TAG, "[E/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)                               /**< Error log */
-#else
-#define MR_LOG_E(_fmt, ...)
-#endif /* MR_USE_LOG_ERROR */
-#ifdef MR_USE_LOG_WARN
-#define MR_LOG_W(_fmt, ...)                                                                        \
-    __MR_LOG_PRINTF(MR_LOG_TAG, "[W/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)                               /**< Warning log */
-#else
-#define MR_LOG_W(_fmt, ...)
-#endif /* MR_USE_LOG_WARN */
-#ifdef MR_USE_LOG_INFO
-#define MR_LOG_I(_fmt, ...)                                                                        \
-    __MR_LOG_PRINTF(MR_LOG_TAG, "[I/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)                               /**< Information log */
-#else
-#define MR_LOG_I(_fmt, ...)
-#endif /* MR_USE_LOG_INFO */
-#ifdef MR_USE_LOG_DEBUG
-#define MR_LOG_D(_fmt, ...)                                                                        \
-    __MR_LOG_PRINTF(MR_LOG_TAG, "[D/%s] "_fmt, MR_LOG_TAG, ##__VA_ARGS__)                               /**< Debug log */
-#else
-#define MR_LOG_D(_fmt, ...)
-#endif /* MR_USE_LOG_DEBUG */
-#ifdef MR_USE_LOG_ASSERT
 #define MR_ASSERT(_cond)                                                                           \
     do                                                                                             \
     {                                                                                              \
         if (!(_cond))                                                                              \
         {                                                                                          \
-            __MR_LOG_PRINTF("Assert", "[A/%s] Assertion failed: %s, %s, %d.\r\n", __FUNCTION__,    \
-                            #_cond, __FILE__, __LINE__);                                           \
             while (1);                                                                             \
         }                                                                                          \
     } while (0)
-#else
-#define MR_ASSERT(_cond)
-#endif /* MR_USE_LOG_ASSERT */
-
-/** @} */
-
-/**
- * @addtogroup Interrupt
- * @{
- */
-
-size_t mr_irq_disable(void);
-void mr_irq_enable(size_t mask);
 
 /** @} */
 

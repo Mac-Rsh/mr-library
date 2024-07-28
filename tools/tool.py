@@ -22,7 +22,13 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%Y-%m-%d %H:%M:%S')
 
 
-def _find_mrlib():
+def _check_python_version():
+    if sys.version_info < (3, 9):
+        logging.error('Python version must be >= 3.9(current: {sys.version})')
+        exit(1)
+
+
+def _find_mrlib() -> Path | None:
     for dir in Path(__file__).parents:
         if dir.name == 'mr-library':
             return dir
@@ -44,12 +50,6 @@ def _build(projdir: Path, incdirs: list[Path], srcfiles: list[Path]):
 
 
 def _run_menuconfig(configfile: Path):
-    # Check if Python 3.11 or higher is installed("kconfiglib" does not
-    # support later versions)
-    if sys.version_info.major >= 3 and sys.version_info.minor > 11:
-        logging.error("Python 3.11 or higher is required for menuconfig")
-        exit(1)
-
     try:
         subprocess.run(['menuconfig'], stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL)
@@ -60,6 +60,9 @@ def _run_menuconfig(configfile: Path):
 
 
 def main():
+    # Check Python version
+    _check_python_version()
+
     # Find "mr-library"
     mrlib = _find_mrlib()
     if mrlib is None:

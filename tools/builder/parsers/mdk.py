@@ -64,15 +64,21 @@ class MdkParser(BaseParser):
 
             # Add file if it doesn't exist
             files_node = group_node.find("Files")
-            file_node = files_node.find(f"./File[FileName='{file.name}']")
+            file_node = files_node.find(f"./File[FilePath='{file.as_posix()}']")
             if file_node is None:
                 file_node = etree.SubElement(files_node, "File")
+            file_path_node = file_node.find("FilePath")
+            if file_path_node is None:
                 file_path_node = etree.SubElement(file_node, "FilePath")
-                file_path_node.text = file.as_posix()
+            file_name_node = file_node.find("FileName")
+            if file_name_node is None:
                 file_name_node = etree.SubElement(file_node, "FileName")
-                file_name_node.text = file.name
+            file_type_node = file_node.find("FileType")
+            if file_type_node is None:
                 file_type_node = etree.SubElement(file_node, "FileType")
-                file_type_node.text = '1'
+            file_path_node.text = file.as_posix()
+            file_name_node.text = file.name
+            file_type_node.text = '1'
 
     def _save(self):
         self.tree.write(self.projfile, pretty_print=True, encoding="utf-8",

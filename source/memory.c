@@ -6,7 +6,8 @@
  * @date 2023-12-20    MacRsh       First version
  */
 
-#include <include/mr_library.h>
+#include <include/mr_memory.h>
+#include <include/mr_service.h>
 
 #ifndef MR_CFG_HEAP_SIZE
 #define MR_CFG_HEAP_SIZE                    (4 * 1024)
@@ -14,28 +15,27 @@
 #define MR_CFG_HEAP_SIZE                    (16)
 #endif /* MR_CFG_HEAP_SIZE */
 static uint8_t __heap_memory[MR_CFG_HEAP_SIZE];
-static mr_heap_block_t __heap_start;
+static struct mr_heap_block __heap_start;
 
 /**
  * @brief This function initialize the heap.
  */
 static int mr_heap_init(void)
 {
-    mr_heap_block_t *block;
+    struct mr_heap_block *block;
 
     /* Initialize the first block */
-    block = (mr_heap_block_t *)&__heap_memory;
+    block = (struct mr_heap_block *)&__heap_memory;
     block->next = NULL;
-    block->size = sizeof(__heap_memory) - sizeof(mr_heap_block_t);
-    block->allocated = false;
+    block->size = sizeof(__heap_memory) - sizeof(struct mr_heap_block);
     __heap_start.next = block;
     return MR_EOK;
 }
 MR_INIT_SYSTEM_EXPORT("heap-init", mr_heap_init);
 
-static void __heap_insert_block(mr_heap_block_t *block)
+static void __heap_insert_block(struct mr_heap_block *block)
 {
-    mr_heap_block_t *prev;
+    struct mr_heap_block *prev;
 
     /* Search for the previous block */
     prev = &__heap_start;
@@ -48,17 +48,18 @@ static void __heap_insert_block(mr_heap_block_t *block)
     if (prev->next != NULL)
     {
         /* Merge with the previous block */
-        if ((void *)(((uint8_t *)prev) + sizeof(mr_heap_block_t) + prev->size) == (void *)block)
+        if ((void *)(((uint8_t *)prev) + sizeof(struct mr_heap_block) + prev->size)
+            == (void *)block)
         {
-            prev->size += block->size + sizeof(mr_heap_block_t);
+            prev->size += block->size + sizeof(struct mr_heap_block);
             block = prev;
         }
 
         /* Merge with the next block */
-        if ((void *)(((uint8_t *)block) + sizeof(mr_heap_block_t) + block->size)
+        if ((void *)(((uint8_t *)block) + sizeof(struct mr_heap_block) + block->size)
             == (void *)prev->next)
         {
-            block->size += prev->next->size + sizeof(mr_heap_block_t);
+            block->size += prev->next->size + sizeof(struct mr_heap_block);
             block->next = prev->next->next;
             if (block != prev)
             {
@@ -85,7 +86,7 @@ static void __heap_insert_block(mr_heap_block_t *block)
  */
 MR_WEAK void *mr_malloc(size_t size)
 {
-    mr_heap_block_t *prev, *block, *new;
+    struct mr_heap_block *prev, *block, *new;
     uint8_t *memory;
     size_t residual;
     size_t mask;
@@ -119,23 +120,21 @@ MR_WEAK void *mr_malloc(size_t size)
     prev->next = block->next;
 
     /* Allocate memory */
-    memory = ((uint8_t *)block + sizeof(mr_heap_block_t));
+    memory = ((uint8_t *)block + sizeof(struct mr_heap_block));
     residual = block->size - size;
 
     /* Set the block information */
     block->size = size;
     block->next = NULL;
-    block->allocated = true;
 
     /* Check if we need to allocate a new block */
-    if (residual > (sizeof(mr_heap_block_t) << 1))
+    if (residual > (sizeof(struct mr_heap_block) << 1))
     {
-        new = (mr_heap_block_t *)(memory + size);
+        new = (struct mr_heap_block *)(memory + size);
 
         /* Set the new block information */
-        new->size = residual - sizeof(mr_heap_block_t);
+        new->size = residual - sizeof(struct mr_heap_block);
         new->next = NULL;
-        new->allocated = false;
 
         /* Insert the new block */
         __heap_insert_block(new);
@@ -154,7 +153,7 @@ _exit:
  */
 MR_WEAK void mr_free(void *memory)
 {
-    mr_heap_block_t *block;
+    struct mr_heap_block *block;
     size_t mask;
 
     if (memory == NULL)
@@ -166,11 +165,9 @@ MR_WEAK void mr_free(void *memory)
     mask = mr_irq_disable();
 
     /* Check the block */
-    block = (mr_heap_block_t *)((uint8_t *)memory - sizeof(mr_heap_block_t));
-    if ((block->allocated == true) && (block->size != 0))
+    block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
+    if (block->size != 0)
     {
-        block->allocated = false;
-
         /* Insert the free block */
         __heap_insert_block(block);
     }
@@ -188,7 +185,7 @@ MR_WEAK void mr_free(void *memory)
  */
 MR_WEAK size_t mr_malloc_usable_size(void *memory)
 {
-    mr_heap_block_t *block;
+    struct mr_heap_block *block;
 
     if (memory == NULL)
     {
@@ -196,7 +193,7 @@ MR_WEAK size_t mr_malloc_usable_size(void *memory)
     }
 
     /* Get the block information */
-    block = (mr_heap_block_t *)((uint8_t *)memory - sizeof(mr_heap_block_t));
+    block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
     return block->size;
 }
 

@@ -10,7 +10,7 @@
 #define __MR_SPINLOCK_H__
 
 #include <include/mr_atomic.h>
-#include <include/mr_service.h>
+#include <include/mr_def.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,6 +20,8 @@ extern "C" {
  * @addtogroup Spinlock
  * @{
  */
+
+typedef mr_atomic_t                         mr_spinlock_t;                                              /**< Spinlock type */
 
 /**
  * @brief This macro function initializes the spinlock.
@@ -34,9 +36,9 @@ extern "C" {
  *
  * @param lock The spinlock.
  */
-MR_INLINE void mr_spin_lock_init(mr_spinlock_t *lock)
+MR_INLINE void mr_spinlock_init(mr_spinlock_t *lock)
 {
-    mr_atomic_store(&lock->lock, 0);
+    mr_atomic_store(lock, 0);
 }
 
 /**
@@ -44,9 +46,9 @@ MR_INLINE void mr_spin_lock_init(mr_spinlock_t *lock)
  *
  * @param lock The spinlock.
  */
-MR_INLINE void mr_spin_lock(mr_spinlock_t *lock)
+MR_INLINE void mr_spinlock_lock(mr_spinlock_t *lock)
 {
-    while (mr_atomic_exchange(&lock->lock, 1) != 0);
+    while (mr_atomic_exchange(lock, 1) != 0);
 }
 
 /**
@@ -54,9 +56,9 @@ MR_INLINE void mr_spin_lock(mr_spinlock_t *lock)
  *
  * @param lock The spinlock.
  */
-MR_INLINE void mr_spin_unlock(mr_spinlock_t *lock)
+MR_INLINE void mr_spinlock_unlock(mr_spinlock_t *lock)
 {
-    mr_atomic_store(&lock->lock, 0);
+    mr_atomic_store(lock, 0);
 }
 
 /**
@@ -66,12 +68,12 @@ MR_INLINE void mr_spin_unlock(mr_spinlock_t *lock)
  *
  * @return True if the lock was successful acquired, false otherwise.
  */
-MR_INLINE bool mr_spin_trylock(mr_spinlock_t *lock)
+MR_INLINE bool mr_spinlock_trylock(mr_spinlock_t *lock)
 {
     mr_atomic_t unlock;
 
     /* Try to lock */
-    return mr_atomic_compare_exchange_strong(&lock->lock, &unlock, 1);
+    return mr_atomic_compare_exchange_strong(lock, &unlock, 1);
 }
 
 /**
@@ -81,7 +83,7 @@ MR_INLINE bool mr_spin_trylock(mr_spinlock_t *lock)
  *
  * @return Saved interrupt mask.
  */
-MR_INLINE size_t mr_spin_lock_irqsave(mr_spinlock_t *lock)
+MR_INLINE size_t mr_spinlock_irqsave(mr_spinlock_t *lock)
 {
     size_t mask;
 
@@ -89,7 +91,7 @@ MR_INLINE size_t mr_spin_lock_irqsave(mr_spinlock_t *lock)
     mask = mr_irq_disable();
 
     /* Lock spinlock */
-    mr_spin_lock(lock);
+    mr_spinlock_lock(lock);
 
     /* Return saved mask */
     return mask;
@@ -101,10 +103,10 @@ MR_INLINE size_t mr_spin_lock_irqsave(mr_spinlock_t *lock)
  * @param lock The spinlock.
  * @param mask Saved interrupt mask.
  */
-MR_INLINE void mr_spin_unlock_irqrestore(mr_spinlock_t *lock, size_t mask)
+MR_INLINE void mr_spinlock_irqrestore(mr_spinlock_t *lock, size_t mask)
 {
     /* Unlock spinlock */
-    mr_spin_unlock(lock);
+    mr_spinlock_unlock(lock);
 
     /* Enable mask */
     mr_irq_enable(mask);

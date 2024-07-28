@@ -9,6 +9,7 @@
 #ifndef __MR_ATOMIC_H__
 #define __MR_ATOMIC_H__
 
+#include <include/mr_def.h>
 #include <include/mr_service.h>
 
 #ifdef __cplusplus
@@ -19,6 +20,8 @@ extern "C" {
  * @addtogroup Atomic
  * @{
  */
+
+typedef int                                 mr_atomic_t;                                                /**< Atomic type */
 
 #if defined(__CC_ARM) || defined(__GNUC__) || defined(__clang__)
 #define mr_atomic_load(_ptr)                                                                       \
