@@ -36,53 +36,28 @@ void mr_irq_enable(size_t mask);
  */
 struct mr_init_item
 {
-    const char *name;                                                                                   /**< Name */
-    int (*fn)(void);                                                                                    /**< Function */
+    const char *name;                                                               /**< Name */
+    int (*fn)(void);                                                                /**< Function */
 };
 
-#define __MR_INIT_EXPORT(_name, _fn, _level)                                                       \
-    MR_USED MR_SECTION("mr_init." _level) const struct mr_init_item _mr_init_item_##_fn            \
-        = {(_name), (_fn)}                                                                              /**< Initialization item export */
+#define __MR_INIT_EXPORT(_name, _fn, _level)                                   \
+    MR_USED MR_SECTION("mr_init." _level)                                      \
+        const struct mr_init_item _mr_init_item_##_fn                          \
+        = {(_name), (_fn)}                                                          /**< Init item export */
+
+#define MR_LEVEL_BOARD                  "1"                                         /**< Board init level */
+#define MR_LEVEL_SYSTEM                 "2"                                         /**< System init level */
+#define MR_LEVEL_DRIVER                 "3"                                         /**< Driver init level */
+#define MR_LEVEL_DEVICE                 "4"                                         /**< Device init level */
+#define MR_LEVEL_APP                    "5"                                         /**< Application init level */
 
 /**
- * @brief This macro exports initialization items to the board level.
+ * @brief This macro exports an initialization function.
  * 
- * @param _name The name of the initialization item.
- * @param _fn The function of the initialization item.
+ * @param _fn The function name.
+ * @param _level The initialization level.
  */
-#define MR_INIT_BOARD_EXPORT(_name, _fn)    __MR_INIT_EXPORT(_name, _fn, "1")
-
-/**
- * @brief This macro exports initialization items to the system level.
- * 
- * @param _name The name of the initialization item.
- * @param _fn The function of the initialization item.
- */
-#define MR_INIT_SYSTEM_EXPORT(_name, _fn)   __MR_INIT_EXPORT(_name, _fn, "2")
-
-/**
- * @brief This macro exports initialization items to the driver level.
- * 
- * @param _name The name of the initialization item.
- * @param _fn The function of the initialization item.
- */
-#define MR_INIT_DRIVER_EXPORT(_name, _fn)   __MR_INIT_EXPORT(_name, _fn, "3")
-
-/**
- * @brief This macro exports initialization items to the device level.
- * 
- * @param _name The name of the initialization item.
- * @param _fn The function of the initialization item.
- */
-#define MR_INIT_DEVICE_EXPORT(_name, _fn)   __MR_INIT_EXPORT(_name, _fn, "4")
-
-/**
- * @brief This macro exports initialization items to the application level.
- * 
- * @param _name The name of the initialization item.
- * @param _fn The function of the initialization item.
- */
-#define MR_INIT_APP_EXPORT(_name, _fn)      __MR_INIT_EXPORT(_name, _fn, "5")
+#define MR_INIT_EXPORT(_fn, _level)     __MR_INIT_EXPORT(#_fn, _fn, _level)
 
 /** @} */
 
@@ -99,7 +74,8 @@ struct mr_init_item
  *
  * @return The aligned value.
  */
-#define MR_ALIGN_UP(_value, _align)         (((_value) + (_align) - 1) & ~((_align) - 1))
+#define MR_ALIGN_UP(_value, _align)                                            \
+    (((_value) + (_align) - 1) & ~((_align) - 1))
 
 /**
  * @brief This macro function aligns a value downwards.
@@ -109,7 +85,7 @@ struct mr_init_item
  *
  * @return The aligned value.
  */
-#define MR_ALIGN_DOWN(_value, _align)       ((_value) & ~((_align) - 1))
+#define MR_ALIGN_DOWN(_value, _align)   ((_value) & ~((_align) - 1))
 
 /**
  * @brief This macro gets the number of elements in an array.
@@ -120,7 +96,7 @@ struct mr_init_item
  *
  * @note The array must be an array, not a pointer.
  */
-#define MR_ARRAY_NUM(_array)                (sizeof(_array) / sizeof((_array)[0]))
+#define MR_ARRAY_NUM(_array)            (sizeof(_array) / sizeof((_array)[0]))
 
 /**
  * @brief This macro function checks if a value is set.
@@ -128,7 +104,7 @@ struct mr_init_item
  * @param _value The value to check.
  * @param _mask The mask to check.
  */
-#define MR_BIT_IS_SET(_value, _mask)        (((_value) & (_mask)) == (_mask))
+#define MR_BIT_IS_SET(_value, _mask)    (((_value) & (_mask)) == (_mask))
 
 /**
  * @brief This macro function sets a value.
@@ -136,7 +112,7 @@ struct mr_init_item
  * @param _value The value to set.
  * @param _mask The mask to set.
  */
-#define MR_BIT_SET(_value, _mask)           ((_value) |= (_mask))
+#define MR_BIT_SET(_value, _mask)       ((_value) |= (_mask))
 
 /**
  * @brief This macro function clears a value.
@@ -144,7 +120,7 @@ struct mr_init_item
  * @param _value The value to clear.
  * @param _mask The mask to clear.
  */
-#define MR_BIT_CLR(_value, _mask)           ((_value) &= ~(_mask))
+#define MR_BIT_CLR(_value, _mask)       ((_value) &= ~(_mask))
 
 /**
  * @brief This macro function gets the maximum of two values.
@@ -154,7 +130,7 @@ struct mr_init_item
  *
  * @return The maximum of the two values.
  */
-#define MR_MAX(_a, _b)                      ((_a) > (_b) ? (_a) : (_b))
+#define MR_MAX(_a, _b)                  ((_a) > (_b) ? (_a) : (_b))
 
 /**
  * @brief This macro function gets the minimum of two values.
@@ -164,7 +140,7 @@ struct mr_init_item
  *
  * @return The minimum of the two values.
  */
-#define MR_MIN(_a, _b)                      ((_a) < (_b) ? (_a) : (_b))
+#define MR_MIN(_a, _b)                  ((_a) < (_b) ? (_a) : (_b))
 
 /**
  * @brief This macro function ensures that a value is within a specified range.
@@ -174,7 +150,8 @@ struct mr_init_item
  *
  * @return The value within the specified range.
  */
-#define MR_CLAMP(_value, _min, _max)        (MR_MAX(MR_MIN((_value), (_max)), (_min)))
+#define MR_CLAMP(_value, _min, _max)                                           \
+    (MR_MAX(MR_MIN((_value), (_max)), (_min)))
 
 /**
  * @brief This macro function swaps two values.
@@ -183,12 +160,12 @@ struct mr_init_item
  * @param _a The first value.
  * @param _b The second value.
  */
-#define MR_SWAP(_type, _a, _b)                                                                     \
-    do                                                                                             \
-    {                                                                                              \
-        _type __a = (_a);                                                                          \
-        (_a) = (_b);                                                                               \
-        (_b) = __a;                                                                                \
+#define MR_SWAP(_type, _a, _b)                                                 \
+    do                                                                         \
+    {                                                                          \
+        _type __a = (_a);                                                      \
+        (_a) = (_b);                                                           \
+        (_b) = __a;                                                            \
     } while (0)
 
 /**
@@ -199,7 +176,7 @@ struct mr_init_item
  *
  * @return The concatenated string.
  */
-#define MR_CONCAT(_a, _b)                   _a##_b
+#define MR_CONCAT(_a, _b)               _a##_b
 
 /**
  * @brief This macro converts an integer to a string.
@@ -208,7 +185,7 @@ struct mr_init_item
  *
  * @return The string representation of the integer.
  */
-#define MR_STR(_a)                          #_a
+#define MR_STR(_a)                      #_a
 
 /**
  * @brief This macro function gets its structure from its member.
@@ -219,7 +196,7 @@ struct mr_init_item
  *
  * @return A pointer to the structure.
  */
-#define MR_CONTAINER_OF(_ptr, _type, _member)                                                      \
+#define MR_CONTAINER_OF(_ptr, _type, _member)                                  \
     ((_type *)((char *)(_ptr) - (uintptr_t)(&((_type *)0)->_member)))
 
 /**
@@ -232,20 +209,20 @@ struct mr_init_item
  *
  * @note The variable is local, please use it carefully.
  */
-#define MR_LOCAL_MAKE(_type, ...)           (&((_type){__VA_ARGS__}))
+#define MR_LOCAL_MAKE(_type, ...)       (&((_type){__VA_ARGS__}))
 
 /**
  * @brief This macro function asserts a condition.
  * 
  * @param _cond The condition to assert.
  */
-#define MR_ASSERT(_cond)                                                                           \
-    do                                                                                             \
-    {                                                                                              \
-        if (!(_cond))                                                                              \
-        {                                                                                          \
-            while (1);                                                                             \
-        }                                                                                          \
+#define MR_ASSERT(_cond)                                                       \
+    do                                                                         \
+    {                                                                          \
+        if (!(_cond))                                                          \
+        {                                                                      \
+            while (1);                                                         \
+        }                                                                      \
     } while (0)
 
 /** @} */

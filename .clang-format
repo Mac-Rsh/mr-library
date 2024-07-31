@@ -43,7 +43,7 @@ BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
 BreakStringLiterals: true
-ColumnLimit: 100
+ColumnLimit: 80
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '.*'

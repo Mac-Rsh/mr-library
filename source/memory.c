@@ -10,9 +10,9 @@
 #include <include/mr_service.h>
 
 #ifndef MR_CFG_HEAP_SIZE
-#define MR_CFG_HEAP_SIZE                    (4 * 1024)
+#define MR_CFG_HEAP_SIZE                (4 * 1024)
 #elif (MR_CFG_HEAP_SIZE < 16)
-#define MR_CFG_HEAP_SIZE                    (16)
+#define MR_CFG_HEAP_SIZE                (16)
 #endif /* MR_CFG_HEAP_SIZE */
 static uint8_t __heap_memory[MR_CFG_HEAP_SIZE];
 static struct mr_heap_block __heap_start;
@@ -31,7 +31,7 @@ static int mr_heap_init(void)
     __heap_start.next = block;
     return MR_EOK;
 }
-MR_INIT_SYSTEM_EXPORT("heap-init", mr_heap_init);
+MR_INIT_EXPORT(mr_heap_init, MR_LEVEL_SYSTEM);
 
 static void __heap_insert_block(struct mr_heap_block *block)
 {
@@ -48,7 +48,8 @@ static void __heap_insert_block(struct mr_heap_block *block)
     if (prev->next != NULL)
     {
         /* Merge with the previous block */
-        if ((void *)(((uint8_t *)prev) + sizeof(struct mr_heap_block) + prev->size)
+        if ((void *)(((uint8_t *)prev) + sizeof(struct mr_heap_block)
+                     + prev->size)
             == (void *)block)
         {
             prev->size += block->size + sizeof(struct mr_heap_block);
@@ -56,7 +57,8 @@ static void __heap_insert_block(struct mr_heap_block *block)
         }
 
         /* Merge with the next block */
-        if ((void *)(((uint8_t *)block) + sizeof(struct mr_heap_block) + block->size)
+        if ((void *)(((uint8_t *)block) + sizeof(struct mr_heap_block)
+                     + block->size)
             == (void *)prev->next)
         {
             block->size += prev->next->size + sizeof(struct mr_heap_block);
@@ -165,7 +167,8 @@ MR_WEAK void mr_free(void *memory)
     mask = mr_irq_disable();
 
     /* Check the block */
-    block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
+    block = (struct mr_heap_block *)((uint8_t *)memory
+                                     - sizeof(struct mr_heap_block));
     if (block->size != 0)
     {
         /* Insert the free block */
@@ -193,7 +196,8 @@ MR_WEAK size_t mr_malloc_usable_size(void *memory)
     }
 
     /* Get the block information */
-    block = (struct mr_heap_block *)((uint8_t *)memory - sizeof(struct mr_heap_block));
+    block = (struct mr_heap_block *)((uint8_t *)memory
+                                     - sizeof(struct mr_heap_block));
     return block->size;
 }
 

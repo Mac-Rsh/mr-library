@@ -25,8 +25,8 @@ extern "C" {
  */
 struct mr_heap_block
 {
-    struct mr_heap_block *next;                                                                         /**< Point to next block */
-    size_t size;                                                                                        /**< Block size */
+    struct mr_heap_block *next;                                                     /**< Point to next block */
+    size_t size;                                                                    /**< Block size */
 };
 
 void *mr_malloc(size_t size);

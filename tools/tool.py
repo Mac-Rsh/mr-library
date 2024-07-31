@@ -23,8 +23,8 @@ logging.basicConfig(level=logging.INFO,
 
 
 def _check_python_version():
-    if sys.version_info < (3, 9):
-        logging.error('Python version must be >= 3.9(current: {sys.version})')
+    if sys.version_info < (3, 10):
+        logging.error(f'Python version must be >= 3.10(current: {sys.version})')
         exit(1)
 
 
