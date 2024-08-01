@@ -19,6 +19,8 @@
  */
 MR_IMPL(Atomic, load, int)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_load_n(&self->_val, __ATOMIC_SEQ_CST);
 }
 
@@ -30,6 +32,8 @@ MR_IMPL(Atomic, load, int)
  */
 MR_IMPL(Atomic, store, void, int val)
 {
+    MR_ASSERT(self != NULL);
+
     __atomic_store_n(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -43,6 +47,8 @@ MR_IMPL(Atomic, store, void, int val)
  */
 MR_IMPL(Atomic, fetch_add, int, int val)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_fetch_add(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -56,6 +62,8 @@ MR_IMPL(Atomic, fetch_add, int, int val)
  */
 MR_IMPL(Atomic, fetch_sub, int, int val)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_fetch_sub(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -69,6 +77,8 @@ MR_IMPL(Atomic, fetch_sub, int, int val)
  */
 MR_IMPL(Atomic, fetch_and, int, int val)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_fetch_and(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -82,6 +92,8 @@ MR_IMPL(Atomic, fetch_and, int, int val)
  */
 MR_IMPL(Atomic, fetch_or, int, int val)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_fetch_or(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -95,6 +107,8 @@ MR_IMPL(Atomic, fetch_or, int, int val)
  */
 MR_IMPL(Atomic, fetch_xor, int, int val)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_fetch_xor(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -108,6 +122,8 @@ MR_IMPL(Atomic, fetch_xor, int, int val)
  */
 MR_IMPL(Atomic, exchange, int, int val)
 {
+    MR_ASSERT(self != NULL);
+
     return __atomic_exchange_n(&self->_val, val, __ATOMIC_SEQ_CST);
 }
 
@@ -121,6 +137,8 @@ MR_IMPL(Atomic, exchange, int, int val)
  */
 MR_IMPL(Atomic, compare_exchange, bool, int old, int val)
 {
+    MR_ASSERT(self != NULL);
+    
     return __atomic_compare_exchange_n(&self->_val, &old, val, false,
                                        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
@@ -138,6 +156,8 @@ MR_IMPL(Atomic, load, int)
 {
     size_t mask;
     int val;
+
+    MR_ASSERT(self != NULL);
 
     /* Disable interrupt */
     mask = mr_irq_disable();
@@ -159,6 +179,8 @@ MR_IMPL(Atomic, load, int)
 MR_IMPL(Atomic, store, void, int val)
 {
     size_t mask;
+
+    MR_ASSERT(self != NULL);
 
     /* Disable interrupt */
     mask = mr_irq_disable();
@@ -182,6 +204,8 @@ MR_IMPL(Atomic, fetch_add, int, int val)
 {
     size_t mask;
     int fetch;
+
+    MR_ASSERT(self != NULL);
 
     /* Disable interrupt */
     mask = mr_irq_disable();
@@ -208,6 +232,8 @@ MR_IMPL(Atomic, fetch_sub, int, int val)
     size_t mask;
     int fetch;
 
+    MR_ASSERT(self != NULL);
+
     /* Disable interrupt */
     mask = mr_irq_disable();
 
@@ -232,6 +258,8 @@ MR_IMPL(Atomic, fetch_and, int, int val)
 {
     size_t mask;
     int fetch;
+
+    MR_ASSERT(self != NULL);
 
     /* Disable interrupt */
     mask = mr_irq_disable();
@@ -258,6 +286,8 @@ MR_IMPL(Atomic, fetch_or, int, int val)
     size_t mask;
     int fetch;
 
+    MR_ASSERT(self != NULL);
+
     /* Disable interrupt */
     mask = mr_irq_disable();
 
@@ -282,6 +312,8 @@ MR_IMPL(Atomic, fetch_xor, int, int val)
 {
     size_t mask;
     int fetch;
+
+    MR_ASSERT(self != NULL);
 
     /* Disable interrupt */
     mask = mr_irq_disable();
@@ -308,6 +340,8 @@ MR_IMPL(Atomic, exchange, int, int val)
     size_t mask;
     int fetch;
 
+    MR_ASSERT(self != NULL);
+
     /* Disable interrupt */
     mask = mr_irq_disable();
 
@@ -333,6 +367,8 @@ MR_IMPL(Atomic, compare_exchange, bool, int old, int val)
 {
     size_t mask;
     bool ret;
+
+    MR_ASSERT(self != NULL);
 
     /* Disable interrupt */
     mask = mr_irq_disable();
@@ -366,9 +402,13 @@ MR_IMPL(Atomic, compare_exchange, bool, int old, int val)
  */
 MR_IMPL(Atomic, __init__, struct Atomic *, int val)
 {
-    MR_IMPL_INTERFACE(Atomic, f, load, store, fetch_add, fetch_sub, fetch_and,
-                      fetch_or, fetch_xor, exchange, compare_exchange);
-    self->f = &f;
+    MR_IMPL_FUNCTION(Atomic, load, store, fetch_add, fetch_sub, fetch_and,
+                     fetch_or, fetch_xor, exchange, compare_exchange);
+
+    MR_ASSERT(self != NULL);
+
+    /* Initialize atomic */
+    self->fn = &fn;
     self->_val = val;
     return self;
 }
@@ -382,6 +422,8 @@ MR_IMPL(Atomic, __init__, struct Atomic *, int val)
  */
 MR_IMPL(Atomic, __del__, void *)
 {
+    MR_ASSERT(self != NULL);
+
     self->_val = 0;
     return self;
 }

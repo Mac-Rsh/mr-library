@@ -24,7 +24,7 @@ extern "C" {
 
 MR_CLASS(Atomic)
 {
-    MR_INTERFACE(Atomic)
+    MR_FUNCTION(Atomic)
     {
         int (*load)(struct Atomic *self);
         void (*store)(struct Atomic *self, int val);
@@ -35,7 +35,7 @@ MR_CLASS(Atomic)
         int (*fetch_xor)(struct Atomic *self, int val);
         int (*exchange)(struct Atomic *self, int val);
         bool (*compare_exchange)(struct Atomic *self, int old, int new);
-    } *f;
+    } *fn;
     int _val;
 };
 

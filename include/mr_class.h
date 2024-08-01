@@ -27,6 +27,7 @@ extern "C" {
 struct mr_class
 {
     const char *name;
+    void *intf;
     void *(*__init__)(void *self, ...);
     void *(*__del__)(void *self);
 };
@@ -48,6 +49,24 @@ struct mr_class
     struct _name
 
 /**
+ * @brief This macro defines a function of a class.
+ * 
+ * @param _cls The class.
+ * 
+ * @code 
+ * MR_CLASS(String)
+ * {
+ *     MR_FUNCTION(String)
+ *     {
+ *         void (*print)(struct String *self);
+ *     } *fn;
+ *     const char *_str;
+ * };
+ * @endcode
+ */
+#define MR_FUNCTION(_cls)               struct _cls##fn
+
+/**
  * @brief This macro defines an interface of a class.
  * 
  * @param _cls The class.
@@ -57,9 +76,9 @@ struct mr_class
  * {
  *     MR_INTERFACE(String)
  *     {
- *         void (*print)(struct String *self);
- *     } *impl;
- *     const char *str;
+ *         void (*output)(const char *str);
+ *     } *_if;
+ *     const char *_str;
  * };
  * @endcode
  */
@@ -76,32 +95,65 @@ struct mr_class
  * @code 
  * MR_IMPL(String, __init__, void *, const char *str)
  * {
- *     self->str = str;
+ *     MR_ASSERT(self != NULL);
+ * 
+ *     self->_str = str;
  *     return self;
  * }
  * @endcode
  */
 #define MR_IMPL(_cls, _fn, _ret, ...)                                          \
-    static inline _ret _fn(struct _cls *self, ##__VA_ARGS__)
+    static _ret _fn(struct _cls *self, ##__VA_ARGS__)
+
+/**
+ * @brief This macro defines an implementation of a function of a class.
+ * 
+ * @param _cls The class.
+ * @param ... The function.
+ * 
+ * @code
+ * MR_IMPL(String, __init__, const char *str)
+ * {
+ *     MR_IMPL_FUNCTION(String, print);
+ * 
+ *     MR_ASSERT(self != NULL);
+ * 
+ *     self->fn = &fn;
+ *     self->_str = str;
+ * }
+ * @endcode
+ */
+#define MR_IMPL_FUNCTION(_cls, ...)                                            \
+    static struct _cls##fn fn = {__VA_ARGS__}
 
 /**
  * @brief This macro defines an implementation of an interface of a class.
  * 
  * @param _cls The class.
- * @param _mbr The interface pointer member name.
- * @param ... The arguments.
+ * @param ... The interface.
  * 
  * @code
- * MR_IMPL(String, __init__, const char *str)
+ * MR_IMPL(String, __init__, void *, const char *str)
  * {
- *     MR_IMPL_INTERFACE(String, f, print);
- *     self->f = &f;
- *     self->str = str;
+ *     MR_ASSERT(self != NULL);
+ * 
+ *     self->_if = String.intf;
+ *     self->_str = str;
+ *     return self;
+ * }
+ * 
+ * MR_IMPL_INTERFACE(String, output);
+ * 
+ * int main(void)
+ * {
+ *     String.intf = &intf;
+ *     struct String *string = MR_NEW(String, "hello");
+ *     string->_if->output(string->str);
  * }
  * @endcode
  */
-#define MR_IMPL_INTERFACE(_cls, _mbr, ...)                                     \
-    static struct _cls##intf _mbr = {__VA_ARGS__}
+#define MR_IMPL_INTERFACE(_cls, ...)                                           \
+    static struct _cls##intf intf = {__VA_ARGS__}
 
 /**
  * @brief This macro defines a class with an implementation.
@@ -113,7 +165,7 @@ struct mr_class
  * @endcode
  */
 #define MR_IMPL_CLASS(_cls)                                                    \
-    struct mr_class _cls = {#_cls, (void *)__init__, (void *)__del__};
+    struct mr_class _cls = {#_cls, NULL, (void *)__init__, (void *)__del__};
 
 /**
  * @brief This macro function initializes an instance of a class.
@@ -168,7 +220,8 @@ struct mr_class
  * @param cls The class.
  * @param self The instance.
  */
-#define MR_DEL(_cls, _self)        (mr_free(_cls.__del__(_self)), _self = NULL)
+#define MR_DEL(_cls, _self)                                                    \
+    (mr_free(_cls.__del__(_self)), _self = NULL)
 
 /** @} */
 
