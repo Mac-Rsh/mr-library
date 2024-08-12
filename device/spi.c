@@ -425,14 +425,14 @@ static int mr_spi_dev_ioctl(struct mr_dev *dev, int cmd, void *args)
 
                 if (spi_dev->config.host_slave == MR_SPI_HOST) {
                     spi_dev_cs_set(spi_dev, MR_ENABLE);
-                    ret = (int)spi_dev_transfer(dev->parent,
+                    ret = (int)spi_dev_transfer(spi_dev,
                                                 transfer.rd_buf,
                                                 transfer.wr_buf,
                                                 transfer.size,
                                                 MR_SPI_RDWR);
                     spi_dev_cs_set(spi_dev, MR_DISABLE);
                 } else {
-                    ret = (int)spi_dev_transfer(dev->parent,
+                    ret = (int)spi_dev_transfer(spi_dev,
                                                 transfer.rd_buf,
                                                 transfer.wr_buf,
                                                 transfer.size,
